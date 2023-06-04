@@ -13,6 +13,8 @@ class History:
     Methods:
         add_message: Adds a message to the history.
         get_messages_by: Retrieves messages by the target message creator.
+        remove_messages: Removes messages using a list of message IDs
+        get_latest_message: Returns the latest message
         to_string: Converts the history to a string representation.
         to_dict: Converts the history to a dictionary representation.
         __len__: Returns the number of messages in the history.

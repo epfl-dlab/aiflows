@@ -162,7 +162,7 @@ def test_deepcopy_other_data() -> None:
 
     # ~~~ Test ~~~
     assert len(history_b) == 1
-    assert history_b.messages[-1].content["bool"] == True
+    assert history_b.messages[-1].content["bool"]
     assert history_b.messages[-1].content["history"].messages[0].content == history_a.messages[0].content
 
 
@@ -190,7 +190,3 @@ def test_flow_run_ids_random() -> None:
     history.add_message(message3)
 
     assert len(history.flow_run_ids) == 3
-
-
-if __name__ == "__main__":
-    test_deepcopy_other_data()
