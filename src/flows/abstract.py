@@ -167,10 +167,14 @@ class Flow(ABC):
 
         parsed_outputs = self._flow(input_message=input_message, expected_outputs=expected_outputs, **kwargs)
 
+        parents = []
+        if input_message:
+            parents = [input_message.message_id]
+
         return self._package_output_message(
             expected_outputs=expected_outputs,
             parsed_outputs=parsed_outputs,
-            parents=[input_message.message_id]
+            parents=parents
         )
 
 
