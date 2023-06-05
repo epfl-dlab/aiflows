@@ -6,8 +6,8 @@ from src.flows import AtomicFlow
 from src.message_annotators.abstract import MessageAnnotator
 from src.messages import InputMessage, FlowMessage
 
-import src.evaluation.testing_utils_leetcode as testing_utils_leetcode
-import src.evaluation.testing_utils_codeforces as testing_utils_codeforces
+import src.tools.code_evaluation.testing_utils_leetcode as testing_utils_leetcode
+import src.tools.code_evaluation.testing_utils_codeforces as testing_utils_codeforces
 
 
 class CodeTestingAtomicFlow(AtomicFlow):
