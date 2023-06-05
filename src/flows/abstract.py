@@ -51,7 +51,7 @@ class Flow(ABC):
         return self.expected_inputs
 
     def _check_input_validity(self, input_message: InputMessage):
-        for expected_input in self.expected_inputs:
+        for expected_input in self.expected_inputs_given_state():
             assert (
                     expected_input in input_message.inputs
             ), f"The input message to the flow {self.name} must contain the field {expected_input}"
@@ -71,7 +71,9 @@ class Flow(ABC):
         if input_message is None:
             return
 
-        input_states = {key: message.content for key, message in input_message.inputs.items()}
+        self._check_input_validity(input_message=input_message)
+
+        input_states = {key: message.content for key, message in input_message.inputs.items() if key in self.expected_inputs_given_state()}
         self._update_states(to_update_dict=input_states)
         # for inp_key, inp_value in input_message.inputs.items():
         #     self._update_state(key=inp_key, value=inp_value.content)
