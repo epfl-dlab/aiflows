@@ -1,7 +1,9 @@
+import pytest
+
 from src.flows.abstract import Flow
 from src.flows.code_testing_atomic import CodeTestingAtomicFlowCodeforces
 from src.messages import InputMessage, FlowMessage
-import pytest
+
 
 def test_abstract_flow():
     flow = Flow("Abstract Flow", "Abstract Flow", [], [])
@@ -23,7 +25,8 @@ def test_code_testing_codeforces():
         "all_tests_header": "All tests header",
     }
 
-    flow = CodeTestingAtomicFlowCodeforces("Codeforces Code Testing", "Codeforces Code Testing", [], [], debugging_setup)
+    flow = CodeTestingAtomicFlowCodeforces("Codeforces Code Testing", "Codeforces Code Testing", [], [],
+                                           debugging_setup)
 
     inp = InputMessage(
         inputs={
