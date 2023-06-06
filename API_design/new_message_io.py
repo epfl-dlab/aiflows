@@ -1,27 +1,27 @@
 from dataclasses import dataclass
-from typing import Dict, Any, List
+from typing import Dict, Any, Tuple, List
 
 
-# all messages should have a data dictionary
-# for chat messages, we can make this data = {"content": "hello world"}
 @dataclass
 class Message:
     # id, creator, created_at, ...
 
-    # all message should contain a data dict
-    # for chat messages, this can contain data.content
+    # all messages should have a data dictionary
+    # for chat messages, we can make this data = {"content": "hello world"}
     data: Dict[str, Any]
 
+    # ToDo: these two extra fields could be useful for visualization
+    # The name would be displayed in the message header
+    # after "expanding" the message, we see the description
+    # but this is a minor detail and not related to the rest of the proposal
+    name: str
+    description: str
 
 # We could create a ParsingMessage which is meant to be used in combination with ChatModel messages
 # it looks at the raw text in data.content and parses it into a data dictionary
-# but I think this shouldn't be a new message class, the existing dataclass can handle it:
+# I would argue against this: I think this shouldn't be a new message class, the existing dataclass can handle it:
 # 1. Message with data = {content: "```python\nprint('hello world')\n```"}
 # 2. Message with data = {code: "print('hello world')", parsing_success:True}
-
-# ToDo: we could give the Message class a field like "tag" or "type", which can then be set to "chat", "parsing", etc
-# but I find it hard to make a clear example of this
-# I'd say it's easiest if we keep the type/tag/name in the data dictionary.
 
 # There are special types of messages
 
@@ -30,11 +30,10 @@ class Message:
 # they also record success/failure, and the history of the flow, as well as the final state
 @dataclass
 class OutputMessage(Message):
-    success: bool
+    success:bool
     error_message: None | str
     history: Any
     flow_state: Dict[str, Any]
-
 
 # StateUpdateMessage, replaces InputMessage
 # the state of a flow can be updated from a data dict or other messages
@@ -55,7 +54,6 @@ class StateUpdateMessage(Message):
     keys_updated: Dict[str, Any]
     source_message: Dict[str, Any]
 
-
 # the Flow class has helper methods to produce StateUpdateMessages and OutputMessages
 @dataclass
 class Flow:
@@ -69,7 +67,7 @@ class Flow:
     # state["code"] was created by message with ID source_message["code"]
     source_message: Dict[str, str]
 
-    def update_state_from_data(self, data: Dict[str, Any], keys: List[str] = None):
+    def update_state_from_data(self, data: Dict[str, Any], keys:List[str]=None):
         # merge the data dictionary into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -77,7 +75,7 @@ class Flow:
         pass
 
     # when receiving data
-    def update_state_from_message(self, message: Message, keys: List[str] = None):
+    def update_state_from_message(self, message:Message, keys:List[str]=None):
         # merge the message data into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -86,7 +84,7 @@ class Flow:
 
     # ToDo: we could allow updating the state from multiple messages at once
     # for example like this:
-    def update_state_from_messages(self, messages: List[Message], keys: List[str] = None):
+    def update_state_from_messages(self, messages: List[Message], keys:List[str]=None):
         # merge the data dicts of all messages into the state
         # if keys is given, use only those keys
         # log one StateUpdateMessage which includes all the updated keys in the state
