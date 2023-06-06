@@ -1,9 +1,9 @@
 import copy
-from typing import List, Union
-from src.messages import Message, FlowMessage
+from typing import List, Union, Dict
+from src.messages import Message
 
 
-class History:
+class FlowHistory:
     """
     Represents a history of messages.
 
@@ -58,13 +58,13 @@ class History:
         Args:
             message_ids_to_remove (List[str]): The IDs of the messages to be removed.
         """
-        for message_id in message_ids_to_remove:
-            message_to_remove = [m for m in self.messages if m.message_id == message_id]
+        messages_to_remove = [m for m in self.messages if m.message_id in message_ids_to_remove]
 
-            assert len(message_to_remove) == 1, \
-                f"Error when trying to remove message with ID {message_id} from history {str(self)}"
+        assert len(messages_to_remove) == len(message_ids_to_remove), \
+            f"Error when trying to remove messages with IDs {message_ids_to_remove} from history {str(self)}"
 
-            self.messages.remove(message_to_remove[0])
+        for message in messages_to_remove:
+            self.messages.remove(message)
 
     def get_latest_message(self) -> Union[Message, None]:
         """
@@ -94,14 +94,14 @@ class History:
         text = "\n".join([message.to_string(**kwargs) for message in messages])
         return text
 
-    def to_dict(self) -> dict:
+    def to_list(self) -> List[Dict]:
         """
         Converts the history to a dictionary representation.
 
         Returns:
             dict: The dictionary representation of the history.
         """
-        return {"history": [m.to_dict() for m in self.messages]}
+        return [m.to_dict() for m in self.messages]
 
     def __len__(self):
         return len(self.messages)
@@ -109,29 +109,3 @@ class History:
     def __str__(self):
         return self.to_string()
 
-
-class FlowHistory(History):
-    """
-    Represents a history of flow messages.
-
-    Inherits from the History class.
-
-    Attributes:
-        messages (List[ms.FlowMessage]): A list of flow messages in the history.
-
-    Methods:
-        flow_run_ids: Returns a set of flow run IDs present in the history.
-    """
-    def __init__(self):
-        super().__init__()
-        self.messages: List[FlowMessage] = []
-
-    @property
-    def flow_run_ids(self):
-        """
-        Returns a set of flow run IDs present in the history.
-
-        Returns:
-            set: The set of flow run IDs.
-        """
-        return set([message.flow_run_id for message in self.messages])

@@ -258,3 +258,45 @@ class CompositeFlow(Flow, ABC):
         # ~~~ Execute the call ~~~
         answer_message = flow.run(input_message)
         return self._log_message(answer_message)
+
+
+# class AlternativeFlow:
+#     state: FlowState
+#
+#     def __init__(
+#         self,
+#         name: str,
+#         description: str,
+#         expected_inputs: List[str],
+#         expected_outputs: List[str],
+#         verbose: bool = False):
+#
+#         self.state.update(
+#             name=name,
+#             description=description,
+#             expected_inputs=expected_inputs,
+#             expected_outputs=expected_outputs,
+#             verbose=verbose
+#         )
+#
+#
+#     def next_action(self):
+#         # choose next action just from self.state
+#
+#     def load_from_state(self):
+#         pass
+#
+#     def initialize(self):
+#         self.state.initialize()
+#
+#     def run(self, input_message):
+#         self._check_validity()
+#         self.state.update(input_message.data)
+#
+#         for action in self.next_action():
+#             action()
+#
+#     def _on_finish(self):
+#         self._package_output_message(self.state)
+
+
