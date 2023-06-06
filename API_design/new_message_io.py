@@ -12,8 +12,20 @@ class Message:
     # for chat messages, this can contain data.content
     data: Dict[str, Any]
 
-# OutputMessages are a special message
-# their data field contains the output that the flow wants to pass out
+# We could create a ParsingMessage which is meant to be used in combination with ChatModel messages
+# it looks at the raw text in data.content and parses it into a data dictionary
+# but I think this shouldn't be a new message class, the existing dataclass can handle it:
+# 1. Message with data = {content: "```python\nprint('hello world')\n```"}
+# 2. Message with data = {code: "print('hello world')", parsing_success:True}
+
+# ToDo: we could give the Message class a field like "tag" or "type", which can then be set to "chat", "parsing", etc
+# but I find it hard to make a clear example of this
+# I'd say it's easiest if we keep the type/tag/name in the data dictionary.
+
+# There are special types of messages
+
+# OutputMessage
+# their data dictionary contains the output that the flow wants to pass out
 # they also record success/failure, and the history of the flow, as well as the final state
 @dataclass
 class OutputMessage(Message):
@@ -22,13 +34,26 @@ class OutputMessage(Message):
     history: Any
     flow_state: Dict[str, Any]
 
+# StateUpdateMessage, replaces InputMessage
 # the state of a flow can be updated from a data dict or other messages
-# to log that an update has occured we use this special message
+# to log that an update has occurred we use this special message
+# an example history could look like this
+# 1. Message with data = {content: "```python\nprint('hello world')\n```"}
+# 2. Message with data = {code: "print('hello world')", parsing_success:True}
+# 3. StateUpdateMessage with data = {code: "print('hello world')"}, source_message points to the previous message
+#
+# Note: the StateUpdateMessage does not reproduce all fields from the previous message
+# deciding what to put in the state update is the job of the flow
+# here we see that the parsing was successful and therefore decide to put the code in the state
+# if the parsing was not successful, we'd probably not update the state at all
+# or we could create a message like this
+# 3(b). StateUpdateMessage with data = {num_failed_attempts: 1}, source_message points to the StateUpdateMessage itself
 @dataclass
 class StateUpdateMessage(Message):
     keys_updated: Dict[str, Any]
     source_message: Dict[str, Any]
 
+# the Flow class has helper methods to produce StateUpdateMessages and OutputMessages
 @dataclass
 class Flow:
     # history, etc
