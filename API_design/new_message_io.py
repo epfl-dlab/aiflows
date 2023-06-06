@@ -5,7 +5,14 @@ from typing import Dict, Any, Tuple, List
 @dataclass
 class Message:
     # id, creator, created_at, ...
-
+    message_id: str
+    message_creator: str
+    created_at: str
+    parent_message_ids: List[str] # rename parents 
+        
+    flow_runner: str
+    flow_run_id: str
+        
     # all messages should have a data dictionary
     # for chat messages, we can make this data = {"content": "hello world"}
     data: Dict[str, Any]
@@ -51,9 +58,15 @@ class OutputMessage(Message):
 # 3(b). StateUpdateMessage with data = {num_failed_attempts: 1}, source_message points to the StateUpdateMessage itself
 @dataclass
 class StateUpdateMessage(Message):
-    keys_updated: Dict[str, Any]
-    source_message: Dict[str, Any]
+#     keys_updated: List[str] , either we keep just the key or the data
+    updates: Dict[str, Any]
 
+@dataclass 
+class TaskMessage(Message):
+    expected_output_keys: List[str] 
+    # With default in-filling for Message fields if they are not set, so that we do:
+    # flow.run(TaskMessage(data={}))
+    
 # the Flow class has helper methods to produce StateUpdateMessages and OutputMessages
 @dataclass
 class Flow:
@@ -65,7 +78,7 @@ class Flow:
     # we should keep track where an entry in the state is coming from
     # to do this, we store the ID of a message in another dictionary
     # state["code"] was created by message with ID source_message["code"]
-    source_message: Dict[str, str]
+#     source_message: Dict[str, str]
 
     def update_state_from_data(self, data: Dict[str, Any], keys:List[str]=None):
         # merge the data dictionary into the state
