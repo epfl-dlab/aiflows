@@ -16,8 +16,8 @@ class CodeTestingAtomicFlow(AtomicFlow):
         name: str,
         description: str,
         expected_outputs: List[str],
-        debugging_setup: Dict,
         expected_inputs: List[str],
+        debugging_setup: Dict,
         response_annotators: Optional[Dict[str, MessageAnnotator]] = None,
         verbose: bool = False
     ):
