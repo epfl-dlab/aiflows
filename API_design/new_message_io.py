@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, List
 
 
 @dataclass
@@ -8,11 +8,11 @@ class Message:
     message_id: str
     message_creator: str
     created_at: str
-    parent_message_ids: List[str] # rename parents 
-        
+    parent_message_ids: List[str]  # rename parents
+
     flow_runner: str
     flow_run_id: str
-        
+
     # all messages should have a data dictionary
     # for chat messages, we can make this data = {"content": "hello world"}
     data: Dict[str, Any]
@@ -23,6 +23,7 @@ class Message:
     # but this is a minor detail and not related to the rest of the proposal
     name: str
     description: str
+
 
 # We could create a ParsingMessage which is meant to be used in combination with ChatModel messages
 # it looks at the raw text in data.content and parses it into a data dictionary
@@ -37,10 +38,11 @@ class Message:
 # they also record success/failure, and the history of the flow, as well as the final state
 @dataclass
 class OutputMessage(Message):
-    success:bool
+    success: bool
     error_message: None | str
     history: Any
     flow_state: Dict[str, Any]
+
 
 # StateUpdateMessage, replaces InputMessage
 # the state of a flow can be updated from a data dict or other messages
@@ -58,15 +60,29 @@ class OutputMessage(Message):
 # 3(b). StateUpdateMessage with data = {num_failed_attempts: 1}, source_message points to the StateUpdateMessage itself
 @dataclass
 class StateUpdateMessage(Message):
-#     keys_updated: List[str] , either we keep just the key or the data
+    #     keys_updated: List[str] , either we keep just the key or the data
     updates: Dict[str, Any]
 
-@dataclass 
+
+@dataclass
+class NewFlowMessage(Message):
+    # a new flow is created
+    pass
+
+
+@dataclass
+class NewConversationMessage(Message):
+    # a new conversation is created
+    pass
+
+
+@dataclass
 class TaskMessage(Message):
-    expected_output_keys: List[str] 
+    expected_output_keys: List[str]
     # With default in-filling for Message fields if they are not set, so that we do:
     # flow.run(TaskMessage(data={}))
-    
+
+
 # the Flow class has helper methods to produce StateUpdateMessages and OutputMessages
 @dataclass
 class Flow:
@@ -78,9 +94,9 @@ class Flow:
     # we should keep track where an entry in the state is coming from
     # to do this, we store the ID of a message in another dictionary
     # state["code"] was created by message with ID source_message["code"]
-#     source_message: Dict[str, str]
+    #     source_message: Dict[str, str]
 
-    def update_state_from_data(self, data: Dict[str, Any], keys:List[str]=None):
+    def update_state_from_data(self, data: Dict[str, Any], keys: List[str] = None):
         # merge the data dictionary into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -88,7 +104,7 @@ class Flow:
         pass
 
     # when receiving data
-    def update_state_from_message(self, message:Message, keys:List[str]=None):
+    def update_state_from_message(self, message: Message, keys: List[str] = None):
         # merge the message data into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -97,7 +113,7 @@ class Flow:
 
     # ToDo: we could allow updating the state from multiple messages at once
     # for example like this:
-    def update_state_from_messages(self, messages: List[Message], keys:List[str]=None):
+    def update_state_from_messages(self, messages: List[Message], keys: List[str] = None):
         # merge the data dicts of all messages into the state
         # if keys is given, use only those keys
         # log one StateUpdateMessage which includes all the updated keys in the state
