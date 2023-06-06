@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, Any, Tuple, List
+from typing import Dict, Any, List
 
 
 # all messages should have a data dictionary
@@ -11,6 +11,7 @@ class Message:
     # all message should contain a data dict
     # for chat messages, this can contain data.content
     data: Dict[str, Any]
+
 
 # We could create a ParsingMessage which is meant to be used in combination with ChatModel messages
 # it looks at the raw text in data.content and parses it into a data dictionary
@@ -29,10 +30,11 @@ class Message:
 # they also record success/failure, and the history of the flow, as well as the final state
 @dataclass
 class OutputMessage(Message):
-    success:bool
+    success: bool
     error_message: None | str
     history: Any
     flow_state: Dict[str, Any]
+
 
 # StateUpdateMessage, replaces InputMessage
 # the state of a flow can be updated from a data dict or other messages
@@ -53,6 +55,7 @@ class StateUpdateMessage(Message):
     keys_updated: Dict[str, Any]
     source_message: Dict[str, Any]
 
+
 # the Flow class has helper methods to produce StateUpdateMessages and OutputMessages
 @dataclass
 class Flow:
@@ -66,7 +69,7 @@ class Flow:
     # state["code"] was created by message with ID source_message["code"]
     source_message: Dict[str, str]
 
-    def update_state_from_data(self, data: Dict[str, Any], keys:List[str]=None):
+    def update_state_from_data(self, data: Dict[str, Any], keys: List[str] = None):
         # merge the data dictionary into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -74,7 +77,7 @@ class Flow:
         pass
 
     # when receiving data
-    def update_state_from_message(self, message:Message, keys:List[str]=None):
+    def update_state_from_message(self, message: Message, keys: List[str] = None):
         # merge the message data into the state
         # if keys is given, use only those keys
         # log a StateUpdateMessage
@@ -83,7 +86,7 @@ class Flow:
 
     # ToDo: we could allow updating the state from multiple messages at once
     # for example like this:
-    def update_state_from_messages(self, messages: List[Message], keys:List[str]=None):
+    def update_state_from_messages(self, messages: List[Message], keys: List[str] = None):
         # merge the data dicts of all messages into the state
         # if keys is given, use only those keys
         # log one StateUpdateMessage which includes all the updated keys in the state
