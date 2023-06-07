@@ -1,153 +1,154 @@
 from abc import ABC
 from typing import List, Dict, Any, Union
-
 import colorama
 
-from src import utils
-from src.messages import InputMessage, OutputMessage, FlowMessage, Message
+from src.history import FlowHistory
+from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
+from src.utils import general_helpers
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    # metadata
     name: str
     description: str
-    flow_type: str
-    flow_run_id: str
+    expected_inputs: List[str]
+    expected_outputs: List[str]
     verbose: bool
 
-    # state of the flow
+    # ~~~ Encapsulate the logic of run ~~~
     state: Dict[str, Any]
-    history: List[Message]
+    history: FlowHistory
 
     def __init__(
             self,
             name: str,
             description: str,
-            verbose: bool = False):
-
+            expected_inputs: List[str],
+            expected_outputs: List[str],
+            verbose: bool = False,
+            **kwargs
+    ):
         self.name = name
         self.description = description
+        self.expected_inputs = list(expected_inputs) if expected_inputs else []
+        self.expected_outputs = list(expected_outputs) if expected_outputs else []
         self.verbose = verbose
 
         self.initialize()
 
-    def initialize(self, api_key: str = None):
+    def initialize(self, **kwargs):
         self.state = {}
-        self.history = []
-        self.flow_run_id = utils.general_helpers.create_unique_id()
-        if api_key:
-            self.set_api_key(api_key=api_key)
+        self._update_state(update_data={"flow_run_id": general_helpers.create_unique_id()})
+        self.history = FlowHistory()
 
-        # ToDo: log initialize message?
+    def expected_inputs_given_state(self):
+        return self.expected_outputs
 
-    # ToDo: dump and load are just placeholders
-    # maybe we tell the user to return an object that can be pickled (that would allow storing subflows in the state)
-    def dump(self):
-        return {
-            "state": self.state,
-            "history": self.history,
-            "name": self.name,
-            "description": self.description,
-            "flow_type": self.flow_type,
-            "flow_run_id": self.flow_run_id,
-            "verbose": self.verbose
-        }
+    def set_api_key(self, api_key: str):
+        self._update_state(update_data={"api_key": str(api_key)})
 
-    def load(self, data):
-        self.state = data["state"]
-        self.history = data["history"]
-        self.name = data["name"]
-        self.description = data["description"]
-        self.flow_type = data["flow_type"]
-        self.flow_run_id = data["flow_run_id"]
-        self.verbose = data["verbose"]
-
-    def expected_fields_in_state(self):
-        # a concrete implementation should return a list of expected inputs given the current state
-        raise NotImplementedError()
-
-    def assert_state_valid(self):
-        for expected_field in self.expected_fields_in_state():
+    def _check_input_validity(self, task_message: TaskMessage):
+        for expected_input in self.expected_inputs_given_state():
             assert (
-                    expected_field in self.state
-            ), f"The state of the flow {self.name} must contain the field {expected_field}"
-
-    def update_state(self, data: Union[Dict[str, Any], Message], keys: List[str] = None):
-        # unwrap message
-        if isinstance(data, Message):
-            data = data.data
-
-        if keys is None:
-            keys = data.keys()
-
-        for key in keys:
-            self.state[key] = data[key]
-
-        self.assert_state_valid()
-
-        # ToDo: log state update message
+                    expected_input in task_message.data
+            ), f"The input message to the flow {self.name} must contain the field {expected_input}"
 
     def _log_message(self, message: Message):
         if self.verbose:
-            # state_str = pprint.pformat(self.state, indent=4)
             log.info(
                 f"\n{colorama.Fore.RED} ~~~ Logging to history "
-                f"[{self.name} -- {self.flow_run_id}] ~~~"
-                f"\n{colorama.Fore.WHITE}Content: {message.content}"
-                # f"\nCurrent state: {state_str}{colorama.Style.RESET_ALL}"
+                f"[{self.name} -- {self.state['flow_run_id']}] ~~~"
+                f"\n{colorama.Fore.WHITE}Message being logged: {str(message)}{colorama.Style.RESET_ALL}"
             )
-        return self.history.append(message)
+        return self.history.add_message(message)
+
+    def _update_state(self, update_data: Union[Dict[str, Any], Message], parent_message_ids: List[str] = None):
+        if isinstance(update_data, Message):
+            update_data = update_data.data
+
+        if not parent_message_ids:
+            parent_message_ids = []
+
+        if not update_data:
+            log.warning("Updating states called with empty updates")
+            return
+
+        updates = {}
+        for key, value in update_data.items():
+            if key in self.state:
+                if value is None or value == self.state[key]:
+                    continue
+
+            updates[key] = value
+            self.state[key] = value
+
+        state_update_message = StateUpdateMessage(
+            message_creator=self.state["name"],
+            parent_message_ids=parent_message_ids,
+            flow_runner=self.state["name"],
+            flow_run_id=self.state["flow_run_id"],
+            updated_keys=list(updates.keys()),
+            data=updates,
+        )
+        return self._log_message(state_update_message)
 
     def _package_output_message(
-            self,
-            expected_outputs: List[str],
-            parsed_outputs: Dict[str, FlowMessage],
-            parents: List[str]
+        self,
+        expected_output_keys: List[str],
+        parent_message_ids: List[str]
     ):
 
-        valid_parsing = True
-        for expected_key in expected_outputs:
-            if expected_key not in parsed_outputs:
-                valid_parsing = False
-                break
+        output_data = {}
+        missing_keys = []
+        for expected_key in expected_output_keys:
+            if expected_key not in self.state:
+                missing_keys.append(expected_key)
+                continue
+
+            output_data[expected_key] = self.state[expected_key]
+
+        error_message = None
+        if missing_keys:
+            error_message = f"The state of {self.name} [flow run ID: {self.state['flow_run_id']}] does not contain" \
+                            f"the following expected keys: {missing_keys}."
 
         return OutputMessage(
-            parsed_outputs=parsed_outputs,
-            valid_parsing=valid_parsing,
-            message_creation_history=self.history,
-            flow_run_id=self.flow_run_id,
-            flow_runner=self.name,
             message_creator=self.name,
-            content=f"Output of flow {self.name} [flow run ID: {self.flow_run_id}]",
-            parents=parents,
-            current_flow_state=self.state
+            parent_message_ids=parent_message_ids,
+            flow_runner=self.name,
+            flow_run_id=self.state["flow_run_id"],
+            data=output_data,
+            error_message=error_message
         )
 
-    def set_api_key(self, api_key: str):
-        self._update_states(to_update_dict={"api_key": str(api_key)})
-
     def step(self) -> bool:
-        # update the flow by one step
-        raise NotImplementedError()
+        return True
 
-    def run(self, taskMessage: TaskMessage):
-
-        # log task message
-        self._log_message(taskMessage)
-        self.update_state(taskMessage)
-
-        # after the run is completed, the expectedOutputs must be keys in the state
-        expected_outputs = taskMessage.expectedOutputs
-
+    def run(self, task_message: TaskMessage):
         while True:
             finished = self.step()
             if finished:
                 break
 
-        # package output message
-        output_message = self._package_output_message(expected_outputs=expected_outputs)
+    def __call__(self, task_message: TaskMessage):
+        # ~~~ check and log input ~~~
+        self._check_input_validity(task_message)
+        self._log_message(task_message)
+        self._update_state(task_message)
+
+        # ~~~ After the run is completed, the expected_output_keys must be keys in the state ~~~
+        expected_output_keys = task_message.expected_output_keys
+        if expected_output_keys is None:
+            expected_output_keys = self.expected_outputs
+        self.state["expected_output_keys"] = expected_output_keys
+
+        # ~~~ Execute the logic of the flow, it should populate state with expected_output_keys ~~~
+        self.run(task_message=task_message)
+
+        # ~~~ Package output message ~~~
+        output_message = self._package_output_message(expected_output_keys=self.state["expected_output_keys"],
+                                                      parent_message_ids=[task_message.message_id])
         return output_message
 
 
@@ -159,7 +160,8 @@ class AtomicFlow(Flow, ABC):
             description: str,
             expected_inputs: List[str],
             expected_outputs: List[str],
-            verbose: bool = False
+            verbose: bool = False,
+            **kwargs
     ):
         super().__init__(
             name=name,
@@ -167,7 +169,6 @@ class AtomicFlow(Flow, ABC):
             expected_inputs=expected_inputs,
             expected_outputs=expected_outputs,
             verbose=verbose)
-
         self.flow_type = "atomic-flow"
 
 
@@ -191,43 +192,34 @@ class CompositeFlow(Flow, ABC):
             expected_inputs=expected_inputs,
             expected_outputs=expected_outputs,
             verbose=verbose)
-
         self.flow_type = "composite-flow"
 
-    def initialize(self, api_key: str = None):
-        super().initialize(api_key=api_key)
-        self._initialize_flows(api_key=api_key)
+    def initialize(self):
+        super().initialize()
 
-    def _initialize_flows(self, api_key: str = None):
-        for _, flow in self.flows.items():
-            flow.initialize(api_key=api_key)
-
-    def _read_answer_update_state(self, answer: OutputMessage):
-        parsed_outputs = answer.parsed_outputs
-        to_update = {key: message.content for key, message in parsed_outputs.items()}
-        self._update_states(to_update_dict=to_update, parents=[answer.message_id])
-
-    def _call_flow(self, flow_id: str, parents: List[str] = None):
+    def _call_flow(self, flow_id: str, expected_output_keys: list[str] = None, parent_message_ids: List[str] = None):
         # ~~~ Prepare the call ~~~
         flow = self.flows[flow_id]
-
-        input_message_description = f"Flow: {self.name} [flow run ID: {self.flow_run_id}] " \
-                                    f"is calling subflow: {flow.name} [flow run ID: {flow.flow_run_id}]"
-
-        print(f"expected: {flow.expected_inputs_given_state()}, available: {self.state.keys()}")
         call_inputs = {k: self.state[k] for k in flow.expected_inputs_given_state()}
 
-        input_message = InputMessage(
-            flow_run_id=self.flow_run_id,
-            inputs=call_inputs,
+        task_message = TaskMessage(
+            expected_output_keys=expected_output_keys,
+            target_flow_run_id=flow.state["flow_run_id"],
             message_creator=self.name,
+            parent_message_ids=parent_message_ids,
             flow_runner=self.name,
-            content=input_message_description,
-            target_flow=flow.flow_run_id,
-            parents=parents
+            flow_run_id=self.state["flow_run_id"],
+            data=call_inputs,
         )
-        self._log_message(input_message)
+        self._log_message(task_message)
 
         # ~~~ Execute the call ~~~
-        answer_message = flow.run(input_message)
-        return self._log_message(answer_message)
+        answer_message = flow(task_message)
+
+        # ~~~ Logs message to history ~~~
+        self._log_message(answer_message)
+        self._update_state(answer_message)
+
+        return answer_message
+
+

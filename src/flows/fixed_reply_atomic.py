@@ -1,7 +1,7 @@
 from typing import List
 
 from src.flows.abstract import AtomicFlow
-from src.messages import InputMessage
+from src.messages import InputMessage, TaskMessage
 
 
 class FixedReplyAtomicFlow(AtomicFlow):
@@ -27,10 +27,6 @@ class FixedReplyAtomicFlow(AtomicFlow):
 
         self.fixed_reply = fixed_reply
 
-    def _flow(self, expected_outputs: List[str], input_message: InputMessage = None):
-        response = self.fixed_reply
-        assert len(expected_outputs) == 1, "{self.name} can only produce one output."
-
-        expected_key = expected_outputs[0]
-        parsed_outputs = {expected_key: self._log_update(content=response)}
-        return parsed_outputs
+    def run(self, task_message: TaskMessage):
+        key = self.state["expected_output_keys"][0]
+        self._update_state({key: self.fixed_reply})

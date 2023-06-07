@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from src.flows import CompositeFlow, Flow
-from src.messages import InputMessage
+from src.messages import InputMessage, TaskMessage
 from src import utils
 
 log = utils.get_pylogger(__name__)
@@ -38,21 +38,21 @@ class SequentialFlow(CompositeFlow):
                 return bool(self.state[self.early_exit_key].content)
         return False
 
-    def _flow(self, input_message: InputMessage, expected_outputs: List[str]):
-        _parents = [input_message.message_id]
+    def run(self, task_message: TaskMessage):
+        api_key = self.state["api_key"]
+        _parents = [task_message.message_id]
+
         for current_flow_id in self.ordered_flows:
             current_flow = self.flows[current_flow_id]
+            current_flow.initialize()
+            current_flow.set_api_key(api_key=api_key)
 
-            current_flow.initialize(api_key=self.state["api_key"].content)
-            flow_answer = self._call_flow(flow_id=current_flow_id, parents=_parents)
-            self._read_answer_update_state(flow_answer)
+            flow_answer = self._call_flow(flow_id=current_flow_id,
+                                          parent_message_ids=_parents)
+            self._update_state(flow_answer)
 
             if self._early_exit():
                 log.info("Early end of sequential flow detected")
                 break
 
             _parents = [flow_answer.message_id]
-
-        parsed_outputs = {k: self.state[k] for k in expected_outputs}
-
-        return parsed_outputs

@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from src.flows import CompositeFlow, Flow
-from src.messages import InputMessage
+from src.messages import TaskMessage
 from src import utils
 
 log = utils.get_pylogger(__name__)
@@ -35,7 +35,9 @@ class GeneratorCriticFlow(CompositeFlow):
         assert len(flows) == 2, f"Generator Critic needs exactly two sub-flows, currently has {len(flows)}"
 
         self._identify_flows()
+
         self.expected_generator_output_keys = self.flows[self.generator_name].expected_outputs
+
         self.init_generator_every_round = init_generator_every_round
         self.init_critic_every_round = init_critic_every_round
 
@@ -67,28 +69,34 @@ class GeneratorCriticFlow(CompositeFlow):
             return bool(self.state[self.eoi_key].content)
         return False
 
-    def _flow(self, input_message: InputMessage, expected_outputs: List[str]):
-        self._check_input_validity(input_message)
-        api_key = self.state["api_key"].content
-
+    def run(self, task_message: TaskMessage):
         # ~~~ Initialize flows ~~~
-        self.flows[self.generator_name].initialize(api_key=api_key)
-        self.flows[self.critic_name].initialize(api_key=api_key)
+        generator_flow = self.flows[self.generator_name]
+        critic_flow = self.flows[self.critic_name]
+        generator_flow.initialize()
+        critic_flow.initialize()
 
-        _generator_call_inputs = input_message.inputs
-        _parents = [input_message.message_id]
+        # ~~~ Propagate API-keys ~~~
+        api_key = self.state["api_key"]
+        generator_flow.set_api_key(api_key=api_key)
+        critic_flow.set_api_key(api_key=api_key)
+
+        # ~~~ Prepare information to send to flows ~~~
+        _generator_call_inputs = task_message.data
+        _parent_message_ids = [task_message.message_id]
 
         for idx in range(self.n_rounds):
             # ~~~ Initialize the generator flow if needed ~~~
             if self.init_generator_every_round and idx > 0:
-                self.flows[self.generator_name].initialize(api_key=api_key)
+                generator_flow.initialize()
+
 
             # ~~~ Execute the generator flow and update state ~~~
             generator_answer = self._call_flow(
                 flow_id=self.generator_name,
-                parents=_parents,
+                parent_message_ids=_parent_message_ids,
             )
-            self._read_answer_update_state(generator_answer)
+            self._update_state(generator_answer)
 
             # ~~~ Check for end of interaction decided by generator ~~~
             if self._is_eoi():
@@ -97,16 +105,14 @@ class GeneratorCriticFlow(CompositeFlow):
 
             # ~~~ Initialize the critic flow ~~~
             if self.init_critic_every_round and idx > 0:
-                self.flows[self.critic_name].initialize(api_key=api_key)
+                critic_flow.initialize()
+                critic_flow.set_api_key(api_key=api_key)
 
             # ~~~ Execute the critic flow and update state ~~~
             critic_answer = self._call_flow(
                 flow_id=self.critic_name,
-                parents=[generator_answer.message_id]
+                parent_message_ids=[generator_answer.message_id]
             )
-            self._read_answer_update_state(critic_answer)
+            self._update_state(critic_answer)
             _parents = [critic_answer.message_id]
 
-        # ~~~ Prepare results ~~~
-        parsed_outputs = {k: self.state[k] for k in expected_outputs}
-        return parsed_outputs
