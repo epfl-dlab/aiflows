@@ -12,5 +12,14 @@ class MockChatOpenAI:
             return MockResponse()
 
 
+class MockBrokenChatOpenAI:
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def __call__(self, *args, **kwargs):
+        raise Exception("mockery")
+
+
 class MockResponse:
     content = "hello"
