@@ -3,26 +3,55 @@ import pickle
 from collections import OrderedDict
 import os
 import hashlib
+from dataclasses import dataclass
+from typing import Dict
+import copy
 
 from src.flows import Flow, AtomicFlow
+from src.history import FlowHistory
 from src.messages import TaskMessage
 from pylogger import get_pylogger
 
 log = get_pylogger(__name__)
 
-def get_cache_dir():
-    # ~~~ Read in the environment variable first ~~~
-    cache_dir = os.environ.get('CACHE_DIR')
 
+@dataclass
+class caching_parameters:
+    max_cached_entries: int = 1000
+    caching: bool = True
+    cache_dir: str = None
+
+
+class CachingResults:
+    output_results: Dict
+    full_state: Dict
+
+    def __getstate__(self):
+        return self.__dict__
+
+    def __setstate__(self, state):
+        self.output_results = state["output_results"]
+        self.full_state = state["full_state"]
+
+
+
+def get_cache_dir() -> str:
+    # ~~~ Read in the global variable first ~~~
+    cache_dir = caching_parameters.cache_dir
+    if cache_dir:
+        return str(cache_dir)
+
+    # ~~~ Then read in the environment variables ~~~
+    cache_dir = os.environ.get('CACHE_DIR')
     if cache_dir:
         return cache_dir
-    else:
-        # ~~~ Otherwise default to .cache in the local folder ~~~
-        current_dir = os.getcwd()
-        return os.path.abspath(os.path.join(current_dir, '.flow_cache'))
+
+    # ~~~ Otherwise default to .cache in the local folder ~~~
+    current_dir = os.getcwd()
+    return os.path.abspath(os.path.join(current_dir, '.flow_cache'))
 
 
-def load_cache(cache_dir: str = None):
+def load_cache(cache_dir: str = None) -> [Dict, str]:
     # ~~~ get cache_dir and create the dir if needed ~~~
     if cache_dir is None:
         cache_dir = get_cache_dir()
@@ -33,9 +62,8 @@ def load_cache(cache_dir: str = None):
     if not os.path.exists(cache_dir):
         os.makedirs(cache_dir)
 
-    # ~~~ Check if files are in the dir ~~~
+    # ~~~ Load the cache from file ~~~
     files = os.listdir(cache_dir)
-
     if len(files) > 0:
         cache_file = os.path.join(cache_dir, files[0])
         with open(cache_file, 'rb') as f:
@@ -47,76 +75,90 @@ def load_cache(cache_dir: str = None):
         return OrderedDict(), os.path.join(cache_dir, "cache.pkl")
 
 
-def compute_flow_run_key(*args, **kwargs):
+def get_params(*args, **kwargs):
     from src.flows import Flow
     from src.messages import TaskMessage
 
-    flow_hashed = False
-    task_message_hashed = False
+    flow = None
+    task_message = None
 
     all_args = list(args) + list(kwargs.values())
-    key = {}
+
     for arg in all_args:
         if isinstance(arg, Flow):
-            key["flow"] = repr(arg)
-            flow_hashed = True
+            flow = arg
 
         if isinstance(arg, TaskMessage):
-            key["task_message"] = repr(arg)
-            task_message_hashed = True
+            task_message = arg
 
-    assert flow_hashed, "Could not check in the cache because the flow was not given"
-    assert task_message_hashed, "Could not check in the cache because the task message was not given"
+    assert flow, "Could not check in the cache because the flow was not given"
+    assert task_message, "Could not check in the cache because the task message was not given"
 
+    return flow, task_message
+
+
+def compute_flow_run_key(flow, task_message):
+    key = {"flow": repr(flow), "task_message": repr(task_message)}
     return hashlib.sha256(repr(key).encode("utf-8")).hexdigest()
 
 
-def flow_run_cache(max_number_entries: int = 1000, cache_dir: str = None):
-    def flow_cache_decorator(func):
-        cache, cache_file = load_cache(cache_dir)
+# def flow_run_cache(max_number_entries: int = 1000):
+def flow_run_cache(func):
+    if not caching_parameters.caching:
+        return func
 
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # all_args = list(args) + list(kwargs.values())
-            key= compute_flow_run_key(*args, **kwargs)
+    cache, cache_file = load_cache()
 
-            log.info("In cache")
-            if key in cache:
-                print(f"Flow call found in cache with hash key: {key}, skipping call.")
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        flow, task_message = get_params(*args, **kwargs)
+        key = compute_flow_run_key(flow, task_message)
 
-                value = cache.pop(key)
-                cache[key] = value
-                return value
+        if key in cache:
+            print(f"Flow call found in cache with hash key: {key}, skipping call.")
 
-            result = func(*args, **kwargs)
-
-            cache[key] = result
-
-            if len(cache) > max_number_entries:
-                cache.popitem(last=False)  # Remove the least recently used item
-
-            # Save cache to file
-            with open(cache_file, "wb") as file:
-                pickle.dump(cache, file)
-
+            value: CachingResults = cache.pop(key)
+            cache[key] = value
+            result = value.output_results
+            flow.__setstate__(value.full_state)
             return result
 
-        def clear_cache():
-            print(f"Clearing cache: {cache_file}")
-            cache.clear()
-            try:
-                os.remove(cache_file)
-            except FileNotFoundError:
-                pass
+        result = func(*args, **kwargs)
+        caching_results = CachingResults()
 
-        wrapper.clear_cache = clear_cache
-        return wrapper
+        caching_results.output_results = result
+        caching_results.full_state = copy.deepcopy(flow.__getstate__())
 
-    return flow_cache_decorator
+        cache[key] = caching_results
+
+        if len(cache) > caching_parameters.max_cached_entries:
+            cache.popitem(last=False)  # Remove the least recently used item
+
+        # Save cache to file
+        with open(cache_file, "wb") as file:
+            pickle.dump(cache, file)
+
+        return result
+
+    def clear_cache():
+        if not caching_parameters.caching:
+            return
+
+        print(f"Clearing cache: {cache_file}")
+        cache.clear()
+        try:
+            os.remove(cache_file)
+        except FileNotFoundError:
+            pass
+
+    wrapper.clear_cache = clear_cache
+    return wrapper
+
+    # return flow_cache_decorator
 
 
 class MyFlow(AtomicFlow):
-    @flow_run_cache()
+    @flow_run_cache
     def run(self, task_message: TaskMessage):
         log.info("current_run")
         if self.dry_run:
@@ -136,7 +178,7 @@ class MyFlow(AtomicFlow):
 
 
 if __name__ == "__main__":
-    @flow_run_cache()
+    @flow_run_cache
     def run(key_a, key_b):
         return int(key_a) + len(key_b)
 
@@ -159,13 +201,14 @@ if __name__ == "__main__":
 
     )
 
+    log.info("test")
 
     answer = my_flow(task_message)
-    print(f"Correct answer: {answer.data['sum']==35}")
+    print(f"Correct answer: {answer.data['sum'] == 35}")
 
     my_flow.dry_run = True
     answer = my_flow(task_message)
-    print(f"Correct answer: {answer.data['sum']==0}")
+    print(f"Correct answer: {answer.data['sum'] == 0}")
 
     my_flow.name = "new-name"
     answer = my_flow(task_message)
@@ -181,4 +224,3 @@ if __name__ == "__main__":
     print(f"Correct answer: {answer.data['sum'] == 0}")
 
     my_flow.run.clear_cache()
-

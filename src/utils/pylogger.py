@@ -3,8 +3,6 @@ import sys
 
 
 def get_pylogger(name=__name__, stdout=False) -> logging.Logger:
-    """Initializes multi-GPU-friendly python command line logger."""
-
     if stdout:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 

@@ -57,10 +57,10 @@ class Flow(ABC):
         return state
 
     def __setstate__(self, state):
-        for k, v in state:
+        for k, v in state.items():
             if k not in self.KEYS_TO_IGNORE_CKPT:
                 super().__setattr__(k, v)
-        self.flow_run_id = general_helpers.create_unique_id()
+        # self.flow_run_id = general_helpers.create_unique_id()
 
     def __repr__(self):
         keys_to_ignore = self.KEYS_TO_IGNORE_HASH + self.expected_output_keys
