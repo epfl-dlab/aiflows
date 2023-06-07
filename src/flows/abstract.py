@@ -5,6 +5,7 @@ import colorama
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
 from src.utils import general_helpers
+import src.utils as utils
 
 log = utils.get_pylogger(__name__)
 
@@ -35,11 +36,8 @@ class Flow(ABC):
         self.expected_outputs = list(expected_outputs) if expected_outputs else []
         self.verbose = verbose
 
-        self.initialize()
-
     def initialize(self, **kwargs):
-        self.state = {}
-        self._update_state(update_data={"flow_run_id": general_helpers.create_unique_id()})
+        self.state = {"name":self.name, "flow_run_id": general_helpers.create_unique_id()}
         self.history = FlowHistory()
 
     def expected_inputs_given_state(self):
@@ -131,7 +129,18 @@ class Flow(ABC):
             if finished:
                 break
 
-    def __call__(self, task_message: TaskMessage):
+    def __call__(self, inputs:Dict[str, Any] = None, expected_output_keys: list[str] = None, parent_message_ids: List[str] = None):
+        # construct task message
+        task_message = TaskMessage(
+            expected_output_keys=expected_output_keys,
+            target_flow_run_id=self.state["flow_run_id"],
+            message_creator=self.name,
+            parent_message_ids=parent_message_ids,
+            flow_runner=self.name,
+            flow_run_id=self.state["flow_run_id"],
+            data=inputs,
+        )
+
         # ~~~ check and log input ~~~
         self._check_input_validity(task_message)
         self._log_message(task_message)
