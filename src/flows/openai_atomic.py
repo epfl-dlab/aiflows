@@ -3,15 +3,13 @@ import time
 from typing import List, Dict, Optional
 
 import colorama
-from langchain import PromptTemplate
-
 import langchain
+from langchain import PromptTemplate
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
 from src import utils
 from src.datasets import GenericDemonstrationsDataset
 from src.flows.abstract import Flow
-from src.message_annotators import EndOfInteraction
 from src.message_annotators.abstract import MessageAnnotator
 from src.messages.chat_message import ChatMessage
 from src.messages.flow_message import TaskMessage
@@ -102,7 +100,7 @@ class OpenAIChatAtomicFlow(Flow):
                                         "assistant_name": self.assistant_name,
                                         "n_api_retries": self.n_api_retries,
                                         "wait_time_between_retries": self.wait_time_between_retries,
-                                        "dry_run": self.dry_run,})
+                                        "dry_run": self.dry_run, })
 
     def expected_inputs_given_state(self):
         conv_init = False
@@ -192,7 +190,7 @@ class OpenAIChatAtomicFlow(Flow):
         self._add_demonstrations()
         self._update_state(update_data={"conversation_initialized": True})
 
-    #def end_of_interaction_key(self):
+    # def end_of_interaction_key(self):
     #    for _, ra in self.response_annotators.items():
     #        if type(ra) == EndOfInteraction:
     #            return ra.key
@@ -221,7 +219,8 @@ class OpenAIChatAtomicFlow(Flow):
             return processed_messages
         else:
 
-            raise ValueError(f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported")
+            raise ValueError(
+                f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported")
 
     def _prepare_conversation(self, input_message):
         conv_init = False

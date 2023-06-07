@@ -4,8 +4,8 @@ from langchain.chat_models import ChatOpenAI
 
 from src.flows import OpenAIChatAtomicFlow
 from src.messages import TaskMessage
-from tests.mocks import MockChatOpenAI, MockBrokenChatOpenAI, MockAnnotator, MockMessage
 from src.messages.chat_message import ChatMessage
+from tests.mocks import MockChatOpenAI, MockBrokenChatOpenAI, MockAnnotator
 
 
 def test_success(monkeypatch):
@@ -44,7 +44,6 @@ def test_success(monkeypatch):
         wait_time_between_retries=0,
         verbose=True
     )
-
 
     answer_annotator = openai_flow._get_annotator_with_key("answer")
     assert answer_annotator is None
