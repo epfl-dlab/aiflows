@@ -89,6 +89,15 @@ class Flow(ABC):
             updates=data
         ))
 
+    def _package_task_message(self, expected_output_keys: List[str]):
+
+        return TaskMessage(
+            expected_output_keys=expected_output_keys,
+            flow_run_id=self.flow_run_id,
+            flow_runner=self.name,
+            message_creator=self.name,
+        )
+
     def _package_output_message(
             self,
             expected_outputs: List[str],
@@ -102,7 +111,7 @@ class Flow(ABC):
                 break
 
         return OutputMessage(
-            parsed_outputs={key: self.state[key] for key in expected_outputs},
+            data={key: self.state[key] for key in expected_outputs},
             valid_parsing=valid_parsing,
             message_creation_history=self.history,
             flow_run_id=self.flow_run_id,
@@ -123,14 +132,11 @@ class Flow(ABC):
         # update the flow by one step
         raise NotImplementedError()
 
-    def run(self, taskMessage: TaskMessage):
+    def run(self, expected_outputs: List[str] = None):
 
-        # log task message
-        self._log_message(taskMessage)
-        self.update_state(taskMessage)
-
-        # after the run is completed, the expectedOutputs must be keys in the state
-        expected_outputs = taskMessage.expectedOutputs
+        #taskMessage = self._package_task_message(expected_output_keys=expected_outputs)
+        #self._log_message(taskMessage)
+        #self.update_state(taskMessage)
 
         while True:
             finished = self.step()
@@ -138,7 +144,7 @@ class Flow(ABC):
                 break
 
         # package output message
-        output_message = self._package_output_message(expected_outputs=expected_outputs)
+        output_message = self._package_output_message(expected_outputs=expected_outputs, parents=[])
         return output_message
 
 
