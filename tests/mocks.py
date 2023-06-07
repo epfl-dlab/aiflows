@@ -23,3 +23,15 @@ class MockBrokenChatOpenAI:
 
 class MockResponse:
     content = "hello"
+
+class MockAnnotator:
+    def __init__(self, key, *args, **kwargs):
+        self.key=key
+
+    def __call__(self, data, *args, **kwargs):
+        return {self.key : data}
+
+class MockMessage:
+    def __init__(self, flow_run_id, message_creator):
+        self.flow_run_id = flow_run_id
+        self.message_creator = message_creator

@@ -135,8 +135,14 @@ class OpenAIChatAtomicFlow(Flow):
             if ra.key == key:
                 return ra
 
+        return None
+
     def _response_parsing(self, response: str, expected_keys: List[str]):
         target_annotators = [ra for _, ra in self.response_annotators.items() if ra.key in expected_keys]
+
+        # ToDo: is this correct?
+        # if no target annotators are found, we throw away everything except the first expected key
+        # and put the response in a dict with that key
 
         if len(target_annotators) == 0:
             key = expected_keys[0]
@@ -186,16 +192,13 @@ class OpenAIChatAtomicFlow(Flow):
         self._add_demonstrations()
         self._update_state(update_data={"conversation_initialized": True})
 
-    def end_of_interaction_key(self):
-        for _, ra in self.response_annotators.items():
-            if type(ra) == EndOfInteraction:
-                return ra.key
-        return None
+    #def end_of_interaction_key(self):
+    #    for _, ra in self.response_annotators.items():
+    #        if type(ra) == EndOfInteraction:
+    #            return ra.key
+    #    return None
 
     def get_conversation_messages(self, flow_run_id: str, message_format: Optional[str] = None):
-        assert message_format is None or message_format in [
-            "open_ai"
-        ], f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported"
 
         messages = [message for message in self.history.messages
                     if message.flow_run_id == flow_run_id and isinstance(message, ChatMessage)]
@@ -217,7 +220,8 @@ class OpenAIChatAtomicFlow(Flow):
                     raise ValueError(f"Unknown name: {message.message_creator}")
             return processed_messages
         else:
-            raise ValueError(f"Unknown message format: {message_format}")
+
+            raise ValueError(f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported")
 
     def _prepare_conversation(self, input_message):
         conv_init = False
@@ -237,8 +241,7 @@ class OpenAIChatAtomicFlow(Flow):
                                parent_message_ids=[input_message.message_id])
 
         if self.state["dry_run"]:
-            messages = self.get_conversation_messages(self.state["flow_run_id"])
-            messages_str = self.history.to_string(messages, show_dict=False)
+            messages_str = f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']))}"
             log.info(
                 f"\n{colorama.Fore.MAGENTA}~~~ Messages [{self.name} -- {self.state['flow_run_id']}] ~~~\n"
                 f"{colorama.Style.RESET_ALL}{messages_str}"
@@ -292,7 +295,7 @@ class OpenAIChatAtomicFlow(Flow):
 
         if self.verbose:
             messages_str = self.history.to_string(
-                self.get_conversation_messages(self.state['flow_run_id']), show_dict=False
+                self.get_conversation_messages(self.state['flow_run_id'])
             )
             log.info(
                 f"\n{colorama.Fore.MAGENTA}~~~ History [{self.name}] ~~~\n"
