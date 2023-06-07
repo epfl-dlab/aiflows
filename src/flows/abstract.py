@@ -15,10 +15,11 @@ class Flow(ABC):
     expected_inputs: List[str]
     expected_outputs: List[str]
     flow_type: str
-    history: FlowHistory
-    state: Dict[str, Any]
     flow_run_id: str
     verbose: bool
+
+    history: FlowHistory
+    state: Dict[str, Any]
 
     def __init__(
             self,
