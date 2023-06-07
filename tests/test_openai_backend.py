@@ -1,49 +1,11 @@
-import pytest
-
-from langchain.chat_models import ChatOpenAI
 import langchain
-from src.mockme.randomizer import Randomizer
+from langchain.chat_models import ChatOpenAI
+
 from src.flows import OpenAIChatAtomicFlow
-from tests.MockOpenAI import MockChatOpenAI, MockResponse
+from tests.mocks import MockChatOpenAI, MockTemplate
 
-
-def test_numpy_random(monkeypatch):
-
-    monkeypatch.setattr(np.random, "rand", lambda : 5)
-
-    r = Randomizer()
-    print(r.get())
-
-    print("done")
 
 def test_openai_backend(monkeypatch):
-
-        monkeypatch.setattr(ChatOpenAI, "__call__", MockChatOpenAI.__call__)
-        monkeypatch.setattr(ChatOpenAI, "__init__", MockChatOpenAI.__init__)
-
-        chat = ChatOpenAI()
-
-        print(chat("hello"))
-
-        print("done")
-
-def test_openai_backend_v2(monkeypatch):
-    monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
-
-    chat = langchain.chat_models.ChatOpenAI()
-    print(chat("hello"))
-
-class MockTemplate:
-    def __init__(self, content):
-        self.content = content
-        self.input_variables=[]
-    def format(self, *args, **kwargs):
-        return self.content
-
-    def to_string(self, *args, **kwargs):
-        return self.content
-
-def test_openai_backend_v3(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
 
     openai_flow = OpenAIChatAtomicFlow(
