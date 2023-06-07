@@ -1,10 +1,11 @@
 from abc import ABC
 from typing import List, Dict, Any, Union
+
 import colorama
 
+from src import utils
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, TaskMessage, StateUpdateMessage
-from src import utils
 
 log = utils.get_pylogger(__name__)
 
@@ -67,7 +68,7 @@ class Flow(ABC):
 
     def update_state(self, data: Union[Dict[str, Any], Message], keys: List[str] = None):
         # unwrap message
-        parents=[]
+        parents = []
         if isinstance(data, Message):
             data = data.data
             parents = data.parents
@@ -144,12 +145,12 @@ class Flow(ABC):
 class AtomicFlow(Flow, ABC):
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        expected_inputs: List[str],
-        expected_outputs: List[str],
-        verbose: bool = False
+            self,
+            name: str,
+            description: str,
+            expected_inputs: List[str],
+            expected_outputs: List[str],
+            verbose: bool = False
     ):
         super().__init__(
             name=name,
@@ -165,13 +166,13 @@ class CompositeFlow(Flow, ABC):
     flows: Dict[str, Flow]
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        expected_inputs: List[str],
-        expected_outputs: List[str],
-        flows: Dict[str, Flow],
-        verbose: bool = False,
+            self,
+            name: str,
+            description: str,
+            expected_inputs: List[str],
+            expected_outputs: List[str],
+            flows: Dict[str, Flow],
+            verbose: bool = False,
     ):
         self.flows = flows
 
@@ -222,7 +223,6 @@ class CompositeFlow(Flow, ABC):
         answer_message = flow.run(input_message)
         return self._log_message(answer_message)
 
-
 # class AlternativeFlow:
 #     state: FlowState
 #
@@ -261,5 +261,3 @@ class CompositeFlow(Flow, ABC):
 #
 #     def _on_finish(self):
 #         self._package_output_message(self.state)
-
-

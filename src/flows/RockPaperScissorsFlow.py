@@ -1,9 +1,9 @@
-from typing import List
+import random
 
 from src.flows.abstract import Flow
-from src.messages import TaskMessage
 from src.history import FlowHistory
-import random
+from src.messages import TaskMessage
+
 
 class RockPaperScissorsJudge(Flow):
     def initialize(self):
@@ -30,12 +30,12 @@ class RockPaperScissorsJudge(Flow):
             A_choice = A_output.data["choice"]
             B_choice = B_output.data["choice"]
 
-            if(A_choice == B_choice):
+            if (A_choice == B_choice):
                 # neither has won
                 pass
-            elif(A_choice == "rock" and B_choice=="scissors" \
-                    or A_choice == "paper" and B_choice=="rock" \
-                    or A_choice == "scissors" and B_choice=="paper"):
+            elif (A_choice == "rock" and B_choice == "scissors" \
+                  or A_choice == "paper" and B_choice == "rock" \
+                  or A_choice == "scissors" and B_choice == "paper"):
                 self.state["A_score"] += 1
             else:
                 self.state["B_score"] += 1
@@ -62,6 +62,7 @@ class RockPaperScissorsJudge(Flow):
 
         output_message = self._package_output_message(expected_outputs=expected_outputs)
         return output_message
+
 
 class RockPaperScissorsPlayer(Flow):
     def run(self, taskMessage: TaskMessage):
