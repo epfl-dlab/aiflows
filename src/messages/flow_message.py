@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from typing import List, Any, Union, Dict
+from typing import List, Any, Union
+import copy
 
 from src.messages import Message
 
@@ -13,6 +14,11 @@ class TaskMessage(Message):
         super(TaskMessage, self).__init__(**kwargs)
         self.expected_output_keys = kwargs.pop("expected_output_keys", [])
         self.target_flow_run_id = kwargs.pop("target_flow_run_id", None)
+
+    def __repr__(self):
+        extended = copy.deepcopy(self.data)
+        extended["expected_output_keys"] = self.expected_output_keys
+        return repr(extended)
 
 
 @dataclass
