@@ -1,60 +1,93 @@
 from abc import ABC
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Union
+
 import colorama
 
-from src.history import FlowHistory
-from src.messages import InputMessage, OutputMessage, FlowMessage, FlowUpdateMessage, Message
 from src import utils
+from src.messages import InputMessage, OutputMessage, FlowMessage, Message
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
+    # metadata
     name: str
     description: str
-    expected_inputs: List[str]
-    expected_outputs: List[str]
     flow_type: str
-    history: FlowHistory
-    state: Dict[str, Any]
     flow_run_id: str
     verbose: bool
+
+    # state of the flow
+    state: Dict[str, Any]
+    history: List[Message]
 
     def __init__(
             self,
             name: str,
             description: str,
-            expected_inputs: List[str],
-            expected_outputs: List[str],
-            verbose: bool = False,
-            state: Dict[str, Any] = None):
+            verbose: bool = False):
 
         self.name = name
         self.description = description
-        self.expected_inputs = list(expected_inputs) if expected_inputs else []
-        self.expected_outputs = list(expected_outputs) if expected_outputs else []
         self.verbose = verbose
 
         self.initialize()
 
-        if state:
-            self.state = state
-
     def initialize(self, api_key: str = None):
         self.state = {}
-        self.history = FlowHistory()
+        self.history = []
         self.flow_run_id = utils.general_helpers.create_unique_id()
         if api_key:
             self.set_api_key(api_key=api_key)
 
-    def expected_inputs_given_state(self):
-        return self.expected_inputs
+        # ToDo: log initialize message?
 
-    def _check_input_validity(self, input_message: InputMessage):
-        for expected_input in self.expected_inputs_given_state():
+    # ToDo: dump and load are just placeholders
+    # maybe we tell the user to return an object that can be pickled (that would allow storing subflows in the state)
+    def dump(self):
+        return {
+            "state": self.state,
+            "history": self.history,
+            "name": self.name,
+            "description": self.description,
+            "flow_type": self.flow_type,
+            "flow_run_id": self.flow_run_id,
+            "verbose": self.verbose
+        }
+
+    def load(self, data):
+        self.state = data["state"]
+        self.history = data["history"]
+        self.name = data["name"]
+        self.description = data["description"]
+        self.flow_type = data["flow_type"]
+        self.flow_run_id = data["flow_run_id"]
+        self.verbose = data["verbose"]
+
+    def expected_fields_in_state(self):
+        # a concrete implementation should return a list of expected inputs given the current state
+        raise NotImplementedError()
+
+    def assert_state_valid(self):
+        for expected_field in self.expected_fields_in_state():
             assert (
-                    expected_input in input_message.inputs
-            ), f"The input message to the flow {self.name} must contain the field {expected_input}"
+                    expected_field in self.state
+            ), f"The state of the flow {self.name} must contain the field {expected_field}"
+
+    def update_state(self, data: Union[Dict[str, Any], Message], keys: List[str] = None):
+        # unwrap message
+        if isinstance(data, Message):
+            data = data.data
+
+        if keys is None:
+            keys = data.keys()
+
+        for key in keys:
+            self.state[key] = data[key]
+
+        self.assert_state_valid()
+
+        # ToDo: log state update message
 
     def _log_message(self, message: Message):
         if self.verbose:
@@ -65,68 +98,7 @@ class Flow(ABC):
                 f"\n{colorama.Fore.WHITE}Content: {message.content}"
                 # f"\nCurrent state: {state_str}{colorama.Style.RESET_ALL}"
             )
-        return self.history.add_message(message)
-
-    def _log_input(self, input_message: InputMessage = None):
-        if input_message is None:
-            return
-
-        self._check_input_validity(input_message=input_message)
-
-        input_states = {key: message.content for key, message in input_message.inputs.items() if key in self.expected_inputs_given_state()}
-        self._update_states(to_update_dict=input_states)
-        # for inp_key, inp_value in input_message.inputs.items():
-        #     self._update_state(key=inp_key, value=inp_value.content)
-
-        fields = input_message.soft_copy()
-        local_input_message = InputMessage(**fields)
-        return self._log_message(local_input_message)
-
-    def _log_update(self, content: str, message_creator: str = None, parents: List = None):
-        if parents is None:
-            parents = []
-
-        if message_creator is None:
-            message_creator = self.name
-
-        update_message = FlowUpdateMessage(
-            flow_run_id=self.flow_run_id,
-            flow_runner=self.name,
-            message_creator=message_creator,
-            content=content,
-            parents=parents,
-            current_flow_state=self.state
-        )
-        return self._log_message(update_message)
-
-    def _update_states(self, to_update_dict: Dict[str, Any], parents: List[str] = None):
-        if not hasattr(self, "state"):
-            self.state = {}
-
-        if not to_update_dict:
-            log.warning("Updating states called with empty updates")
-            return
-
-        updated_keys = []
-        for key, value in to_update_dict.items():
-            if value is not None:
-                # ~~~ No need to update if already set ~~~
-                if key in self.state:
-                    if self.state[key].content == value:
-                        return
-
-                updated_keys.append(key)
-                self.state[key] = FlowMessage(
-                    flow_run_id=self.flow_run_id,
-                    flow_runner=self.name,
-                    message_creator=self.name,
-                    content=value,
-                    parents=parents
-                )
-
-        log_message_content = f"State of flow {self.name} [run-id: {self.flow_run_id}] " \
-                              f"updated the following keys: {updated_keys}."
-        self._log_update(content=log_message_content, parents=parents)
+        return self.history.append(message)
 
     def _package_output_message(
             self,
@@ -156,37 +128,38 @@ class Flow(ABC):
     def set_api_key(self, api_key: str):
         self._update_states(to_update_dict={"api_key": str(api_key)})
 
-    def _flow(self, *args, **kwargs):
-        raise NotImplementedError
+    def step(self) -> bool:
+        # update the flow by one step
+        raise NotImplementedError()
 
-    def run(self, input_message: InputMessage = None, expected_outputs: List[str] = None, **kwargs) -> OutputMessage:
-        self._log_input(input_message=input_message)
+    def run(self, taskMessage: TaskMessage):
 
-        if expected_outputs is None:
-            expected_outputs = self.expected_outputs
+        # log task message
+        self._log_message(taskMessage)
+        self.update_state(taskMessage)
 
-        parsed_outputs = self._flow(input_message=input_message, expected_outputs=expected_outputs, **kwargs)
+        # after the run is completed, the expectedOutputs must be keys in the state
+        expected_outputs = taskMessage.expectedOutputs
 
-        parents = []
-        if input_message:
-            parents = [input_message.message_id]
+        while True:
+            finished = self.step()
+            if finished:
+                break
 
-        return self._package_output_message(
-            expected_outputs=expected_outputs,
-            parsed_outputs=parsed_outputs,
-            parents=parents
-        )
+        # package output message
+        output_message = self._package_output_message(expected_outputs=expected_outputs)
+        return output_message
 
 
 class AtomicFlow(Flow, ABC):
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        expected_inputs: List[str],
-        expected_outputs: List[str],
-        verbose: bool = False
+            self,
+            name: str,
+            description: str,
+            expected_inputs: List[str],
+            expected_outputs: List[str],
+            verbose: bool = False
     ):
         super().__init__(
             name=name,
@@ -202,13 +175,13 @@ class CompositeFlow(Flow, ABC):
     flows: Dict[str, Flow]
 
     def __init__(
-        self,
-        name: str,
-        description: str,
-        expected_inputs: List[str],
-        expected_outputs: List[str],
-        flows: Dict[str, Flow],
-        verbose: bool = False,
+            self,
+            name: str,
+            description: str,
+            expected_inputs: List[str],
+            expected_outputs: List[str],
+            flows: Dict[str, Flow],
+            verbose: bool = False,
     ):
         self.flows = flows
 
