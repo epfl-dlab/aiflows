@@ -1,1 +1,1 @@
-from .flow_history import History, FlowHistory
+from .flow_history import FlowHistory
