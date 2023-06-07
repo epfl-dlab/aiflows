@@ -1,29 +1,24 @@
 import pprint
-
-import colorama
 import time
-
 from typing import List, Dict, Optional
 
+import colorama
 from langchain import PromptTemplate
-from langchain.chat_models import ChatOpenAI
+import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
-from src.history import FlowHistory
+from src import utils
+from src.datasets import GenericDemonstrationsDataset
+from src.flows.abstract import Flow
 from src.message_annotators import EndOfInteraction
 from src.message_annotators.abstract import MessageAnnotator
-from src.flows.abstract import AtomicFlow
-from src.datasets import GenericDemonstrationsDataset
-
-from src import utils
 from src.messages.chat_message import ChatMessage
 from src.messages.flow_message import TaskMessage
-from src.utils import general_helpers
 
 log = utils.get_pylogger(__name__)
 
 
-class OpenAIChatAtomicFlow(AtomicFlow):
+class OpenAIChatAtomicFlow(Flow):
 
     def __init__(
             self,
@@ -44,6 +39,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
             demonstrations: GenericDemonstrationsDataset = None,
             demonstrations_response_template: PromptTemplate = None,
             response_annotators: Optional[Dict[str, MessageAnnotator]] = None,
+            dry_run=False,
             verbose: Optional[bool] = False,
             **kwargs,
     ):
@@ -86,16 +82,31 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self.n_api_retries = n_api_retries
         self.wait_time_between_retries = wait_time_between_retries
 
+        # ~~~ Dry run ~~~
+        self.dry_run = dry_run
+
     def initialize(self):
-        self.state = {}
-        self.history = FlowHistory()
-        self.state["flow_run_id"] = general_helpers.create_unique_id()
-        self._update_state(update_data={"conversation_initialized": False})
+        super().initialize()
+        self._update_state(update_data={"conversation_initialized": False,
+                                        "model_name": self.model_name,
+                                        "generation_parameters": self.generation_parameters,
+                                        "system_message_prompt_template": self.system_message_prompt_template,
+                                        "human_message_prompt_template": self.human_message_prompt_template,
+                                        "query_message_prompt_template": self.query_message_prompt_template,
+                                        "demonstrations": self.demonstrations,
+                                        "demonstrations_response_template": self.demonstrations_response_template,
+                                        "response_annotators": self.response_annotators,
+                                        "system_name": self.system_name,
+                                        "user_name": self.user_name,
+                                        "assistant_name": self.assistant_name,
+                                        "n_api_retries": self.n_api_retries,
+                                        "wait_time_between_retries": self.wait_time_between_retries,
+                                        "dry_run": self.dry_run,})
 
     def expected_inputs_given_state(self):
         conv_init = False
         if "conversation_initialized" in self.state:
-            conv_init = self.state["conversation_initialized"].content
+            conv_init = self.state["conversation_initialized"]
 
         if conv_init:
             return ["query"]
@@ -201,57 +212,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         else:
             raise ValueError(f"Unknown message format: {message_format}")
 
-    def _call(self):
-        api_key = self.state["api_key"]
-
-        backend = ChatOpenAI(
-            model_name=self.model_name,
-            openai_api_key=api_key,
-            **self.generation_parameters,
-            # model_kwargs=self.generation_parameters
-        )
-
-        messages = self.get_conversation_messages(
-            flow_run_id=self.state['flow_run_id'],
-            message_format="open_ai"
-        )
-
-        _success = False
-        attempts = 1
-        error = None
-        response = None
-        while attempts <= self.n_api_retries:
-            try:
-                response = backend(messages).content
-                _success = True
-                break
-            except Exception as e:
-                log.error(
-                    f"Error {attempts} in calling backend: {e}. Key used: `{api_key}`. "
-                    f"Retrying in {self.wait_time_between_retries} seconds..."
-                )
-                log.error(
-                    f"API call raised Exception with the following arguments arguments: "
-                    f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']), show_dict=False)}"
-                )
-                attempts += 1
-                time.sleep(self.wait_time_between_retries)
-                error = e
-
-        if not _success:
-            raise error
-
-        if self.verbose:
-            messages_str = self.history.to_string(
-                self.get_conversation_messages(self.state['flow_run_id']), show_dict=False
-            )
-            log.info(
-                f"\n{colorama.Fore.MAGENTA}~~~ History [{self.name}] ~~~\n"
-                f"{colorama.Style.RESET_ALL}{messages_str}"
-            )
-
-        return response
-
     def _prepare_conversation(self, input_message):
         conv_init = False
         if "conversation_initialized" in self.state:
@@ -285,7 +245,55 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._prepare_conversation(task_message)
 
         # ~~~ Call ~~~
-        response = self._call()
+        api_key = self.state["api_key"]
+
+        backend = langchain.chat_models.ChatOpenAI(
+            model_name=self.model_name,
+            openai_api_key=api_key,
+            **self.generation_parameters,
+            # model_kwargs=self.generation_parameters
+        )
+
+        messages = self.get_conversation_messages(
+            flow_run_id=self.state['flow_run_id'],
+            message_format="open_ai"
+        )
+
+        _success = False
+        attempts = 1
+        error = None
+        response = None
+        while attempts <= self.n_api_retries:
+            try:
+                response = backend(messages).content
+                _success = True
+                break
+            except Exception as e:
+                log.error(
+                    f"Error {attempts} in calling backend: {e}. Key used: `{api_key}`. "
+                    f"Retrying in {self.wait_time_between_retries} seconds..."
+                )
+                log.error(
+                    f"API call raised Exception with the following arguments arguments: "
+                    #f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']), show_dict=False)}"
+                    f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']))}"
+
+                )
+                attempts += 1
+                time.sleep(self.wait_time_between_retries)
+                error = e
+
+        if not _success:
+            raise error
+
+        if self.verbose:
+            messages_str = self.history.to_string(
+                self.get_conversation_messages(self.state['flow_run_id']), show_dict=False
+            )
+            log.info(
+                f"\n{colorama.Fore.MAGENTA}~~~ History [{self.name}] ~~~\n"
+                f"{colorama.Style.RESET_ALL}{messages_str}"
+            )
         answer_message = self._log_chat_message(message_creator=self.assistant_name,
                                                 content=response,
                                                 parent_message_ids=[task_message.message_id])
