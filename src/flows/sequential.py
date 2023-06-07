@@ -1,7 +1,7 @@
 from typing import List, Dict
 
 from src.flows import CompositeFlow, Flow
-from src.messages import InputMessage, TaskMessage
+from src.messages import TaskMessage
 from src import utils
 
 log = utils.get_pylogger(__name__)

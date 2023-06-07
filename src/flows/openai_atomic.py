@@ -4,6 +4,7 @@ from typing import List, Dict, Optional
 
 import colorama
 from langchain import PromptTemplate
+
 import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
@@ -137,6 +138,12 @@ class OpenAIChatAtomicFlow(Flow):
     def _response_parsing(self, response: str, expected_keys: List[str]):
         target_annotators = [ra for _, ra in self.response_annotators.items() if ra.key in expected_keys]
 
+        if len(target_annotators) == 0:
+            key = expected_keys[0]
+            log.warning(f"Without appropriate parsing annotator, {self.__class__} puts its answer.content"
+                        f"in the first key of expected_keys: {key}.")
+            return {key: response}
+
         parsed_outputs = {}
         for ra in target_annotators:
             parsed_out = ra(response)
@@ -218,8 +225,6 @@ class OpenAIChatAtomicFlow(Flow):
             conv_init = self.state["conversation_initialized"]
 
         if conv_init:
-            # ~~~ Check that the message has a `query` field ~~~
-
             user_message_content = self.human_message_prompt_template.format(query=input_message.data["query"])
 
         else:
@@ -275,7 +280,6 @@ class OpenAIChatAtomicFlow(Flow):
                 )
                 log.error(
                     f"API call raised Exception with the following arguments arguments: "
-                    #f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']), show_dict=False)}"
                     f"\n{self.history.to_string(self.get_conversation_messages(self.state['flow_run_id']))}"
 
                 )

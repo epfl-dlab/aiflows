@@ -14,15 +14,3 @@ class MockChatOpenAI:
 
 class MockResponse:
     content = "hello"
-
-
-class MockTemplate:
-    def __init__(self, content):
-        self.content = content
-        self.input_variables = []
-
-    def format(self, *args, **kwargs):
-        return self.content
-
-    def to_string(self, *args, **kwargs):
-        return self.content

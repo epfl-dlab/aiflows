@@ -129,18 +129,7 @@ class Flow(ABC):
             if finished:
                 break
 
-    def __call__(self, inputs:Dict[str, Any] = None, expected_output_keys: list[str] = None, parent_message_ids: List[str] = None):
-        # construct task message
-        task_message = TaskMessage(
-            expected_output_keys=expected_output_keys,
-            target_flow_run_id=self.state["flow_run_id"],
-            message_creator=self.name,
-            parent_message_ids=parent_message_ids,
-            flow_runner=self.name,
-            flow_run_id=self.state["flow_run_id"],
-            data=inputs,
-        )
-
+    def __call__(self, task_message: TaskMessage):
         # ~~~ check and log input ~~~
         self._check_input_validity(task_message)
         self._log_message(task_message)
