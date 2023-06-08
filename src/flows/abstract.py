@@ -4,6 +4,7 @@ from typing import List, Dict, Any, Union
 
 import colorama
 
+import src.flows
 from src import utils
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
@@ -156,6 +157,20 @@ class Flow(ABC):
             if finished:
                 break
 
+    def package_task_message(self, recipient_flow: src.flows.Flow,
+                  task_name: str, task_data: Dict[str, Any], expected_output_keys: List[str],
+                  parent_message_ids: List[str] = None):
+        return TaskMessage(
+            flow_runner=self.name,
+            flow_run_id=self.flow_run_id,
+            message_creator=self.name,
+            target_flow_run_id=recipient_flow.flow_run_id,
+            parent_message_ids=parent_message_ids,
+            task_name=task_name,
+            data=task_data,
+            expected_output_keys=expected_output_keys
+        )
+
     def __call__(self, task_message: TaskMessage):
         # ~~~ check and log input ~~~
         self._check_input_validity(task_message)
@@ -195,25 +210,8 @@ class CompositeFlow(Flow, ABC):
         kwargs["flow_type"] = "composite-flow"
         super().__init__(**kwargs)
 
-    def call_flow(self, recipient_flow: Flow,
-                  task_name: str, task_data: Dict[str, Any], expected_output_keys: List[str],
-                  parent_message_ids: List[str] = None):
-        task_message = TaskMessage(
-            flow_runner=self.name,
-            flow_run_id=self.flow_run_id,
-            message_creator=self.name,
-            target_flow_run_id=recipient_flow.flow_run_id,
-            parent_message_ids=parent_message_ids,
-            task_name=task_name,
-            data=task_data,
-            expected_output_keys=expected_output_keys
-        )
-
-        self._log_message(task_message)
-        answer_message = recipient_flow(task_message)
-        self._log_message(answer_message)
-
-        return answer_message
+    def call(self, flow:Flow):
+        pass
 
     def _call_flow(self, flow_id: str, expected_output_keys: list[str] = None, parent_message_ids: List[str] = None):
         # ~~~ Prepare the call ~~~
