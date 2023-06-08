@@ -9,6 +9,7 @@ from src import utils
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
 from src.utils import general_helpers
+from src.utils.general_helpers import create_unique_id, get_current_datetime_ns
 
 log = utils.get_pylogger(__name__)
 
@@ -37,6 +38,8 @@ class Flow(ABC):
         self.flow_type = kwargs.pop("flow_type", "flow")
         self.verbose = kwargs.pop("verbose", False)
         self.dry_run = kwargs.pop("dry_run", False)
+        self.flow_run_id = kwargs.pop("flow_run_id", create_unique_id())
+
 
         self._init_attributes = copy.deepcopy(self.__dict__)
 
@@ -151,13 +154,13 @@ class Flow(ABC):
     def step(self) -> bool:
         return True
 
-    def run(self, expected_output_keys: List[str] = None):
+    def run(self):
         while True:
             finished = self.step()
             if finished:
                 break
 
-    def package_task_message(self, recipient_flow: src.flows.Flow,
+    def package_task_message(self, recipient_flow,
                   task_name: str, task_data: Dict[str, Any], expected_output_keys: List[str],
                   parent_message_ids: List[str] = None):
         return TaskMessage(
@@ -175,7 +178,8 @@ class Flow(ABC):
         # ~~~ check and log input ~~~
         self._check_input_validity(task_message)
         self._log_message(task_message)
-        self._update_state(task_message)
+        if task_message.data:
+            self._update_state(task_message)
 
         # ~~~ After the run is completed, the expected_output_keys must be keys in the state ~~~
         expected_output_keys = task_message.expected_output_keys
