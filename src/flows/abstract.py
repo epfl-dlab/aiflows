@@ -151,7 +151,7 @@ class Flow(ABC):
     def step(self) -> bool:
         return True
 
-    def run(self):
+    def run(self, expected_output_keys: List[str] = None):
         while True:
             finished = self.step()
             if finished:
