@@ -1,13 +1,15 @@
 import copy
 from abc import ABC
 from typing import List, Dict, Any, Union
+
 import colorama
 
+import src.flows
+from src import utils
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
 from src.utils import general_helpers
-
-from src import utils
+from src.utils.general_helpers import create_unique_id, get_current_datetime_ns
 
 log = utils.get_pylogger(__name__)
 
@@ -36,6 +38,8 @@ class Flow(ABC):
         self.flow_type = kwargs.pop("flow_type", "flow")
         self.verbose = kwargs.pop("verbose", False)
         self.dry_run = kwargs.pop("dry_run", False)
+        self.flow_run_id = kwargs.pop("flow_run_id", create_unique_id())
+
 
         self._init_attributes = copy.deepcopy(self.__dict__)
 
@@ -150,21 +154,32 @@ class Flow(ABC):
     def step(self) -> bool:
         return True
 
-    def run(self, task_message: TaskMessage):
+    def run(self):
         while True:
             finished = self.step()
             if finished:
                 break
 
-        # ~~~ Package output message ~~~
-        return self._package_output_message(expected_output_keys=self.expected_output_keys,
-                                            parent_message_ids=[task_message.message_id])
+    def package_task_message(self, recipient_flow,
+                  task_name: str, task_data: Dict[str, Any], expected_output_keys: List[str],
+                  parent_message_ids: List[str] = None):
+        return TaskMessage(
+            flow_runner=self.name,
+            flow_run_id=self.flow_run_id,
+            message_creator=self.name,
+            target_flow_run_id=recipient_flow.flow_run_id,
+            parent_message_ids=parent_message_ids,
+            task_name=task_name,
+            data=task_data,
+            expected_output_keys=expected_output_keys
+        )
 
     def __call__(self, task_message: TaskMessage):
         # ~~~ check and log input ~~~
         self._check_input_validity(task_message)
         self._log_message(task_message)
-        self._update_state(task_message)
+        if task_message.data:
+            self._update_state(task_message)
 
         # ~~~ After the run is completed, the expected_output_keys must be keys in the state ~~~
         expected_output_keys = task_message.expected_output_keys
@@ -173,7 +188,11 @@ class Flow(ABC):
         self.expected_output_keys = expected_output_keys
 
         # ~~~ Execute the logic of the flow, it should populate state with expected_output_keys ~~~
-        return self.run(task_message=task_message)
+        self.run()
+
+        # ~~~ Package output message ~~~
+        return self._package_output_message(expected_output_keys=self.expected_output_keys,
+                                            parent_message_ids=[task_message.message_id])
 
 
 class AtomicFlow(Flow, ABC):
@@ -187,29 +206,16 @@ class AtomicFlow(Flow, ABC):
 
 
 class CompositeFlow(Flow, ABC):
-    flows: Dict[str, Flow]
 
     def __init__(
             self,
-            name: str,
-            description: str,
-            expected_inputs: List[str],
-            expected_outputs: List[str],
-            flows: Dict[str, Flow],
-            verbose: bool = False,
+            **kwargs
     ):
-        self.flows = flows
+        kwargs["flow_type"] = "composite-flow"
+        super().__init__(**kwargs)
 
-        super().__init__(
-            name=name,
-            description=description,
-            expected_inputs=expected_inputs,
-            expected_outputs=expected_outputs,
-            verbose=verbose)
-        self.flow_type = "composite-flow"
-
-    def initialize(self):
-        super().initialize()
+    def call(self, flow:Flow):
+        pass
 
     def _call_flow(self, flow_id: str, expected_output_keys: list[str] = None, parent_message_ids: List[str] = None):
         # ~~~ Prepare the call ~~~
