@@ -5,6 +5,7 @@ import colorama
 from src.history import FlowHistory
 from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
 from src.utils import general_helpers
+import src.utils as utils
 
 log = utils.get_pylogger(__name__)
 
@@ -35,11 +36,8 @@ class Flow(ABC):
         self.expected_outputs = list(expected_outputs) if expected_outputs else []
         self.verbose = verbose
 
-        self.initialize()
-
     def initialize(self, **kwargs):
-        self.state = {}
-        self._update_state(update_data={"flow_run_id": general_helpers.create_unique_id()})
+        self.state = {"name":self.name, "flow_run_id": general_helpers.create_unique_id()}
         self.history = FlowHistory()
 
     def expected_inputs_given_state(self):
