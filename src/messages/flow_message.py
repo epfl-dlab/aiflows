@@ -7,17 +7,17 @@ from src.messages import Message
 
 @dataclass
 class TaskMessage(Message):
-    expected_output_keys: List[str]
+    expected_outputs: List[str]
     target_flow_run_id: str
 
     def __init__(self, **kwargs):
         super(TaskMessage, self).__init__(**kwargs)
-        self.expected_output_keys = kwargs.pop("expected_output_keys", [])
+        self.expected_outputs = kwargs.pop("expected_outputs", [])
         self.target_flow_run_id = kwargs.pop("target_flow_run_id", None)
 
     def __repr__(self):
         extended = copy.deepcopy(self.data)
-        extended["expected_output_keys"] = self.expected_output_keys
+        extended["expected_outputs"] = self.expected_outputs
         return repr(extended)
 
 
@@ -27,7 +27,7 @@ class StateUpdateMessage(Message):
 
     def __init__(self, **kwargs):
         super(StateUpdateMessage, self).__init__(**kwargs)
-        self.updated_keys = kwargs.pop("updates", {})
+        self.updated_keys = kwargs.pop("updated_keys", {})
 
 
 @dataclass
