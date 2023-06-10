@@ -51,20 +51,9 @@ class FlowHistory:
         """
         return [m for m in self.messages if m.message_creator == target_message_creator]
 
-    def remove_messages(self, message_ids_to_remove: List[str]):
-        """
-        Removes messages from a list of message ids to remove.
-
-        Args:
-            message_ids_to_remove (List[str]): The IDs of the messages to be removed.
-        """
-        messages_to_remove = [m for m in self.messages if m.message_id in message_ids_to_remove]
-
-        assert len(messages_to_remove) == len(message_ids_to_remove), \
-            f"Error when trying to remove messages with IDs {message_ids_to_remove} from history {str(self)}"
-
-        for message in messages_to_remove:
-            self.messages.remove(message)
+    def get_chat_messages(self) -> List[Message]:
+        from src.messages import ChatMessage
+        return [m for m in self.messages if isinstance(m, ChatMessage)]
 
     def get_latest_message(self) -> Union[Message, None]:
         """
@@ -109,3 +98,5 @@ class FlowHistory:
     def __str__(self):
         return self.to_string()
 
+    def __repr__(self):
+        return repr(self.messages)

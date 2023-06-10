@@ -23,11 +23,14 @@ class Message:
     parent_message_ids: List[str]
     flow_runner: str
     flow_run_id: str
+    message_type: str
 
     # ~~~ Data content ~~~
     data: Dict[str, Any]
 
     def __init__(self, **kwargs):
+        kwargs = copy.deepcopy(kwargs)
+
         # ~~~ Initialize message identifiers ~~~
         self.message_id = create_unique_id()
         self.created_at = get_current_datetime_ns()
@@ -41,8 +44,11 @@ class Message:
         # ~~~ Initialize Data content
         self.data = kwargs.pop("data", {})
 
+        self.message_type = kwargs.pop("message_type", self.__class__.__name__)
+
     def __str__(self):
         d = self.__dict__
+        d["type"] = self.__class__.__name__
         return pprint.pformat(d, indent=4)
 
     def to_dict(self):
