@@ -9,11 +9,13 @@ from src.messages import Message
 class TaskMessage(Message):
     expected_outputs: List[str]
     target_flow_run_id: str
+    task_name: str
 
     def __init__(self, **kwargs):
         super(TaskMessage, self).__init__(**kwargs)
         self.expected_outputs = kwargs.pop("expected_outputs", [])
         self.target_flow_run_id = kwargs.pop("target_flow_run_id", None)
+        self.task_name = kwargs.pop("task_name", "")
 
     def __repr__(self):
         extended = copy.deepcopy(self.data)

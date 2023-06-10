@@ -1,32 +1,20 @@
-from typing import List
+from typing import List, Dict, Any
 
 from src.flows.abstract import AtomicFlow
-from src.messages import InputMessage, TaskMessage
 
 
 class FixedReplyAtomicFlow(AtomicFlow):
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        fixed_reply: str,
-        expected_outputs: List[str] = None,
-        expected_inputs: List[str] = None,
-        verbose: bool = False
-    ):
-        if expected_outputs is None:
-            expected_outputs = ["query"]
+    fixed_reply: str
 
-        super().__init__(
-            name=name,
-            description=description,
-            expected_inputs=expected_inputs,
-            expected_outputs=expected_outputs,
-            verbose=verbose,
-        )
+    def __init__(self, **kwargs):
+        if "fixed_reply" not in kwargs:
+            raise KeyError
 
-        self.fixed_reply = fixed_reply
+        super().__init__(**kwargs)
 
-    def run(self, task_message: TaskMessage):
-        key = self.state["expected_output_keys"][0]
-        self._update_state({key: self.fixed_reply})
+        if self.expected_outputs is None:
+            self.expected_outputs = ["query"]
+
+    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        key = expected_outputs[0]
+        return {key: self.fixed_reply}

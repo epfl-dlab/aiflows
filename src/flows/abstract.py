@@ -23,6 +23,7 @@ class Flow(ABC):
     flow_type: str
     verbose: bool
     dry_run: bool
+    namespace_clearing_after_run: bool
 
     flow_run_id: str
     flow_config: Dict[str, Any]
@@ -32,19 +33,20 @@ class Flow(ABC):
             self,
             **kwargs
     ):
-
         # ~~~ Flow Config parameter to reconstruct the object ~~~
         self.flow_config = {
             "name": kwargs.pop("name"),
             "description": kwargs.pop("description"),
             "expected_inputs": kwargs.pop("expected_inputs", []),
             "expected_outputs": kwargs.pop("expected_outputs", []),
-            "flow_type": kwargs.pop("flow_type", "flow"),
+            "flow_type": kwargs.pop("flow_type", "Flow"),
             "verbose": kwargs.pop("verbose", True),
-            "dry_run": kwargs.pop("dry_run", False)
+            "dry_run": kwargs.pop("dry_run", False),
+            "namespace_clearing_after_run": kwargs.pop("namespace_clearing_after_run", True)
         }
 
         self.flow_config.update(copy.deepcopy(kwargs))
+
         self.__set_config_params()
 
         self.flow_state = {
@@ -68,10 +70,10 @@ class Flow(ABC):
         flow.__setstate__(flow_state)
         return flow
 
-    @classmethod
-    def load_from_checkpoint(cls, ckpt_path: str):
-        data = io_utils.load_pickle(ckpt_path)
-        return cls.load_from_state(data)
+    # @classmethod
+    # def load_from_checkpoint(cls, ckpt_path: str):
+    #     data = io_utils.load_pickle(ckpt_path)
+    #     return cls.load_from_state(data)
 
     def _update_state(self, update_data: Union[Dict[str, Any], Message], parent_message_ids: List[str] = None):
         if isinstance(update_data, Message):
@@ -119,7 +121,7 @@ class Flow(ABC):
         self.flow_state = copy.deepcopy(state["flow_state"])
         for k, v in state["config_param_updates"].items():
             self.__setattr__(k, copy.deepcopy(v))
-
+        self.flow_run_id = create_unique_id()
 
     def __repr__(self):
         flow_config_to_keep = set(self.flow_config.keys()) - set(self.KEYS_TO_IGNORE_HASH)
@@ -144,7 +146,9 @@ class Flow(ABC):
         return self.expected_inputs
 
     def set_api_key(self, api_key: str):
-        self._update_state(update_data={"api_key": str(api_key)})
+        # We don't log it to history to not see it in the visualization
+        self.flow_state["api_key"] = api_key
+        # self._update_state(update_data={"api_key": str(api_key)})
 
     def _log_message(self, message: Message):
         if self.verbose:
@@ -154,6 +158,18 @@ class Flow(ABC):
                 f"{colorama.Fore.WHITE}Message being logged: {str(message)}{colorama.Style.RESET_ALL}"
             )
         return self.flow_state["history"].add_message(message)
+
+    def _get_keys_from_state(self, keys: List[str], allow_class_namespace: bool = True):
+        data = {}
+        for key in keys:
+            if key in self.flow_state:
+                data[key] = self.flow_state[key]
+                continue
+
+            if allow_class_namespace:
+                if key in self.__dict__:
+                    data[key] = self.__dict__[key]
+        return data
 
     def _package_output_message(
             self,
@@ -178,7 +194,8 @@ class Flow(ABC):
             flow_runner=self.name,
             flow_run_id=self.flow_run_id,
             data=outputs,
-            error_message=error_message
+            error_message=error_message,
+            history=self.flow_state.get("history", [])
         )
 
     def package_task_message(
@@ -205,7 +222,8 @@ class Flow(ABC):
 
     def __call__(self, task_message: TaskMessage):
         # ~~~ check and log input ~~~
-        # self._check_input_validity(task_message)
+        if "api_key" in task_message.data:
+            self.set_api_key(api_key=task_message.data["api_key"])
         self._log_message(task_message)
 
         # ~~~ After the run is completed, the expected_outputs must be keys in the state ~~~
@@ -224,21 +242,10 @@ class Flow(ABC):
         )
 
         # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
-        self._clear()
+        if self.namespace_clearing_after_run:
+            self._clear()
 
         return output_message
-
-
-# class StepFlow(Flow):
-#     def step(self) -> bool:
-#         raise NotImplementedError
-#
-#     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]):
-#         # log to state input_data, expected_outputs
-#         while True:
-#             finished = self.step()
-#             if finished:
-#                 break
 
 
 class AtomicFlow(Flow, ABC):
@@ -247,38 +254,63 @@ class AtomicFlow(Flow, ABC):
             self,
             **kwargs
     ):
-        kwargs["flow_type"] = "atomic-flow"
+        if "flow_type" not in kwargs:
+            kwargs["flow_type"] = "AtomicFlow"
         super().__init__(**kwargs)
 
 
 class CompositeFlow(Flow, ABC):
     flows: Dict[str, Union[Dict[str, Any], Flow]]
+    early_exit_key: str
 
     def __init__(
             self,
             **kwargs
     ):
-        kwargs["flow_type"] = "composite-flow"
-        super().__init__(**kwargs)
-        self.flow_state["flows"] = kwargs.pop("flows", {})
+        if "early_exit_key" not in kwargs:
+            kwargs["early_exit_key"] = None
 
-    def _call_flow(
+        if "flow_type" not in kwargs:
+            kwargs["flow_type"] = "CompositeFlow"
+
+        super().__init__(**kwargs)
+
+    def _init_flow(self, flow):
+        init_flow = flow.__class__.load_from_config(flow.flow_config)
+
+        if "api_key" in self.flow_state:
+            init_flow.set_api_key(api_key=self.flow_state["api_key"])
+
+        return init_flow
+
+    def _early_exit(self):
+        if self.early_exit_key:
+            if self.early_exit_key in self.flow_state:
+                return bool(self.flow_state[self.early_exit_key])
+            elif self.early_exit_key in self.__dict__:
+                return bool(self.__dict__[self.early_exit_key])
+
+        return False
+
+    def _call_flow_from_state(
             self,
             flow: Flow,
             expected_outputs: list[str] = None,
-            parent_message_ids: List[str] = None
+            parent_message_ids: List[str] = None,
+            search_class_namespace_for_inputs: bool = True
     ):
         # ~~~ Prepare the call ~~~
-        call_inputs = {k: self.__getattribute__(k) for k in flow.expected_inputs_given_state()}
+        task_data = self._get_keys_from_state(
+            keys=flow.expected_inputs_given_state(),
+            allow_class_namespace=search_class_namespace_for_inputs
+        )
 
-        task_message = TaskMessage(
+        task_message = self.package_task_message(
+            recipient_flow=flow,
+            task_name="",
+            task_data=task_data,
             expected_outputs=expected_outputs,
-            target_flow_run_id=flow.flow_run_id,
-            message_creator=self.name,
-            parent_message_ids=parent_message_ids,
-            flow_runner=self.name,
-            flow_run_id=self.flow_run_id,
-            data=call_inputs,
+            parent_message_ids=parent_message_ids
         )
         self._log_message(task_message)
 

@@ -51,6 +51,10 @@ class FlowHistory:
         """
         return [m for m in self.messages if m.message_creator == target_message_creator]
 
+    def get_chat_messages(self) -> List[Message]:
+        from src.messages import ChatMessage
+        return [m for m in self.messages if isinstance(m, ChatMessage)]
+
     def get_latest_message(self) -> Union[Message, None]:
         """
         Retrieves the latest message from the history.
@@ -94,3 +98,5 @@ class FlowHistory:
     def __str__(self):
         return self.to_string()
 
+    def __repr__(self):
+        return repr(self.messages)

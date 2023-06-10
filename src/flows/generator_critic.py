@@ -1,118 +1,81 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
-from src.flows import CompositeFlow, Flow
-from src.messages import TaskMessage
+from src.flows import CompositeFlow
 from src import utils
 
 log = utils.get_pylogger(__name__)
 
 
 class GeneratorCriticFlow(CompositeFlow):
-    def __init__(
-            self,
-            name: str,
-            description: str,
-            expected_inputs: List[str],
-            expected_outputs: List[str],
-            flows: Dict[str, Flow],
-            n_rounds: int,
-            init_generator_every_round: bool = False,
-            init_critic_every_round: bool = True,
-            eoi_key: str = None,
-            verbose: bool = False
-    ):
-        super().__init__(
-            name=name,
-            description=description,
-            expected_inputs=expected_inputs,
-            expected_outputs=expected_outputs,
-            flows=flows,
-            verbose=verbose
-        )
+    max_rounds: int
+    init_generator_every_round: bool
+    init_critic_every_round: bool
 
-        self.n_rounds = n_rounds
+    def __init__(self, **kwargs):
+        if "max_round" not in kwargs:
+            kwargs["max_rounds"] = 2
 
+        if "init_generator_every_round" not in kwargs:
+            kwargs["init_generator_every_round"] = False
+
+        if "init_critic_every_round" not in kwargs:
+            kwargs["init_critic_every_round"] = False
+
+        # ~~~ Creating the flow_config in super() ~~~
+        super().__init__(**kwargs)
+
+        flows = self.flow_config["flows"]
         assert len(flows) == 2, f"Generator Critic needs exactly two sub-flows, currently has {len(flows)}"
 
+        # ~~~ check that we can identify flows ~~~
         self._identify_flows()
 
-        self.expected_generator_output_keys = self.flows[self.generator_name].expected_outputs
-
-        self.init_generator_every_round = init_generator_every_round
-        self.init_critic_every_round = init_critic_every_round
-
-        if eoi_key:
-            self.eoi_key = eoi_key
-        else:
-            self._set_eoi_key()
-
     def _identify_flows(self):
-        for flow_name, flow in self.flows.items():
+        generator, critic = None, None
+        for flow_name, flow in self.flow_config["flows"].items():
             if "generator" in flow_name:
-                self.generator_name = flow_name
+                generator = flow
             elif "critic" in flow_name:
-                self.critic_name = flow_name
+                critic = flow
             else:
-                raise Exception("Generator Critic flow needs one flow with `critic` in its name "
-                                "and one flow with `generator` in its name")
+                error_message = f"{self.__class__.__name__} needs one flow with `critic` in its name" \
+                                f"and one flow with `generator` in its name. Currently, the flow names are:" \
+                                f"{self.flow_state['flows'].keys()}"
 
-    def _set_eoi_key(self):
-        generator_flow = self.flows[self.generator_name]
-        if hasattr(generator_flow, "end_of_interaction_key") and callable(generator_flow.end_of_interaction_key):
-            eoi_key = generator_flow.end_of_interaction_key()
-            assert eoi_key in self.expected_generator_output_keys, \
-                f"The end of interaction key from {eoi_key} is not part of its expected outputs"
-            self.eoi_key = eoi_key
+                raise Exception(error_message)
+        return generator, critic
 
-    def _is_eoi(self):
-        if self.eoi_key in self.state:
-            return bool(self.state[self.eoi_key].content)
-        return False
+    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        generator_flow, critic_flow = self._identify_flows()
 
-    def run(self, task_message: TaskMessage):
-        # ~~~ Initialize flows ~~~
-        generator_flow = self.flows[self.generator_name]
-        critic_flow = self.flows[self.critic_name]
-        generator_flow.initialize()
-        critic_flow.initialize()
+        # ~~~ sets the input_data in the class namespace ~~~
+        self._update_state(update_data=input_data)
 
-        # ~~~ Propagate API-keys ~~~
-        api_key = self.state["api_key"]
-        generator_flow.set_api_key(api_key=api_key)
-        critic_flow.set_api_key(api_key=api_key)
-
-        # ~~~ Prepare information to send to flows ~~~
-        _generator_call_inputs = task_message.data
-        _parent_message_ids = [task_message.message_id]
-
-        for idx in range(self.n_rounds):
+        for idx in range(self.max_rounds):
             # ~~~ Initialize the generator flow if needed ~~~
-            if self.init_generator_every_round and idx > 0:
-                generator_flow.initialize()
+            if self.init_generator_every_round or idx == 0:
+                generator_flow = self._init_flow(generator_flow)
 
-
-            # ~~~ Execute the generator flow and update state ~~~
-            generator_answer = self._call_flow(
-                flow_id=self.generator_name,
-                parent_message_ids=_parent_message_ids,
+            # ~~~ Execute the generator flow and update state with answer ~~~
+            generator_answer = self._call_flow_from_state(
+                flow=generator_flow
             )
             self._update_state(generator_answer)
 
-            # ~~~ Check for end of interaction decided by generator ~~~
-            if self._is_eoi():
+            # ~~~ Check for end of interaction (decided by generator) ~~~
+            if self._early_exit():
                 log.info("End of interaction detected")
                 break
 
             # ~~~ Initialize the critic flow ~~~
-            if self.init_critic_every_round and idx > 0:
-                critic_flow.initialize()
-                critic_flow.set_api_key(api_key=api_key)
+            if self.init_critic_every_round or idx == 0:
+                critic_flow = self._init_flow(critic_flow)
 
-            # ~~~ Execute the critic flow and update state ~~~
-            critic_answer = self._call_flow(
-                flow_id=self.critic_name,
-                parent_message_ids=[generator_answer.message_id]
+            # ~~~ Execute the critic flow and update state with answer ~~~
+            critic_answer = self._call_flow_from_state(
+                flow=critic_flow
             )
             self._update_state(critic_answer)
-            _parents = [critic_answer.message_id]
 
+        # ~~~ The final answer should be in self.flow_state, thus allow_class_namespace=False ~~~
+        return self._get_keys_from_state(keys=expected_outputs, allow_class_namespace=False)

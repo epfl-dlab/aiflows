@@ -1,43 +1,27 @@
 import copy
-from typing import List, Optional, Dict, Any
+from typing import List, Dict, Any
 
 import jinja2
 
 from src.flows import AtomicFlow
-from src.message_annotators.abstract import MessageAnnotator
-from src.messages import TaskMessage
 
 import src.tools.code_evaluation.testing_utils_leetcode as testing_utils_leetcode
 import src.tools.code_evaluation.testing_utils_codeforces as testing_utils_codeforces
 
 
 class CodeTestingAtomicFlow(AtomicFlow):
-    def __init__(
-        self,
-        name: str,
-        description: str,
-        expected_outputs: List[str],
-        expected_inputs: List[str],
-        debugging_setup: Dict,
-        response_annotators: Optional[Dict[str, MessageAnnotator]] = None,
-        verbose: bool = False
-    ):
+    debugging_setup: Dict
 
-        super().__init__(
-            name=name,
-            description=description,
-            expected_inputs=expected_inputs,
-            expected_outputs=expected_outputs,
-            verbose=verbose,
-        )
+    def __init__(self, **kwargs):
+        if "debugging_setup" not in kwargs:
+            raise KeyError
 
-        self.response_annotators = response_annotators if response_annotators else {}
-        self.debugging_setup = debugging_setup
-        self.special_output_key = "issue_description"
+        super().__init__(**kwargs)
 
-    def _get_tests_io(self, task_message: TaskMessage):
+    @staticmethod
+    def _get_tests_io(input_data: Dict[str, Any]):
         # If tests were not provided this function could be used to generate some based on the problem description
-        return task_message.data["public_tests_individual_io"]
+        return input_data["public_tests_individual_io"]
 
     def _issue_description_message(self, execution_results: Dict[str, Any]):
         if not execution_results["compilation_status"]:
@@ -123,7 +107,7 @@ class CodeTestingAtomicFlow(AtomicFlow):
 
         return message_content
 
-    def _get_parsed_response(self, response: Dict[str, Any]):
+    def _add_global_informations(self, response: Dict[str, Any]):
         assert (
                 "public_tests_results" in response and len(response["public_tests_results"]) != 0
         ), "We assume access to at least one test -- provided or generated!"
@@ -139,19 +123,22 @@ class CodeTestingAtomicFlow(AtomicFlow):
 
         return parsed_outputs
 
-    def _test_code(self,  task_message: TaskMessage):
+    def _test_code(self, input_data: Dict[str, Any]):
         raise NotImplementedError()
 
-    def run(self, task_message: TaskMessage):
-        response = self._test_code(task_message)
-        parsing_response = self._get_parsed_response(response=response)
-        self._update_state(parsing_response)
+    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        response = self._test_code(input_data)
+        extended_response = self._add_global_informations(response=response)
+        if expected_outputs:
+            return {k: v for k, v in extended_response.items() if k in expected_outputs}
+        else:
+            return extended_response
 
 
 class CodeTestingAtomicFlowCodeforces(CodeTestingAtomicFlow):
-    def _test_code(self, task_message: TaskMessage):
-        candidate_solution = task_message.data["code"]
-        tests = self._get_tests_io(task_message)
+    def _test_code(self, input_data: Dict[str, Any]):
+        candidate_solution = input_data["code"]
+        tests = self._get_tests_io(input_data)
 
         testing_results = testing_utils_codeforces.evaluate_solution_for_problem(
             candidate_solution=candidate_solution, public_tests_io=tests
@@ -164,10 +151,10 @@ class CodeTestingAtomicFlowCodeforces(CodeTestingAtomicFlow):
 
 
 class CodeTestingAtomicFlowLeetCode(CodeTestingAtomicFlow):
-    def _test_code(self, task_message: TaskMessage):
-        candidate_solution = task_message.data["code"]
-        tests = self._get_tests_io(task_message)
-        python_stub = task_message.data["python_stub"]
+    def _test_code(self, input_data: Dict[str, Any]):
+        candidate_solution = input_data["code"]
+        tests = self._get_tests_io(input_data)
+        python_stub = input_data["python_stub"]
 
         testing_results = testing_utils_leetcode.evaluate_solution_for_problem(
             candidate_solution=candidate_solution, public_tests_io=tests, python_stub=python_stub

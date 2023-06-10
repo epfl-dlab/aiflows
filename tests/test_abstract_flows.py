@@ -75,8 +75,6 @@ def test_cfg_loading() -> None:
     assert different_flow.name == "name"
     assert different_flow.flow_run_id != flow.flow_run_id
 
-    # ToDo: testing after the flow has been run
-
 
 def test_state_loading() -> None:
     # ~~~ Test without flow_state ~~~
@@ -146,10 +144,6 @@ def test_update_state() -> None:
     assert f.flow_state["new"] == "value"
     assert len(f.flow_state["history"]) == 2
     assert f.flow_state["history"].get_latest_message().updated_keys == ["param"]
-
-
-def test_state_save_load() -> None:
-    pass
 
 
 def test_basic_run() -> None:

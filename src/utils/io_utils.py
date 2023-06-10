@@ -12,3 +12,14 @@ def load_pickle(pickle_path: str):
         data = pickle.load(file)
 
     return data
+
+
+def recursive_json_serialize(obj):
+    if isinstance(obj, (list, tuple)):
+        return [recursive_json_serialize(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: recursive_json_serialize(value) for key, value in obj.items()}
+    elif hasattr(obj, 'to_json'):
+        return recursive_json_serialize(obj.to_json())
+    else:
+        return obj
