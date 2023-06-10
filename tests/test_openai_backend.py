@@ -2,9 +2,9 @@ import langchain
 import pytest
 from langchain.chat_models import ChatOpenAI
 
-from src.flows import OpenAIChatAtomicFlow
-from src.messages import TaskMessage
-from src.messages.chat_message import ChatMessage
+from flows.base_flows import OpenAIChatAtomicFlow
+from flows.messages import TaskMessage
+from flows.messages.chat_message import ChatMessage
 from tests.mocks import MockChatOpenAI, MockBrokenChatOpenAI, MockAnnotator
 
 

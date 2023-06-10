@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 
-from src.flows.abstract import AtomicFlow
+from flows.base_flows.abstract import AtomicFlow
 
 
 class FixedReplyAtomicFlow(AtomicFlow):

@@ -1,7 +1,7 @@
 import copy
 
 import pytest
-from src.flows import CompositeFlow, AtomicFlow
+from flows.base_flows import CompositeFlow, AtomicFlow
 
 
 def atomic_flow_builder():

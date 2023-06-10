@@ -1,5 +1,5 @@
 import pytest
-from src.flows import CodeTestingAtomicFlowCodeforces
+from flows.base_flows import CodeTestingAtomicFlowCodeforces
 
 debugging_setup = {
     "compilation_error_template": "Compilation error",

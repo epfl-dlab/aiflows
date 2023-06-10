@@ -4,7 +4,7 @@ from typing import Dict, Any
 
 from .abstract import MessageAnnotator
 
-from src import utils
+from flows import utils
 
 log = utils.get_pylogger(__name__)
 

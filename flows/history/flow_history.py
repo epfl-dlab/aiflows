@@ -1,6 +1,6 @@
 import copy
 from typing import List, Union, Dict
-from src.messages import Message
+from flows.messages import Message
 
 
 class FlowHistory:
@@ -52,7 +52,7 @@ class FlowHistory:
         return [m for m in self.messages if m.message_creator == target_message_creator]
 
     def get_chat_messages(self) -> List[Message]:
-        from src.messages import ChatMessage
+        from flows.messages import ChatMessage
         return [m for m in self.messages if isinstance(m, ChatMessage)]
 
     def get_latest_message(self) -> Union[Message, None]:

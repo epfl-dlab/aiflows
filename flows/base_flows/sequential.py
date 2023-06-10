@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
-from src.flows import CompositeFlow
-from src import utils
+from flows.base_flows import CompositeFlow
+from flows import utils
 
 log = utils.get_pylogger(__name__)
 

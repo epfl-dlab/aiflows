@@ -34,7 +34,7 @@ def get_cache_dir() -> str:
 
 
 def get_calling_flow(all_args: List):
-    from src.flows import Flow
+    from flows.base_flows import Flow
 
     flow = None
     for arg in all_args:
@@ -68,7 +68,7 @@ def flow_run_cache():
 
             flow = get_calling_flow(all_args)
 
-            from src.flows import AtomicFlow
+            from flows.base_flows import AtomicFlow
             assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
 
             key = _custom_hash(all_args)

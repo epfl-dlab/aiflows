@@ -4,11 +4,11 @@ from typing import List, Dict, Any, Union
 
 import colorama
 
-from src import utils
-from src.history import FlowHistory
-from src.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
-from src.utils import io_utils
-from src.utils.general_helpers import create_unique_id
+from flows import utils
+from flows.history import FlowHistory
+from flows.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
+from flows.utils import io_utils
+from flows.utils.general_helpers import create_unique_id
 
 log = utils.get_pylogger(__name__)
 

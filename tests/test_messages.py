@@ -1,4 +1,4 @@
-from src.messages import TaskMessage, StateUpdateMessage, OutputMessage, Message
+from flows.messages import TaskMessage, StateUpdateMessage, OutputMessage, Message
 
 
 def test_flow_message_init():
@@ -68,7 +68,7 @@ def test_output_message_init():
     assert sample_output_message.message_type == "OutputMessage"
     assert not sample_output_message.error_message
 
-    from src.history import FlowHistory
+    from flows.history import FlowHistory
     assert isinstance(sample_output_message.history, FlowHistory)
 
 
@@ -124,7 +124,7 @@ def test_to_string():
 def test_to_dict():
     parsed_outputs = {"out-1": 45, "out-2": False}
 
-    from src.history import FlowHistory
+    from flows.history import FlowHistory
     history = FlowHistory()
     message1 = Message(message_creator="user1", data="Hello", flow_runner="0")
     message2 = StateUpdateMessage(message_creator="user2", data="Hi", flow_runner="0")

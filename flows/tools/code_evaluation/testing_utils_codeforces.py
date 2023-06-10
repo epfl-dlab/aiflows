@@ -13,7 +13,7 @@ import numpy as np
 from pyext import RuntimeModule
 from wrapt_timeout_decorator import timeout as wrapt_timeout
 
-import src.utils as utils
+import flows.utils as utils
 
 log = utils.get_pylogger(__name__)
 lock = threading.Lock()

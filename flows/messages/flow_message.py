@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List, Any, Union
 import copy
 
-from src.messages import Message
+from flows.messages import Message
 
 
 @dataclass
@@ -41,5 +41,5 @@ class OutputMessage(Message):
         super(OutputMessage, self).__init__(**kwargs)
         self.error_message = kwargs.pop("error_message", None)
 
-        from src.history import FlowHistory
+        from flows.history import FlowHistory
         self.history: FlowHistory = kwargs.pop("history", FlowHistory())

@@ -9,12 +9,12 @@ from langchain import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
-from src.message_annotators.abstract import MessageAnnotator
-from src.flows.abstract import AtomicFlow
-from src.datasets import GenericDemonstrationsDataset
+from flows.message_annotators.abstract import MessageAnnotator
+from flows.base_flows.abstract import AtomicFlow
+from flows.datasets import GenericDemonstrationsDataset
 
-from src import utils
-from src.messages.chat_message import ChatMessage
+from flows import utils
+from flows.messages.chat_message import ChatMessage
 
 log = utils.get_pylogger(__name__)
 

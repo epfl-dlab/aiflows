@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from src.messages import Message
+from flows.messages import Message
 
 
 @dataclass

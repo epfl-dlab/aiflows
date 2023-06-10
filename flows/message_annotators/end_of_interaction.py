@@ -1,6 +1,6 @@
-from src.message_annotators.abstract import MessageAnnotator
+from flows.message_annotators.abstract import MessageAnnotator
 
-from src import utils
+from flows import utils
 
 log = utils.get_pylogger(__name__)
 

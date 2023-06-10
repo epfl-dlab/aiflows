@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from typing import List, Any, Dict
 import colorama
 
-from src.utils.general_helpers import create_unique_id, get_current_datetime_ns
+from flows.utils.general_helpers import create_unique_id, get_current_datetime_ns
 
 DEFAULT_CREATOR = "Executor"
 DEFAULT_FLOW_RUNNER = "Execute-runner"

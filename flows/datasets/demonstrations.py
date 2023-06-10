@@ -1,7 +1,7 @@
-from src.datasets.abstract import AbstractDataset
+from flows.datasets.abstract import AbstractDataset
 import os
-import src.utils as utils
-import src.utils.general_helpers as general_helpers
+import flows.utils as utils
+import flows.utils.general_helpers as general_helpers
 
 
 if __name__ == "__main__":

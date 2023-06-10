@@ -1,7 +1,7 @@
 import langchain
 
-from src.flows import SequentialFlow, GeneratorCriticFlow, FixedReplyAtomicFlow, OpenAIChatAtomicFlow
-from src.utils import instantiate_flow
+from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyAtomicFlow, OpenAIChatAtomicFlow
+from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
 import pytest

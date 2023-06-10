@@ -1,6 +1,6 @@
 import pytest
 
-from src.flows import SequentialFlow, AtomicFlow
+from flows.base_flows import SequentialFlow, AtomicFlow
 
 
 def atomic_flow_builder(bias):

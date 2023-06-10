@@ -7,11 +7,11 @@ from abc import ABC
 
 from tqdm import tqdm
 
-from src.utils import general_helpers
+from flows.utils import general_helpers
 from torch.utils.data.dataloader import DataLoader
 from typing import List, Dict, Optional, Union
 
-from src import utils
+from flows import utils
 
 log = utils.get_pylogger(__name__)
 

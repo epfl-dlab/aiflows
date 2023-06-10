@@ -3,10 +3,10 @@ from typing import List, Dict, Any
 
 import jinja2
 
-from src.flows import AtomicFlow
+from flows.base_flows import AtomicFlow
 
-import src.tools.code_evaluation.testing_utils_leetcode as testing_utils_leetcode
-import src.tools.code_evaluation.testing_utils_codeforces as testing_utils_codeforces
+import flows.tools.code_evaluation.testing_utils_leetcode as testing_utils_leetcode
+import flows.tools.code_evaluation.testing_utils_codeforces as testing_utils_codeforces
 
 
 class CodeTestingAtomicFlow(AtomicFlow):

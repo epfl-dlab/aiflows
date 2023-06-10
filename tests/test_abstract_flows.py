@@ -1,7 +1,7 @@
 import pytest
 
-from src.flows.abstract import Flow
-from src.history import FlowHistory
+from flows.base_flows.abstract import Flow
+from flows.history import FlowHistory
 
 
 def test_basic_instantiating() -> None:

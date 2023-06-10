@@ -2,15 +2,15 @@ import copy
 import time
 from typing import List, Dict, Union
 
-from src.flow_launcher import MultiThreadedAPILauncher
+from flows.flow_launcher import MultiThreadedAPILauncher
 
-from src.messages import InputMessage, Message, FlowMessage
-from src.flows import Flow
+from flows.messages import InputMessage, Message, FlowMessage
+from flows.base_flows import Flow
 
-from src.models.collators import Collator
+from flows.models.collators import Collator
 
-from src.utils import general_helpers
-from src import utils
+from flows.utils import general_helpers
+from flows import utils
 from copy import deepcopy
 
 log = utils.get_pylogger(__name__)
