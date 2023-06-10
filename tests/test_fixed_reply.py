@@ -1,5 +1,5 @@
 import pytest
-from src.flows import FixedReplyAtomicFlow
+from flows.base_flows import FixedReplyAtomicFlow
 
 
 def test_basic_instantiating() -> None:

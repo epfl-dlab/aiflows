@@ -1,6 +1,6 @@
 import pytest
 
-from src.flows import AtomicFlow, GeneratorCriticFlow, FixedReplyAtomicFlow
+from flows.base_flows import AtomicFlow, GeneratorCriticFlow, FixedReplyAtomicFlow
 
 
 def atomic_flow_builder():

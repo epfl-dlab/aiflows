@@ -4,9 +4,9 @@ import shutil
 import threading
 import time
 
-from src.flows import AtomicFlow
-from src.utils import caching_utils
-from src.utils.caching_utils import flow_run_cache
+from flows.base_flows import AtomicFlow
+from flows.utils import caching_utils
+from flows.utils.caching_utils import flow_run_cache
 
 SLEEP_TIME = 0.1
 

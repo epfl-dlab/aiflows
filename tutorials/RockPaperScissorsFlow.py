@@ -1,6 +1,6 @@
 import random
 
-from src.flows.abstract import Flow
+from flows.base_flows.abstract import Flow
 from typing import List, Dict
 
 

@@ -1,5 +1,5 @@
-from src.history import FlowHistory
-from src.messages import Message
+from flows.history import FlowHistory
+from flows.messages import Message
 import pytest
 
 
