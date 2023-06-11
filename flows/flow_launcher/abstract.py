@@ -61,26 +61,25 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
     A class for creating a multi-threaded model to query API that can make requests using multiple API keys.
 
     Attributes:
+        debug: A boolean indicating whether to print debug information (if true, it will not run the multithreading).
+        output_dir: The directory to write the output files to.
+
         api_keys [List(str)]: A list of API keys to use for making requests.
         n_workers_per_key (int): The number of workers to use per API key.
         wait_time_per_key (int): The number of seconds to wait before making another request with the same API key.
-
-        debug: A boolean indicating whether to print debug information (if true, it will not run the multithreading).
         single_threaded : A boolean indicating whether to run the multithreading or not.
-        output_dir: The directory to write the output files to.
     """
 
     def __init__(self, **kwargs):
+        self.api_keys = kwargs["api_keys"]
+        self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
+        self.__waittime_per_key = kwargs.get("wait_time_per_key", 6)
+        # Initialize to now - waittime_per_key to make the class know we haven't called it recently
+        self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_keys)
+
         self.debug = kwargs.get("debug", False)
         self.single_threaded = kwargs.get("single_threaded", False)
         self.output_dir = kwargs.get("output_dir", None)
-
-        self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
-        self.api_keys = kwargs["api_keys"]
-
-        # Initialize to now - waittime_per_key to make the class know we haven't called it recently
-        self.__waittime_per_key = kwargs.get("wait_time_per_key", 6)
-        self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_keys)
 
         predictions_dir = general_helpers.get_predictions_dir_path(self.output_dir)
         if self.single_threaded:

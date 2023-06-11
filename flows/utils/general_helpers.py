@@ -1,6 +1,13 @@
+from pathlib import Path
 from typing import List
 import uuid
 import time
+import os
+
+from dataclasses import is_dataclass
+import json
+import jsonlines
+
 
 def create_unique_id(existing_ids: List[str] = None):
     if existing_ids is None:
@@ -25,3 +32,31 @@ def get_current_datetime_ns():
     formatted_time_of_creation += f".{time_of_creation_ns % 1000000000:09d}"
 
     return formatted_time_of_creation
+
+
+def get_predictions_dir_path(output_dir, create_if_not_exists=True):
+    if output_dir is not None:
+        predictions_folder = os.path.join(output_dir, "predictions")
+    else:
+        predictions_folder = "predictions"
+
+    if create_if_not_exists:
+        Path(predictions_folder).mkdir(parents=True, exist_ok=True)
+
+    return predictions_folder
+
+
+def write_outputs(output_file, summary, mode):
+    # Custom serializer function for JSON
+    def dataclass_serializer(obj):
+        if is_dataclass(obj):
+            return obj.to_dict()
+        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+    # Custom dumps function
+    def dataclass_dumps(obj):
+        return json.dumps(obj, default=dataclass_serializer)
+
+    with open(output_file, mode) as fp:
+        json_writer = jsonlines.Writer(fp, dumps=dataclass_dumps)
+        json_writer.write_all(summary)
