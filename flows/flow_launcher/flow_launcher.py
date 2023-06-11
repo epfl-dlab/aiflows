@@ -68,12 +68,12 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             _success_datapoint = True
             for _ in range(self.n_independent_samples):
                 _success_sample = False
+                flow = _flow.__class__.load_from_config(_flow.flow_config)
                 if self.fault_tolerant_mode:
                     attempts = 1
 
                     while attempts <= self.n_batch_retries:
                         try:
-                            flow = _flow.__class__.load_from_config(_flow.flow_config)
                             sample["api_key"] = self.api_keys[api_key_idx]
                             task_message = flow.package_task_message(recipient_flow=flow,
                                                                      task_name="run_task",
