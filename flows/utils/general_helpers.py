@@ -1,3 +1,4 @@
+import collections
 from pathlib import Path
 from typing import List
 import uuid
@@ -60,3 +61,13 @@ def write_outputs(output_file, summary, mode):
     with open(output_file, mode) as fp:
         json_writer = jsonlines.Writer(fp, dumps=dataclass_dumps)
         json_writer.write_all(summary)
+
+
+def recursive_dictionary_update(d, u):
+    """Performs a recursive update of the values in dictionary d with the values of dictionary u"""
+    for k, v in u.items():
+        if isinstance(v, collections.abc.Mapping):
+            d[k] = recursive_dictionary_update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d
