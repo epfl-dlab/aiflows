@@ -1,4 +1,5 @@
 import pprint
+import hydra
 
 import colorama
 import time
@@ -85,12 +86,28 @@ class OpenAIChatAtomicFlow(AtomicFlow):
             kwargs["wait_time_between_retries"] = 20
 
         super().__init__(**kwargs)
+        self._instantiate()
 
         assert self.name not in [
             "system",
             "user",
             "assistant",
         ], f"Flow name '{self.name}' cannot be 'system', 'user' or 'assistant'"
+
+    def _instantiate(self):
+        # ~~~ Instantiate prompts ~~~
+        self.system_message_prompt_template = \
+            hydra.utils.instantiate(self.flow_config['system_message_prompt_template'], _convert_="partial")
+        self.query_message_prompt_template = \
+            hydra.utils.instantiate(self.flow_config['query_message_prompt_template'], _convert_="partial")
+        if self.flow_config["human_message_prompt_template"] is not None:
+            self.human_message_prompt_template = \
+                hydra.utils.instantiate(self.flow_config['human_message_prompt_template'], _convert_="partial")
+
+        # ~~~ Instantiate response annotators ~~~
+        if self.flow_config["response_annotators"] and len(self.flow_config["response_annotators"]) > 0:
+            for key, config in self.flow_config["response_annotators"].items():
+                self.response_annotators[key] = hydra.utils.instantiate(config, _convert_="partial")
 
     def is_initialized(self):
         conv_init = False
@@ -201,7 +218,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
             model_name=self.model_name,
             openai_api_key=api_key,
             **self.generation_parameters,
-            # model_kwargs=self.generation_parameters
         )
 
         messages = self.get_conversation_messages(
