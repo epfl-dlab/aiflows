@@ -178,7 +178,8 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                         log.info("SKIPPING problem with ID {} -- predictions already exist".format(batch[0]["id"]))
                         log.info("~~~~~~~~~~~~ Progress: {}/{} batches finished ~~~~~~~~~~~~~".format(c, total))
                         self.write_batch_output(
-                            output_file=self.existing_predictions_file, batch=[id2existing_predictions[batch[0]["id"]]]
+                            output_file=self.existing_predictions_file,
+                            batch=[id2existing_predictions[batch[0]["id"]]]
                         )
                         continue
 

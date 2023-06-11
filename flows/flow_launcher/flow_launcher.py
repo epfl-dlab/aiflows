@@ -56,7 +56,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         idx = self._indices.get()
 
-        flow = self.flows[idx]
+        _flow = self.flows[idx]
 
         output_file = self.output_files[idx]
 
@@ -73,20 +73,16 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                     while attempts <= self.n_batch_retries:
                         try:
-                            # ToDo: package_task_message deep-copies everything, right?
-                            # flow.initialize() # ToDo: Remove?
+                            flow = _flow.__class__.load_from_config(_flow.flow_config)
                             sample["api_key"] = self.api_keys[api_key_idx]
                             task_message = flow.package_task_message(recipient_flow=flow,
                                                                      task_name="run_task",
                                                                      task_data=sample,
                                                                      expected_outputs=self.expected_outputs)
 
-                            # self._add_keys_values_input(input_message,
-                            #                             kwargs={"api_key": self.api_keys[api_key_idx]})
-
                             output_message = flow(task_message)
 
-                            inference_outputs.append(output_message.data)  # ToDo: Verify correctness
+                            inference_outputs.append(output_message.data)
                             _success_sample = True
                             _error = "None"
                             break
@@ -112,7 +108,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                     output_message = flow(task_message)
 
-                    inference_outputs.append(output_message.data)  # ToDo: Verify correctness
+                    inference_outputs.append(output_message.data)
                     _success_sample = True
                     _error = "None"
 

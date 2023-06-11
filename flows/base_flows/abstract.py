@@ -93,7 +93,7 @@ class Flow(ABC):
                     continue
 
             updates[key] = value
-            self.flow_state[key] = value
+            self.flow_state[key] = copy.deepcopy(value)
 
         if updates:
             state_update_message = StateUpdateMessage(
@@ -193,7 +193,7 @@ class Flow(ABC):
             parent_message_ids=parent_message_ids,
             flow_runner=self.name,
             flow_run_id=self.flow_run_id,
-            data=outputs,
+            data=copy.deepcopy(outputs),
             error_message=error_message,
             history=self.flow_state.get("history", [])
         )
@@ -213,7 +213,7 @@ class Flow(ABC):
             target_flow_run_id=recipient_flow.flow_run_id,
             parent_message_ids=parent_message_ids,
             task_name=task_name,
-            data=task_data,
+            data=copy.deepcopy(task_data),
             expected_outputs=expected_outputs
         )
 

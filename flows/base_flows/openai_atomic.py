@@ -270,14 +270,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._log_chat_message(message_creator=self.user_name,
                                content=user_message_content)
 
-        # if self.flow_state["dry_run"]:
-        #     messages_str = self.flow_state["history"].to_string()
-        #     log.info(
-        #         f"\n{colorama.Fore.MAGENTA}~~~ Messages [{self.name} -- {self.flow_run_id}] ~~~\n"
-        #         f"{colorama.Style.RESET_ALL}{messages_str}"
-        #     )
-        #     exit(0)
-
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
         # ~~~ Chat-specific preparation ~~~
         self._prepare_conversation(input_data)
