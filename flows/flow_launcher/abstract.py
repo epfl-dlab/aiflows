@@ -43,7 +43,7 @@ class BaseLauncher(ABC):
             to_write_sample = {}
 
             for key in keys_to_write:
-                # ToDo: remove after finishing the CF exisiting runs
+                # ToDo: remove after finishing the CF existing runs
                 if key == "success" and key not in sample:
                     to_write_sample[key] = True
                 elif key == "error" and key not in sample:

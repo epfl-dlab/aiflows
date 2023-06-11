@@ -112,7 +112,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
     def is_initialized(self):
         conv_init = False
         if "conversation_initialized" in self.flow_state:
-            conv_init = self.flow_state["conversation_initialized"].content
+            conv_init = self.flow_state["conversation_initialized"]
         return conv_init
 
     def expected_inputs_given_state(self):
