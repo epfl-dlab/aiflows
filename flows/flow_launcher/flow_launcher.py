@@ -1,6 +1,6 @@
 import time
 
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from .collators import Collator, NoCollationCollator
 from flows.flow_launcher import MultiThreadedAPILauncher
@@ -27,7 +27,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
     def __init__(
             self,
-            flow: Flow,  # ToDo: This will always be a single flow, no?
+            flow: Union[Flow, List[Flow]],
             n_independent_samples: int,
             fault_tolerant_mode: bool,
             n_batch_retries: int,
@@ -41,7 +41,10 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         if collator is None:
             self.collator = NoCollationCollator()
 
-        self.flow = flow
+        if isinstance(flow, Flow):
+            flow = [flow]
+
+        self.flows = flow
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
@@ -53,7 +56,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         idx = self._indices.get()
 
-        flow = self.flow[idx]
+        flow = self.flows[idx]
 
         output_file = self.output_files[idx]
 
