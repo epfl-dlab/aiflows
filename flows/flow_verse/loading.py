@@ -1,5 +1,9 @@
 import os
 
+from omegaconf import OmegaConf
+
+from flows.utils.general_helpers import recursive_dictionary_update
+
 default_home = os.path.join(os.path.expanduser("~"), ".cache")
 flows_cache_home = os.path.expanduser(os.path.join(default_home, "flows"))
 DEFAULT_CACHE_PATH = os.path.join(flows_cache_home, "flow_verse")
@@ -19,15 +23,77 @@ def add_to_sys_path(path):
         sys.path.append(absolute_path)
 
 
-def load_flow(repository_id, name, cache_dir=DEFAULT_CACHE_PATH):
-    local_repo_path = snapshot_download(repo_id=repository_id, cache_dir=cache_dir)
-    print("The flow was synced to:", local_repo_path)
+def _is_local_path(path_to_dir):
+    """Returns True if path_to_dir is a path to a local directory."""
+
+    # check if the directory exists
+    if os.path.isdir(path_to_dir):
+        # check if directory is not empty
+        if os.listdir(path_to_dir):
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+def _sync_repository_to_working_dir():
+    # ToDo: Maybe rely on this instead? Copy the flow in the working dir?
+    pass
+
+
+def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, **kwargs):
+    path_to_local_repo = snapshot_download(repo_id=repository_id, cache_dir=cache_dir, **kwargs)
+    print("The flow repository was synced to:", path_to_local_repo)  # ToDo: Replace with log.info once the logger is set up
+    return path_to_local_repo
+
+
+def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **overrides):
+    config_name = f"{class_name}.yaml"
+    if _is_local_path(repository_id):
+        path_to_local_repository = repository_id
+    else:
+        path_to_local_repository = _sync_repository(repository_id,
+                                                    cache_dir=cache_dir,
+                                                    allow_patterns=config_name)
+
+    default_config = OmegaConf.to_container(
+        OmegaConf.load(os.path.join(path_to_local_repository, config_name)),
+        resolve=True
+    )
+    config = recursive_dictionary_update(default_config, overrides)
+
+    return config
+
+
+def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH):
+    if _is_local_path(repository_id):
+        path_to_local_repository = repository_id
+    else:
+        path_to_local_repository = _sync_repository(repository_id,
+                                                    cache_dir=cache_dir)
 
     # split local_repo_path into parent and folder name
-    local_repo_path_parent, local_repo_dir_name = os.path.dirname(local_repo_path), os.path.basename(local_repo_path)
+    local_repo_path_parent = os.path.dirname(path_to_local_repository)
+    local_repo_dir_name = os.path.basename(path_to_local_repository)
 
     add_to_sys_path(local_repo_path_parent)
-    _ = importlib.import_module(local_repo_dir_name)
-    flow_module = importlib.import_module(f"{local_repo_dir_name}.{name}")
-    flow_class = getattr(flow_module, name)
+    flow_module = importlib.import_module(local_repo_dir_name)
+    flow_class = getattr(flow_module, class_name)
+
+    # ToDo: Is there a cleaner way to do this?
+    flow_class.repository_id = repository_id
+    flow_class.class_name = class_name
+
     return flow_class
+
+
+def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **overrides):
+    flow_class = load_class(repository_id=repository_id,
+                            class_name=class_name,
+                            cache_dir=cache_dir)
+
+    config = load_config(**overrides)
+    return flow_class.instantiate(config)
+
+
