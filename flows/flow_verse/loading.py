@@ -93,7 +93,10 @@ def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **
                             class_name=class_name,
                             cache_dir=cache_dir)
 
-    config = load_config(**overrides)
+    config = load_config(repository_id=repository_id,
+                         class_name=class_name,
+                         cache_dir=cache_dir,
+                         **overrides)
     return flow_class.instantiate(config)
 
 
