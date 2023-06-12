@@ -36,14 +36,14 @@ def test_basic_instantiating() -> None:
         expected_inputs=["v0"],
         verbose=False,
         dry_run=True,
-        flows={"flow_a": flow_a, "flow_b": flow_b}
+        flows=[flow_a, flow_b]
     )
 
     assert not flow.verbose
     assert flow.dry_run
     assert len(flow.flow_config["flows"]) == 2
-    assert isinstance(flow.flow_config["flows"]["flow_a"], AtomicFlow)
-    assert isinstance(flow.flow_config["flows"]["flow_b"], AtomicFlow)
+    assert isinstance(flow.flow_config["flows"][0], AtomicFlow)
+    assert isinstance(flow.flow_config["flows"][1], AtomicFlow)
 
 
 def test_basic_call():
@@ -59,7 +59,7 @@ def test_basic_call():
         max_rounds=3,
         eoi_key=None,
         max_round=2,
-        flows={"generator": flow_a, "critic": flow_b}
+        flows=[flow_a, flow_b]
     )
 
     data = {"v0": 10}
