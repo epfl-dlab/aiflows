@@ -4,17 +4,17 @@ from typing import List, Dict, Any, Union
 
 import colorama
 
+import flows
 from flows import utils
 from flows.history import FlowHistory
 from flows.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
-from flows.utils import io_utils
 from flows.utils.general_helpers import create_unique_id
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_HASH = ["name", "description", "verbose", "history"]
+    KEYS_TO_IGNORE_HASH = ["name", "description", "verbose", "history", "repository_id", "class_name"]
 
     name: str
     description: str
@@ -60,11 +60,23 @@ class Flow(ABC):
             self.__setattr__(k, copy.deepcopy(v))
 
     @classmethod
+    def get_config(cls, **overrides):
+        return flows.flow_verse.load_config(repository_id=cls.repository_id,
+                                            name=cls.class_name,
+                                            **overrides)
+
+    @classmethod
+    def instantiate(cls, config):
+        return cls(**config)
+
+    @classmethod
     def load_from_config(cls, flow_config: Dict[str, Any]):
+        # ToDo: Remove
         return cls(**flow_config)
 
     @classmethod
     def load_from_state(cls, flow_state: Dict):
+        # ToDo: Remove?
         flow_config = flow_state["flow_config"]
         flow = cls.load_from_config(flow_config=flow_config)
         flow.__setstate__(flow_state)
