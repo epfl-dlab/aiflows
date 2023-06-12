@@ -18,7 +18,7 @@ def _identify_subflows(cfg: DictConfig) -> List[str]:
 
         # ~~~ It is a flow if it should instantiate from src.flows.* ~~~
         if "_target_" in cfg[key].keys():
-            if "src.flows" in cfg[key]["_target_"]:
+            if "flows.base_flows" in cfg[key]["_target_"]:
                 subflow_keys.append(key)
 
     return subflow_keys
@@ -39,4 +39,4 @@ def instantiate_flow(cfg: DictConfig):
         subflows[sub_name] = instantiate_flow(cfg[sub_name])
         del flow_config[sub_name]
 
-    return hydra.utils.instantiate(flow_config, flows=subflows, _convert_="partial")
+    return hydra.utils.instantiate(flow_config, flows=subflows, _convert_="partial", recursive=False)

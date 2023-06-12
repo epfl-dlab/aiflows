@@ -5,6 +5,7 @@ from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
 import pytest
+import hydra
 
 
 def test_empty_loading() -> None:
@@ -14,7 +15,7 @@ def test_empty_loading() -> None:
 
 def test_example_loading() -> None:
     cfg = OmegaConf.create({
-        "_target_": "src.flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
         "fixed_reply": "dummy_fixed_reply"
@@ -26,10 +27,51 @@ def test_example_loading() -> None:
     answer = flow.run(input_data=None, expected_outputs=["answer"])
     assert answer["answer"] == "dummy_fixed_reply"
 
+def test_openai_atomic_loading() -> None:
+    sys_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "You are a helpful assistant",
+        "input_variables": []
+    }
+
+    hum_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Please respond nicely",
+        "input_variables": []
+    }
+
+    query_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Bam, code",
+        "input_variables": []
+    }
+
+    gen_flow_dict = {
+        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "name": "gen_flow",
+        "description": "gen_desc",
+        "expected_inputs": ["input_0", "input_1"],
+        "expected_outputs": ["gen_out"],
+        "model_name": "gpt-model",
+        "generation_parameters": {"temperature": 0.7},
+        "system_message_prompt_template": sys_prompt,
+        "human_message_prompt_template": hum_prompt,
+        "query_message_prompt_template": query_prompt
+    }
+
+    flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+
+    assert flow.name == "gen_flow"
+    assert flow.verbose  # test that defaults are set
+
+
+
+
+
 
 def test_loading_wrong_inputs() -> None:
     cfg = OmegaConf.create({
-        "_target_": "src.flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
         "fixed_reply": "dummy_fixed_reply",
@@ -53,7 +95,7 @@ def test_loading_nested_flow() -> None:
     }
 
     gen_flow_dict = {
-        "_target_": "src.flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "expected_inputs": ["input_0", "input_1"],
@@ -65,7 +107,7 @@ def test_loading_nested_flow() -> None:
     }
 
     crit_flow_dict = {
-        "_target_": "src.flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
         "name": "dummy_crit_name_fr",
         "description": "dummy_crit_desc_fr",
         "fixed_reply": "DUMMY CRITIC",
@@ -73,7 +115,7 @@ def test_loading_nested_flow() -> None:
     }
 
     first_flow_dict = {
-        "_target_": "src.flows.GeneratorCriticFlow",
+        "_target_": "flows.base_flows.GeneratorCriticFlow",
         "name": "gen_crit_flow",
         "description": "gen_crit_desc",
         "expected_inputs": ["input_0", "input_1"],
@@ -85,7 +127,7 @@ def test_loading_nested_flow() -> None:
     }
 
     second_flow_dict = {
-        "_target_": "src.flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
         "name": "dummy_name_fr",
         "description": "dummy_desc_fr",
         "fixed_reply": "dummy_fixed_reply",
@@ -93,7 +135,7 @@ def test_loading_nested_flow() -> None:
     }
 
     cfg = OmegaConf.create({
-        "_target_": "src.flows.SequentialFlow",
+        "_target_": "flows.base_flows.SequentialFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
         "expected_inputs": ["input_0", "input_1"],

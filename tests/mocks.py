@@ -22,7 +22,9 @@ class MockBrokenChatOpenAI:
 
 
 class MockResponse:
-    content = "hello"
+
+    def __init__(self):
+        self.content = "hello"
 
 class MockAnnotator:
     def __init__(self, key, *args, **kwargs):

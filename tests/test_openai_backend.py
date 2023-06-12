@@ -6,242 +6,165 @@ from flows.base_flows import OpenAIChatAtomicFlow
 from flows.messages import TaskMessage
 from flows.messages.chat_message import ChatMessage
 from tests.mocks import MockChatOpenAI, MockBrokenChatOpenAI, MockAnnotator
-
+import time
 
 def test_success(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
+    monkeypatch.setattr(time, "sleep", lambda x: None)
 
     expected_out = ["answer"]
     expected_in = ["question"]
+    sys_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "You are a helpful assistant",
+        "input_variables": []
+    }
 
-    system_message_prompt_template = langchain.PromptTemplate(
-        template="You are an assistant",
-        input_variables=[]
-    )
+    hum_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Please respond nicely",
+        "input_variables": []
+    }
 
-    human_message_prompt_template = langchain.PromptTemplate(
-        template="{{query}}",
-        input_variables=["query"],
-        template_format="jinja2"
-    )
+    query_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Bam, code",
+        "input_variables": []
+    }
 
-    query_message_prompt_template = langchain.PromptTemplate(
-        template="Here is my question: {{question}}",
-        input_variables=["question"],
-        template_format="jinja2"
-    )
+    gen_flow_dict = {
+        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "name": "gen_flow",
+        "description": "gen_desc",
+        "expected_inputs": ["input_0", "input_1"],
+        "expected_outputs": ["gen_out"],
+        "model_name": "gpt-model",
+        "generation_parameters": {"temperature": 0.7},
+        "system_message_prompt_template": sys_prompt,
+        "human_message_prompt_template": hum_prompt,
+        "query_message_prompt_template": query_prompt,
+        "response_annotators" : {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}}
 
-    openai_flow = OpenAIChatAtomicFlow(
-        name="openai",
-        description="openai",
-        model_name="doesn't exist",
-        expected_outputs=expected_out,
-        expected_inputs=expected_in,
-        generation_parameters={},
-        system_message_prompt_template=system_message_prompt_template,
-        human_message_prompt_template=human_message_prompt_template,
-        query_message_prompt_template=query_message_prompt_template,
-        wait_time_between_retries=0,
-        verbose=True
-    )
+    }
+
+    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
 
     answer_annotator = openai_flow._get_annotator_with_key("answer")
-    assert answer_annotator is None
+    assert answer_annotator is not None
 
-    openai_flow.initialize()
     openai_flow.set_api_key("foo")
 
-    task_message = TaskMessage(
-        expected_output_keys=expected_out,
-        target_flow_run_id=openai_flow.state["flow_run_id"],
-        message_creator="task",
-        parent_message_ids=[],
-        flow_runner="task",
-        flow_run_id="00",
-        data={"question": "What is your answer?"},
-    )
+    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"}, expected_out)
     output = openai_flow(task_message)
     assert "answer" in output.data
 
 
 def test_failure(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockBrokenChatOpenAI)
+    monkeypatch.setattr(time, "sleep", lambda x: None)
 
     expected_out = ["answer"]
     expected_in = ["question"]
+    sys_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "You are a helpful assistant",
+        "input_variables": []
+    }
 
-    system_message_prompt_template = langchain.PromptTemplate(
-        template="You are an assistant",
-        input_variables=[]
-    )
+    hum_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Please respond nicely",
+        "input_variables": []
+    }
 
-    human_message_prompt_template = langchain.PromptTemplate(
-        template="{{query}}",
-        input_variables=["query"],
-        template_format="jinja2"
-    )
+    query_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Bam, code",
+        "input_variables": []
+    }
 
-    query_message_prompt_template = langchain.PromptTemplate(
-        template="Here is my question: {{question}}",
-        input_variables=["question"],
-        template_format="jinja2"
-    )
+    gen_flow_dict = {
+        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "name": "gen_flow",
+        "description": "gen_desc",
+        "expected_inputs": ["input_0", "input_1"],
+        "expected_outputs": ["gen_out"],
+        "model_name": "gpt-model",
+        "generation_parameters": {"temperature": 0.7},
+        "system_message_prompt_template": sys_prompt,
+        "human_message_prompt_template": hum_prompt,
+        "query_message_prompt_template": query_prompt,
 
-    openai_flow = OpenAIChatAtomicFlow(
-        name="openai",
-        description="openai",
-        model_name="doesn't exist",
-        expected_outputs=expected_out,
-        expected_inputs=expected_in,
-        generation_parameters={},
-        system_message_prompt_template=system_message_prompt_template,
-        human_message_prompt_template=human_message_prompt_template,
-        query_message_prompt_template=query_message_prompt_template,
-        wait_time_between_retries=0,
-    )
+    }
 
-    openai_flow.initialize()
+    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+
     openai_flow.set_api_key("foo")
 
-    task_message = TaskMessage(
-        expected_output_keys=expected_out,
-        target_flow_run_id=openai_flow.state["flow_run_id"],
-        message_creator="task",
-        parent_message_ids=[],
-        flow_runner="task",
-        flow_run_id="00",
-        data={"question": "What is your answer?"},
-    )
+    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"},
+                                                    expected_out)
+
     # the following call raises an exception
     # expect it with pytest
     with pytest.raises(Exception):
         output = openai_flow(task_message)
 
 
-def test_dry_run(monkeypatch):
-    monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockBrokenChatOpenAI)
 
-    expected_out = ["answer"]
-    expected_in = ["question"]
-
-    system_message_prompt_template = langchain.PromptTemplate(
-        template="You are an assistant",
-        input_variables=[]
-    )
-
-    human_message_prompt_template = langchain.PromptTemplate(
-        template="{{query}}",
-        input_variables=["query"],
-        template_format="jinja2"
-    )
-
-    query_message_prompt_template = langchain.PromptTemplate(
-        template="Here is my question: {{question}}",
-        input_variables=["question"],
-        template_format="jinja2"
-    )
-
-    openai_flow = OpenAIChatAtomicFlow(
-        name="openai",
-        description="openai",
-        model_name="doesn't exist",
-        expected_outputs=expected_out,
-        expected_inputs=expected_in,
-        generation_parameters={},
-        system_message_prompt_template=system_message_prompt_template,
-        human_message_prompt_template=human_message_prompt_template,
-        query_message_prompt_template=query_message_prompt_template,
-        wait_time_between_retries=0,
-        dry_run=True
-    )
-
-    openai_flow.initialize()
-    openai_flow.set_api_key("foo")
-
-    task_message = TaskMessage(
-        expected_output_keys=expected_out,
-        target_flow_run_id=openai_flow.state["flow_run_id"],
-        message_creator="task",
-        parent_message_ids=[],
-        flow_runner="task",
-        flow_run_id="00",
-        data={"question": "What is your answer?"},
-    )
-
-    # the following call with lead to exit(0)
-    # expect it with pytest
-    with pytest.raises(SystemExit):
-        output = openai_flow(task_message)
 
 
 def test_conv_init(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
+    monkeypatch.setattr(time, "sleep", lambda x: None)
 
     expected_out = ["answer"]
-    expected_in = ["question"]
+    sys_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "You are a helpful assistant",
+        "input_variables": []
+    }
 
-    system_message_prompt_template = langchain.PromptTemplate(
-        template="You are an assistant",
-        input_variables=[]
-    )
+    hum_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Please respond nicely",
+        "input_variables": []
+    }
 
-    human_message_prompt_template = langchain.PromptTemplate(
-        template="{{query}}",
-        input_variables=["query"],
-        template_format="jinja2"
-    )
+    query_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Bam, code",
+        "input_variables": []
+    }
 
-    query_message_prompt_template = langchain.PromptTemplate(
-        template="Here is my question: {{question}}",
-        input_variables=["question"],
-        template_format="jinja2"
-    )
+    gen_flow_dict = {
+        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "name": "gen_flow",
+        "description": "gen_desc",
+        "expected_inputs": ["input_0", "input_1"],
+        "expected_outputs": ["gen_out"],
+        "model_name": "gpt-model",
+        "generation_parameters": {"temperature": 0.7},
+        "system_message_prompt_template": sys_prompt,
+        "human_message_prompt_template": hum_prompt,
+        "query_message_prompt_template": query_prompt,
 
-    openai_flow = OpenAIChatAtomicFlow(
-        name="openai",
-        description="openai",
-        model_name="doesn't exist",
-        expected_outputs=expected_out,
-        expected_inputs=expected_in,
-        generation_parameters={},
-        system_message_prompt_template=system_message_prompt_template,
-        human_message_prompt_template=human_message_prompt_template,
-        query_message_prompt_template=query_message_prompt_template,
-        wait_time_between_retries=0,
-    )
+    }
 
-    openai_flow.initialize()
+    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+
     openai_flow.set_api_key("foo")
 
-    task_message = TaskMessage(
-        expected_output_keys=expected_out,
-        target_flow_run_id=openai_flow.state["flow_run_id"],
-        message_creator="task",
-        parent_message_ids=[],
-        flow_runner="task",
-        flow_run_id="00",
-        data={"question": "What is your answer?"},
-    )
+    task_message = openai_flow.package_task_message(openai_flow, "test", {"query": "What is your answer?"},
+                                                    expected_out)
 
-    # the following call with lead to exit(0)
-    # expect it with pytest
-    output = openai_flow(task_message)
+
+    _ = openai_flow(task_message)
 
     expected_inputs = openai_flow.expected_inputs_given_state()
 
-    task_message = TaskMessage(
-        expected_output_keys=expected_out,
-        target_flow_run_id=openai_flow.state["flow_run_id"],
-        message_creator="task",
-        parent_message_ids=[],
-        flow_runner="task",
-        flow_run_id="00",
-        data={"query": "What is your answer?"},
-    )
-
     for key in expected_inputs:
         assert key in task_message.data.keys()
-    output = openai_flow(task_message)
+    _ = openai_flow(task_message)
 
 
 def test_inspect_conversation(monkeypatch):
