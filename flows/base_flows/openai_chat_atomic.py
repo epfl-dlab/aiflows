@@ -70,9 +70,13 @@ class OpenAIChatAtomicFlow(AtomicFlow):
            hydra.utils.instantiate(self.flow_config['system_message_prompt_template'], _convert_="partial")
         self.query_message_prompt_template = \
            hydra.utils.instantiate(self.flow_config['query_message_prompt_template'], _convert_="partial")
-        if self.flow_config["human_message_prompt_template"] is not None:
+        if "human_message_prompt_template" in self.flow_config:
            self.human_message_prompt_template = \
                hydra.utils.instantiate(self.flow_config['human_message_prompt_template'], _convert_="partial")
+
+        if "demonstrations_response_template" in self.flow_config:
+            self.demonstrations_response_template = \
+               hydra.utils.instantiate(self.flow_config['demonstrations_response_template'], _convert_="partial")
 
         # ~~~ Instantiate response annotators ~~
         response_annotators = self.flow_config.get("response_annotators", {})
@@ -102,10 +106,12 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         return msg_content
 
     def _get_demonstration_query_message_content(self, sample_data: Dict):
-        return self.query_message_prompt_template.format(**sample_data), []
+        input_variables = self.query_message_prompt_template.input_variables
+        return self.query_message_prompt_template.format(**{k:sample_data[k] for k in input_variables}), []
 
     def _get_demonstration_response_message_content(self, sample_data: Dict):
-        return self.demonstrations_response_template.format(**sample_data), []
+        input_variables = self.demonstrations_response_template.input_variables
+        return self.demonstrations_response_template.format(**{k:sample_data[k] for k in input_variables}), []
 
     def _get_annotator_with_key(self, key: str):
         for _, ra in self.response_annotators.items():
@@ -157,10 +163,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._update_state(update_data={"conversation_initialized": True})
 
     def get_conversation_messages(self, message_format: Optional[str] = None):
-        assert message_format is None or message_format in [
-            "open_ai"
-        ], f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported"
-
         messages = self.flow_state["history"].get_chat_messages()
 
         if message_format is None:
@@ -180,7 +182,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                     raise ValueError(f"Unknown name: {message.message_creator}")
             return processed_messages
         else:
-            raise ValueError(f"Unknown message format: {message_format}")
+            raise ValueError(f"Currently supported conversation message formats: 'open_ai'. '{message_format}' is not supported")
 
     def _call(self):
         api_key = self.flow_state["api_key"]
