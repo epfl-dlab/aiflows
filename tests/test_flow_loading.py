@@ -27,6 +27,7 @@ def test_example_loading() -> None:
     answer = flow.run(input_data=None, expected_outputs=["answer"])
     assert answer["answer"] == "dummy_fixed_reply"
 
+
 def test_openai_atomic_loading() -> None:
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
@@ -63,6 +64,7 @@ def test_openai_atomic_loading() -> None:
 
     assert flow.name == "gen_flow"
     assert flow.verbose  # test that defaults are set
+
 
 def test_loading_wrong_inputs() -> None:
     cfg = OmegaConf.create({

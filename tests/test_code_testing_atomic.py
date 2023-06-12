@@ -91,7 +91,6 @@ def test_cf_tool_basic():
     assert answer.data["public_tests_results"][0]["status"]
     assert not answer.data["timeout_error"]
 
-
 # if __name__ == "__main__":
 #     test_basic_instantiating_cf()
 #     test_instantiating_extra_params()

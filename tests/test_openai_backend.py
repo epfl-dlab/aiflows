@@ -22,12 +22,13 @@ def test_missing_keys():
     with pytest.raises(KeyError):
         OpenAIChatAtomicFlow(model_name="gpt-model", generation_parameters={}, system_message_prompt_template={})
 
+
 def test_success(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
     monkeypatch.setattr(time, "sleep", lambda x: None)
 
     expected_out = ["answer"]
-    expected_in =  ["input_0", "input_1"]
+    expected_in = ["input_0", "input_1"]
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
@@ -57,7 +58,7 @@ def test_success(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-        "response_annotators" : {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}}
+        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}}
 
     }
 
@@ -65,15 +66,16 @@ def test_success(monkeypatch):
     openai_flow = OpenAIChatAtomicFlow.instantiate(gen_flow_dict)
     assert openai_flow.expected_inputs_given_state() == expected_in
 
-
     answer_annotator = openai_flow._get_annotator_with_key("answer")
     assert answer_annotator is not None
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"}, expected_out)
+    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"},
+                                                    expected_out)
     output = openai_flow(task_message)
     assert "answer" in output.data
+
 
 def test_state_update():
     expected_out = ["answer"]
@@ -201,9 +203,6 @@ def test_failure(monkeypatch):
         output = openai_flow(task_message)
 
 
-
-
-
 def test_conv_init(monkeypatch):
     monkeypatch.setattr(langchain.chat_models, "ChatOpenAI", MockChatOpenAI)
     monkeypatch.setattr(time, "sleep", lambda x: None)
@@ -247,7 +246,6 @@ def test_conv_init(monkeypatch):
 
     task_message = openai_flow.package_task_message(openai_flow, "test", {"query": "What is your answer?"},
                                                     expected_out)
-
 
     _ = openai_flow(task_message)
 
@@ -337,12 +335,11 @@ def test_add_demonstration(monkeypatch):
         "input_variables": ["query"]
     }
 
-    demonstration_template={
+    demonstration_template = {
         "_target_": "langchain.PromptTemplate",
         "template": "Bam, code {answer}",
         "input_variables": ["answer"]
     }
-
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
@@ -356,7 +353,7 @@ def test_add_demonstration(monkeypatch):
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
         "demonstrations_response_template": demonstration_template,
-        "demonstrations": [{"query":"What is your answer?", "answer": "answer"}]
+        "demonstrations": [{"query": "What is your answer?", "answer": "answer"}]
     }
 
     openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)

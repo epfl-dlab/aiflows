@@ -75,8 +75,6 @@ def test_loading_nested_flow() -> None:
 
     second_flow = FixedReplyAtomicFlow(**second_flow_dict)
 
-
-
     sequential_flow_config = {
         "_target_": "flows.base_flows.SequentialFlow",
         "name": "dummy_name",

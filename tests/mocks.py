@@ -26,12 +26,14 @@ class MockResponse:
     def __init__(self):
         self.content = "hello"
 
+
 class MockAnnotator:
     def __init__(self, key, *args, **kwargs):
-        self.key=key
+        self.key = key
 
     def __call__(self, data, *args, **kwargs):
-        return {self.key : data}
+        return {self.key: data}
+
 
 class MockMessage:
     def __init__(self, flow_run_id, message_creator):
