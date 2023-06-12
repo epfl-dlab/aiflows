@@ -10,8 +10,7 @@ DEFAULT_CACHE_PATH = os.path.join(flows_cache_home, "flow_verse")
 
 import sys
 import importlib
-from huggingface_hub import snapshot_download
-
+import huggingface_hub
 
 def add_to_sys_path(path):
     # Make sure the path is absolute
@@ -37,25 +36,23 @@ def _is_local_path(path_to_dir):
         return False
 
 
-def _sync_repository_to_working_dir():
-    # ToDo: Maybe rely on this instead? Copy the flow in the working dir?
-    pass
 
 
-def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, **kwargs):
-    path_to_local_repo = snapshot_download(repo_id=repository_id, cache_dir=cache_dir, **kwargs)
-    print("The flow repository was synced to:", path_to_local_repo)  # ToDo: Replace with log.info once the logger is set up
-    return path_to_local_repo
-
-
-def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **overrides):
-    config_name = f"{class_name}.yaml"
-    if _is_local_path(repository_id):
+def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, override=False, **kwargs):
+    if override:
+        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
+    elif _is_local_path(repository_id):
         path_to_local_repository = repository_id
     else:
-        path_to_local_repository = _sync_repository(repository_id,
-                                                    cache_dir=cache_dir,
-                                                    allow_patterns=config_name)
+        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
+
+    print("The flow repository was synced to:", path_to_local_repository)  # ToDo: Replace with log.info once the logger is set up
+    return path_to_local_repository
+
+
+def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, **overrides):
+    config_name = f"{class_name}.yaml"
+    path_to_local_repository = _sync_repository(repository_id, cache_dir=cache_dir, local_dir=local_dir, allow_patterns=config_name, **overrides)
 
     default_config = OmegaConf.to_container(
         OmegaConf.load(os.path.join(path_to_local_repository, config_name)),
@@ -67,10 +64,7 @@ def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **overr
 
 
 def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH):
-    if _is_local_path(repository_id):
-        path_to_local_repository = repository_id
-    else:
-        path_to_local_repository = _sync_repository(repository_id,
+    path_to_local_repository = _sync_repository(repository_id,
                                                     cache_dir=cache_dir)
 
     # split local_repo_path into parent and folder name
