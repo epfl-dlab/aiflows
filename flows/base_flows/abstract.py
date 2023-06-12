@@ -61,8 +61,8 @@ class Flow(ABC):
 
     @classmethod
     def get_config(cls, **overrides):
-        return flows.flow_verse.load_config(repository_id=cls.repository_id,
-                                            name=cls.class_name,
+        return flows.flow_verse.load_config(cls.repository_id,
+                                            cls.class_name,
                                             **overrides)
 
     @classmethod

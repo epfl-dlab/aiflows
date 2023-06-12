@@ -1,4 +1,5 @@
 from flows.flow_verse import loading
+from flows.base_flows import Flow
 import sys
 import os
 import tempfile
@@ -103,3 +104,12 @@ def test_load_class(monkeypatch):
 def test_instantiate(monkeypatch):
     flow = loading.instantiate_flow("lhk/test_model", "MockedFlow")
     assert flow.flow_type == "mocked"
+
+
+def test_get_config_from_abstract(monkeypatch):
+
+    class MockedVerseFlow(Flow):
+        repository_id = "lhk/test_model"
+        class_name = "MockedFlow"
+
+    MockedVerseFlow.get_config()

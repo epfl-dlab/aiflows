@@ -23,6 +23,9 @@ def test_basic_instantiating() -> None:
     assert flow.dry_run
     assert flow.flow_type == "my-flow"
 
+    with pytest.raises(NotImplementedError):
+        flow.run(input_data={}, expected_outputs=[])
+
 
 def test_instantiating_extra_params() -> None:
     flow = Flow(
