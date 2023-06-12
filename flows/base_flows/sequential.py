@@ -15,14 +15,17 @@ class SequentialFlow(CompositeFlow):
         flows = self.flow_config["flows"]
         assert len(flows) > 0, f"Sequential flow needs at least one flow, currently has {len(flows)}"
 
-        self.ordered_flows = list(flows.keys())
+        # ToDo: using a dictionary for flows might not ensure the order of the flows
+        # self.ordered_flows = list(flows.keys())
+        assert isinstance(flows, list), f"Sequential flow needs a list of flows, currently has {type(flows)}"
+        self.ordered_flows = flows
 
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
         self._update_state(input_data)
 
-        for current_flow_id in self.ordered_flows:
+        for flow in self.ordered_flows:
             # ~~~ Initialize flow ~~~
-            current_flow = self._init_flow(self.flows[current_flow_id])
+            current_flow = self._init_flow(flow)
 
             # ~~~ Execute the flow and update state with answer ~~~
             flow_answer = self._call_flow_from_state(
