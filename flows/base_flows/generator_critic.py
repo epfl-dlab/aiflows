@@ -31,8 +31,9 @@ class GeneratorCriticFlow(CompositeFlow):
         self._identify_flows()
 
         flow_names = set(self.flows.keys())
-        if flow_names not in[{"generator_flow", "critic_flow"}, {"critic", "generator"}]:
-            raise KeyError(f"Generator Critic needs two sub-flows, named either generator_flow and critic_flow or generator and critic. Currently, the flow names are: {flow_names}")
+        if flow_names not in [{"generator_flow", "critic_flow"}, {"critic", "generator"}]:
+            raise KeyError(
+                f"Generator Critic needs two sub-flows, named either generator_flow and critic_flow or generator and critic. Currently, the flow names are: {flow_names}")
 
     def _identify_flows(self):
         generator, critic = None, None
