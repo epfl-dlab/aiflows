@@ -65,8 +65,8 @@ if __name__ == "__main__":
     # qa = RetrievalQA.from_chain_type(llm=OpenAI(), chain_type="stuff", retriever=db.as_retriever())
 
     query = "What did the president say about Ketanji Brown Jackson"
-    answer = qa.run(query)
-    print(qa.memory)
+    answer = qa_with_docs.run(query)
+    # print(qa_with_docs.memory)
 
     flow_qa = GenericLCChain(
         name="Wrapper around QA chain",
@@ -74,13 +74,13 @@ if __name__ == "__main__":
         lc_chain=qa_with_docs
     )
     #
-    # task_message = flow_qa.package_task_message(
-    #     recipient_flow=flow_qa,
-    #     task_name="",
-    #     task_data={"query": query},
-    #     expected_outputs=["answer"]
-    # )
-    #
-    # ans = flow_qa(task_message)
-    #
-    # print(ans.data)
+    task_message = flow_qa.package_task_message(
+        recipient_flow=flow_qa,
+        task_name="",
+        task_data={"query": query},
+        expected_outputs=["answer"]
+    )
+
+    ans = flow_qa(task_message)
+
+    print(ans.data)
