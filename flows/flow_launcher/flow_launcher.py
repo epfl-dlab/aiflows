@@ -97,7 +97,6 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                     while attempts <= self.n_batch_retries:
                         try:
-                            flow.initialize()
                             self._add_keys_values_input(input_message, kwargs={"api_key": self.api_keys[api_key_idx],
                                                                                "dry_run": False})
                             inference_output = flow.run(deepcopy(input_message))

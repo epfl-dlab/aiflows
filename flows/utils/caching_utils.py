@@ -67,6 +67,8 @@ def flow_run_cache():
             all_args = list(args) + list(kwargs.values())
 
             flow = get_calling_flow(all_args)
+            input_data = kwargs["input_data"]
+            expected_outputs = kwargs["expected_outputs"]
 
             from flows.base_flows import AtomicFlow
             assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
@@ -81,7 +83,9 @@ def flow_run_cache():
                     result = cached_value.output_results
                     flow.__setstate__(cached_value.full_state)
 
-                    print("Retrieved from cache:", cached_value)
+                    print(f"Retrieved from cache: {flow.__class__.__name__} "
+                          f"-- {method.__name__}(input_data.keys()={list(input_data.keys())}, expected_outputs={expected_outputs})")
+                    # print("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function
                     result = method(*args, **kwargs)
@@ -93,7 +97,7 @@ def flow_run_cache():
 
                     cache[key] = value_to_cache
 
-                    print("Cached:", value_to_cache)
+                    # print("Cached:", value_to_cache)
 
             return result
 
