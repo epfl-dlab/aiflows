@@ -1,4 +1,4 @@
-import os
+import os, sys
 import time
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -195,7 +195,9 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                         num_failures += len([sample for sample in batch if not sample["success"]])
                     except Exception as e:
                         log.exception("")
-                        os._exit(1)
+                        # ToDo: do we really want os._exit(1) here?
+                        # I don't see a way to test this, since it kills the python process entirely
+                        sys.exit(1)
 
         if num_failures > 0:
             log.error("Number of failures: {} (out of {})".format(num_failures, num_datapoints))
