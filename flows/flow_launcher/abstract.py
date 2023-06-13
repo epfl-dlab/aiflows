@@ -24,7 +24,7 @@ class BaseLauncher(ABC):
         raise NotImplementedError("Not implemented")
 
     @staticmethod
-    def _get_outputs_to_write(batch: List[Dict], keys_to_write: Optional[Dict] = None) -> List[Dict]:
+    def _get_outputs_to_write(batch: List[Dict], keys_to_write: Optional[List] = None) -> List[Dict]:
         """
         It takes a batch of predictions and returns a dictionary containing the outputs to write to file.
 
