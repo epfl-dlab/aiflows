@@ -17,7 +17,7 @@ log = utils.get_pylogger(__name__)
 
 
 class BaseLauncher(ABC):
-    def predict(self, batch: List[Dict], output_file: str) -> List[Dict]:
+    def predict(self, batch: List[Dict]) -> List[Dict]:
         raise NotImplementedError("Not implemented")
 
     def predict_dataloader(self, dataloader: DataLoader, existing_predictions: List = None):
