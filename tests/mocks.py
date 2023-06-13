@@ -11,7 +11,11 @@ class MockChatOpenAI:
         else:
             return MockResponse()
 
-
+current_time = 0
+def increment_time():
+    global current_time
+    current_time+=1
+    return current_time
 class MockBrokenChatOpenAI:
 
     def __init__(self, *args, **kwargs):
@@ -26,6 +30,8 @@ class MockResponse:
     def __init__(self):
         self.content = "hello"
 
+def create_mock_data(num_samples):
+    return [[{"id": idx, "query": f"query {idx}"}] for idx in range(num_samples)]
 
 class MockAnnotator:
     def __init__(self, key, *args, **kwargs):

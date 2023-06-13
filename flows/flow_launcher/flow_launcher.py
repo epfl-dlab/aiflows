@@ -42,7 +42,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             self.collator = NoCollationCollator()
 
         if isinstance(flow, Flow):
-            flow = [flow]
+            flow = [flow]*self.n_workers
 
         self.flows = flow
         self.n_independent_samples = n_independent_samples

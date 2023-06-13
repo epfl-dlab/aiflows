@@ -3,6 +3,7 @@ from flows.flow_launcher import BaseLauncher, MultiThreadedAPILauncher
 from torch.utils.data import DataLoader, Dataset
 from typing import List, Dict
 from collections import defaultdict
+from tests.mocks import create_mock_data
 
 class MockMultithreadedLauncher(MultiThreadedAPILauncher):
 
@@ -27,11 +28,6 @@ class MockMultithreadedLauncher(MultiThreadedAPILauncher):
     def write_batch_output(self, batch: List[Dict], output_file: str) -> None:
         self.batch_output[output_file] = batch
 
-class MockDataset:
-    def __init__(self, num_samples=2):
-        # each dictionary is a batch
-        data = [[{"id":idx, "query":f"query {idx}"}] for idx in range(num_samples)]
-        self.data = data
 
 def test_base_launcher():
     with pytest.raises(NotImplementedError):
@@ -82,20 +78,17 @@ def test_init_multithreaded_launcher():
 def test_predict_dataloader(monkeypatch):
 
     num_samples = 10
-    dataset = MockDataset(num_samples=num_samples)
-    # ToDo: unclear whether we want to support batchsizes > 1
-    dataloader = DataLoader(dataset, batch_size=1)
-
+    data = create_mock_data(num_samples)
     config={
         "api_keys":["key1", "key2"],
         "debug":True
     }
     launcher = MockMultithreadedLauncher(**config)
-    launcher.predict_dataloader(dataset.data, None)
+    launcher.predict_dataloader(data, None)
 
     assert len(launcher.batch_output["default"]) == num_samples
 
-    results = launcher.predict_dataloader(dataset.data, [{"id": 0, "inference_outputs": "test 0", "success": True, "error": "None"}])
+    results = launcher.predict_dataloader(data, [{"id": 0, "inference_outputs": "test 0", "success": True, "error": "None"}])
 
     # there's one existing sample, it'll be written to the existing predictions key
     # the other newly generated output is appended to the default key
@@ -106,9 +99,9 @@ def test_predict_dataloader(monkeypatch):
         "debug":False
     }
     launcher = MockMultithreadedLauncher(**config)
-    results = launcher.predict_dataloader(dataset.data, None)
+    results = launcher.predict_dataloader(data, None)
     assert len(launcher.batch_output["default"]) == 10
-    results = launcher.predict_dataloader(dataset.data, [{"id": 0, "inference_outputs": "test 0", "success": True, "error": "None"}])
+    results = launcher.predict_dataloader(data, [{"id": 0, "inference_outputs": "test 0", "success": True, "error": "None"}])
     # there's one existing sample, it'll be written to the existing predictions key
     # the other newly generated output is appended to the default key
     assert len(launcher.batch_output['predictions/predictions_existing.jsonl']) == 1
@@ -117,10 +110,10 @@ def test_predict_dataloader(monkeypatch):
     # the launcher exits with an error code if an exception is raised
     with pytest.raises(SystemExit):
         exploding_launcher = MockMultithreadedLauncher(will_raise=True, **config)
-        exploding_launcher.predict_dataloader(dataset.data, None)
+        exploding_launcher.predict_dataloader(data, None)
 
     # the launcher counts the number of errors
     launcher = MockMultithreadedLauncher(will_alternate_success=True, **config)
-    results = launcher.predict_dataloader(dataset.data, None)
+    results = launcher.predict_dataloader(data, None)
 
     print(results)
