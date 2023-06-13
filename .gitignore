@@ -163,3 +163,4 @@ cython_debug/
 .*cache*/
 data
 .DS_Store
+.chroma

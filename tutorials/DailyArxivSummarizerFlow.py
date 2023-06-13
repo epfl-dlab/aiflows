@@ -114,9 +114,6 @@ class ArxivAPIAtomicFlow(AtomicFlow):
 
         return {expected_outputs[0]: results}
 
-class ArxivSummarizerFlow(SequentialFlow):
-    pass
-
 if __name__ == "__main__":
     field = "stat.ML"
     query = f"cat:{field}"

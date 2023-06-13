@@ -70,10 +70,10 @@ def flow_run_cache():
             input_data = kwargs["input_data"]
             expected_outputs = kwargs["expected_outputs"]
 
-            from flows.base_flows import AtomicFlow
-            assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
+            # from flows.base_flows import AtomicFlow
+            # assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
 
-            key = _custom_hash(all_args)
+            key = _custom_hash([flow, input_data, expected_outputs])
 
             # Check if the key is already in the cache
             with lock:
