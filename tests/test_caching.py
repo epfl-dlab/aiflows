@@ -184,12 +184,4 @@ def test_thread_safe():
     assert set(results) == set(results_cached)
 
 
-# ToDo: test caching form different classes on the same cache
 
-if __name__ == "__main__":
-    test_thread_safe()
-# test_no_caching()
-# test_simple_caching()
-# test_flow_state_modification_caching()
-# test_task_message_modification_caching()
-# test_composite_flow()

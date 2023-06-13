@@ -61,7 +61,3 @@ def test_basic_call() -> None:
     assert "query" not in answer.data
     assert answer.data["query_mod"] == "reply"
     assert len(flow.flow_state["history"]) == 1
-
-
-if __name__ == "__main__":
-    test_basic_call()

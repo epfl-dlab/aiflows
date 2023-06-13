@@ -125,7 +125,3 @@ def test_basic_call():
 
     answer = gen_crit_flow(task_message)
     assert answer.data["sum"] == 55
-
-
-if __name__ == "__main__":
-    test_basic_call()

@@ -4,11 +4,13 @@ import pytest
 from flows.base_flows import CompositeFlow, AtomicFlow
 
 
-def atomic_flow_builder():
+def atomic_flow_builder(dry_run=False):
     class MyFlow(AtomicFlow):
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
         def run(self, input_data, expected_outputs):
             if self.dry_run:
-                answer = 0
+                raise SystemExit(0)
             else:
                 answer = 0
                 for k, v in input_data.items():
@@ -20,7 +22,8 @@ def atomic_flow_builder():
         name="my-flow",
         description="flow-sum",
         expected_outputs=["sum"],
-        expected_inputs=["v0", "v1"]
+        expected_inputs=["v0", "v1"],
+        dry_run=dry_run
     )
 
 
@@ -71,6 +74,28 @@ def test_basic_call() -> None:
     assert answer.data["sum"] == 35
     assert len(flow.flow_state["history"]) == 2
 
+def test_dry_run():
+    flow_a = atomic_flow_builder(dry_run=True)
+    flow_b = atomic_flow_builder()
 
-if __name__ == "__main__":
-    test_basic_call()
+    flow = CompositeFlow(
+        name="name",
+        description="description",
+        expected_inputs=[],
+        verbose=False,
+        dry_run=True,
+        flows={"flow_a": flow_a, "flow_b": flow_b}
+    )
+
+    flow.flow_state["v0"] = 12
+    flow.flow_state["v1"] = 23
+
+
+
+    # ToDo: what is the expected behaviour for dry_run?
+    # should we add SystemExit exceptions back to the call()?
+    with pytest.raises(SystemExit):
+        _ = flow._call_flow_from_state(
+            flow=flow.flow_config["flows"]["flow_a"],
+            expected_outputs=["sum"]
+        )

@@ -77,6 +77,3 @@ def test_loading_wrong_inputs() -> None:
 
     instantiate_flow(cfg)
 
-
-if __name__ == "__main__":
-    test_empty_loading()

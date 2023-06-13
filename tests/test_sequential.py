@@ -72,7 +72,3 @@ def test_basic_call():
 
     answer = seq_flow(task_message)
     assert answer.data["v0"] == 16
-
-
-if __name__ == "__main__":
-    test_basic_call()
