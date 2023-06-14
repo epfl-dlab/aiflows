@@ -1,9 +1,8 @@
 from typing import List, Dict, Any
 
 from flows.base_flows import CompositeFlow
-from flows import utils
-
-log = utils.get_pylogger(__name__)
+import flows.utils
+log = flows.utils.get_pylogger(__name__)
 
 
 class SequentialFlow(CompositeFlow):

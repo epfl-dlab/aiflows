@@ -1,3 +1,5 @@
+from flows.base_flows import Flow
+from typing import List, Dict, Any
 class MockChatOpenAI:
 
     def __init__(self, num_fails=2, *args, **kwargs):
@@ -43,3 +45,18 @@ class MockAnnotator:
 
 class MockMessage:
     pass
+
+
+class MockFlow(Flow):
+    def __init__(self, name="test", description="description", **kwargs):
+        super().__init__(name=name, description=description, **kwargs)
+
+    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        return {"inference_outputs": "test", "mock_flow_api_key": self.flow_state["api_key"]}
+
+class BrokenMockFlow(Flow):
+    def __init__(self, name="test", description="description", **kwargs):
+        super().__init__(name=name, description=description, **kwargs)
+
+    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        raise Exception("Test exception")

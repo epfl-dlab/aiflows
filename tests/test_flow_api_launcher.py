@@ -6,21 +6,7 @@ from typing import List, Dict, Any
 from collections import defaultdict
 from tests.mocks import create_mock_data, increment_time
 import time
-
-class MockFlow(Flow):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        print("key", self.flow_state["api_key"])
-        return {"inference_outputs": "test"}
-
-class BrokenMockFlow(Flow):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        raise Exception("Test exception")
+from tests.mocks import MockFlow, BrokenMockFlow
 def test_init_flow_launcher():
     config={
         "api_keys":["key1", "key2"],
