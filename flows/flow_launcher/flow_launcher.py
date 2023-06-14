@@ -74,11 +74,9 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                     while attempts <= self.n_batch_retries:
                         try:
-                            sample["api_key"] = self.api_keys[api_key_idx]
-                            task_message = flow.package_task_message(recipient_flow=flow,
-                                                                     task_name="run_task",
-                                                                     task_data=sample,
-                                                                     expected_outputs=self.expected_outputs)
+                            self._add_keys_values_input(input_message, kwargs={"api_key": self.api_keys[api_key_idx],
+                                                                               "dry_run": False})
+                            inference_output = flow.run(deepcopy(input_message))
 
                             output_message = flow(task_message)
 

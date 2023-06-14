@@ -16,6 +16,7 @@ from flows.datasets import GenericDemonstrationsDataset
 
 from flows import utils
 from flows.messages.chat_message import ChatMessage
+from flows.utils.caching_utils import flow_run_cache
 
 log = utils.get_pylogger(__name__)
 
@@ -120,6 +121,9 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
     def _response_parsing(self, response: str, expected_outputs: List[str]):
         target_annotators = [ra for _, ra in self.response_annotators.items() if ra.key in expected_outputs]
+
+        if not target_annotators:
+            return {expected_outputs[0]: response}
 
         parsed_outputs = {}
         for ra in target_annotators:
@@ -251,6 +255,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         #     )
         #     exit(0)
 
+    @flow_run_cache()
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
         # ~~~ Chat-specific preparation ~~~
         self._prepare_conversation(input_data)
