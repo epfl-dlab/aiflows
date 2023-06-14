@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader, Dataset
 from typing import List, Dict
 from collections import defaultdict
 from tests.mocks import create_mock_data
-
+from flows.flow_launcher.collators import NoCollationCollator, Collator
 class MockMultithreadedLauncher(MultiThreadedAPILauncher):
 
     def __init__(self, will_raise=False, will_alternate_success=False, **kwargs):
@@ -117,3 +117,13 @@ def test_predict_dataloader(monkeypatch):
     results = launcher.predict_dataloader(data, None)
 
     print(results)
+
+def test_collators():
+    collator = Collator()
+    with pytest.raises(NotImplementedError):
+        collator.collate_fn([])
+
+    collator = NoCollationCollator()
+    assert collator.collate_fn([1,2,3]) == [1,2,3]
+    assert collator.collate_fn([[1,2,3], [4,5,6]]) == [[1,2,3], [4,5,6]]
+    assert collator.collate_fn([{"a": 1}, {"a": 2}]) == [{"a": 1}, {"a": 2}]

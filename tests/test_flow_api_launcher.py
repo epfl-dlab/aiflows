@@ -12,7 +12,7 @@ class MockFlow(Flow):
         super().__init__(**kwargs)
 
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        print("the key: ", self.flow_state["api_key"])
+        print("key", self.flow_state["api_key"])
         return {"inference_outputs": "test"}
 
 class BrokenMockFlow(Flow):
@@ -32,12 +32,9 @@ def test_init_flow_launcher():
     wait_time_between_retries = 1
     expected_outputs=["inference_outputs"]
 
-    launcher = FlowAPILauncher(flow, n_independent_samples, fault_tolerant_mode, n_batch_retries, wait_time_between_retries, expected_outputs, **config)
+    FlowAPILauncher(flow, n_independent_samples, fault_tolerant_mode, n_batch_retries, wait_time_between_retries, expected_outputs, **config)
 
 def test_predict(monkeypatch):
-
-    # ToDo: check the used keys, they should alternate
-
     monkeypatch.setattr(time, "sleep", lambda x: None)
     monkeypatch.setattr(time, "time", increment_time)
 
@@ -56,10 +53,14 @@ def test_predict(monkeypatch):
 
     launcher = FlowAPILauncher(flow, n_independent_samples, fault_tolerant_mode, n_batch_retries, wait_time_between_retries, expected_outputs, **config)
     results = []
+    current_key = None
     for batch in data:
         batch = launcher.predict(batch)
+        assert len(batch)==1
+        key = batch[0]["api_key"]
+        assert key != current_key
+        current_key = key
         results.append(batch)
-    print(batch)
 
 
     config={
@@ -74,15 +75,16 @@ def test_predict(monkeypatch):
 
     launcher = FlowAPILauncher(flow, n_independent_samples, fault_tolerant_mode, n_batch_retries, wait_time_between_retries, expected_outputs, **config)
     results = []
+    current_key = None
     for batch in data:
         batch = launcher.predict(batch)
+        assert len(batch)==1
+        key = batch[0]["api_key"]
+        assert key != current_key
+        current_key = key
         results.append(batch)
-    print(batch)
 
 def test_predict_with_exception(monkeypatch):
-
-    #ToDo: check the error logging, the returned sample should contain errors
-
     monkeypatch.setattr(time, "sleep", lambda x: None)
     monkeypatch.setattr(time, "time", increment_time)
 
@@ -103,5 +105,6 @@ def test_predict_with_exception(monkeypatch):
     results = []
     for batch in data:
         batch = launcher.predict(batch)
+        assert batch[0]["error"] == "Test exception"
         results.append(batch)
     print(batch)

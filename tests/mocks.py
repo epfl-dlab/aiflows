@@ -42,6 +42,4 @@ class MockAnnotator:
 
 
 class MockMessage:
-    def __init__(self, flow_run_id, message_creator):
-        self.flow_run_id = flow_run_id
-        self.message_creator = message_creator
+    pass
