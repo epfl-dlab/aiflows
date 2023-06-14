@@ -15,7 +15,8 @@ class SequentialFlow(CompositeFlow):
         assert len(flows) > 0, f"Sequential flow needs at least one flow, currently has {len(flows)}"
 
         # ToDo: using a dictionary for flows might not ensure the order of the flows
-        # self.ordered_flows = list(flows.keys())
+        if isinstance(flows, dict):
+            flows = list(flows.values())
         assert isinstance(flows, list), f"Sequential flow needs a list of flows, currently has {type(flows)}"
         self.ordered_flows = flows
 

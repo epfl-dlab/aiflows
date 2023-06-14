@@ -139,25 +139,27 @@ if __name__ == "__main__":
     )
 
     # ~~~ SummarizerFlow ~~~
-    sys_prompt = langchain.PromptTemplate(
-        template="You are an expert in the field {{field}}, you are given the abstract of papers that appeared "
-                 "yesterday in this field on arXiv. Provide a summary of what these works proposes for a researcher ("
-                 "expert) in this field. In particular, focus on what is the novelty and place it the bigger context "
-                 "of the work in this field. Your summary should be around 200 words.",
-        input_variables=["field"],
-        template_format="jinja2"
-    )
-
-    query_prompt = langchain.PromptTemplate(
-        template="\nHere are the papers you should summarize:\n\n{{paper_descriptions}}",
-        input_variables=["paper_descriptions"],
-        template_format="jinja2"
-    )
-    hum_prompt = langchain.PromptTemplate(
-        template="{{query}}",
-        input_variables=["query"],
-        template_format="jinja2"
-    )
+    sys_prompt={
+        "_target_": "langchain.PromptTemplate",
+        "template": "You are an expert in the field {{field}}, you are given the abstract of papers that appeared "
+                    "yesterday in this field on arXiv. Provide a summary of what these works proposes for a researcher ("
+                    "expert) in this field. In particular, focus on what is the novelty and place it the bigger context "
+                    "of the work in this field. Your summary should be around 200 words.",
+        "input_variables": ["field"],
+        "template_format": "jinja2"
+    }
+    query_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "\nHere are the papers you should summarize:\n\n{{paper_descriptions}}",
+        "input_variables": ["paper_descriptions"],
+        "template_format": "jinja2",
+    }
+    hum_prompt = {
+        "_target_": "langchain.PromptTemplate",
+        "template":"{{query}}",
+        "input_variables":["query"],
+        "template_format":"jinja2"
+    }
 
     summarizer_flow = OpenAIChatAtomicFlow(
         name="SummarizeArxiv",
