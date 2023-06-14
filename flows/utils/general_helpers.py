@@ -8,6 +8,30 @@ import os
 from dataclasses import is_dataclass
 import json
 import jsonlines
+import gzip
+
+
+def read_jsonlines(path_to_file):
+    with open(path_to_file, "r") as f:
+        json_reader = jsonlines.Reader(f)
+        return list(json_reader)
+
+
+def write_jsonlines(path_to_file, data, mode="w"):
+    with jsonlines.open(path_to_file, mode) as writer:
+        writer.write_all(data)
+
+
+def write_gzipped_jsonlines(path_to_file, data, mode="w"):
+    with gzip.open(path_to_file, mode) as fp:
+        json_writer = jsonlines.Writer(fp)
+        json_writer.write_all(data)
+
+
+def read_gzipped_jsonlines(path_to_file):
+    with gzip.open(path_to_file, "r") as fp:
+        json_reader = jsonlines.Reader(fp)
+        return list(json_reader)
 
 
 def create_unique_id(existing_ids: List[str] = None):
