@@ -270,7 +270,7 @@ class AtomicFlow(Flow, ABC):
 
 
 class CompositeFlow(Flow, ABC):
-    flows: Dict[str, Union[Dict[str, Any], Flow]]
+    flows: Union[Dict[str, Flow], List[Flow]]
     early_exit_key: str
 
     def __init__(
