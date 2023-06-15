@@ -140,17 +140,17 @@ class Flow(ABC):
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    def _clear(self):
-        # ~~~ What should be kept ~~~
-        state = self.__getstate__()
-        flow_run_id = self.flow_run_id
-
-        # ~~~ Complete erasure ~~~
-        self.__dict__ = {}
-
-        # ~~~ Restore what should be kept ~~~
-        self.__setstate__(state)
-        self.flow_run_id = flow_run_id
+    # def _clear(self):
+    #     # ~~~ What should be kept ~~~
+    #     state = self.__getstate__()
+    #     flow_run_id = self.flow_run_id
+    #
+    #     # ~~~ Complete erasure ~~~
+    #     self.__dict__ = {}
+    #
+    #     # ~~~ Restore what should be kept ~~~
+    #     self.__setstate__(state)
+    #     self.flow_run_id = flow_run_id
 
     def expected_inputs_given_state(self):
         return self.expected_inputs
@@ -253,7 +253,7 @@ class Flow(ABC):
 
         # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
         if self.namespace_clearing_after_run:
-            self._clear()
+            self.reset(full_reset=False)
 
         return output_message
 
