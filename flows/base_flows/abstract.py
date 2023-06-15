@@ -69,23 +69,21 @@ class Flow(ABC):
     def instantiate(cls, config):
         return cls(**config)
 
-    @classmethod
-    def load_from_config(cls, flow_config: Dict[str, Any]):
-        # ToDo: Remove
-        return cls(**flow_config)
+    def reset(self, full_reset: bool = True):
+        # ~~~ What should be kept ~~~
+        state = self.__getstate__()
+        flow_run_id = self.flow_run_id
 
-    @classmethod
-    def load_from_state(cls, flow_state: Dict):
-        # ToDo: Remove?
-        flow_config = flow_state["flow_config"]
-        flow = cls.load_from_config(flow_config=flow_config)
-        flow.__setstate__(flow_state)
-        return flow
+        # ~~~ Complete erasure ~~~
+        self.__dict__ = {}
 
-    # @classmethod
-    # def load_from_checkpoint(cls, ckpt_path: str):
-    #     data = io_utils.load_pickle(ckpt_path)
-    #     return cls.load_from_state(data)
+        # ~~~ Restore what should be kept ~~~
+        if full_reset:
+            self.flow_config = state["flow_config"]
+            self.__set_config_params()
+        else:
+            self.__setstate__(state)
+            self.flow_run_id = flow_run_id
 
     def _update_state(self, update_data: Union[Dict[str, Any], Message], parent_message_ids: List[str] = None):
         if isinstance(update_data, Message):
