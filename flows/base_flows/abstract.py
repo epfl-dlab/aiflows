@@ -54,6 +54,7 @@ class Flow(ABC):
         }
 
         self.flow_run_id = create_unique_id()
+        self.initialize()
 
     def __set_config_params(self):
         for k, v in self.flow_config.items():
@@ -73,6 +74,9 @@ class Flow(ABC):
     @classmethod
     def instantiate(cls, config):
         return cls(**config)
+
+    def initialize(self):
+        pass
 
     def reset(self, full_reset: bool = True):
         # ~~~ What should be kept ~~~
@@ -97,6 +101,7 @@ class Flow(ABC):
                 "history": FlowHistory()
             }
             self.flow_run_id = create_unique_id()
+            self.initialize()
         else:
             self.__setstate__(state)
             self.flow_run_id = flow_run_id
