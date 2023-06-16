@@ -70,9 +70,6 @@ def flow_run_cache():
             input_data = kwargs["input_data"]
             expected_outputs = kwargs["expected_outputs"]
 
-            # from flows.base_flows import AtomicFlow
-            # assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
-
             key = _custom_hash([flow, input_data, expected_outputs])
 
             # Check if the key is already in the cache
@@ -81,6 +78,7 @@ def flow_run_cache():
                     # Custom retrieval behavior
                     cached_value: CachingValue = cache[key]
                     result = cached_value.output_results
+                    # ToDo: Update how to load the full_state when instantiate / config / __setstate__ roles are clarified
                     flow.__setstate__(cached_value.full_state)
 
                     print(f"Retrieved from cache: {flow.__class__.__name__} "
@@ -92,6 +90,7 @@ def flow_run_cache():
 
                     value_to_cache = CachingValue(
                         output_results=result,
+                        # ToDo: Update full_state param when instantiate / config / __setstate__ roles are clarified
                         full_state=copy.deepcopy(flow.__getstate__())
                     )
 

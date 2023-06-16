@@ -150,6 +150,8 @@ class Flow(ABC):
         self.flow_run_id = create_unique_id()
 
     def __repr__(self):
+        # ~~~ This is the string that will be used by the hashing ~~~
+        # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
         flow_config_to_keep = set(self.flow_config.keys()) - set(self.KEYS_TO_IGNORE_HASH)
         config_hashing_params = {k: v for k, v in self.__dict__.items() if k in flow_config_to_keep}
         state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
