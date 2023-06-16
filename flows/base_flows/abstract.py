@@ -66,6 +66,11 @@ class Flow(ABC):
                                             **overrides)
 
     @classmethod
+    def load_from_config(cls, flow_config: Dict[str, Any]):
+        # ToDo: Remove
+        return cls(**flow_config)
+
+    @classmethod
     def instantiate(cls, config):
         return cls(**config)
 
@@ -81,6 +86,11 @@ class Flow(ABC):
         if full_reset:
             self.flow_config = state["flow_config"]
             self.__set_config_params()
+            self.flow_state = {
+                "history": FlowHistory()
+            }
+            self.flow_run_id = create_unique_id()
+            self._instantiate()
         else:
             self.__setstate__(state)
             self.flow_run_id = flow_run_id

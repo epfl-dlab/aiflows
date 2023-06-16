@@ -3,10 +3,13 @@ from typing import Dict, Any, List
 
 import arxiv
 import fitz
+import hydra.utils
 import langchain
 import tqdm
 from arxiv import SortCriterion, SortOrder, ArxivError
 from copy import deepcopy
+
+from langchain import PromptTemplate
 
 from flows.base_flows import AtomicFlow, SequentialFlow, OpenAIChatAtomicFlow
 from langchain.schema import Document
@@ -14,17 +17,39 @@ from tutorials.DailyArxivSummarizerFlow import ArxivDocumentTransform, ArxivAPIA
 
 from flows.utils.caching_utils import flow_run_cache
 
+DEFAULT_HUMAN_PROMPT = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Please provide your question: ",
+        "input_variables": [],
+    }
+
 
 class HumanInputAtomicFlow(AtomicFlow):
+    human_prompt_template: PromptTemplate
+
     def __init__(self, **kwargs):
+        if "human_prompt_template" not in kwargs:
+            kwargs["human_prompt_template"] = DEFAULT_HUMAN_PROMPT
+
         super().__init__(**kwargs)
+        self._instantiate()
+
+    def _instantiate(self):
+        self.human_prompt_template = hydra.utils.instantiate(self.flow_config["human_prompt_template"], _convert_="partial")
 
     def expected_inputs_given_state(self):
-        return ["explanation_for_human_input"]
+        return self.human_prompt_template.input_variables
+
+    def _get_input_message(self, input_data: Dict[str, Any]):
+        template_kwargs = {}
+        for input_variable in self.human_prompt_template.input_variables:
+            template_kwargs[input_variable] = input_data[input_variable]
+
+        return self.human_prompt_template.format(**template_kwargs)
 
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        sys_prompt = input_data["explanation_for_human_input"]
-        user_input = input(sys_prompt)
+        # sys_prompt = input_data["explanation_for_human_input"]
+        user_input = input(self._get_input_message(input_data))
         return {expected_outputs[0]: user_input}
 
 
@@ -53,16 +78,23 @@ if __name__ == "__main__":
     )
 
     # ~~~ HumanInputAtomicFlow ~~~
-    sys_prompt = "Ask me a question that can be answered from the abstracts of recently uploaded papers on arXiv: "
+    human_prompt_template = {
+        "_target_": "langchain.PromptTemplate",
+        "template": "Ask me a question that can be answered from the abstracts of "
+                    "recently uploaded papers on arXiv: ",
+        "input_variables": [],
+        "template_format": "jinja2"
+    }
     human_input_flow = HumanInputAtomicFlow(
         name="HumanInputAtomicFlow",
         description="Asks the user for a question",
         expected_inputs=["sys_prompt"],
-        expected_outputs=["human_query"]
+        expected_outputs=["human_query"],
+        human_prompt_template=human_prompt_template
     )
 
     # ~~~ SummarizerFlow ~~~
-    sys_prompt={
+    sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are an expert in the field {{field}}. A fellow researcher is asking you a question. "
                     "After downloading all recently published arxiv"
@@ -91,8 +123,6 @@ if __name__ == "__main__":
         query_message_prompt_template=query_prompt
     )
 
-
-
     # ~~~ DailyArxivSummarizer ~~~
     arxiv_qa_flow = SequentialFlow(
         name="summarizer arxiv",
@@ -106,12 +136,12 @@ if __name__ == "__main__":
             "QA_flow": QA_flow
         }
     )
-    explanation_for_human_input = "Ask me a question that can be answered from the abstracts of recently uploaded papers on arXiv: "
+    # explanation_for_human_input = "Ask me a question that can be answered from the abstracts of recently uploaded papers on arXiv: "
     input_message = arxiv_qa_flow.package_task_message(
         recipient_flow=arxiv_qa_flow,
         task_name="summarize arxiv",
         task_data={
-            "explanation_for_human_input": explanation_for_human_input,
+            # "explanation_for_human_input": explanation_for_human_input,
             "field": field,
             "query": query,
             "max_results": max_results,
