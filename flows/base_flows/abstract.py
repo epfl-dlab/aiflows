@@ -65,10 +65,10 @@ class Flow(ABC):
                                             cls.class_name,
                                             **overrides)
 
-    @classmethod
-    def load_from_config(cls, flow_config: Dict[str, Any]):
-        # ToDo: Remove
-        return cls(**flow_config)
+    # @classmethod
+    # def load_from_config(cls, flow_config: Dict[str, Any]):
+    #     # ToDo: Remove
+    #     return cls(**flow_config)
 
     @classmethod
     def instantiate(cls, config):
@@ -84,13 +84,19 @@ class Flow(ABC):
 
         # ~~~ Restore what should be kept ~~~
         if full_reset:
+            # ~~~ When full reset we need to put back into the state after constructor ~~~
             self.flow_config = state["flow_config"]
             self.__set_config_params()
+
+            # ToDo: This reapplies the _instantiate(), but we should do that better
+            for k, v in state["config_param_updates"].items():
+                self.__setattr__(k, copy.deepcopy(v))
+
+            # ~~~ Initial values ~~~
             self.flow_state = {
                 "history": FlowHistory()
             }
             self.flow_run_id = create_unique_id()
-            self._instantiate()
         else:
             self.__setstate__(state)
             self.flow_run_id = flow_run_id
@@ -296,12 +302,13 @@ class CompositeFlow(Flow, ABC):
         super().__init__(**kwargs)
 
     def _init_flow(self, flow):
-        init_flow = flow.__class__.load_from_config(flow.flow_config)
+        # ToDo: check that reset() works as intended
+        flow.reset()
 
         if "api_key" in self.flow_state:
-            init_flow.set_api_key(api_key=self.flow_state["api_key"])
+            flow.set_api_key(api_key=self.flow_state["api_key"])
 
-        return init_flow
+        return flow
 
     def _early_exit(self):
         if self.early_exit_key:
