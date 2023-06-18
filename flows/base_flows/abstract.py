@@ -1,20 +1,26 @@
+import os
+import sys
 import copy
+
 from abc import ABC
 from typing import List, Dict, Any, Union
 
 import colorama
+from omegaconf import OmegaConf
 
 import flows
 from flows import utils
 from flows.history import FlowHistory
 from flows.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
 from flows.utils.general_helpers import create_unique_id
+from src.utils.general_helpers import recursive_dictionary_update
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_HASH = ["name", "description", "verbose", "history", "repository_id", "class_name"]
+    KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose", "history", "repository_id", "class_name"])
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = set(["flow_config", "flow_state", "flow_run_id"])
 
     name: str
     description: str
@@ -31,80 +37,106 @@ class Flow(ABC):
 
     def __init__(
             self,
-            **kwargs
+            **kwargs_passed_to_the_constructor
     ):
-        # ~~~ Flow Config parameter to reconstruct the object ~~~
-        self.flow_config = {
-            "name": kwargs.pop("name"),
-            "description": kwargs.pop("description"),
-            "expected_inputs": kwargs.pop("expected_inputs", []),
-            "expected_outputs": kwargs.pop("expected_outputs", []),
-            "flow_type": kwargs.pop("flow_type", "Flow"),
-            "verbose": kwargs.pop("verbose", True),
-            "dry_run": kwargs.pop("dry_run", False),
-            "namespace_clearing_after_run": kwargs.pop("namespace_clearing_after_run", True)
-        }
+        self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
+        self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
-        self.flow_config.update(copy.deepcopy(kwargs))
+        if self.flow_config.get("verbose", True):
+            # ToDo: print the flow config with Rich
+            pass
 
-        self.__set_config_params()
+        self.set_up_flow_state()
+        self.reset_flow_id()
 
+    def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
+        self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
+
+    def _extend_keys_to_ignore_hash(self, keys_to_ignore: List[str]):
+        self.KEYS_TO_IGNORE_HASH.update(keys_to_ignore)
+
+    def __set_namespace_params(self, kwargs):
+        for k, v in kwargs.items():
+            if k == "flow_config":
+                v = copy.deepcopy(v)  # Precautionary measure
+            self.__setattr__(k, v)
+
+    @classmethod
+    def _validate_parameters(cls, config):
+        if "flow_config" not in config:
+            raise ValueError("flow_config is a required parameter.")
+
+        flow_config = config["flow_config"]
+
+        if "name" not in flow_config:
+            raise ValueError("name is a required parameter in the flow_config.")
+        if "description" not in flow_config:
+            raise ValueError("description is a required parameter in the flow_config.")
+
+    @classmethod
+    def get_config(cls, **overrides):
+        if cls == Flow:
+            config = {
+                "expected_inputs": [],
+                "expected_outputs": [],
+                "flow_type": "Flow",
+                "verbose": True,
+                "dry_run": False,
+                "namespace_clearing_after_run": True,
+            }
+            return config
+        elif cls == ABC:
+            return {}
+        elif cls == object:
+            return {}
+
+        # Recursively get the configs from the base classes
+        super_cls = cls.__base__
+        parent_default_config = super_cls.get_config()
+
+        path_to_flow_directory = os.path.dirname(sys.modules[cls.__module__].__file__)
+        class_name = cls.__name__
+
+        path_to_config = os.path.join(path_to_flow_directory, f"{class_name}.yaml")
+        if os.path.exists(path_to_config):
+            default_config = OmegaConf.to_container(
+                OmegaConf.load(path_to_config),
+                resolve=True
+            )
+            config = recursive_dictionary_update(parent_default_config, default_config)
+        elif overrides.get("verbose", True):
+            config = parent_default_config
+            log.warning(f"Flow config not found at {path_to_config}.")
+
+        config = recursive_dictionary_update(config, overrides)
+        return config
+
+    @classmethod
+    def instantiate_from_config(cls, config):
+        return cls(**config)
+
+    @classmethod
+    def instantiate_with_overrides(cls, **overrides):
+        config = cls.get_config(**overrides)
+        return cls.instantiate_from_config(config)
+
+    def set_up_flow_state(self):
         self.flow_state = {
             "history": FlowHistory()
         }
 
+    def reset_flow_id(self):
         self.flow_run_id = create_unique_id()
-        self.initialize()
-
-    def __set_config_params(self):
-        for k, v in self.flow_config.items():
-            self.__setattr__(k, copy.deepcopy(v))
-
-    @classmethod
-    def get_config(cls, **overrides):
-        return flows.flow_verse.load_config(cls.repository_id,
-                                            cls.class_name,
-                                            **overrides)
-
-    # @classmethod
-    # def load_from_config(cls, flow_config: Dict[str, Any]):
-    #     # ToDo: Remove
-    #     return cls(**flow_config)
-
-    @classmethod
-    def instantiate(cls, config):
-        return cls(**config)
-
-    def initialize(self):
-        pass
 
     def reset(self, full_reset: bool = True):
-        # ~~~ What should be kept ~~~
-        state = self.__getstate__()
-        flow_run_id = self.flow_run_id
+        # ~~~ Delete all extraneous attributes ~~~
+        for key, value in self.__dict__.items():
+            if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
+                del self.__dict__[key]
 
-        # ~~~ Complete erasure ~~~
-        self.__dict__ = {}
-
-        # ~~~ Restore what should be kept ~~~
         if full_reset:
-            # ~~~ When full reset we need to put back into the state after constructor ~~~
-            self.flow_config = state["flow_config"]
-            self.__set_config_params()
-
-            # ToDo: This reapplies the _instantiate(), but we should do that better
-            for k, v in state["config_param_updates"].items():
-                self.__setattr__(k, copy.deepcopy(v))
-
-            # ~~~ Initial values ~~~
-            self.flow_state = {
-                "history": FlowHistory()
-            }
-            self.flow_run_id = create_unique_id()
-            self.initialize()
-        else:
-            self.__setstate__(state)
-            self.flow_run_id = flow_run_id
+            self.set_up_flow_state()  # resets the flow state
+            self.reset_flow_id()
 
     def _update_state(self, update_data: Union[Dict[str, Any], Message], parent_message_ids: List[str] = None):
         if isinstance(update_data, Message):
@@ -128,9 +160,9 @@ class Flow(ABC):
 
         if updates:
             state_update_message = StateUpdateMessage(
-                message_creator=self.name,
+                message_creator=self.flow_config['name'],
                 parent_message_ids=parent_message_ids,
-                flow_runner=self.name,
+                flow_runner=self.flow_config['name'],
                 flow_run_id=self.flow_run_id,
                 updated_keys=list(updates.keys()),
                 # data=updates.keys(),
@@ -142,17 +174,17 @@ class Flow(ABC):
         return {
             "flow_config": copy.deepcopy(self.flow_config),
             "flow_state": copy.deepcopy(self.flow_state),
-            "config_param_updates": {k: self.__dict__[k]
-                                     for k in self.flow_config if self.flow_config[k] != self.__dict__[k]}
+            # "config_param_updates": {k: self.__dict__[k]
+            #                          for k in self.flow_config if self.flow_config[k] != self.__dict__[k]}
         }
 
-    def __setstate__(self, state):
-        self.flow_config = copy.deepcopy(state["flow_config"])
-        self.__set_config_params()
-        self.flow_state = copy.deepcopy(state["flow_state"])
-        for k, v in state["config_param_updates"].items():
-            self.__setattr__(k, copy.deepcopy(v))
-        self.flow_run_id = create_unique_id()
+    # def __setstate__(self, state):
+    #     self.flow_config = copy.deepcopy(state["flow_config"])
+    #     self.__set_config_params()
+    #     self.flow_state = copy.deepcopy(state["flow_state"])
+    #     for k, v in state["config_param_updates"].items():
+    #         self.__setattr__(k, copy.deepcopy(v))
+    #     self.flow_run_id = create_unique_id()
 
     def __repr__(self):
         # ~~~ This is the string that will be used by the hashing ~~~
@@ -184,10 +216,10 @@ class Flow(ABC):
         # self._update_state(update_data={"api_key": str(api_key)})
 
     def _log_message(self, message: Message):
-        if self.verbose:
+        if self.flow_config["verbose"]:
             log.info(
                 f"\n{colorama.Fore.RED} ~~~ Logging to history "
-                f"[{self.name} -- {self.flow_run_id}] ~~~\n"
+                f"[{self.flow_config['name']} -- {self.flow_run_id}] ~~~\n"
                 f"{colorama.Fore.WHITE}Message being logged: {str(message)}{colorama.Style.RESET_ALL}"
             )
         return self.flow_state["history"].add_message(message)
@@ -218,13 +250,13 @@ class Flow(ABC):
 
         error_message = None
         if missing_keys:
-            error_message = f"The state of {self.name} [flow run ID: {self.flow_run_id}] does not contain" \
+            error_message = f"The state of {self.flow_config['name']} [flow run ID: {self.flow_run_id}] does not contain" \
                             f"the following expected keys: {missing_keys}."
 
         return OutputMessage(
-            message_creator=self.name,
+            message_creator=self.flow_config['name'],
             parent_message_ids=parent_message_ids,
-            flow_runner=self.name,
+            flow_runner=self.flow_config['name'],
             flow_run_id=self.flow_run_id,
             data=copy.deepcopy(outputs),
             error_message=error_message,
@@ -240,9 +272,9 @@ class Flow(ABC):
             parent_message_ids: List[str] = None
     ):
         return TaskMessage(
-            flow_runner=self.name,
+            flow_runner=self.flow_config['name'],
             flow_run_id=self.flow_run_id,
-            message_creator=self.name,
+            message_creator=self.flow_config['name'],
             target_flow_run_id=recipient_flow.flow_run_id,
             parent_message_ids=parent_message_ids,
             task_name=task_name,
@@ -257,6 +289,7 @@ class Flow(ABC):
         # ~~~ check and log input ~~~
         if "api_key" in task_message.data:
             self.set_api_key(api_key=task_message.data["api_key"])
+            # ToDo: Isn't the api_key getting logged by the _log_message anyhow? We should fix that.
         self._log_message(task_message)
 
         # ~~~ After the run is completed, the expected_outputs must be keys in the state ~~~
@@ -275,7 +308,7 @@ class Flow(ABC):
         )
 
         # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
-        if self.namespace_clearing_after_run:
+        if self.flow_config['namespace_clearing_after_run']:
             self.reset(full_reset=False)
 
         return output_message
