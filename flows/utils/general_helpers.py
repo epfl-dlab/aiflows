@@ -71,7 +71,7 @@ def get_predictions_dir_path(output_dir, create_if_not_exists=True):
     return predictions_folder
 
 
-def write_outputs(output_file, summary, mode):
+def write_outputs(path_to_output_file, summary, mode):
     # Custom serializer function for JSON
     def dataclass_serializer(obj):
         if is_dataclass(obj):
@@ -82,7 +82,7 @@ def write_outputs(output_file, summary, mode):
     def dataclass_dumps(obj):
         return json.dumps(obj, default=dataclass_serializer)
 
-    with open(output_file, mode) as fp:
+    with open(path_to_output_file, mode) as fp:
         json_writer = jsonlines.Writer(fp, dumps=dataclass_dumps)
         json_writer.write_all(summary)
 
