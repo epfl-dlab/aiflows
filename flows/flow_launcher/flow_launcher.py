@@ -2,10 +2,8 @@ import time
 
 from typing import List, Dict, Union
 
-from .collators import Collator, NoCollationCollator
 from flows.flow_launcher import MultiThreadedAPILauncher
 from flows.base_flows import Flow
-from flows.utils import general_helpers
 from flows import utils
 
 
@@ -22,7 +20,6 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         fault_tolerant_mode: whether to crash if an error occurs during the inference for a given sample
         n_batch_retries: the number of times to retry the batch if an error occurs
         wait_time_between_retries: the number of seconds to wait before retrying the batch
-        collator: An instance of the Collator class used to prepare the batches
     """
 
     def __init__(
@@ -33,18 +30,19 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             n_batch_retries: int,
             wait_time_between_retries: int,
             expected_outputs: List[str],
-            collator: Collator = None,
             **kwargs,
     ):
         super().__init__(**kwargs)
 
-        if collator is None:
-            self.collator = NoCollationCollator()
-
         if isinstance(flow, Flow):
-            flow = [flow]*self.n_workers
+            flow = [flow]
 
         self.flows = flow
+
+        assert self.n_workers == len(self.flows), "FlowAPILauncher must be given as many flows as workers. " \
+                                                  "# of flows passed: {}, # of workers: {}".format(len(self.flows),
+                                                                                                   self.n_workers)
+
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
@@ -52,27 +50,33 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         self.expected_outputs = expected_outputs
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
+    def _load_cache(self, path_to_cache):
+        # ToDo: implement cache loading
+        # ToDo: Add tests to verify that the resuming option works both in single_threaded and multi_threaded mode
+        pass
+
     def predict(self, batch: List[Dict]):
+        # ToDo: pass the cache in the expected way to the flow
+        # ToDo: better management of API keys (@Maxime has some thoughts on this)
+
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
-        idx = self._indices.get()
-
-        _flow = self.flows[idx]
-
-        output_file = self.output_files[idx]
+        _resource_id = self._resource_IDs.get()  # The ID of the resources to be used by the thread for this sample
+        flow = self.flows[_resource_id]
+        path_to_output_file = self.paths_to_output_files[_resource_id]
 
         for sample in batch:
-            log.info("Running inference for sample with ID: {}".format(sample["id"]))
-            api_key_idx = self._choose_next_api_key()
-
             inference_outputs = []
-            _success_datapoint = True
-            for _ in range(self.n_independent_samples):
-                _success_sample = False
-                flow = _flow.__class__.load_from_config(_flow.flow_config)
-                if self.fault_tolerant_mode:
-                    attempts = 1
+            _error = None
+            for _sample_idx in range(self.n_independent_samples):
+                log.info("Running inference for ID (sample {}): {}".format(_sample_idx, sample["id"]))
+                api_key_idx = self._choose_next_api_key()
+                _error = None
+                flow.reset(full_reset=True)  # Reset the flow to its initial state
 
-                    while attempts <= self.n_batch_retries:
+                if self.fault_tolerant_mode:
+                    _attempt_idx = 1
+
+                    while _attempt_idx <= self.n_batch_retries:
                         try:
                             sample["api_key"] = self.api_keys[api_key_idx]
                             task_message = flow.package_task_message(recipient_flow=flow,
@@ -84,22 +88,22 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                             inference_outputs.append(output_message.data)
                             _success_sample = True
-                            _error = "None"
+                            _error = None
                             break
                         except Exception as e:
                             log.error(
                                 f"[Problem `{sample['id']}`] "
-                                f"Error {attempts} in running the flow: {e}. "
+                                f"Error {_attempt_idx} in running the flow: {e}. "
                                 f"Retrying in {self.wait_time_between_retries} seconds..."
                             )
-                            attempts += 1
+                            _attempt_idx += 1
                             time.sleep(self.wait_time_between_retries)
 
                             api_key_idx = self._choose_next_api_key()
                             _error = str(e)
 
                 else:
-                    # For debugging purposes
+                    # For development and debugging purposes
                     sample["api_key"] = self.api_keys[api_key_idx]
                     task_message = flow.package_task_message(recipient_flow=flow,
                                                              task_name="run_task",
@@ -109,22 +113,21 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                     output_message = flow(task_message)
 
                     inference_outputs.append(output_message.data)
-                    _success_sample = True
-                    _error = "None"
+                    _error = None
 
-                _success_datapoint = _success_datapoint and _success_sample
+                if _error is not None:
+                    # Break if one of the independent samples failed
+                    break
 
             sample["inference_outputs"] = inference_outputs
-            sample["success"] = _success_datapoint
+            # ToDo: how is None written/loaded to/from a JSON file --> Mention this in the documentation and remove ToDo
             sample["error"] = _error
 
-        if output_file is not None:
-            self.write_batch_output(output_file, batch)
+        self.write_batch_output(batch,
+                                path_to_output_file=path_to_output_file,
+                                keys_to_write=["id",
+                                               "inference_outputs",
+                                               "error"])
 
-        self._indices.put(idx)
+        self._resource_IDs.put(_resource_id)
         return batch
-
-    def write_batch_output(self, output_file, batch):
-        keys_to_write = ["id", "inference_outputs", "success", "error"]
-        batch_output = self._get_outputs_to_write(batch, keys_to_write)
-        general_helpers.write_outputs(output_file, batch_output, mode="a+")
