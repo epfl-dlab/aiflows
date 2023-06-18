@@ -12,6 +12,7 @@ import sys
 import importlib
 import huggingface_hub
 
+
 def add_to_sys_path(path):
     # Make sure the path is absolute
     absolute_path = os.path.abspath(path)
@@ -36,8 +37,6 @@ def _is_local_path(path_to_dir):
         return False
 
 
-
-
 def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, override=False, **kwargs):
     if override:
         path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
@@ -51,21 +50,20 @@ def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None
 
 
 def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, **overrides):
-    config_name = f"{class_name}.yaml"
-    path_to_local_repository = _sync_repository(repository_id, cache_dir=cache_dir, local_dir=local_dir, allow_patterns=config_name, **overrides)
+    flow_class = load_class(repository_id=repository_id,
+                            class_name=class_name,
+                            local_dir=local_dir,
+                            cache_dir=cache_dir)
 
-    default_config = OmegaConf.to_container(
-        OmegaConf.load(os.path.join(path_to_local_repository, config_name)),
-        resolve=True
-    )
-    config = recursive_dictionary_update(default_config, overrides)
+    config = flow_class.get_config(**overrides)
 
     return config
 
 
-def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH):
+def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None):
     path_to_local_repository = _sync_repository(repository_id,
-                                                    cache_dir=cache_dir)
+                                                local_dir=local_dir,
+                                                cache_dir=cache_dir)
 
     # split local_repo_path into parent and folder name
     local_repo_path_parent = os.path.dirname(path_to_local_repository)
@@ -75,22 +73,17 @@ def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH):
     flow_module = importlib.import_module(local_repo_dir_name)
     flow_class = getattr(flow_module, class_name)
 
-    # ToDo: Is there a cleaner way to do this?
-    flow_class.repository_id = repository_id
-    flow_class.class_name = class_name
-
     return flow_class
 
 
-def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, **overrides):
+def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, **overrides):
     flow_class = load_class(repository_id=repository_id,
+                            local_dir=local_dir,
                             class_name=class_name,
                             cache_dir=cache_dir)
 
-    config = load_config(repository_id=repository_id,
-                         class_name=class_name,
-                         cache_dir=cache_dir,
-                         **overrides)
-    return flow_class.instantiate(config)
+    config = flow_class.get_config(**overrides)
+
+    return flow_class.instantiate_from_config(config)
 
 
