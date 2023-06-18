@@ -89,6 +89,9 @@ def write_outputs(path_to_output_file, summary, mode):
 
 def recursive_dictionary_update(d, u):
     """Performs a recursive update of the values in dictionary d with the values of dictionary u"""
+    if d is None:
+        d = {}
+    
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
             d[k] = recursive_dictionary_update(d.get(k, {}), v)
