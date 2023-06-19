@@ -7,59 +7,66 @@ log = utils.get_pylogger(__name__)
 
 
 class GeneratorCriticFlow(CompositeFlow):
-    max_rounds: int
-    init_generator_every_round: bool
-    init_critic_every_round: bool
-
     def __init__(self, **kwargs):
-        if "max_round" not in kwargs:
-            kwargs["max_rounds"] = 2
-
-        if "init_generator_every_round" not in kwargs:
-            kwargs["init_generator_every_round"] = False
-
-        if "init_critic_every_round" not in kwargs:
-            kwargs["init_critic_every_round"] = False
-
-        # ~~~ Creating the flow_config in super() ~~~
+        self._validate_parameters(kwargs)
         super().__init__(**kwargs)
 
-        flows = self.flow_config["flows"]
-        assert len(flows) == 2, f"Generator Critic needs exactly two sub-flows, currently has {len(flows)}"
+    @classmethod
+    def _validate_parameters(cls, kwargs):
+        # ToDo: Deal with this in a cleaner way (with less repetition)
+        super()._validate_parameters(kwargs)
 
-        # ~~~ check that we can identify flows ~~~
-        self._identify_flows()
+        if "max_rounds" not in kwargs["flow_config"]:
+            raise KeyError("Generator Critic needs a `max_rounds` parameter")
 
-        flow_names = set(self.flows.keys())
-        if flow_names not in [{"generator_flow", "critic_flow"}, {"critic", "generator"}]:
-            raise KeyError(
-                f"Generator Critic needs two sub-flows, named either generator_flow and critic_flow or generator and critic. Currently, the flow names are: {flow_names}")
+        if "reset_generator_every_round" not in kwargs["flow_config"]:
+            raise KeyError("Generator Critic needs a `reset_generator_every_round` parameter")
+
+        if "reset_critic_every_round" not in kwargs["flow_config"]:
+            raise KeyError("Generator Critic needs a `reset_critic_every_round` parameter")
+
+        if "early_exit_key" not in kwargs["flow_config"]:
+            raise KeyError("Generator Critic needs a `early_exit_key` parameter")
+
+        if "subflows" not in kwargs:
+            raise KeyError("Generator Critic needs a `subflows` parameter")
+
+        for flow_name, flow in kwargs["subflows"].items():
+            if "generator" in flow_name.lower():
+                pass
+            elif "critic" in flow_name.lower():
+                pass
+            else:
+                error_message = f"{cls.__class__.__name__} needs one flow with `critic` in its name" \
+                                f"and one flow with `generator` in its name. Currently, the flow names are:" \
+                                f"{kwargs['subflows'].keys()}"
+
+                raise Exception(error_message)
 
     def _identify_flows(self):
         generator, critic = None, None
-        for flow_name, flow in self.flow_config["flows"].items():
-            if "generator" in flow_name:
-                generator = flow
-            elif "critic" in flow_name:
-                critic = flow
-            else:
-                error_message = f"{self.__class__.__name__} needs one flow with `critic` in its name" \
-                                f"and one flow with `generator` in its name. Currently, the flow names are:" \
-                                f"{self.flow_state['flows'].keys()}"
 
-                raise Exception(error_message)
+        for flow_name, flow in self.subflows.items():
+            if "generator" in flow_name.lower():
+                generator = flow
+            elif "critic" in flow_name.lower():
+                critic = flow
+
         return generator, critic
 
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
         generator_flow, critic_flow = self._identify_flows()
 
-        # ~~~ sets the input_data in the class namespace ~~~
+        # ~~~ sets the input_data in the flow_state dict ~~~
         self._update_state(update_data=input_data)
 
-        for idx in range(self.max_rounds):
+        for idx in range(self.flow_config["max_rounds"]):
             # ~~~ Initialize the generator flow if needed ~~~
-            if self.init_generator_every_round or idx == 0:
-                generator_flow = self._init_flow(generator_flow)
+            if self.flow_config["reset_generator_every_round"] or idx == 0:
+                if isinstance(generator_flow, CompositeFlow):
+                    generator_flow.reset(full_reset=True, recursive=True)
+                else:
+                    generator_flow.reset(full_reset=True)
 
             # ~~~ Execute the generator flow and update state with answer ~~~
             generator_answer = self._call_flow_from_state(
@@ -69,12 +76,15 @@ class GeneratorCriticFlow(CompositeFlow):
 
             # ~~~ Check for end of interaction (decided by generator) ~~~
             if self._early_exit():
-                log.info("End of interaction detected")
+                log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
 
             # ~~~ Initialize the critic flow ~~~
-            if self.init_critic_every_round or idx == 0:
-                critic_flow = self._init_flow(critic_flow)
+            if self.flow_config["reset_critic_every_round"] or idx == 0:
+                if isinstance(critic_flow, CompositeFlow):
+                    critic_flow.reset(full_reset=True, recursive=True)
+                else:
+                    critic_flow.reset(full_reset=True)
 
             # ~~~ Execute the critic flow and update state with answer ~~~
             critic_answer = self._call_flow_from_state(

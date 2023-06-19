@@ -6,6 +6,7 @@ from abc import ABC
 from typing import List, Dict, Any, Union
 
 import colorama
+import hydra
 from omegaconf import OmegaConf
 
 import flows
@@ -22,18 +23,19 @@ class Flow(ABC):
     KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose", "history", "repository_id", "class_name"])
     KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = set(["flow_config", "flow_state", "flow_run_id"])
 
-    name: str
-    description: str
-    expected_inputs: List[str]
-    expected_outputs: List[str]
-    flow_type: str
-    verbose: bool
-    dry_run: bool
-    namespace_clearing_after_run: bool
-
-    flow_run_id: str
-    flow_config: Dict[str, Any]
-    flow_state: Dict[str, Any]
+    # ToDo: Document and remove. Here for reference
+    # name: str
+    # description: str
+    # expected_inputs: List[str]
+    # expected_outputs: List[str]
+    # flow_type: str
+    # verbose: bool
+    # dry_run: bool
+    # namespace_clearing_after_run: bool
+    #
+    # flow_run_id: str
+    # flow_config: Dict[str, Any]
+    # flow_state: Dict[str, Any]
 
     def __init__(
             self,
@@ -47,7 +49,10 @@ class Flow(ABC):
             pass
 
         self.set_up_flow_state()
-        self.reset_flow_id()
+        if isinstance(self, CompositeFlow):
+            self.reset_flow_id(recursive=True)
+        else:
+            self.reset_flow_id()
 
     def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
         self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
@@ -113,10 +118,11 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_from_config(cls, config):
-        return cls(**config)
+        kwargs = {"flow_config": config}
+        return cls(**kwargs)
 
     @classmethod
-    def instantiate_with_overrides(cls, **overrides):
+    def instantiate_with_overrides(cls, overrides):
         config = cls.get_config(**overrides)
         return cls.instantiate_from_config(config)
 
@@ -128,7 +134,7 @@ class Flow(ABC):
     def reset_flow_id(self):
         self.flow_run_id = create_unique_id()
 
-    def reset(self, full_reset: bool = True):
+    def reset(self, full_reset: bool):
         # ~~~ Delete all extraneous attributes ~~~
         for key, value in self.__dict__.items():
             if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
@@ -151,6 +157,7 @@ class Flow(ABC):
 
         updates = {}
         for key, value in update_data.items():
+            # ToDo: This logs api_keys and everything in between. Should be fixed
             if key in self.flow_state:
                 if value is None or value == self.flow_state[key]:
                     continue
@@ -193,6 +200,7 @@ class Flow(ABC):
         config_hashing_params = {k: v for k, v in self.__dict__.items() if k in flow_config_to_keep}
         state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
+        # ToDo: Shouldn't composite flows include their subflows in the hashing, recursively?
         return repr(hash_dict)
 
     # def _clear(self):
@@ -208,12 +216,7 @@ class Flow(ABC):
     #     self.flow_run_id = flow_run_id
 
     def expected_inputs_given_state(self):
-        return self.expected_inputs
-
-    def set_api_key(self, api_key: str):
-        # We don't log it to history to not see it in the visualization
-        self.flow_state["api_key"] = api_key
-        # self._update_state(update_data={"api_key": str(api_key)})
+        return self.flow_config["expected_inputs"]
 
     def _log_message(self, message: Message):
         if self.flow_config["verbose"]:
@@ -285,17 +288,29 @@ class Flow(ABC):
     def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def __call__(self, task_message: TaskMessage):
-        # ~~~ check and log input ~~~
+    def set_up_api_keys(self, task_message):
+        # ToDo: Deal with this in a better way
         if "api_key" in task_message.data:
-            self.set_api_key(api_key=task_message.data["api_key"])
-            # ToDo: Isn't the api_key getting logged by the _log_message anyhow? We should fix that.
+            self.flow_state["api_key"] = task_message.data["api_key"]
+            # We don't log it to history to not see it in the visualization
+            # self._update_state(update_data={"api_key": str(api_key)})
+
+        if getattr(self, "subflows", None):
+            for subflow in self.subflows.values():
+                subflow.set_up_api_keys(task_message=task_message)
+
+        # ToDo: Isn't the api_key getting logged by the _log_message anyhow? We should fix that.
+
+    def __call__(self, task_message: TaskMessage):
+        self.set_up_api_keys(task_message=task_message)
+
+        # ~~~ check and log input ~~~
         self._log_message(task_message)
 
         # ~~~ After the run is completed, the expected_outputs must be keys in the state ~~~
         expected_outputs = task_message.expected_outputs
         if expected_outputs is None:
-            expected_outputs = self.expected_outputs
+            expected_outputs = self.flow_config["expected_outputs"]
 
         # ~~~ Execute the logic of the flow, it should populate state with expected_outputs ~~~
         outputs = self.run(input_data=task_message.data, expected_outputs=expected_outputs)
@@ -307,11 +322,14 @@ class Flow(ABC):
             parent_message_ids=[task_message.message_id]
         )
 
+        self._post_call_hook()
+
+        return output_message
+
+    def _post_call_hook(self):
         # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
         if self.flow_config['namespace_clearing_after_run']:
             self.reset(full_reset=False)
-
-        return output_message
 
 
 class AtomicFlow(Flow, ABC):
@@ -326,36 +344,22 @@ class AtomicFlow(Flow, ABC):
 
 
 class CompositeFlow(Flow, ABC):
-    flows: Union[Dict[str, Flow], List[Flow]]
+    subflows: Union[Dict[str, Flow]]  # Dictionaries are ordered in Python 3.7+
     early_exit_key: str
 
     def __init__(
             self,
             **kwargs
     ):
-        if "early_exit_key" not in kwargs:
-            kwargs["early_exit_key"] = None
-
-        if "flow_type" not in kwargs:
-            kwargs["flow_type"] = "CompositeFlow"
-
         super().__init__(**kwargs)
 
-    def _init_flow(self, flow):
-        # ToDo: check that reset() works as intended
-        flow.reset()
-
-        if "api_key" in self.flow_state:
-            flow.set_api_key(api_key=self.flow_state["api_key"])
-
-        return flow
-
     def _early_exit(self):
-        if self.early_exit_key:
-            if self.early_exit_key in self.flow_state:
-                return bool(self.flow_state[self.early_exit_key])
-            elif self.early_exit_key in self.__dict__:
-                return bool(self.__dict__[self.early_exit_key])
+        early_exit_key = self.flow_config["early_exit_key"]
+        if early_exit_key:
+            if early_exit_key in self.flow_state:
+                return bool(self.flow_state[early_exit_key])
+            elif early_exit_key in self.__dict__:
+                return bool(self.__dict__[early_exit_key])
 
         return False
 
@@ -366,9 +370,10 @@ class CompositeFlow(Flow, ABC):
             parent_message_ids: List[str] = None,
             search_class_namespace_for_inputs: bool = True
     ):
+        expected_inputs = flow.expected_inputs_given_state()
         # ~~~ Prepare the call ~~~
         task_data = self._get_keys_from_state(
-            keys=flow.expected_inputs_given_state(),
+            keys=expected_inputs,
             allow_class_namespace=search_class_namespace_for_inputs
         )
 
@@ -388,3 +393,75 @@ class CompositeFlow(Flow, ABC):
         self._log_message(answer_message)
 
         return answer_message
+
+    @classmethod
+    def _validate_parameters(cls, kwargs):
+        # ToDo: Deal with this in a cleaner way (with less repetition)
+        super()._validate_parameters(kwargs)
+
+        if "subflows_config" not in kwargs["flow_config"]:
+            raise KeyError("subflows_config must be specified in the flow_config.")
+
+    @classmethod
+    def _set_up_subflows(cls, config):
+        subflows = {}  # Dictionaries are ordered in Python 3.7+
+        subflows_config = config["subflows_config"]
+
+        for subflow_config in subflows_config:
+            flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
+            subflows[flow_obj.flow_config["name"]] = flow_obj
+
+        return subflows
+
+    @classmethod
+    def instantiate_from_config(cls, config):
+        flow_config = copy.deepcopy(config)
+
+        kwargs = {"flow_config": flow_config}
+        kwargs["subflows"] = cls._set_up_subflows(flow_config)
+
+        return cls(**kwargs)
+
+    def set_up_flow_state(self):
+        self.flow_state = {
+            "history": FlowHistory()
+        }
+
+        for flow in self.subflows.values():
+            flow.set_up_flow_state()
+
+    def reset_flow_id(self, recursive: bool):
+        self.flow_run_id = create_unique_id()
+
+        if recursive:
+            for flow in self.subflows.values():
+                if isinstance(flow, CompositeFlow):
+                    flow.reset_flow_id(recursive=True)
+                else:
+                    flow.flow_run_id = create_unique_id()
+
+    def reset(self, full_reset: bool, recursive: bool):
+        # ~~~ Delete all extraneous attributes ~~~
+        for key, value in self.__dict__.items():
+            if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
+                del self.__dict__[key]
+
+        if full_reset:
+            self.set_up_flow_state()  # resets the flow state
+            self.reset_flow_id(recursive=False)
+
+        # ~~~ Reset all subflows ~~~
+        if recursive:
+            for flow in self.subflows.values():
+                if isinstance(flow, CompositeFlow):
+                    flow.reset(full_reset=full_reset, recursive=True)
+                else:
+                    flow.reset(full_reset=full_reset)
+
+    def _post_call_hook(self):
+        # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
+        if self.flow_config['namespace_clearing_after_run']:
+            self.reset(full_reset=False, recursive=False)
+
+        for flow in self.subflows.values():
+            flow._post_call_hook()
