@@ -2,7 +2,8 @@ import time
 
 from typing import List, Dict, Union
 
-from flows.flow_launcher import MultiThreadedAPILauncher
+import flows.base_flows
+from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from flows import utils
 
@@ -71,7 +72,10 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                 log.info("Running inference for ID (sample {}): {}".format(_sample_idx, sample["id"]))
                 api_key_idx = self._choose_next_api_key()
                 _error = None
-                flow.reset(full_reset=True)  # Reset the flow to its initial state
+                if isinstance(flow, flows.base_flows.CompositeFlow):
+                    flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
+                else:
+                    flow.reset(full_reset=True)  # Reset the flow to its initial state
 
                 if self.fault_tolerant_mode:
                     _attempt_idx = 1
@@ -112,7 +116,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                     output_message = flow(task_message)
 
-                    inference_outputs.append(output_message.data)
+                    inference_outputs.append(output_message)
                     _error = None
 
                 if _error is not None:
