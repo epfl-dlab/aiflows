@@ -1,9 +1,5 @@
 import os
 
-from omegaconf import OmegaConf
-
-from flows.utils.general_helpers import recursive_dictionary_update
-
 default_home = os.path.join(os.path.expanduser("~"), ".cache")
 flows_cache_home = os.path.expanduser(os.path.join(default_home, "flows"))
 DEFAULT_CACHE_PATH = os.path.join(flows_cache_home, "flow_verse")
@@ -49,7 +45,7 @@ def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None
     return path_to_local_repository
 
 
-def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, **overrides):
+def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}):
     flow_class = load_class(repository_id=repository_id,
                             class_name=class_name,
                             local_dir=local_dir,
@@ -76,7 +72,7 @@ def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_di
     return flow_class
 
 
-def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, **overrides):
+def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}):
     flow_class = load_class(repository_id=repository_id,
                             local_dir=local_dir,
                             class_name=class_name,
