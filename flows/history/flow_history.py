@@ -92,6 +92,9 @@ class FlowHistory:
         """
         return [m.to_dict() for m in self.messages]
 
+    def to_dict(self):
+        return {"history": [m.to_dict() for m in self.messages]}
+
     def __len__(self):
         return len(self.messages)
 

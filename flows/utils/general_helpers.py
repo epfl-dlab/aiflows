@@ -5,7 +5,6 @@ import uuid
 import time
 import os
 
-from dataclasses import is_dataclass
 import json
 import jsonlines
 import gzip
@@ -72,18 +71,17 @@ def get_predictions_dir_path(output_dir, create_if_not_exists=True):
 
 
 def write_outputs(path_to_output_file, summary, mode):
-    # Custom serializer function for JSON
-    def dataclass_serializer(obj):
-        if is_dataclass(obj):
+    def to_dict_serializer(obj):
+        """JSON serialized for object that have the to_dict method implemented"""
+        if hasattr(obj, "to_dict"):
             return obj.to_dict()
         raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
-    # Custom dumps function
-    def dataclass_dumps(obj):
-        return json.dumps(obj, default=dataclass_serializer)
+    def to_dict_dumps(obj):
+        return json.dumps(obj, default=to_dict_serializer)
 
     with open(path_to_output_file, mode) as fp:
-        json_writer = jsonlines.Writer(fp, dumps=dataclass_dumps)
+        json_writer = jsonlines.Writer(fp, dumps=to_dict_dumps)
         json_writer.write_all(summary)
 
 
