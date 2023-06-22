@@ -462,6 +462,3 @@ class CompositeFlow(Flow, ABC):
         # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
         if self.flow_config['namespace_clearing_after_run']:
             self.reset(full_reset=False, recursive=False)
-
-        for flow in self.subflows.values():
-            flow._post_call_hook()
