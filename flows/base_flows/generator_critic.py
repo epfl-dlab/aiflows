@@ -8,7 +8,6 @@ log = utils.get_pylogger(__name__)
 
 class GeneratorCriticFlow(CompositeFlow):
     def __init__(self, **kwargs):
-        self._validate_parameters(kwargs)
         super().__init__(**kwargs)
 
     @classmethod

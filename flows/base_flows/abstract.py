@@ -9,18 +9,19 @@ import colorama
 import hydra
 from omegaconf import OmegaConf
 
+# ToDo: make imports relative
 import flows
 from flows import utils
 from flows.history import FlowHistory
 from flows.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
-from flows.utils.general_helpers import create_unique_id
-from src.utils.general_helpers import recursive_dictionary_update
+from flows.utils.general_helpers import create_unique_id, recursive_dictionary_update
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose", "history", "repository_id", "class_name"])
+    # ToDo: !!! History should not be ignore in the hashing !!!
+    KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose", "history", "flow_id", "repository_id", "class_name"])
     KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = set(["flow_config", "flow_state", "flow_run_id"])
 
     # ToDo: Document and remove. Here for reference
@@ -41,6 +42,7 @@ class Flow(ABC):
             self,
             **kwargs_passed_to_the_constructor
     ):
+        self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
@@ -84,7 +86,6 @@ class Flow(ABC):
             config = {
                 "expected_inputs": [],
                 "expected_outputs": [],
-                "flow_type": "Flow",
                 "verbose": True,
                 "dry_run": False,
                 "namespace_clearing_after_run": True,
@@ -185,22 +186,21 @@ class Flow(ABC):
             #                          for k in self.flow_config if self.flow_config[k] != self.__dict__[k]}
         }
 
-    # def __setstate__(self, state):
-    #     self.flow_config = copy.deepcopy(state["flow_config"])
-    #     self.__set_config_params()
-    #     self.flow_state = copy.deepcopy(state["flow_state"])
-    #     for k, v in state["config_param_updates"].items():
-    #         self.__setattr__(k, copy.deepcopy(v))
-    #     self.flow_run_id = create_unique_id()
+    def __setstate__(self, state):
+        # ToDo: This will overwrite the history. That seems like a problem.
+        # It also resets the flow_run_id, which seems like a problem as well
+        self.flow_config = copy.deepcopy(state["flow_config"])
+        self.flow_state = copy.deepcopy(state["flow_state"])
+        self.flow_run_id = create_unique_id()
 
     def __repr__(self):
+        """Generates the string that will be used by the hashing function"""
+        # ToDo: Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
-        flow_config_to_keep = set(self.flow_config.keys()) - set(self.KEYS_TO_IGNORE_HASH)
-        config_hashing_params = {k: v for k, v in self.__dict__.items() if k in flow_config_to_keep}
-        state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
+        config_hashing_params = {k: str(v) for k, v in self.flow_config.items() if k not in self.KEYS_TO_IGNORE_HASH}
+        state_hashing_params = {k: str(v) for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
-        # ToDo: Shouldn't composite flows include their subflows in the hashing, recursively?
         return repr(hash_dict)
 
     # def _clear(self):
@@ -338,8 +338,6 @@ class AtomicFlow(Flow, ABC):
             self,
             **kwargs
     ):
-        if "flow_type" not in kwargs:
-            kwargs["flow_type"] = "AtomicFlow"
         super().__init__(**kwargs)
 
 

@@ -78,7 +78,7 @@ def write_outputs(path_to_output_file, summary, mode):
         raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
     def to_dict_dumps(obj):
-        return json.dumps(obj, default=to_dict_serializer)
+        return json.dumps(obj, default=to_dict_serializer, indent=4)
 
     with open(path_to_output_file, mode) as fp:
         json_writer = jsonlines.Writer(fp, dumps=to_dict_dumps)

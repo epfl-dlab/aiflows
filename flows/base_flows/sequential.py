@@ -8,7 +8,6 @@ log = flows.utils.get_pylogger(__name__)
 
 class SequentialFlow(CompositeFlow):
     def __init__(self, **kwargs):
-        super()._validate_parameters(kwargs)
         super().__init__(**kwargs)
 
     def _validate_parameters(self, kwargs):

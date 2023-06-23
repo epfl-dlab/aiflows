@@ -7,8 +7,9 @@ from typing import Dict, List
 import copy
 from diskcache import Index
 
+from flows.base_flows.abstract import AtomicFlow
 
-# ToDo: do logging
+# ToDo: Implement loading
 
 @dataclass
 class CACHING_PARAMETERS:
@@ -67,6 +68,7 @@ def flow_run_cache():
             all_args = list(args) + list(kwargs.values())
 
             flow = get_calling_flow(all_args)
+            assert isinstance(flow, AtomicFlow), "Caching is only supported for AtomicFlows."
             input_data = kwargs["input_data"]
             expected_outputs = kwargs["expected_outputs"]
 
@@ -83,7 +85,7 @@ def flow_run_cache():
 
                     print(f"Retrieved from cache: {flow.__class__.__name__} "
                           f"-- {method.__name__}(input_data.keys()={list(input_data.keys())}, expected_outputs={expected_outputs})")
-                    # print("Retrieved from cache:", cached_value)
+                    print("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function
                     result = method(*args, **kwargs)
@@ -95,8 +97,7 @@ def flow_run_cache():
                     )
 
                     cache[key] = value_to_cache
-
-                    # print("Cached:", value_to_cache)
+                    print("Cached:", value_to_cache)
 
             return result
 
