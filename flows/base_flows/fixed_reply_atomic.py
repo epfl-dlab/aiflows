@@ -1,22 +1,26 @@
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 
 from flows.base_flows.abstract import AtomicFlow
+from flows.utils.general_helpers import validate_parameters
 
 
 class FixedReplyAtomicFlow(AtomicFlow):
+    REQUIRED_KEYS_CONFIG = ["fixed_reply"]
+    REQUIRED_KEYS_KWARGS = []
+
     def __init__(self, **kwargs):
         self._validate_parameters(kwargs)
         super().__init__(**kwargs)
 
     @classmethod
     def _validate_parameters(cls, kwargs):
-        # ToDo: Deal with this in a cleaner way (with less repetition)
-        super()._validate_parameters(kwargs)
+        validate_parameters(cls, kwargs)
 
-        if "fixed_reply" not in kwargs["flow_config"]:
-            raise KeyError("FixedReplyAtomicFlow needs a `fixed_reply` parameter")
+    def run(self,
+            input_data: Dict[str, Any],
+            private_keys: Optional[List[str]] = [],
+            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        key = expected_outputs[0]
+        key = self.flow_config["expected_outputs"][0]
         return {key: self.flow_config["fixed_reply"]}
 
