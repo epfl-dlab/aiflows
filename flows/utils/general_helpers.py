@@ -10,6 +10,26 @@ import jsonlines
 import gzip
 
 
+def validate_parameters(cls, kwargs):
+    if cls.__name__ != "Flow":
+        cls.__base__._validate_parameters(kwargs)
+
+    flow_config = kwargs["flow_config"]
+
+    if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
+        raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
+
+    for key in cls.REQUIRED_KEYS_CONFIG:
+        if key not in flow_config:
+            raise ValueError(f"{key} is a required parameter in the flow_config.")
+
+    if not hasattr(cls, "REQUIRED_KEYS_KWARGS"):
+        raise ValueError("REQUIRED_KEYS_KWARGS should be defined for each Flow class.")
+
+    for key in cls.REQUIRED_KEYS_KWARGS:
+        if key not in kwargs:
+            raise ValueError(f"{key} is a required parameter in the constructor.")
+
 def read_jsonlines(path_to_file):
     with open(path_to_file, "r") as f:
         json_reader = jsonlines.Reader(f)
