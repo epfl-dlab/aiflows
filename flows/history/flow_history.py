@@ -1,3 +1,4 @@
+from copy import deepcopy
 from typing import List, Dict
 from flows.messages import Message
 
@@ -28,7 +29,7 @@ class FlowHistory:
         Args:
             message (Message): The message to add.
         """
-        self.messages.append(message)
+        self.messages.append(deepcopy(message))
 
     def to_string(self) -> str:
         """

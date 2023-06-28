@@ -30,7 +30,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             fault_tolerant_mode: bool,
             n_batch_retries: int,
             wait_time_between_retries: int,
-            expected_outputs: List[str],
+            output_keys: List[str],
             **kwargs,
     ):
         super().__init__(**kwargs)
@@ -48,7 +48,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
         self.wait_time_between_retries = wait_time_between_retries
-        self.expected_outputs = expected_outputs
+        self.output_keys = output_keys
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
     def _load_cache(self, path_to_cache):
@@ -81,7 +81,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                             api_keys = {"openai": self.api_keys[api_key_idx]}
                             task_message = flow.package_input_message(data=sample,
                                                                       src_flow="Launcher",
-                                                                      expected_outputs=self.expected_outputs,
+                                                                      output_keys=self.output_keys,
                                                                       api_keys=api_keys)
                             # ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
 
@@ -108,7 +108,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                     api_keys = {"openai": self.api_keys[api_key_idx]}
                     input_message = flow.package_input_message(data=sample,
                                                                src_flow="Launcher",
-                                                               expected_outputs=self.expected_outputs,
+                                                               output_keys=self.output_keys,
                                                                api_keys=api_keys)
 
                     output_message = flow(input_message)

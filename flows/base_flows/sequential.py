@@ -19,7 +19,7 @@ class SequentialFlow(CompositeFlow):
 
         assert len(kwargs["subflows"]) > 0, f"Sequential flow needs at least one flow, currently has 0"
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._update_state(update_data=input_data)
 
@@ -35,5 +35,5 @@ class SequentialFlow(CompositeFlow):
                 log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
 
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_namespace=False ~~~
-        return self._get_keys_from_state(keys=expected_outputs, allow_class_namespace=False)
+        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
+        return self._fetch_state_attributes_by_keys(keys=output_keys, allow_class_attributes=False)

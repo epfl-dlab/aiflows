@@ -22,12 +22,12 @@ log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = set(["flow_config", "flow_state", "history"])
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history"}
 
-    KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose"])
+    KEYS_TO_IGNORE_HASH = {"name", "description", "verbose"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description"]
+    REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end", "output_keys"]
     REQUIRED_KEYS_KWARGS = ["flow_config"]
 
     flow_config: Dict[str, Any]
@@ -70,11 +70,16 @@ class Flow(ABC):
 
     @classmethod
     def get_config(cls, **overrides):
+        """
+        Returns the default config for the flow, with the overrides applied.
+
+        The default implementation construct the default config by recursively merging the configs of the base classes.
+        """
         if cls == Flow:
             config = {
-                "expected_outputs": [],
+                "output_keys": [],
                 "verbose": True,
-                "namespace_clearing_after_run": True,
+                "clear_flow_namespace_on_run_end": True,
             }
             return config
         elif cls == ABC:
@@ -82,7 +87,7 @@ class Flow(ABC):
         elif cls == object:
             return {}
 
-        # Recursively get the configs from the base classes
+        # ~~~ Recursively retrieve and merge the configs of the base classes to construct the default config ~~~
         super_cls = cls.__base__
         parent_default_config = super_cls.get_config()
 
@@ -100,6 +105,7 @@ class Flow(ABC):
             config = parent_default_config
             log.warning(f"Flow config not found at {path_to_config}.")
 
+        # ~~~~ Apply the overrides ~~~~
         config = recursive_dictionary_update(config, overrides)
         return config
 
@@ -146,6 +152,10 @@ class Flow(ABC):
             self._log_message(message)
 
     def _state_update_dict(self, update_data: Union[Dict[str, Any], Message]):
+        """
+        Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
+
+        """
         if isinstance(update_data, Message):
             update_data = update_data.data["outputs"]
 
@@ -195,20 +205,23 @@ class Flow(ABC):
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    def get_expected_inputs(self, data: Optional[Dict[str, Any]] = None):
-        """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config["expected_inputs"]
+    def get_hash_data(self):
+        raise NotImplementedError()
 
-    def get_expected_outputs(self, data: Optional[Dict[str, Any]] = None):
+    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
+        """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
+        return self.flow_config["input_keys"]
+
+    def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config["expected_outputs"]
+        return self.flow_config["output_keys"]
 
     def _log_message(self, message: Message):
         if self.flow_config["verbose"]:
             log.info(message.to_string())
         return self.history.add_message(message)
 
-    def _get_keys_from_state(self, keys: List[str], allow_class_namespace: bool = True):
+    def _fetch_state_attributes_by_keys(self, keys: List[str], allow_class_attributes: bool = True):
         data = {}
 
         if keys is None:
@@ -216,7 +229,7 @@ class Flow(ABC):
             for key in self.flow_state:
                 data[key] = self.flow_state[key]
 
-            if allow_class_namespace:
+            if allow_class_attributes:
                 for key in self.__dict__:
                     if key in data:
                         log.warning(f"Data key {key} present in both in the flow state and the class namespace.")
@@ -230,7 +243,7 @@ class Flow(ABC):
                 data[key] = self.flow_state[key]
                 continue
 
-            if allow_class_namespace:
+            if allow_class_attributes:
                 if key in self.__dict__:
                     data[key] = self.__dict__[key]
         return data
@@ -241,7 +254,7 @@ class Flow(ABC):
             outputs: Dict[str, Any],
     ):
         missing_keys = []
-        for expected_key in input_message.data["expected_outputs"]:
+        for expected_key in input_message.data["output_keys"]:
             if expected_key not in outputs:
                 missing_keys.append(expected_key)
                 continue
@@ -250,9 +263,9 @@ class Flow(ABC):
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.data["src_flow"],
-            expected_outputs=input_message.data["expected_outputs"],
+            output_keys=input_message.data["output_keys"],
             outputs=outputs,
-            missing_expected_outputs=missing_keys,
+            missing_output_keys=missing_keys,
             history=self.history,
         )
 
@@ -260,8 +273,8 @@ class Flow(ABC):
             self,
             data: Dict[str, Any],
             src_flow: Optional[Union["Flow", str]] = "Launcher",
-            expected_inputs: Optional[List[str]] = None,
-            expected_outputs: Optional[List[str]] = None,
+            input_keys: Optional[List[str]] = None,
+            output_keys: Optional[List[str]] = None,
             api_keys: Optional[List[str]] = None,
             private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
             keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
@@ -271,19 +284,19 @@ class Flow(ABC):
         dst_flow = self.flow_config["name"]
 
         # ~~~ Get the expected inputs and outputs ~~~
-        if expected_inputs is None:
-            expected_inputs = self.get_expected_inputs(data)
-        assert len(set(["src_flow", "dst_flow"]).intersection(set(expected_inputs))) == 0, \
+        if input_keys is None:
+            input_keys = self.get_input_keys(data)
+        assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
-        if expected_outputs is None:
-            expected_outputs = self.get_expected_outputs(data)
-        if "raw_response" not in expected_outputs:  # Corresponds to the raw unprocessed response
-            expected_outputs.append("raw_response")
+        if output_keys is None:
+            output_keys = self.get_output_keys(data)
+        if "raw_response" not in output_keys:  # Corresponds to the raw unprocessed response
+            output_keys.append("raw_response")
 
         # ~~~ Get the data payload ~~~
         packaged_data = {}
-        for input_key in expected_inputs:
+        for input_key in input_keys:
             if input_key not in data:
                 raise ValueError(f"Input data does not contain the expected key: {input_key}")
 
@@ -297,7 +310,7 @@ class Flow(ABC):
             keys_to_ignore_for_hash=keys_to_ignore_for_hash,
             src_flow=src_flow,
             dst_flow=dst_flow,
-            expected_outputs=expected_outputs,
+            output_keys=output_keys,
             api_keys=api_keys,
         )
         return msg
@@ -312,9 +325,9 @@ class Flow(ABC):
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
-        # ~~~ Execute the logic of the flow, it should populate state with expected_outputs ~~~
-        assert "expected_outputs" in input_message.data and len(input_message.data["expected_outputs"]) > 0, \
-            "The input message must contain the key 'expected_outputs' with at least one expected output"
+        # ~~~ Execute the logic of the flow, it should populate state with output_keys ~~~
+        assert "output_keys" in input_message.data and len(input_message.data["output_keys"]) > 0, \
+            "The input message must contain the key 'output_keys' with at least one expected output"
         outputs = self.run(input_data=input_message.data,
                            private_keys=input_message.private_keys,
                            keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
@@ -331,7 +344,7 @@ class Flow(ABC):
 
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
-        if self.flow_config['namespace_clearing_after_run']:
+        if self.flow_config['clear_flow_namespace_on_run_end']:
             self.reset(full_reset=False, recursive=False)
 
 
@@ -345,11 +358,10 @@ class AtomicFlow(Flow, ABC):
 
 
 class CompositeFlow(Flow, ABC):
-    REQUIRED_KEYS_CONFIG = ["early_exit_key", "subflows_config"]
+    REQUIRED_KEYS_CONFIG = ["subflows_config"]
     REQUIRED_KEYS_KWARGS = ["flow_config", "subflows"]
 
-    subflows: Union[Dict[str, Flow]]  # Dictionaries are ordered in Python 3.7+
-    early_exit_key: str
+    subflows: Dict[str, Flow]  # Dictionaries are ordered in Python 3.7+
 
     def __init__(
             self,
@@ -358,7 +370,7 @@ class CompositeFlow(Flow, ABC):
         super().__init__(**kwargs)
 
     def _early_exit(self):
-        early_exit_key = self.flow_config["early_exit_key"]
+        early_exit_key = self.flow_config.get("early_exit_key", None)
         if early_exit_key:
             if early_exit_key in self.flow_state:
                 return bool(self.flow_state[early_exit_key])
@@ -374,11 +386,12 @@ class CompositeFlow(Flow, ABC):
             keys_to_ignore_for_hash,
             search_class_namespace_for_inputs: bool = True
     ):
+        """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = getattr(self, 'api_keys', None)
-        input_data = self._get_keys_from_state(
+        input_data = self._fetch_state_attributes_by_keys(
             keys=None,
-            allow_class_namespace=search_class_namespace_for_inputs
+            allow_class_attributes=search_class_namespace_for_inputs
         )
         input_message = flow_to_call.package_input_message(data=input_data,
                                                            src_flow=self,

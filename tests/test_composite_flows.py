@@ -8,7 +8,7 @@ def atomic_flow_builder(dry_run=False):
     class MyFlow(AtomicFlow):
         def __init__(self, **kwargs):
             super().__init__(**kwargs)
-        def run(self, input_data, expected_outputs):
+        def run(self, input_data, output_keys):
             if self.dry_run:
                 raise SystemExit(0)
             else:
@@ -16,13 +16,13 @@ def atomic_flow_builder(dry_run=False):
                 for k, v in input_data.items():
                     answer += v
 
-            return {self.expected_outputs[0]: answer}
+            return {self.output_keys[0]: answer}
 
     return MyFlow(
         name="my-flow",
         description="flow-sum",
-        expected_outputs=["sum"],
-        expected_inputs=["v0", "v1"],
+        output_keys=["sum"],
+        input_keys=["v0", "v1"],
         dry_run=dry_run
     )
 
@@ -37,7 +37,7 @@ def test_basic_instantiating() -> None:
     flow = CompositeFlow(
         name="name",
         description="description",
-        expected_inputs=["v0", "v1"],
+        input_keys=["v0", "v1"],
         verbose=False,
         dry_run=True,
         flows={"flow_a": flow_a, "flow_b": flow_b}
@@ -57,7 +57,7 @@ def test_basic_call() -> None:
     flow = CompositeFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         flows={"flow_a": flow_a, "flow_b": flow_b}
@@ -68,7 +68,7 @@ def test_basic_call() -> None:
 
     answer = flow._call_flow_from_state(
         flow=flow.flow_config["flows"]["flow_a"],
-        expected_outputs=["sum"]
+        output_keys=["sum"]
     )
 
     assert answer.data["sum"] == 35
@@ -81,7 +81,7 @@ def test_dry_run():
     flow = CompositeFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         flows={"flow_a": flow_a, "flow_b": flow_b}
@@ -97,5 +97,5 @@ def test_dry_run():
     with pytest.raises(SystemExit):
         _ = flow._call_flow_from_state(
             flow=flow.flow_config["flows"]["flow_a"],
-            expected_outputs=["sum"]
+            output_keys=["sum"]
         )

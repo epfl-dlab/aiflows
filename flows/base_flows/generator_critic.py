@@ -84,7 +84,7 @@ class GeneratorCriticFlow(CompositeFlow):
             )
             self._state_update_dict(critic_output_message)
 
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_namespace=False ~~~
-        outputs = self._get_keys_from_state(keys=input_data["expected_outputs"],
-                                            allow_class_namespace=False)
+        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
+        outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
+                                                       allow_class_attributes=False)
         return outputs

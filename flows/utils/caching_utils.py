@@ -93,7 +93,8 @@ def flow_run_cache():
                     flow.__setstate__(cached_value.full_state)
 
                     print(f"Retrieved from cache: {flow.__class__.__name__} "
-                          f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+                          f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
+                          f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
                     print("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function

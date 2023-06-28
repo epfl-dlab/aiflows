@@ -21,6 +21,6 @@ class FixedReplyAtomicFlow(AtomicFlow):
             private_keys: Optional[List[str]] = [],
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
 
-        key = self.flow_config["expected_outputs"][0]
+        key = self.flow_config["output_keys"][0]
         return {key: self.flow_config["fixed_reply"]}
 

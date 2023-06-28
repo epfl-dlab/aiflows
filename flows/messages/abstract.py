@@ -47,26 +47,30 @@ class Message:
         if "api_keys" not in self.private_keys:
             self.private_keys.append("api_keys")
 
-    def __private__dict__(self):
+    def __sanitized__dict__(self):
         """Removes any private_keys potentially present in the __dict__ object or the data dictionary"""
-        __private__dict__ = copy.deepcopy(self.__dict__)
+        __sanitized__dict__ = copy.deepcopy(self.__dict__)
         for private_key in self.private_keys:
-            if private_key in __private__dict__:
-                del __private__dict__[private_key]
+            if private_key in __sanitized__dict__:
+                del __sanitized__dict__[private_key]
 
         for private_key in self.private_keys:
-            if private_key in __private__dict__["data"]:
-                del __private__dict__["data"][private_key]
+            if private_key in __sanitized__dict__["data"]:
+                del __sanitized__dict__["data"][private_key]
 
-        del __private__dict__["private_keys"]
-        return __private__dict__
+        del __sanitized__dict__["private_keys"]
+        return __sanitized__dict__
 
     def to_dict(self):
-        d = self.__private__dict__()
+        d = self.__sanitized__dict__()
         return d
 
+    def to_string(self):
+        """Returns a formatted string representation of the message that will be logged to the console"""
+        raise NotImplementedError()
+
     def __str__(self):
-        d = self.__private__dict__()
+        d = self.__sanitized__dict__()
         return json.dumps(d, indent=4)
 
     def __repr__(self):

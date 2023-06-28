@@ -12,7 +12,7 @@ class InputMessage(Message):
     def __init__(self,
                  src_flow: str,
                  dst_flow: str,
-                 expected_outputs: List[str],
+                 output_keys: List[str],
                  api_keys: Optional[Dict[str, str]] = None,
                  keys_to_ignore_for_hash: Optional[List[str]] = None,
                  **kwargs):
@@ -20,7 +20,7 @@ class InputMessage(Message):
 
         self.data["src_flow"] = src_flow
         self.data["dst_flow"] = dst_flow
-        self.data["expected_outputs"] = expected_outputs
+        self.data["output_keys"] = output_keys
         if api_keys:
             self.data["api_keys"] = api_keys
 
@@ -125,18 +125,18 @@ class OutputMessage(Message):
     def __init__(self,
                  src_flow: str,
                  dst_flow: str,
-                 expected_outputs: List[str],
+                 output_keys: List[str],
                  outputs: Dict[str, Any],
-                 missing_expected_outputs: List[str],
+                 missing_output_keys: List[str],
                  history: 'FlowHistory',
                  **kwargs):
         super().__init__(**kwargs)
 
         self.data["src_flow"] = src_flow
         self.data["dst_flow"] = dst_flow
-        self.data["expected_outputs"] = expected_outputs
+        self.data["output_keys"] = output_keys
         self.data["outputs"] = outputs
-        self.data["missing_expected_outputs"] = missing_expected_outputs
+        self.data["missing_output_keys"] = missing_output_keys
         self.history = history.to_list()
 
     def to_string(self):
