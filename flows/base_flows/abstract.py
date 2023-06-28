@@ -1,4 +1,5 @@
 import os
+import pdb
 import sys
 import copy
 
@@ -42,6 +43,8 @@ class Flow(ABC):
         self.flow_config = None
         self.history = None
 
+
+        log.info(f"_validate_parameters: {kwargs_passed_to_the_constructor}")
         self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
@@ -66,7 +69,23 @@ class Flow(ABC):
 
     @classmethod
     def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
+        log.info(f"_validate_parameters: {kwargs}")
+
+        flow_config = kwargs["flow_config"]
+
+        if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
+            raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
+
+        for key in cls.REQUIRED_KEYS_CONFIG:
+            if key not in flow_config:
+                raise ValueError(f"{key} is a required parameter in the flow_config.")
+
+        if not hasattr(cls, "REQUIRED_KEYS_KWARGS"):
+            raise ValueError("REQUIRED_KEYS_KWARGS should be defined for each Flow class.")
+
+        for key in cls.REQUIRED_KEYS_KWARGS:
+            if key not in kwargs:
+                raise ValueError(f"{key} is a required parameter in the constructor.")
 
     @classmethod
     def get_config(cls, **overrides):
@@ -210,6 +229,7 @@ class Flow(ABC):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
+        pdb.set_trace()
         return self.flow_config["input_keys"]
 
     def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
@@ -356,6 +376,10 @@ class AtomicFlow(Flow, ABC):
     ):
         super().__init__(**kwargs)
 
+    @classmethod
+    def _validate_parameters(cls, kwargs):
+        log.info(f"Validating parameters for {cls.__name__} with kwargs: {kwargs.keys()}")
+        cls.__base__._validate_parameters(kwargs)
 
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
@@ -388,7 +412,7 @@ class CompositeFlow(Flow, ABC):
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
-        api_keys = getattr(self, 'api_keys', None)
+        api_keys = self.flow_state.get("api_keys", None)
         input_data = self._fetch_state_attributes_by_keys(
             keys=None,
             allow_class_attributes=search_class_namespace_for_inputs
@@ -398,8 +422,8 @@ class CompositeFlow(Flow, ABC):
                                                            private_keys=private_keys,
                                                            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
                                                            api_keys=api_keys)
-
         # ~~~ Execute the call ~~~
+        #ToDo This is where the error is happening
         output_message = flow_to_call(input_message)
 
         # ~~~ Logs the output message to history ~~~

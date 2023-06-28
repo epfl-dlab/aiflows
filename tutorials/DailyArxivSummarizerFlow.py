@@ -35,7 +35,7 @@ class ArxivDocumentTransform(AtomicFlow):
 
     @flow_run_cache()
     def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
-        input_key = self.expected_inputs[0]
+        input_key = self.input_keys[0]
         documents = input_data[input_key]
 
         str_format = ""
@@ -68,7 +68,7 @@ class ArxivAPIAtomicFlow(AtomicFlow):
             **kwargs
         )
 
-    def expected_inputs_given_state(self):
+    def input_keys_given_state(self):
         return ["query", "max_results", "sort_by", "sort_order", "get_content", "get_only_abstract"]
 
     def _read_value(self, input_data: Dict[str, Any], value: str):
@@ -124,7 +124,7 @@ if __name__ == "__main__":
         name="ArxivAPIAtomicFlow",
         description="Retrieves last n arxiv paper from a given field",
         sort_by=SortCriterion.SubmittedDate,
-        expected_inputs=["field", "max_results"],
+        input_keys=["field", "max_results"],
         output_keys=["arxiv_outputs"],
         get_content=False,
         get_basic_content=True
@@ -134,7 +134,7 @@ if __name__ == "__main__":
     arxiv_transform_flow = ArxivDocumentTransform(
         name="ArxivDocumentTransform",
         description="Takes the output of an ArxivAPIAtomicFlow and parses it into a string",
-        expected_inputs=["arxiv_outputs"],
+        input_keys=["arxiv_outputs"],
         output_keys=["paper_descriptions"]
     )
 
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         description="summarizes several arxiv paper",
         model_name="gpt-3.5-turbo",
         generation_parameters={},
-        expected_inputs=["field", "paper_descriptions"],
+        input_keys=["field", "paper_descriptions"],
         output_keys=["summary"],
         system_message_prompt_template=sys_prompt,
         human_message_prompt_template=hum_prompt,
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     daily_arxiv_summarizer = SequentialFlow(
         name="summarizer arxiv",
         description="summarizes arxiv",
-        expected_inputs=["field", "max_results", "api_key"],
+        input_keys=["field", "max_results", "api_key"],
         output_keys=["summary"],
         flows={
             "arxiv_flow": arxiv_flow,

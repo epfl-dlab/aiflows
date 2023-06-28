@@ -1,3 +1,4 @@
+import pdb
 from typing import List, Dict, Any, Optional
 
 from flows.base_flows import CompositeFlow
@@ -46,7 +47,7 @@ class GeneratorCriticFlow(CompositeFlow):
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
-        self.api_keys = input_data["api_keys"]
+        self.flow_state["api_keys"] = input_data["api_keys"]
         del input_data["api_keys"]
 
         generator_flow, critic_flow = self._identify_flows()
@@ -59,6 +60,7 @@ class GeneratorCriticFlow(CompositeFlow):
             if self.flow_config["reset_generator_every_round"]:
                 generator_flow.reset(full_reset=True, recursive=True)
 
+
             # ~~~ Execute the generator flow and update the state with the outputs ~~~
             generator_output_message = self._call_flow_from_state(
                 flow_to_call=generator_flow,
@@ -67,21 +69,25 @@ class GeneratorCriticFlow(CompositeFlow):
             )
             self._state_update_dict(generator_output_message)
 
+
             # ~~~ Check for end of interaction (decided by the generator) ~~~
             if self._early_exit():
                 log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
+
 
             # ~~~ Initialize the critic flow ~~~
             if self.flow_config["reset_critic_every_round"]:
                 critic_flow.reset(full_reset=True, recursive=True)
 
             # ~~~ Execute the critic flow and update the state with the outputs ~~~
+            # ToDo This is where the critic flow should be called and yields error
             critic_output_message = self._call_flow_from_state(
                 flow_to_call=critic_flow,
                 private_keys=private_keys,
                 keys_to_ignore_for_hash=keys_to_ignore_for_hash
             )
+
             self._state_update_dict(critic_output_message)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~

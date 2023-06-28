@@ -37,7 +37,7 @@ class HumanInputAtomicFlow(AtomicFlow):
     def _instantiate(self):
         self.human_prompt_template = hydra.utils.instantiate(self.flow_config["human_prompt_template"], _convert_="partial")
 
-    def expected_inputs_given_state(self):
+    def input_keys_given_state(self):
         return self.human_prompt_template.input_variables
 
     def _get_input_message(self, input_data: Dict[str, Any]):
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         name="ArxivAPIAtomicFlow",
         description="Retrieves last n arxiv paper from a given field",
         sort_by=SortCriterion.SubmittedDate,
-        expected_inputs=["field", "max_results"],
+        input_keys=["field", "max_results"],
         output_keys=["arxiv_outputs"],
         get_content=False,
         get_basic_content=True
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     arxiv_transform_flow = ArxivDocumentTransform(
         name="ArxivDocumentTransform",
         description="Takes the output of an ArxivAPIAtomicFlow and parses it into a string",
-        expected_inputs=["arxiv_outputs"],
+        input_keys=["arxiv_outputs"],
         output_keys=["paper_descriptions"]
     )
 
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     human_input_flow = HumanInputAtomicFlow(
         name="HumanInputAtomicFlow",
         description="Asks the user for a question",
-        expected_inputs=["sys_prompt"],
+        input_keys=["sys_prompt"],
         output_keys=["human_query"],
         human_prompt_template=human_prompt_template
     )
@@ -116,7 +116,7 @@ if __name__ == "__main__":
         description="summarizes several arxiv paper",
         model_name="gpt-3.5-turbo",
         generation_parameters={},
-        expected_inputs=["field", "paper_descriptions", "human_query"],
+        input_keys=["field", "paper_descriptions", "human_query"],
         output_keys=["ai_answer"],
         system_message_prompt_template=sys_prompt,
         human_message_prompt_template=hum_prompt,
@@ -127,7 +127,7 @@ if __name__ == "__main__":
     arxiv_qa_flow = SequentialFlow(
         name="summarizer arxiv",
         description="summarizes arxiv",
-        expected_inputs=["field", "max_results", "api_key"],
+        input_keys=["field", "max_results", "api_key"],
         output_keys=["summary"],
         flows={
             "arxiv_flow": arxiv_flow,

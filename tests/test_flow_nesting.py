@@ -31,7 +31,7 @@ def test_loading_nested_flow() -> None:
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": [],
+        "input_keys": [],
         "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
@@ -56,7 +56,7 @@ def test_loading_nested_flow() -> None:
         "_target_": "flows.base_flows.GeneratorCriticFlow",
         "name": "gen_crit_flow",
         "description": "gen_crit_desc",
-        "expected_inputs": ["input_0", "input_1"],
+        "input_keys": ["input_0", "input_1"],
         "output_keys": ["gen_crit_out"],
         "flows": {"generator_flow": openai_flow, "critic_flow": critic_flow},
         "n_rounds": 2,
@@ -79,7 +79,7 @@ def test_loading_nested_flow() -> None:
         "_target_": "flows.base_flows.SequentialFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
-        "expected_inputs": ["input_0", "input_1"],
+        "input_keys": ["input_0", "input_1"],
         "output_keys": ["output_key"],
         "flows": [gen_critic_flow, second_flow]
     }
