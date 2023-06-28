@@ -13,7 +13,7 @@ def test_basic_instantiating() -> None:
     flow = Flow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         flow_type="my-flow"
@@ -24,14 +24,14 @@ def test_basic_instantiating() -> None:
     assert flow.flow_type == "my-flow"
 
     with pytest.raises(NotImplementedError):
-        flow.run(input_data={}, expected_outputs=[])
+        flow.run(input_data={}, output_keys=[])
 
 
 def test_instantiating_extra_params() -> None:
     flow = Flow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         flow_type="my-flow",
@@ -93,7 +93,7 @@ def test_state_loading() -> None:
     flow = Flow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         flow_type="my-flow"
@@ -151,19 +151,19 @@ def test_update_state() -> None:
 
 def test_basic_run() -> None:
     class MyFlow(Flow):
-        def run(self, input_data, expected_outputs):
+        def run(self, input_data, output_keys):
             self.temporary_variable = input_data["second_input"]
             self._update_state({"input_0": input_data["first_input"]})
             self.other_temp = 24 + len(self.flow_state["history"])
 
-            return {expected_outputs[0]: self.temporary_variable,
-                    expected_outputs[1]: self.other_temp}
+            return {output_keys[0]: self.temporary_variable,
+                    output_keys[1]: self.other_temp}
 
     flow = MyFlow(
         name="name",
         description="description",
-        expected_inputs=["first_input", "second_input"],
-        expected_outputs=["first_output", "second_output"],
+        input_keys=["first_input", "second_input"],
+        output_keys=["first_output", "second_output"],
         verbose=False,
         dry_run=True,
         flow_type="my-flow"
@@ -173,7 +173,7 @@ def test_basic_run() -> None:
         recipient_flow=flow,
         task_name="task",
         task_data={"first_input": 23, "second_input": 87},
-        expected_outputs=["first_output", "second_output"]
+        output_keys=["first_output", "second_output"]
     )
 
     output_message = flow(task_message=task_message)
@@ -200,7 +200,7 @@ def test_basic_run() -> None:
         recipient_flow=flow,
         task_name="task",
         task_data={"first_input": 12, "second_input": 32},
-        expected_outputs=["first_output", "second_output"]
+        output_keys=["first_output", "second_output"]
     )
 
     output_message = flow(task_message=new_task_message)

@@ -16,7 +16,7 @@ class RockPaperScissorsJudge(Flow):
         self.flow_state["B_score"] = 0
         self.flow_state["n_rounds_played"] = 0
 
-    def run(self, input_data, expected_outputs) -> Dict:
+    def run(self, input_data, output_keys) -> Dict:
         # the run method can include any logic you want
         # including calls to other flows
         flow_a = self.flow_state["A"]
@@ -26,12 +26,12 @@ class RockPaperScissorsJudge(Flow):
         for _ in range(3):
 
             # both player flows are called with a task message
-            A_task = self.package_task_message(flow_a, "run", {}, expected_outputs=["choice"])
+            A_task = self.package_task_message(flow_a, "run", {}, output_keys=["choice"])
             A_output = flow_a(A_task)
             self._log_message(A_output)
             A_choice = A_output.data["choice"]
 
-            B_task = self.package_task_message(flow_b, "run", {}, expected_outputs=["choice"])
+            B_task = self.package_task_message(flow_b, "run", {}, output_keys=["choice"])
             B_output = flow_b(B_task)
             self._log_message(B_output)
             B_choice = B_output.data["choice"]
@@ -52,11 +52,11 @@ class RockPaperScissorsJudge(Flow):
 
         # at the end of run, you need to return a dictionary which has the expected outputs as keys
         # we offer a concenience method to extract the corresponding values from the flow_state
-        return self._get_keys_from_state(expected_outputs, allow_class_namespace=False)
+        return self._fetch_state_attributes_by_keys(output_keys, allow_class_attributes=False)
 
 if __name__=="__main__":
     judge = RockPaperScissorsJudge(name="RockPaperScissorsJudge", description="RockPaperScissorsJudge")
-    task = judge.package_task_message(judge, "run", {}, expected_outputs=["A_score", "B_score"])
+    task = judge.package_task_message(judge, "run", {}, output_keys=["A_score", "B_score"])
     output = judge(task)
 
     print(f"player A won {output.data['A_score']} rounds")

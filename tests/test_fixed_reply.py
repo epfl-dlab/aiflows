@@ -12,7 +12,7 @@ def test_basic_instantiating() -> None:
     flow = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         fixed_reply="reply"
@@ -44,7 +44,7 @@ def test_basic_call() -> None:
     flow = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=False,
         fixed_reply="reply"
@@ -54,7 +54,7 @@ def test_basic_call() -> None:
         recipient_flow=flow,
         task_name="",
         task_data={},
-        expected_outputs=["query_mod"]
+        output_keys=["query_mod"]
     )
 
     answer = flow(tm)

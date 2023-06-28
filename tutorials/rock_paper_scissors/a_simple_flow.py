@@ -9,7 +9,7 @@ class RockPaperScissorsPlayer(AtomicFlow):
     def __init__(self, **kwargs):
         super(RockPaperScissorsPlayer, self).__init__(**kwargs)
 
-    def run(self, input_data, expected_outputs: List[str] = None):
+    def run(self, input_data, output_keys: List[str] = None):
         choice = random.choice(["rock", "paper", "scissors"])
         return {"choice": choice}
 
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     print(player.flow_config)
 
     # to create your own Flow, all you need to do is implement the run method
-    print(player.run({}, expected_outputs=["choice"]))
+    print(player.run({}, output_keys=["choice"]))

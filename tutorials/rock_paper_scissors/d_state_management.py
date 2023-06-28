@@ -7,7 +7,7 @@ if __name__=="__main__":
     judge = RockPaperScissorsJudge(name="RockPaperScissorsJudge", description="RockPaperScissorsJudge")
     print(f"In the beginning, the judge has seen a total of {judge.flow_state['n_rounds_played']} rounds")
 
-    task = judge.package_task_message(judge, "run", {}, expected_outputs=["A_score", "B_score", "n_rounds_played"])
+    task = judge.package_task_message(judge, "run", {}, output_keys=["A_score", "B_score", "n_rounds_played"])
     output = judge(task)
     print(f"After one task, the judge has seen a total of {judge.flow_state['n_rounds_played']} rounds")
 
@@ -17,7 +17,7 @@ if __name__=="__main__":
 
     # the reset method takes an optional full_reset=True argument
     # if you specify full_reset=False, everything except the flow_state is reset
-    task = judge.package_task_message(judge, "run", {}, expected_outputs=["A_score", "B_score", "n_rounds_played"])
+    task = judge.package_task_message(judge, "run", {}, output_keys=["A_score", "B_score", "n_rounds_played"])
     output = judge(task)
     judge.helper_value = 22
     judge.reset(full_reset=False)

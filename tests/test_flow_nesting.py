@@ -32,7 +32,7 @@ def test_loading_nested_flow() -> None:
         "name": "gen_flow",
         "description": "gen_desc",
         "expected_inputs": [],
-        "expected_outputs": ["gen_out"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -47,7 +47,7 @@ def test_loading_nested_flow() -> None:
         "name": "dummy_crit_name_fr",
         "description": "dummy_crit_desc_fr",
         "fixed_reply": "DUMMY CRITIC",
-        "expected_outputs": ["query"]
+        "output_keys": ["query"]
     }
 
     critic_flow = FixedReplyAtomicFlow(**crit_flow_dict)
@@ -57,7 +57,7 @@ def test_loading_nested_flow() -> None:
         "name": "gen_crit_flow",
         "description": "gen_crit_desc",
         "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_crit_out"],
+        "output_keys": ["gen_crit_out"],
         "flows": {"generator_flow": openai_flow, "critic_flow": critic_flow},
         "n_rounds": 2,
         "eoi_key": "eoi_key"
@@ -70,7 +70,7 @@ def test_loading_nested_flow() -> None:
         "name": "dummy_name_fr",
         "description": "dummy_desc_fr",
         "fixed_reply": "dummy_fixed_reply",
-        "expected_outputs": ["output_key"]
+        "output_keys": ["output_key"]
     }
 
     second_flow = FixedReplyAtomicFlow(**second_flow_dict)
@@ -80,7 +80,7 @@ def test_loading_nested_flow() -> None:
         "name": "dummy_name",
         "description": "dummy_desc",
         "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["output_key"],
+        "output_keys": ["output_key"],
         "flows": [gen_critic_flow, second_flow]
     }
 

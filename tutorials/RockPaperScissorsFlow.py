@@ -15,13 +15,13 @@ class RockPaperScissorsJudge(Flow):
         self.flow_state["B_score"] = 0
         self.flow_state["n_party_played"] = 0
 
-    def run(self, input_data, expected_outputs) -> Dict:
+    def run(self, input_data, output_keys) -> Dict:
         flow_a = self.flow_state["A"]
         flow_b = self.flow_state["B"]
 
         for _ in range(3):
-            A_task = self.package_task_message(flow_a, "run", {}, expected_outputs=["choice"])
-            B_task = self.package_task_message(flow_b, "run", {}, expected_outputs=["choice"])
+            A_task = self.package_task_message(flow_a, "run", {}, output_keys=["choice"])
+            B_task = self.package_task_message(flow_b, "run", {}, output_keys=["choice"])
             # play another round
             A_output = flow_a(A_task)
             self._log_message(A_output)
@@ -43,7 +43,7 @@ class RockPaperScissorsJudge(Flow):
             else:
                 self._update_state({"B_score": self.flow_state["B_score"] + 1})
 
-        return self._get_keys_from_state(expected_outputs, allow_class_namespace=False)
+        return self._fetch_state_attributes_by_keys(output_keys, allow_class_attributes=False)
 
 
 class RockPaperScissorsPlayer(Flow):
@@ -51,7 +51,7 @@ class RockPaperScissorsPlayer(Flow):
     def __init__(self, **kwargs):
         super(RockPaperScissorsPlayer, self).__init__(**kwargs)
 
-    def run(self, input_data, expected_outputs: List[str] = None):
+    def run(self, input_data, output_keys: List[str] = None):
         choice = random.choice(["rock", "paper", "scissors"])
 
         return {"choice": choice}
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         recipient_flow=judge,
         task_name="run",
         task_data={},
-        expected_outputs=["A_score"]
+        output_keys=["A_score"]
     )
     judge_output = judge(judge_task)
     print(judge_output.data)  # this is how often A wins
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         recipient_flow=another_judge,
         task_name="run",
         task_data={},
-        expected_outputs=["A_score"]
+        output_keys=["A_score"]
     )
 
     another_output = another_judge(another_judge_task)

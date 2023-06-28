@@ -51,8 +51,8 @@ def test_success(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": expected_in,
-        "expected_outputs": ["gen_out"],
+        "input_keys": expected_in,
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -64,7 +64,7 @@ def test_success(monkeypatch):
 
     openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
     openai_flow = OpenAIChatAtomicFlow.instantiate(gen_flow_dict)
-    assert openai_flow.expected_inputs_given_state() == expected_in
+    assert openai_flow.input_keys_given_state() == expected_in
 
     answer_annotator = openai_flow._get_annotator_with_key("answer")
     assert answer_annotator is not None
@@ -102,8 +102,8 @@ def test_state_update():
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": expected_in,
-        "expected_outputs": ["gen_out"],
+        "input_keys": expected_in,
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -122,10 +122,10 @@ def test_state_update():
     openai_flow._update_state(msg, [])
     assert len(openai_flow.flow_state["history"]) == 2
     assert openai_flow.flow_state["question"] == "What is your answer?"
-    assert openai_flow._get_keys_from_state(["question"])["question"] == "What is your answer?"
+    assert openai_flow._fetch_state_attributes_by_keys(["question"])["question"] == "What is your answer?"
 
     # can we recover a key from the class namespace
-    assert openai_flow._get_keys_from_state(["name"])["name"] == "gen_flow"
+    assert openai_flow._fetch_state_attributes_by_keys(["name"])["name"] == "gen_flow"
 
     history_length_before = len(openai_flow.flow_state["history"])
 
@@ -180,8 +180,8 @@ def test_failure(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -230,8 +230,8 @@ def test_conv_init(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -249,9 +249,9 @@ def test_conv_init(monkeypatch):
 
     _ = openai_flow(task_message)
 
-    expected_inputs = openai_flow.expected_inputs_given_state()
+    input_keys = openai_flow.input_keys_given_state()
 
-    for key in expected_inputs:
+    for key in input_keys:
         assert key in task_message.data.keys()
     _ = openai_flow(task_message)
 
@@ -283,8 +283,8 @@ def test_inspect_conversation(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -345,8 +345,8 @@ def test_add_demonstration(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
@@ -395,8 +395,8 @@ def test_response_annotator_wrong_key(monkeypatch):
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,

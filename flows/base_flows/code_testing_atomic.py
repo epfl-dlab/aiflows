@@ -126,11 +126,11 @@ class CodeTestingAtomicFlow(AtomicFlow):
     def _test_code(self, input_data: Dict[str, Any]):
         raise NotImplementedError()
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         response = self._test_code(input_data)
         extended_response = self._add_global_informations(response=response)
-        if expected_outputs:
-            return {k: v for k, v in extended_response.items() if k in expected_outputs}
+        if output_keys:
+            return {k: v for k, v in extended_response.items() if k in output_keys}
         else:
             return extended_response
 

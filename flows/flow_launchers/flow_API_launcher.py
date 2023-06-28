@@ -30,7 +30,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             fault_tolerant_mode: bool,
             n_batch_retries: int,
             wait_time_between_retries: int,
-            expected_outputs: List[str],
+            output_keys: List[str],
             **kwargs,
     ):
         super().__init__(**kwargs)
@@ -48,7 +48,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
         self.wait_time_between_retries = wait_time_between_retries
-        self.expected_outputs = expected_outputs
+        self.output_keys = output_keys
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
     def _load_cache(self, path_to_cache):
@@ -58,7 +58,6 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
     def predict(self, batch: List[Dict]):
         # ToDo: pass the cache in the expected way to the flow
-        # ToDo: better management of API keys (@Maxime has some thoughts on this)
 
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         _resource_id = self._resource_IDs.get()  # The ID of the resources to be used by the thread for this sample
@@ -72,21 +71,19 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                 log.info("Running inference for ID (sample {}): {}".format(_sample_idx, sample["id"]))
                 api_key_idx = self._choose_next_api_key()
                 _error = None
-                if isinstance(flow, flows.base_flows.CompositeFlow):
-                    flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
-                else:
-                    flow.reset(full_reset=True)  # Reset the flow to its initial state
+                flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
                 if self.fault_tolerant_mode:
                     _attempt_idx = 1
 
                     while _attempt_idx <= self.n_batch_retries:
                         try:
-                            sample["api_key"] = self.api_keys[api_key_idx]
-                            task_message = flow.package_task_message(recipient_flow=flow,
-                                                                     task_name="run_task",
-                                                                     task_data=sample,
-                                                                     expected_outputs=self.expected_outputs)
+                            api_keys = {"openai": self.api_keys[api_key_idx]}
+                            task_message = flow.package_input_message(data=sample,
+                                                                      src_flow="Launcher",
+                                                                      output_keys=self.output_keys,
+                                                                      api_keys=api_keys)
+                            # ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
 
                             output_message = flow(task_message)
 
@@ -108,13 +105,13 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                 else:
                     # For development and debugging purposes
-                    sample["api_key"] = self.api_keys[api_key_idx]
-                    task_message = flow.package_task_message(recipient_flow=flow,
-                                                             task_name="run_task",
-                                                             task_data=sample,
-                                                             expected_outputs=self.expected_outputs)
+                    api_keys = {"openai": self.api_keys[api_key_idx]}
+                    input_message = flow.package_input_message(data=sample,
+                                                               src_flow="Launcher",
+                                                               output_keys=self.output_keys,
+                                                               api_keys=api_keys)
 
-                    output_message = flow(task_message)
+                    output_message = flow(input_message)
 
                     inference_outputs.append(output_message)
                     _error = None

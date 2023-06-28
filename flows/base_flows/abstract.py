@@ -3,44 +3,46 @@ import sys
 import copy
 
 from abc import ABC
-from typing import List, Dict, Any, Union
+from typing import List, Dict, Any, Union, Optional
 
 import colorama
 import hydra
 from omegaconf import OmegaConf
 
+# ToDo: make imports relative
 import flows
 from flows import utils
 from flows.history import FlowHistory
-from flows.messages import OutputMessage, Message, StateUpdateMessage, TaskMessage
-from flows.utils.general_helpers import create_unique_id
-from src.utils.general_helpers import recursive_dictionary_update
+from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
+    UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
+    OutputMessage
+from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_HASH = set(["name", "description", "verbose", "history", "repository_id", "class_name"])
-    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = set(["flow_config", "flow_state", "flow_run_id"])
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history"}
 
-    # ToDo: Document and remove. Here for reference
-    # name: str
-    # description: str
-    # expected_inputs: List[str]
-    # expected_outputs: List[str]
-    # flow_type: str
-    # verbose: bool
-    # dry_run: bool
-    # namespace_clearing_after_run: bool
-    #
-    # flow_run_id: str
-    # flow_config: Dict[str, Any]
-    # flow_state: Dict[str, Any]
+    KEYS_TO_IGNORE_HASH = {"name", "description", "verbose"}
+    SUPPORTS_CACHING = False
+
+    REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end", "output_keys"]
+    REQUIRED_KEYS_KWARGS = ["flow_config"]
+
+    flow_config: Dict[str, Any]
+    flow_state: Dict[str, Any]
+    history: FlowHistory
 
     def __init__(
             self,
             **kwargs_passed_to_the_constructor
     ):
+        self.flow_state = None
+        self.flow_config = None
+        self.history = None
+
+        self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
@@ -49,10 +51,6 @@ class Flow(ABC):
             pass
 
         self.set_up_flow_state()
-        if isinstance(self, CompositeFlow):
-            self.reset_flow_id(recursive=True)
-        else:
-            self.reset_flow_id()
 
     def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
         self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
@@ -67,27 +65,21 @@ class Flow(ABC):
             self.__setattr__(k, v)
 
     @classmethod
-    def _validate_parameters(cls, config):
-        if "flow_config" not in config:
-            raise ValueError("flow_config is a required parameter.")
-
-        flow_config = config["flow_config"]
-
-        if "name" not in flow_config:
-            raise ValueError("name is a required parameter in the flow_config.")
-        if "description" not in flow_config:
-            raise ValueError("description is a required parameter in the flow_config.")
+    def _validate_parameters(cls, kwargs):
+        validate_parameters(cls, kwargs)
 
     @classmethod
     def get_config(cls, **overrides):
+        """
+        Returns the default config for the flow, with the overrides applied.
+
+        The default implementation construct the default config by recursively merging the configs of the base classes.
+        """
         if cls == Flow:
             config = {
-                "expected_inputs": [],
-                "expected_outputs": [],
-                "flow_type": "Flow",
+                "output_keys": [],
                 "verbose": True,
-                "dry_run": False,
-                "namespace_clearing_after_run": True,
+                "clear_flow_namespace_on_run_end": True,
             }
             return config
         elif cls == ABC:
@@ -95,7 +87,7 @@ class Flow(ABC):
         elif cls == object:
             return {}
 
-        # Recursively get the configs from the base classes
+        # ~~~ Recursively retrieve and merge the configs of the base classes to construct the default config ~~~
         super_cls = cls.__base__
         parent_default_config = super_cls.get_config()
 
@@ -113,12 +105,13 @@ class Flow(ABC):
             config = parent_default_config
             log.warning(f"Flow config not found at {path_to_config}.")
 
+        # ~~~~ Apply the overrides ~~~~
         config = recursive_dictionary_update(config, overrides)
         return config
 
     @classmethod
     def instantiate_from_config(cls, config):
-        kwargs = {"flow_config": config}
+        kwargs = {"flow_config": copy.deepcopy(config)}
         return cls(**kwargs)
 
     @classmethod
@@ -127,37 +120,50 @@ class Flow(ABC):
         return cls.instantiate_from_config(config)
 
     def set_up_flow_state(self):
-        self.flow_state = {
-            "history": FlowHistory()
-        }
+        self.flow_state = {}
+        self.history = FlowHistory()
 
-    def reset_flow_id(self):
-        self.flow_run_id = create_unique_id()
-
-    def reset(self, full_reset: bool):
+    def reset(self, full_reset: bool, recursive: bool):
         # ~~~ Delete all extraneous attributes ~~~
-        for key, value in self.__dict__.items():
+        keys_deleted_from_namespace = []
+        for key, value in list(self.__dict__.items()):
             if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
                 del self.__dict__[key]
+                keys_deleted_from_namespace.append(key)
+
+        if recursive and hasattr(self, "subflows"):
+            for flow in self.subflows.values():
+                flow.reset(full_reset=full_reset, recursive=True)
 
         if full_reset:
+            message = UpdateMessage_FullReset(
+                created_by=self.flow_config['name'],  # ToDo: Update this to the flow from which the reset was called
+                updated_flow=self.flow_config["name"],
+                keys_deleted_from_namespace=keys_deleted_from_namespace
+            )
+            self._log_message(message)
             self.set_up_flow_state()  # resets the flow state
-            self.reset_flow_id()
+        else:
+            message = UpdateMessage_NamespaceReset(
+                created_by=self.flow_config['name'],  # ToDo: Update this to the flow from which the reset was called
+                updated_flow=self.flow_config["name"],
+                keys_deleted_from_namespace=keys_deleted_from_namespace
+            )
+            self._log_message(message)
 
-    def _update_state(self, update_data: Union[Dict[str, Any], Message], parent_message_ids: List[str] = None):
+    def _state_update_dict(self, update_data: Union[Dict[str, Any], Message]):
+        """
+        Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
+
+        """
         if isinstance(update_data, Message):
-            update_data = update_data.data
+            update_data = update_data.data["outputs"]
 
-        if not parent_message_ids:
-            parent_message_ids = []
-
-        if not update_data:
-            log.warning("Updating states called with empty updates")
-            return
+        if len(update_data) == 0:  # ToDo: Should we allow empty state updates, with a warning? When would this happen?
+            raise ValueError("The state_update_dict was called with an empty dictionary.")
 
         updates = {}
         for key, value in update_data.items():
-            # ToDo: This logs api_keys and everything in between. Should be fixed
             if key in self.flow_state:
                 if value is None or value == self.flow_state[key]:
                     continue
@@ -165,161 +171,171 @@ class Flow(ABC):
             updates[key] = value
             self.flow_state[key] = copy.deepcopy(value)
 
-        if updates:
-            state_update_message = StateUpdateMessage(
-                message_creator=self.flow_config['name'],
-                parent_message_ids=parent_message_ids,
-                flow_runner=self.flow_config['name'],
-                flow_run_id=self.flow_run_id,
-                updated_keys=list(updates.keys()),
-                # data=updates.keys(),
-                # TODO: do we prefer to keep all the data in the message, rather than modified keys
+        if len(updates) != 0:
+            state_update_message = UpdateMessage_Generic(
+                created_by=self.flow_config['name'],
+                updated_flow=self.flow_config["name"],
+                data=updates,
             )
             return self._log_message(state_update_message)
 
     def __getstate__(self):
+        """Used by the caching mechanism such that the flow can be returned to the same state using the cache"""
         return {
-            "flow_config": copy.deepcopy(self.flow_config),
-            "flow_state": copy.deepcopy(self.flow_state),
-            # "config_param_updates": {k: self.__dict__[k]
-            #                          for k in self.flow_config if self.flow_config[k] != self.__dict__[k]}
+            "flow_config": self.flow_config,
+            "flow_state": self.flow_state,
+            "history": self.history,
         }
 
-    # def __setstate__(self, state):
-    #     self.flow_config = copy.deepcopy(state["flow_config"])
-    #     self.__set_config_params()
-    #     self.flow_state = copy.deepcopy(state["flow_state"])
-    #     for k, v in state["config_param_updates"].items():
-    #         self.__setattr__(k, copy.deepcopy(v))
-    #     self.flow_run_id = create_unique_id()
+    def __setstate__(self, state):
+        """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
+        self.flow_config = state["flow_config"]
+        self.flow_state = state["flow_state"]
+        # ToDo: Make sure that the below is soft copy, by updating the __getstate__ of the history
+        self.history = state["history"]
+
 
     def __repr__(self):
+        """Generates the string that will be used by the hashing function"""
+        # ToDo: Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
-        flow_config_to_keep = set(self.flow_config.keys()) - set(self.KEYS_TO_IGNORE_HASH)
-        config_hashing_params = {k: v for k, v in self.__dict__.items() if k in flow_config_to_keep}
+        config_hashing_params = {k: v for k, v in self.flow_config.items() if k not in self.KEYS_TO_IGNORE_HASH}
         state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
-        # ToDo: Shouldn't composite flows include their subflows in the hashing, recursively?
         return repr(hash_dict)
 
-    # def _clear(self):
-    #     # ~~~ What should be kept ~~~
-    #     state = self.__getstate__()
-    #     flow_run_id = self.flow_run_id
-    #
-    #     # ~~~ Complete erasure ~~~
-    #     self.__dict__ = {}
-    #
-    #     # ~~~ Restore what should be kept ~~~
-    #     self.__setstate__(state)
-    #     self.flow_run_id = flow_run_id
+    def get_hash_data(self):
+        raise NotImplementedError()
 
-    def expected_inputs_given_state(self):
-        return self.flow_config["expected_inputs"]
+    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
+        """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
+        return self.flow_config["input_keys"]
+
+    def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
+        """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
+        return self.flow_config["output_keys"]
 
     def _log_message(self, message: Message):
         if self.flow_config["verbose"]:
-            log.info(
-                f"\n{colorama.Fore.RED} ~~~ Logging to history "
-                f"[{self.flow_config['name']} -- {self.flow_run_id}] ~~~\n"
-                f"{colorama.Fore.WHITE}Message being logged: {str(message)}{colorama.Style.RESET_ALL}"
-            )
-        return self.flow_state["history"].add_message(message)
+            log.info(message.to_string())
+        return self.history.add_message(message)
 
-    def _get_keys_from_state(self, keys: List[str], allow_class_namespace: bool = True):
+    def _fetch_state_attributes_by_keys(self, keys: List[str], allow_class_attributes: bool = True):
         data = {}
+
+        if keys is None:
+            # Return all available data
+            for key in self.flow_state:
+                data[key] = self.flow_state[key]
+
+            if allow_class_attributes:
+                for key in self.__dict__:
+                    if key in data:
+                        log.warning(f"Data key {key} present in both in the flow state and the class namespace.")
+                        continue
+                    data[key] = self.__dict__[key]
+
+            return data
+
         for key in keys:
             if key in self.flow_state:
                 data[key] = self.flow_state[key]
                 continue
 
-            if allow_class_namespace:
+            if allow_class_attributes:
                 if key in self.__dict__:
                     data[key] = self.__dict__[key]
         return data
 
     def _package_output_message(
             self,
+            input_message: InputMessage,
             outputs: Dict[str, Any],
-            expected_outputs: List[str],
-            parent_message_ids: List[str]
     ):
         missing_keys = []
-        for expected_key in expected_outputs:
+        for expected_key in input_message.data["output_keys"]:
             if expected_key not in outputs:
                 missing_keys.append(expected_key)
                 continue
 
-        error_message = None
-        if missing_keys:
-            error_message = f"The state of {self.flow_config['name']} [flow run ID: {self.flow_run_id}] does not contain" \
-                            f"the following expected keys: {missing_keys}."
-
         return OutputMessage(
-            message_creator=self.flow_config['name'],
-            parent_message_ids=parent_message_ids,
-            flow_runner=self.flow_config['name'],
-            flow_run_id=self.flow_run_id,
-            data=copy.deepcopy(outputs),
-            error_message=error_message,
-            history=self.flow_state.get("history", [])
+            created_by=self.flow_config['name'],
+            src_flow=self.flow_config['name'],
+            dst_flow=input_message.data["src_flow"],
+            output_keys=input_message.data["output_keys"],
+            outputs=outputs,
+            missing_output_keys=missing_keys,
+            history=self.history,
         )
 
-    def package_task_message(
+    def package_input_message(
             self,
-            recipient_flow: "Flow",
-            task_name: str,
-            task_data: Dict[str, Any],
-            expected_outputs: List[str],
-            parent_message_ids: List[str] = None
+            data: Dict[str, Any],
+            src_flow: Optional[Union["Flow", str]] = "Launcher",
+            input_keys: Optional[List[str]] = None,
+            output_keys: Optional[List[str]] = None,
+            api_keys: Optional[List[str]] = None,
+            private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
+            keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
     ):
-        return TaskMessage(
-            flow_runner=self.flow_config['name'],
-            flow_run_id=self.flow_run_id,
-            message_creator=self.flow_config['name'],
-            target_flow_run_id=recipient_flow.flow_run_id,
-            parent_message_ids=parent_message_ids,
-            task_name=task_name,
-            data=copy.deepcopy(task_data),
-            expected_outputs=expected_outputs
-        )
+        if isinstance(src_flow, Flow):
+            src_flow = src_flow.flow_config["name"]
+        dst_flow = self.flow_config["name"]
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+        # ~~~ Get the expected inputs and outputs ~~~
+        if input_keys is None:
+            input_keys = self.get_input_keys(data)
+        assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
+            "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
+
+        if output_keys is None:
+            output_keys = self.get_output_keys(data)
+        if "raw_response" not in output_keys:  # Corresponds to the raw unprocessed response
+            output_keys.append("raw_response")
+
+        # ~~~ Get the data payload ~~~
+        packaged_data = {}
+        for input_key in input_keys:
+            if input_key not in data:
+                raise ValueError(f"Input data does not contain the expected key: {input_key}")
+
+            packaged_data[input_key] = data[input_key]
+
+        # ~~~ Create the message ~~~
+        msg = InputMessage(
+            created_by=self.flow_config['name'],
+            data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
+            private_keys=private_keys,
+            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
+            src_flow=src_flow,
+            dst_flow=dst_flow,
+            output_keys=output_keys,
+            api_keys=api_keys,
+        )
+        return msg
+
+    def run(self,
+            input_data: Dict[str, Any],
+            private_keys: Optional[List[str]] = [],
+            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def set_up_api_keys(self, task_message):
-        # ToDo: Deal with this in a better way
-        if "api_key" in task_message.data:
-            self.flow_state["api_key"] = task_message.data["api_key"]
-            # We don't log it to history to not see it in the visualization
-            # self._update_state(update_data={"api_key": str(api_key)})
-
-        if getattr(self, "subflows", None):
-            for subflow in self.subflows.values():
-                subflow.set_up_api_keys(task_message=task_message)
-
-        # ToDo: Isn't the api_key getting logged by the _log_message anyhow? We should fix that.
-
-    def __call__(self, task_message: TaskMessage):
-        self.set_up_api_keys(task_message=task_message)
-
+    def __call__(self, input_message: InputMessage):
         # ~~~ check and log input ~~~
-        self._log_message(task_message)
+        self._log_message(input_message)
 
-        # ~~~ After the run is completed, the expected_outputs must be keys in the state ~~~
-        expected_outputs = task_message.expected_outputs
-        if expected_outputs is None:
-            expected_outputs = self.flow_config["expected_outputs"]
-
-        # ~~~ Execute the logic of the flow, it should populate state with expected_outputs ~~~
-        outputs = self.run(input_data=task_message.data, expected_outputs=expected_outputs)
+        # ~~~ Execute the logic of the flow, it should populate state with output_keys ~~~
+        assert "output_keys" in input_message.data and len(input_message.data["output_keys"]) > 0, \
+            "The input message must contain the key 'output_keys' with at least one expected output"
+        outputs = self.run(input_data=input_message.data,
+                           private_keys=input_message.private_keys,
+                           keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
+            input_message=input_message,
             outputs=outputs,
-            expected_outputs=expected_outputs,
-            parent_message_ids=[task_message.message_id]
         )
 
         self._post_call_hook()
@@ -327,9 +343,9 @@ class Flow(ABC):
         return output_message
 
     def _post_call_hook(self):
-        # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
-        if self.flow_config['namespace_clearing_after_run']:
-            self.reset(full_reset=False)
+        """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
+        if self.flow_config['clear_flow_namespace_on_run_end']:
+            self.reset(full_reset=False, recursive=False)
 
 
 class AtomicFlow(Flow, ABC):
@@ -338,14 +354,14 @@ class AtomicFlow(Flow, ABC):
             self,
             **kwargs
     ):
-        if "flow_type" not in kwargs:
-            kwargs["flow_type"] = "AtomicFlow"
         super().__init__(**kwargs)
 
 
 class CompositeFlow(Flow, ABC):
-    subflows: Union[Dict[str, Flow]]  # Dictionaries are ordered in Python 3.7+
-    early_exit_key: str
+    REQUIRED_KEYS_CONFIG = ["subflows_config"]
+    REQUIRED_KEYS_KWARGS = ["flow_config", "subflows"]
+
+    subflows: Dict[str, Flow]  # Dictionaries are ordered in Python 3.7+
 
     def __init__(
             self,
@@ -354,7 +370,7 @@ class CompositeFlow(Flow, ABC):
         super().__init__(**kwargs)
 
     def _early_exit(self):
-        early_exit_key = self.flow_config["early_exit_key"]
+        early_exit_key = self.flow_config.get("early_exit_key", None)
         if early_exit_key:
             if early_exit_key in self.flow_state:
                 return bool(self.flow_state[early_exit_key])
@@ -365,42 +381,35 @@ class CompositeFlow(Flow, ABC):
 
     def _call_flow_from_state(
             self,
-            flow: Flow,
-            expected_outputs: list[str] = None,
-            parent_message_ids: List[str] = None,
+            flow_to_call: Flow,
+            private_keys,
+            keys_to_ignore_for_hash,
             search_class_namespace_for_inputs: bool = True
     ):
-        expected_inputs = flow.expected_inputs_given_state()
-        # ~~~ Prepare the call ~~~
-        task_data = self._get_keys_from_state(
-            keys=expected_inputs,
-            allow_class_namespace=search_class_namespace_for_inputs
+        """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
+        # ~~~ Prepare the data for the call ~~~
+        api_keys = getattr(self, 'api_keys', None)
+        input_data = self._fetch_state_attributes_by_keys(
+            keys=None,
+            allow_class_attributes=search_class_namespace_for_inputs
         )
-
-        task_message = self.package_task_message(
-            recipient_flow=flow,
-            task_name="",
-            task_data=task_data,
-            expected_outputs=expected_outputs,
-            parent_message_ids=parent_message_ids
-        )
-        self._log_message(task_message)
+        input_message = flow_to_call.package_input_message(data=input_data,
+                                                           src_flow=self,
+                                                           private_keys=private_keys,
+                                                           keys_to_ignore_for_hash=keys_to_ignore_for_hash,
+                                                           api_keys=api_keys)
 
         # ~~~ Execute the call ~~~
-        answer_message = flow(task_message)
+        output_message = flow_to_call(input_message)
 
-        # ~~~ Logs message to history ~~~
-        self._log_message(answer_message)
+        # ~~~ Logs the output message to history ~~~
+        self._log_message(output_message)
 
-        return answer_message
+        return output_message
 
     @classmethod
     def _validate_parameters(cls, kwargs):
-        # ToDo: Deal with this in a cleaner way (with less repetition)
-        super()._validate_parameters(kwargs)
-
-        if "subflows_config" not in kwargs["flow_config"]:
-            raise KeyError("subflows_config must be specified in the flow_config.")
+        validate_parameters(cls, kwargs)
 
     @classmethod
     def _set_up_subflows(cls, config):
@@ -417,48 +426,7 @@ class CompositeFlow(Flow, ABC):
     def instantiate_from_config(cls, config):
         flow_config = copy.deepcopy(config)
 
-        kwargs = {"flow_config": flow_config}
+        kwargs = {"flow_config": copy.deepcopy(flow_config)}
         kwargs["subflows"] = cls._set_up_subflows(flow_config)
 
         return cls(**kwargs)
-
-    def set_up_flow_state(self):
-        self.flow_state = {
-            "history": FlowHistory()
-        }
-
-        for flow in self.subflows.values():
-            flow.set_up_flow_state()
-
-    def reset_flow_id(self, recursive: bool):
-        self.flow_run_id = create_unique_id()
-
-        if recursive:
-            for flow in self.subflows.values():
-                if isinstance(flow, CompositeFlow):
-                    flow.reset_flow_id(recursive=True)
-                else:
-                    flow.flow_run_id = create_unique_id()
-
-    def reset(self, full_reset: bool, recursive: bool):
-        # ~~~ Delete all extraneous attributes ~~~
-        for key, value in self.__dict__.items():
-            if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
-                del self.__dict__[key]
-
-        if full_reset:
-            self.set_up_flow_state()  # resets the flow state
-            self.reset_flow_id(recursive=False)
-
-        # ~~~ Reset all subflows ~~~
-        if recursive:
-            for flow in self.subflows.values():
-                if isinstance(flow, CompositeFlow):
-                    flow.reset(full_reset=full_reset, recursive=True)
-                else:
-                    flow.reset(full_reset=full_reset)
-
-    def _post_call_hook(self):
-        # ~~~ destroying all attributes that are not flow_state or flow_config ~~~
-        if self.flow_config['namespace_clearing_after_run']:
-            self.reset(full_reset=False, recursive=False)

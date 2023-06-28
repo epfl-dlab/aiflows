@@ -32,7 +32,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
             fault_tolerant_mode: bool,
             n_batch_retries: int,
             wait_time_between_retries: int,
-            expected_outputs: List[str],
+            output_keys: List[str],
             collator: Collator = None,
             **kwargs,
     ):
@@ -49,7 +49,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
         self.wait_time_between_retries = wait_time_between_retries
-        self.expected_outputs = expected_outputs
+        self.output_keys = output_keys
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
     def predict(self, batch: List[Dict]):
@@ -78,7 +78,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                             task_message = flow.package_task_message(recipient_flow=flow,
                                                                      task_name="run_task",
                                                                      task_data=sample,
-                                                                     expected_outputs=self.expected_outputs)
+                                                                     output_keys=self.output_keys)
 
                             output_message = flow(task_message)
 
@@ -104,7 +104,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                     task_message = flow.package_task_message(recipient_flow=flow,
                                                              task_name="run_task",
                                                              task_data=sample,
-                                                             expected_outputs=self.expected_outputs)
+                                                             output_keys=self.output_keys)
 
                     output_message = flow(task_message)
 

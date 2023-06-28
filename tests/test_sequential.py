@@ -5,17 +5,17 @@ from tests.mocks import MockFlow
 
 def atomic_flow_builder(bias):
     class MyFlow(AtomicFlow):
-        def run(self, input_data, expected_outputs):
+        def run(self, input_data, output_keys):
             answer = self.flow_config["bias"]
             for k, v in input_data.items():
                 answer += v
-            return {self.expected_outputs[0]: answer}
+            return {self.output_keys[0]: answer}
 
     return MyFlow(
         name="my-flow",
         description="flow-sum",
-        expected_outputs=["v0"],
-        expected_inputs=["v0"],
+        output_keys=["v0"],
+        input_keys=["v0"],
         bias=bias
     )
 
@@ -33,7 +33,7 @@ def test_basic_instantiating() -> None:
     flow = SequentialFlow(
         name="name",
         description="description",
-        expected_inputs=["v0"],
+        input_keys=["v0"],
         verbose=False,
         dry_run=True,
         flows=[flow_a, flow_b]
@@ -53,8 +53,8 @@ def test_basic_call():
     seq_flow = SequentialFlow(
         name="name",
         description="description",
-        expected_inputs=["v0"],
-        expected_outputs=["v0"],
+        input_keys=["v0"],
+        output_keys=["v0"],
         dry_run=False,
         max_rounds=3,
         eoi_key=None,
@@ -67,7 +67,7 @@ def test_basic_call():
         recipient_flow=seq_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=["v0"]
+        output_keys=["v0"]
     )
 
     answer = seq_flow(task_message)
@@ -81,8 +81,8 @@ def test_early_exit(monkeypatch, caplog):
     seq_flow = SequentialFlow(
         name="name",
         description="description",
-        expected_inputs=["v0"],
-        expected_outputs=["v0"],
+        input_keys=["v0"],
+        output_keys=["v0"],
         dry_run=False,
         max_rounds=3,
         eoi_key=None,
@@ -95,7 +95,7 @@ def test_early_exit(monkeypatch, caplog):
         recipient_flow=seq_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=[]
+        output_keys=[]
     )
     seq_flow.early_exit_key="early_exit"
     seq_flow.flow_state["early_exit"] = True
@@ -108,8 +108,8 @@ def test_early_exit(monkeypatch, caplog):
     seq_flow = SequentialFlow(
         name="name",
         description="description",
-        expected_inputs=["v0"],
-        expected_outputs=["v0"],
+        input_keys=["v0"],
+        output_keys=["v0"],
         dry_run=False,
         max_rounds=3,
         eoi_key=None,
@@ -122,7 +122,7 @@ def test_early_exit(monkeypatch, caplog):
         recipient_flow=seq_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=[]
+        output_keys=[]
     )
     seq_flow.early_exit_key="early_exit"
     seq_flow.early_exit = True
@@ -138,8 +138,8 @@ def test_pass_on_api_key():
     seq_flow = SequentialFlow(
         name="name",
         description="description",
-        expected_inputs=["v0"],
-        expected_outputs=["v0"],
+        input_keys=["v0"],
+        output_keys=["v0"],
         dry_run=False,
         max_rounds=3,
         eoi_key=None,
@@ -152,7 +152,7 @@ def test_pass_on_api_key():
         recipient_flow=seq_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=["v0", "mock_flow_api_key"]
+        output_keys=["v0", "mock_flow_api_key"]
     )
 
     seq_flow.set_api_key("api_key")

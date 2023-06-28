@@ -11,7 +11,7 @@ if __name__=="__main__":
     # - a description of the task
     # - input data
     # - a list of expected outputs
-    task = player.package_task_message(player, "play one round", {}, expected_outputs=["choice"])
+    task = player.package_task_message(player, "play one round", {}, output_keys=["choice"])
     output = player(task)
 
     # as a response to a task, a flow will send an OutputMessage

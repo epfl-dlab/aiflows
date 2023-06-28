@@ -36,7 +36,7 @@ def test_task_message_init():
         message_creator="test-creator",
         flow_runner="runner",
         flow_run_id="123",
-        expected_outputs=["exp"],
+        output_keys=["exp"],
         data="Sample content",
         target_flow_run_id="target"
     )
