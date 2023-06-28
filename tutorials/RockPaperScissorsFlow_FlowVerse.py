@@ -11,7 +11,7 @@ if __name__ == "__main__":
         recipient_flow=judge,
         task_name="run",
         task_data={},
-        expected_outputs=["A_score"]
+        output_keys=["A_score"]
     )
     judge_output = judge(judge_task)
     print(judge_output.data)  # this is how often A wins
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         recipient_flow=another_judge,
         task_name="run",
         task_data={},
-        expected_outputs=["A_score"]
+        output_keys=["A_score"]
     )
 
     another_output = another_judge(another_judge_task)

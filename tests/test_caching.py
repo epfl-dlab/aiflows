@@ -17,7 +17,7 @@ caching_utils.CACHING_PARAMETERS.cache_dir = TMP_CACHE_DIR
 def prepare_flows_for_testing():
     class MyFlow(AtomicFlow):
         @flow_run_cache()
-        def run(self, input_data, expected_outputs):
+        def run(self, input_data, output_keys):
             if self.dry_run:
                 answer = 0
             else:
@@ -27,13 +27,13 @@ def prepare_flows_for_testing():
 
             time.sleep(SLEEP_TIME)
 
-            return {self.expected_outputs[0]: answer}
+            return {self.output_keys[0]: answer}
 
     my_flow = MyFlow(
         name="my-flow",
         description="flow-sum",
-        expected_outputs=["sum"],
-        expected_inputs=["v0", "v1"],
+        output_keys=["sum"],
+        input_keys=["v0", "v1"],
     )
 
     data = {"v0": 12, "v1": 23}
@@ -41,7 +41,7 @@ def prepare_flows_for_testing():
         recipient_flow=my_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=["sum"]
+        output_keys=["sum"]
     )
 
     return my_flow, task_message
@@ -127,7 +127,7 @@ def test_task_message_modification_caching() -> None:
         recipient_flow=my_flow,
         task_name="new-task",
         task_data=data,
-        expected_outputs=["sum"]
+        output_keys=["sum"]
     )
 
     answer, runtime = _time_run(my_flow, new_task_message_same_data)
@@ -141,7 +141,7 @@ def test_task_message_modification_caching() -> None:
         recipient_flow=my_flow,
         task_name="task",
         task_data=new_data,
-        expected_outputs=["sum"]
+        output_keys=["sum"]
     )
 
     answer, runtime = _time_run(my_flow, different_task)

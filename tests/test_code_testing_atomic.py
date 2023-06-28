@@ -81,7 +81,7 @@ def test_cf_tool_basic():
         recipient_flow=flow,
         task_name="",
         task_data=input_data,
-        expected_outputs=[]
+        output_keys=[]
     )
 
     answer = flow(task_message)

@@ -24,7 +24,7 @@ def test_example_loading() -> None:
     flow = instantiate_flow(cfg)
     assert flow.name == "dummy_name"
     assert flow.verbose  # test that defaults are set
-    answer = flow.run(input_data=None, expected_outputs=["answer"])
+    answer = flow.run(input_data=None, output_keys=["answer"])
     assert answer["answer"] == "dummy_fixed_reply"
 
 
@@ -51,8 +51,8 @@ def test_openai_atomic_loading() -> None:
         "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
-        "expected_inputs": ["input_0", "input_1"],
-        "expected_outputs": ["gen_out"],
+        "input_keys": ["input_0", "input_1"],
+        "output_keys": ["gen_out"],
         "model_name": "gpt-model",
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,

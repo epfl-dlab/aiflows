@@ -47,10 +47,10 @@ class HumanInputAtomicFlow(AtomicFlow):
 
         return self.human_prompt_template.format(**template_kwargs)
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         # sys_prompt = input_data["explanation_for_human_input"]
         user_input = input(self._get_input_message(input_data))
-        return {expected_outputs[0]: user_input}
+        return {output_keys[0]: user_input}
 
 
 if __name__ == "__main__":
@@ -64,7 +64,7 @@ if __name__ == "__main__":
         description="Retrieves last n arxiv paper from a given field",
         sort_by=SortCriterion.SubmittedDate,
         expected_inputs=["field", "max_results"],
-        expected_outputs=["arxiv_outputs"],
+        output_keys=["arxiv_outputs"],
         get_content=False,
         get_basic_content=True
     )
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         name="ArxivDocumentTransform",
         description="Takes the output of an ArxivAPIAtomicFlow and parses it into a string",
         expected_inputs=["arxiv_outputs"],
-        expected_outputs=["paper_descriptions"]
+        output_keys=["paper_descriptions"]
     )
 
     # ~~~ HumanInputAtomicFlow ~~~
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         name="HumanInputAtomicFlow",
         description="Asks the user for a question",
         expected_inputs=["sys_prompt"],
-        expected_outputs=["human_query"],
+        output_keys=["human_query"],
         human_prompt_template=human_prompt_template
     )
 
@@ -117,7 +117,7 @@ if __name__ == "__main__":
         model_name="gpt-3.5-turbo",
         generation_parameters={},
         expected_inputs=["field", "paper_descriptions", "human_query"],
-        expected_outputs=["ai_answer"],
+        output_keys=["ai_answer"],
         system_message_prompt_template=sys_prompt,
         human_message_prompt_template=hum_prompt,
         query_message_prompt_template=query_prompt
@@ -128,7 +128,7 @@ if __name__ == "__main__":
         name="summarizer arxiv",
         description="summarizes arxiv",
         expected_inputs=["field", "max_results", "api_key"],
-        expected_outputs=["summary"],
+        output_keys=["summary"],
         flows={
             "arxiv_flow": arxiv_flow,
             "arxiv_transform_flow": arxiv_transform_flow,
@@ -146,7 +146,7 @@ if __name__ == "__main__":
             "query": query,
             "max_results": max_results,
             "api_key": os.getenv("OPENAI_API_KEY")},
-        expected_outputs=["ai_answer"]
+        output_keys=["ai_answer"]
     )
 
     answer = arxiv_qa_flow(input_message)

@@ -34,7 +34,7 @@ class ArxivDocumentTransform(AtomicFlow):
         return doc_str
 
     @flow_run_cache()
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         input_key = self.expected_inputs[0]
         documents = input_data[input_key]
 
@@ -45,7 +45,7 @@ class ArxivDocumentTransform(AtomicFlow):
             else:
                 str_format += self._dict_to_string(doc)
 
-        return {expected_outputs[0]: str_format}
+        return {output_keys[0]: str_format}
 
 
 class ArxivAPIAtomicFlow(AtomicFlow):
@@ -87,7 +87,7 @@ class ArxivAPIAtomicFlow(AtomicFlow):
             raise f_ex
 
     @flow_run_cache()
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         query = input_data["query"]
 
         try:
@@ -101,7 +101,7 @@ class ArxivAPIAtomicFlow(AtomicFlow):
             raise ex
 
         if self._read_value(input_data, "get_basic_content"):
-            return {expected_outputs[0]: [{
+            return {output_keys[0]: [{
                 "title": res.title,
                 "summary": res.summary,
                 "authors": [str(a) for a in res.authors],
@@ -112,7 +112,7 @@ class ArxivAPIAtomicFlow(AtomicFlow):
             for res in tqdm.tqdm(results):
                 res.text = self._get_content(res)
 
-        return {expected_outputs[0]: results}
+        return {output_keys[0]: results}
 
 if __name__ == "__main__":
     field = "stat.ML"
@@ -125,7 +125,7 @@ if __name__ == "__main__":
         description="Retrieves last n arxiv paper from a given field",
         sort_by=SortCriterion.SubmittedDate,
         expected_inputs=["field", "max_results"],
-        expected_outputs=["arxiv_outputs"],
+        output_keys=["arxiv_outputs"],
         get_content=False,
         get_basic_content=True
     )
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         name="ArxivDocumentTransform",
         description="Takes the output of an ArxivAPIAtomicFlow and parses it into a string",
         expected_inputs=["arxiv_outputs"],
-        expected_outputs=["paper_descriptions"]
+        output_keys=["paper_descriptions"]
     )
 
     # ~~~ SummarizerFlow ~~~
@@ -167,7 +167,7 @@ if __name__ == "__main__":
         model_name="gpt-3.5-turbo",
         generation_parameters={},
         expected_inputs=["field", "paper_descriptions"],
-        expected_outputs=["summary"],
+        output_keys=["summary"],
         system_message_prompt_template=sys_prompt,
         human_message_prompt_template=hum_prompt,
         query_message_prompt_template=query_prompt
@@ -178,7 +178,7 @@ if __name__ == "__main__":
         name="summarizer arxiv",
         description="summarizes arxiv",
         expected_inputs=["field", "max_results", "api_key"],
-        expected_outputs=["summary"],
+        output_keys=["summary"],
         flows={
             "arxiv_flow": arxiv_flow,
             "arxiv_transform_flow": arxiv_transform_flow,
@@ -194,7 +194,7 @@ if __name__ == "__main__":
             "query": query,
             "max_results": max_results,
             "api_key": os.getenv("OPENAI_API_KEY")},
-        expected_outputs=["summary"]
+        output_keys=["summary"]
     )
 
     answer = daily_arxiv_summarizer(input_message)

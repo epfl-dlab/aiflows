@@ -16,13 +16,13 @@ class GenericLCChain(AtomicFlow):
         else:
             assert set(lc_chain.input_keys).issubset(set(kwargs["expected_inputs"]))
 
-        if "expected_outputs" not in kwargs:
-            kwargs["expected_outputs"] = lc_chain.output_keys
+        if "output_keys" not in kwargs:
+            kwargs["output_keys"] = lc_chain.output_keys
         else:
-            assert set(lc_chain.output_keys).issubset(set(kwargs["expected_outputs"]))
+            assert set(lc_chain.output_keys).issubset(set(kwargs["output_keys"]))
 
         super().__init__(
-            namespace_clearing_after_run=False,
+            clear_flow_namespace_on_run_end=False,
             **kwargs
         )
 
@@ -35,12 +35,12 @@ class GenericLCChain(AtomicFlow):
     #     # type_of_vectorstore = self.vector_db.vectorstore.__class__.__name__
     #     return
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         answer = self.lc_chain.run(input_data)
         ## ToDo: sync the langchain memory into the history of the atomic flow, need to retrieve system_prompt
 
         # LangChain chains require 1 expected output
-        return {expected_outputs[0]: answer}
+        return {output_keys[0]: answer}
 
 
 if __name__ == "__main__":
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         recipient_flow=flow_qa,
         task_name="",
         task_data={"query": query},
-        expected_outputs=["answer"]
+        output_keys=["answer"]
     )
 
     ans = flow_qa(task_message)

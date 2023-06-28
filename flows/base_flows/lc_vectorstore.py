@@ -23,7 +23,7 @@ class GenericLCVectorStore(AtomicFlow):
 
         super().__init__(
             retriever_config=retriever_config,
-            namespace_clearing_after_run=False,
+            clear_flow_namespace_on_run_end=False,
             **kwargs
         )
         self.KEYS_TO_IGNORE_HASH += ["vector_db"]  # but needs to override __repr__ to have meaningful hash
@@ -36,7 +36,7 @@ class GenericLCVectorStore(AtomicFlow):
     #     return
 
     @flow_run_cache()
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         # vector_db = self.flow_config["vector_db"]
         if "add_documents" in input_data:
             self.vector_db.add_documents(input_data["documents"])
@@ -44,7 +44,7 @@ class GenericLCVectorStore(AtomicFlow):
 
         if "query" in input_data:
             retrieved_documents = self.vector_db.get_relevant_documents(input_data["query"])
-            return {expected_outputs[0]: retrieved_documents}
+            return {output_keys[0]: retrieved_documents}
 
 
 
@@ -70,14 +70,14 @@ if __name__ == "__main__":
         description="vector database",
         vectorstore=db,
         expected_inputs=["query"],
-        expected_outputs=["answer"]
+        output_keys=["answer"]
     )
 
     tm = glcv.package_task_message(
         recipient_flow=glcv,
         task_name="",
         task_data={"query": "What did the president say about Ketanji Brown Jackson"},
-        expected_outputs=["answer"]
+        output_keys=["answer"]
     )
 
     import time
