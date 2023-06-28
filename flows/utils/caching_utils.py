@@ -7,11 +7,17 @@ from typing import Dict, List
 import copy
 from diskcache import Index
 
+# ToDo: Implement loading
 
-# ToDo: do logging
 
 @dataclass
 class CACHING_PARAMETERS:
+    # ToDo: Expose these params in the launcher (and the configs when available)
+    #   The params should be updated before the library is loaded. Make sure to do this reliably.
+    #   How to do this in a clean way?
+    # ToDo: Add support for infinite cache if we intend to use it for resuming/extending runs.
+    #   Is that even a good idea?
+    #   What happens if you want to resume/extend a run that has been already resumed/extended?
     # Global parameters that can be set before starting the outer-flow
     max_cached_entries: int = 1000
     do_caching: bool = True
@@ -40,13 +46,15 @@ def get_calling_flow(all_args: List):
     for arg in all_args:
         if isinstance(arg, Flow):
             flow = arg
-    assert flow, "Could not check in the cache because the flow was not given"
+    assert flow, "Couldn't identify the flow corresponding to the run call."
 
     return flow
 
 
 def _custom_hash(all_args):
-    _repr_args = [repr(arg) for arg in all_args]
+    _repr_args = []
+    for arg in all_args:
+        _repr_args.append(repr(arg))
     return hashlib.sha256(repr(_repr_args).encode("utf-8")).hexdigest()
 
 
@@ -64,14 +72,17 @@ def flow_run_cache():
 
         @functools.wraps(method)
         def wrapper(*args, **kwargs):
+            # Check how API_keys are handles
             all_args = list(args) + list(kwargs.values())
 
             flow = get_calling_flow(all_args)
+            if not flow.SUPPORTS_CACHING:
+                raise Exception(f"Flow {flow.__class__.__name__} does not support caching")
 
-            from flows.base_flows import AtomicFlow
-            assert isinstance(flow, AtomicFlow), "Caching only supported for AtomicFlow"
-
-            key = _custom_hash(all_args)
+            input_data = kwargs["input_data"]
+            keys_to_ignore_for_hash = kwargs["keys_to_ignore_for_hash"]
+            input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
+            key = _custom_hash([flow, input_data_to_hash, keys_to_ignore_for_hash])
 
             # Check if the key is already in the cache
             with lock:
@@ -81,6 +92,9 @@ def flow_run_cache():
                     result = cached_value.output_results
                     flow.__setstate__(cached_value.full_state)
 
+                    print(f"Retrieved from cache: {flow.__class__.__name__} "
+                          f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
+                          f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
                     print("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function
@@ -92,7 +106,6 @@ def flow_run_cache():
                     )
 
                     cache[key] = value_to_cache
-
                     print("Cached:", value_to_cache)
 
             return result
@@ -106,3 +119,9 @@ def flow_run_cache():
         return wrapper
 
     return decorator
+
+
+def clear_cache():
+    cache_dir = get_cache_dir()
+    cache = Index(cache_dir)
+    cache.clear()

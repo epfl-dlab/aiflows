@@ -12,7 +12,7 @@ def test_basic_instantiating() -> None:
     flow = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=True,
         fixed_reply="reply"
@@ -44,7 +44,7 @@ def test_basic_call() -> None:
     flow = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=False,
         fixed_reply="reply"
@@ -54,14 +54,10 @@ def test_basic_call() -> None:
         recipient_flow=flow,
         task_name="",
         task_data={},
-        expected_outputs=["query_mod"]
+        output_keys=["query_mod"]
     )
 
     answer = flow(tm)
     assert "query" not in answer.data
     assert answer.data["query_mod"] == "reply"
     assert len(flow.flow_state["history"]) == 1
-
-
-if __name__ == "__main__":
-    test_basic_call()

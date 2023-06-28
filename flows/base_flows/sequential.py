@@ -1,29 +1,29 @@
 from typing import List, Dict, Any
 
 from flows.base_flows import CompositeFlow
-from flows import utils
+import flows.utils
 
-log = utils.get_pylogger(__name__)
+log = flows.utils.get_pylogger(__name__)
 
 
 class SequentialFlow(CompositeFlow):
-    ordered_flows: List
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        flows = self.flow_config["flows"]
-        assert len(flows) > 0, f"Sequential flow needs at least one flow, currently has {len(flows)}"
+    def _validate_parameters(self, kwargs):
+        # ToDo: Deal with this in a cleaner way (with less repetition)
+        super()._validate_parameters(kwargs)
 
-        self.ordered_flows = list(flows.keys())
+        if "subflows" not in kwargs:
+            raise KeyError("Generator Critic needs a `subflows` parameter")
 
-    def run(self, input_data: Dict[str, Any], expected_outputs: List[str]) -> Dict[str, Any]:
-        self._update_state(input_data)
+        assert len(kwargs["subflows"]) > 0, f"Sequential flow needs at least one flow, currently has 0"
 
-        for current_flow_id in self.ordered_flows:
-            # ~~~ Initialize flow ~~~
-            current_flow = self._init_flow(self.flows[current_flow_id])
+    def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
+        # ~~~ sets the input_data in the flow_state dict ~~~
+        self._update_state(update_data=input_data)
 
+        for current_flow in self.subflows.values():
             # ~~~ Execute the flow and update state with answer ~~~
             flow_answer = self._call_flow_from_state(
                 flow=current_flow
@@ -32,8 +32,8 @@ class SequentialFlow(CompositeFlow):
 
             # ~~~ Check whether we can exit already ~~~
             if self._early_exit():
-                log.info("Early end of sequential flow detected")
+                log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
 
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_namespace=False ~~~
-        return self._get_keys_from_state(keys=expected_outputs, allow_class_namespace=False)
+        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
+        return self._fetch_state_attributes_by_keys(keys=output_keys, allow_class_attributes=False)

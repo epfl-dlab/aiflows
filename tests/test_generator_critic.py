@@ -6,11 +6,11 @@ from flows.base_flows import AtomicFlow, GeneratorCriticFlow, FixedReplyAtomicFl
 def atomic_flow_builder():
     class MyFlow(AtomicFlow):
 
-        def expected_inputs_given_state(self):
+        def input_keys_given_state(self):
             if self.is_conv_init():
                 return ["query"]
             else:
-                return self.expected_inputs
+                return self.input_keys
 
         def is_conv_init(self):
             conv_init = False
@@ -19,7 +19,7 @@ def atomic_flow_builder():
 
             return conv_init
 
-        def run(self, input_data, expected_outputs):
+        def run(self, input_data, output_keys):
             if not self.is_conv_init():
                 answer = 0
                 self.flow_state["conversation_initialized"] = True
@@ -29,13 +29,13 @@ def atomic_flow_builder():
             for k, v in input_data.items():
                 answer += v
             self.flow_state["prev_answer"] = answer
-            return {self.expected_outputs[0]: answer}
+            return {self.output_keys[0]: answer}
 
     return MyFlow(
         name="my-flow",
         description="flow-sum",
-        expected_outputs=["sum"],
-        expected_inputs=["v0", "v1"]
+        output_keys=["sum"],
+        input_keys=["v0", "v1"]
     )
 
 
@@ -50,7 +50,7 @@ def test_basic_instantiating() -> None:
     flow_b = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
+        input_keys=[],
         verbose=False,
         dry_run=False,
         fixed_reply="reply"
@@ -60,7 +60,7 @@ def test_basic_instantiating() -> None:
         GeneratorCriticFlow(
             name="name",
             description="description",
-            expected_inputs=["v0", "v1"],
+            input_keys=["v0", "v1"],
             verbose=False,
             dry_run=False,
             flows={"gen": flow_a, "critic": flow_b}
@@ -70,7 +70,7 @@ def test_basic_instantiating() -> None:
         GeneratorCriticFlow(
             name="name",
             description="description",
-            expected_inputs=["v0", "v1"],
+            input_keys=["v0", "v1"],
             verbose=False,
             dry_run=False,
             flows={"generator": flow_a, "cri": flow_b}
@@ -79,7 +79,7 @@ def test_basic_instantiating() -> None:
     flow = GeneratorCriticFlow(
         name="name",
         description="description",
-        expected_inputs=["v0", "v1"],
+        input_keys=["v0", "v1"],
         verbose=False,
         dry_run=False,
         flows={"generator": flow_a, "critic": flow_b}
@@ -98,16 +98,16 @@ def test_basic_call():
     flow_b = FixedReplyAtomicFlow(
         name="name",
         description="description",
-        expected_inputs=[],
-        expected_outputs=["query"],
+        input_keys=[],
+        output_keys=["query"],
         fixed_reply=10
     )
 
     gen_crit_flow = GeneratorCriticFlow(
         name="name",
         description="description",
-        expected_inputs=["v0", "v1"],
-        expected_outputs=["sum"],
+        input_keys=["v0", "v1"],
+        output_keys=["sum"],
         dry_run=False,
         max_rounds=3,
         eoi_key=None,
@@ -120,12 +120,8 @@ def test_basic_call():
         recipient_flow=gen_crit_flow,
         task_name="task",
         task_data=data,
-        expected_outputs=["sum"]
+        output_keys=["sum"]
     )
 
     answer = gen_crit_flow(task_message)
     assert answer.data["sum"] == 55
-
-
-if __name__ == "__main__":
-    test_basic_call()

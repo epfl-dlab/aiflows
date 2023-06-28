@@ -1,7 +1,7 @@
 from flows.datasets.abstract import AbstractDataset
 import os
 import flows.utils as utils
-import flows.utils.general_helpers as general_helpers
+import flows.utils.general_helpers
 
 
 if __name__ == "__main__":
@@ -27,27 +27,16 @@ class GenericDemonstrationsDataset(AbstractDataset):
 
     def _load_data(self):
         demonstrations_file = os.path.join(self.params["data_dir"], f"{self.params['demonstrations_id']}.jsonl")
-        self.data = general_helpers.read_jsonlines(demonstrations_file)
+        self.data = flows.utils.general_helpers.read_jsonlines(demonstrations_file)
 
         if self.params.get("ids_to_keep", False):
             if isinstance(self.params["ids_to_keep"], str):
                 ids_to_keep = set(self.params["ids_to_keep"].split(","))
+                ids_to_keep = [i.strip() for i in ids_to_keep]
             else:
                 ids_to_keep = set(self.params["ids_to_keep"])
 
-            self.data = [d for d in self.data if d["id"] in ids_to_keep]
+            ids_to_keep = [str(i) for i in ids_to_keep]
+            self.data = [d for d in self.data if str(d["id"]) in ids_to_keep]
 
         log.info("Loaded the demonstrations for %d datapoints from %s", len(self.data), self.params["data_dir"])
-
-
-if __name__ == "__main__":
-    data_dir = "data/demonstrations"
-    demonstrations_id = "high_level_reasoning"
-    ids_to_keep = None
-
-    demonstrations = GenericDemonstrationsDataset(
-        data_dir=data_dir, demonstrations_id=demonstrations_id, ids_to_keep=ids_to_keep
-    )
-
-    for dp in demonstrations:
-        print(dp["id"])

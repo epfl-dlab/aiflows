@@ -134,4 +134,3 @@ def test_deepcopy_other_data() -> None:
     assert len(history_b) == 1
     assert history_b.messages[-1].data["bool"]
     assert history_b.messages[-1].data["history"].messages[0].data == history_a.messages[0].data
-

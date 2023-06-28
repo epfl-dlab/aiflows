@@ -81,7 +81,7 @@ def test_cf_tool_basic():
         recipient_flow=flow,
         task_name="",
         task_data=input_data,
-        expected_outputs=[]
+        output_keys=[]
     )
 
     answer = flow(task_message)
@@ -90,7 +90,6 @@ def test_cf_tool_basic():
     assert answer.data["compilation_status"]
     assert answer.data["public_tests_results"][0]["status"]
     assert not answer.data["timeout_error"]
-
 
 # if __name__ == "__main__":
 #     test_basic_instantiating_cf()

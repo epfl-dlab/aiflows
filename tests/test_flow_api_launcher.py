@@ -1,17 +1,13 @@
-import copy
 import time
+
 from typing import List, Dict, Union
 
+from flows.flow_launcher.collators import Collator, NoCollationCollator
 from flows.flow_launcher import MultiThreadedAPILauncher
-
-from flows.messages import InputMessage, Message, FlowMessage
 from flows.base_flows import Flow
-
-from flows.models.collators import Collator
-
 from flows.utils import general_helpers
 from flows import utils
-from copy import deepcopy
+
 
 log = utils.get_pylogger(__name__)
 
@@ -21,88 +17,72 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
     A class for querying the OpenAI API using the LangChain library with interactive chatting capabilities.
 
     Attributes:
-        flow: The flow or a list of flow instances to run the inference with.
-        collator: An instance of the Collator class preparing batches.
-        n_independent_samples: the number of times to repeat the same prompt to get different examples
-        dry_run: A boolean indicating whether the API should be called or not.
+        flow: The flow (or a list of independent instances of the same flow) to run the inference with.
+        n_independent_samples: the number of times to independently repeat the same inference for a given sample
+        fault_tolerant_mode: whether to crash if an error occurs during the inference for a given sample
+        n_batch_retries: the number of times to retry the batch if an error occurs
+        wait_time_between_retries: the number of seconds to wait before retrying the batch
+        collator: An instance of the Collator class used to prepare the batches
     """
 
     def __init__(
             self,
             flow: Union[Flow, List[Flow]],
-            collator: Collator,
             n_independent_samples: int,
+            fault_tolerant_mode: bool,
+            n_batch_retries: int,
+            wait_time_between_retries: int,
+            output_keys: List[str],
+            collator: Collator = None,
             **kwargs,
     ):
         super().__init__(**kwargs)
 
-        self.flow = flow
-        self.collator = collator
+        if collator is None:
+            self.collator = NoCollationCollator()
+
+        if isinstance(flow, Flow):
+            flow = [flow]*self.n_workers
+
+        self.flows = flow
         self.n_independent_samples = n_independent_samples
-        self.fault_tolerant_mode = kwargs["fault_tolerant_mode"]
-        self.n_batch_retries = kwargs["n_batch_retries"]
-        self.wait_time_between_retries = kwargs["wait_time_between_retries"]
+        self.fault_tolerant_mode = fault_tolerant_mode
+        self.n_batch_retries = n_batch_retries
+        self.wait_time_between_retries = wait_time_between_retries
+        self.output_keys = output_keys
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
-
-    @staticmethod
-    def _build_input_message(sample: Dict, flow: Flow) -> InputMessage:
-        launcher_flow_run_id = utils.general_helpers.create_unique_id()
-        inputs = {k: FlowMessage(
-            content=sample[k],
-            message_creator="task-launcher",
-            flow_run_id=launcher_flow_run_id,
-            parents=[])
-            for k in flow.expected_inputs
-        }
-
-        inp = InputMessage(
-            inputs=inputs,
-            content="Intial input message",
-            message_creator="task-launcher",
-            flow_run_id=launcher_flow_run_id,
-            target_flow=flow.flow_run_id,
-            parents=[]
-        )
-        return inp
-
-    @staticmethod
-    def _add_keys_values_input(input_message: InputMessage, kwargs):
-        for key, val in kwargs.items():
-            input_message.inputs[key] = FlowMessage(
-                content=val,
-                message_creator="task-launcher",
-                flow_run_id=input_message.flow_run_id,
-                parents=[]
-            )
 
     def predict(self, batch: List[Dict]):
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         idx = self._indices.get()
 
-        flow = self.flow[idx]
+        _flow = self.flows[idx]
 
         output_file = self.output_files[idx]
 
         for sample in batch:
             log.info("Running inference for sample with ID: {}".format(sample["id"]))
             api_key_idx = self._choose_next_api_key()
-            input_message = self._build_input_message(sample, flow)
 
             inference_outputs = []
             _success_datapoint = True
             for _ in range(self.n_independent_samples):
                 _success_sample = False
+                flow = _flow.__class__.load_from_config(_flow.flow_config)
                 if self.fault_tolerant_mode:
                     attempts = 1
 
                     while attempts <= self.n_batch_retries:
                         try:
-                            flow.initialize()
-                            self._add_keys_values_input(input_message, kwargs={"api_key": self.api_keys[api_key_idx],
-                                                                               "dry_run": False})
-                            inference_output = flow.run(deepcopy(input_message))
+                            sample["api_key"] = self.api_keys[api_key_idx]
+                            task_message = flow.package_task_message(recipient_flow=flow,
+                                                                     task_name="run_task",
+                                                                     task_data=sample,
+                                                                     output_keys=self.output_keys)
 
-                            inference_outputs.append(deepcopy(inference_output))
+                            output_message = flow(task_message)
+
+                            inference_outputs.append(output_message.data)
                             _success_sample = True
                             _error = "None"
                             break
@@ -120,13 +100,15 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
                 else:
                     # For debugging purposes
-                    flow.initialize()
+                    sample["api_key"] = self.api_keys[api_key_idx]
+                    task_message = flow.package_task_message(recipient_flow=flow,
+                                                             task_name="run_task",
+                                                             task_data=sample,
+                                                             output_keys=self.output_keys)
 
-                    self._add_keys_values_input(input_message, kwargs={"api_key": self.api_keys[api_key_idx],
-                                                                       "dry_run": False})
+                    output_message = flow(task_message)
 
-                    inference_output = flow.run(deepcopy(input_message))
-                    inference_outputs.append(deepcopy(inference_output))
+                    inference_outputs.append(output_message.data)
                     _success_sample = True
                     _error = "None"
 

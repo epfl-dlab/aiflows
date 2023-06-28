@@ -6,7 +6,7 @@ DEFAULT_CACHE_PATH = os.path.join(flows_cache_home, "flow_verse")
 
 import sys
 import importlib
-from huggingface_hub import snapshot_download
+import huggingface_hub
 
 
 def add_to_sys_path(path):
@@ -19,15 +19,67 @@ def add_to_sys_path(path):
         sys.path.append(absolute_path)
 
 
-def load_flow(repository_id, name, cache_dir=DEFAULT_CACHE_PATH):
-    local_repo_path = snapshot_download(repo_id=repository_id, cache_dir=cache_dir)
-    print("The flow was synced to:", local_repo_path)
+def _is_local_path(path_to_dir):
+    """Returns True if path_to_dir is a path to a local directory."""
+
+    # check if the directory exists
+    if os.path.isdir(path_to_dir):
+        # check if directory is not empty
+        if os.listdir(path_to_dir):
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, override=False, **kwargs):
+    if override:
+        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
+    elif _is_local_path(repository_id):
+        path_to_local_repository = repository_id
+    else:
+        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
+
+    print("The flow repository was synced to:", path_to_local_repository)  # ToDo: Replace with log.info once the logger is set up
+    return path_to_local_repository
+
+
+def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}):
+    flow_class = load_class(repository_id=repository_id,
+                            class_name=class_name,
+                            local_dir=local_dir,
+                            cache_dir=cache_dir)
+
+    config = flow_class.get_config(**overrides)
+
+    return config
+
+
+def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None):
+    path_to_local_repository = _sync_repository(repository_id,
+                                                local_dir=local_dir,
+                                                cache_dir=cache_dir)
 
     # split local_repo_path into parent and folder name
-    local_repo_path_parent, local_repo_dir_name = os.path.dirname(local_repo_path), os.path.basename(local_repo_path)
+    local_repo_path_parent = os.path.dirname(path_to_local_repository)
+    local_repo_dir_name = os.path.basename(path_to_local_repository)
 
     add_to_sys_path(local_repo_path_parent)
-    _ = importlib.import_module(local_repo_dir_name)
-    flow_module = importlib.import_module(f"{local_repo_dir_name}.{name}")
-    flow_class = getattr(flow_module, name)
+    flow_module = importlib.import_module(local_repo_dir_name)
+    flow_class = getattr(flow_module, class_name)
+
     return flow_class
+
+
+def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}):
+    flow_class = load_class(repository_id=repository_id,
+                            local_dir=local_dir,
+                            class_name=class_name,
+                            cache_dir=cache_dir)
+
+    config = flow_class.get_config(**overrides)
+
+    return flow_class.instantiate_from_config(config)
+
+
