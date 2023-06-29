@@ -11,10 +11,10 @@ class GenericLCChain(AtomicFlow):
     lc_chain: Chain
 
     def __init__(self, lc_chain: Chain, **kwargs):
-        if "expected_inputs" not in kwargs:
-            kwargs["expected_inputs"] = lc_chain.input_keys
+        if "input_keys" not in kwargs:
+            kwargs["input_keys"] = lc_chain.input_keys
         else:
-            assert set(lc_chain.input_keys).issubset(set(kwargs["expected_inputs"]))
+            assert set(lc_chain.input_keys).issubset(set(kwargs["input_keys"]))
 
         if "output_keys" not in kwargs:
             kwargs["output_keys"] = lc_chain.output_keys

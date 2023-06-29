@@ -9,9 +9,13 @@ import json
 import jsonlines
 import gzip
 
+import logging
+log = logging.getLogger(__name__)
+
 
 def validate_parameters(cls, kwargs):
     if cls.__name__ != "Flow":
+        log.info(f"Validating parameters for {cls.__name__} with kwargs: {kwargs.keys()}")
         cls.__base__._validate_parameters(kwargs)
 
     flow_config = kwargs["flow_config"]

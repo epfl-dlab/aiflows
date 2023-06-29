@@ -31,6 +31,18 @@ class FlowHistory:
         """
         self.messages.append(deepcopy(message))
 
+    def get_last_n_messages(self, n: int) -> List[Message]:
+        """
+        Returns a list representation of the last n messages in the history.
+
+        Args:
+            n (int): The number of messages to return.
+
+        Returns:
+            list: The list representation of the last n messages in the history.
+        """
+        return [m for m in self.messages[-n:]]
+
     def to_string(self) -> str:
         """
         Returns a string representation of the history.

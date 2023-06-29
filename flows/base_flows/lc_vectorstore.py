@@ -69,7 +69,7 @@ if __name__ == "__main__":
         name="Chroma vector-store",
         description="vector database",
         vectorstore=db,
-        expected_inputs=["query"],
+        input_keys=["query"],
         output_keys=["answer"]
     )
 

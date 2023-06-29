@@ -13,7 +13,6 @@ class GeneratorCriticFlow(CompositeFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.api_keys = None
 
     @classmethod
     def _validate_parameters(cls, kwargs):
@@ -21,9 +20,9 @@ class GeneratorCriticFlow(CompositeFlow):
 
         for flow_name, flow in kwargs["subflows"].items():
             if "generator" in flow_name.lower():
-                pass
+                continue
             elif "critic" in flow_name.lower():
-                pass
+                continue
             else:
                 error_message = f"{cls.__class__.__name__} needs one flow with `critic` in its name" \
                                 f"and one flow with `generator` in its name. Currently, the flow names are:" \
@@ -55,7 +54,7 @@ class GeneratorCriticFlow(CompositeFlow):
         self._state_update_dict(update_data=input_data)
 
         for idx in range(self.flow_config["max_rounds"]):
-            # ~~~ Initialize the generator flow if needed ~~~
+            # ~~~ Reset the generator flow if needed ~~~
             if self.flow_config["reset_generator_every_round"]:
                 generator_flow.reset(full_reset=True, recursive=True)
 
@@ -72,7 +71,7 @@ class GeneratorCriticFlow(CompositeFlow):
                 log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
 
-            # ~~~ Initialize the critic flow ~~~
+            # ~~~ Reset the critic flow ~~~
             if self.flow_config["reset_critic_every_round"]:
                 critic_flow.reset(full_reset=True, recursive=True)
 

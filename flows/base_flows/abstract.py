@@ -46,7 +46,7 @@ class Flow(ABC):
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
-        if self.flow_config.get("verbose", True):
+        if self.flow_config["verbose"]:
             # ToDo: print the flow config with Rich
             pass
 
@@ -110,8 +110,21 @@ class Flow(ABC):
         return config
 
     @classmethod
+    def _set_up_outputs_transformations(cls, config):
+        outputs_transformations_cfgs = config.get("outputs_transformations", [])
+        outputs_transformations_cfgs = copy.deepcopy(outputs_transformations_cfgs)
+
+        outputs_transformations = []
+        if len(outputs_transformations_cfgs) > 0:
+            for config in outputs_transformations_cfgs:
+                outputs_transformations.append(hydra.utils.instantiate(config))
+
+        return outputs_transformations
+
+    @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
+        kwargs["outputs_transformations"] = cls._set_up_outputs_transformations(copy.deepcopy(config))
         return cls(**kwargs)
 
     @classmethod
@@ -184,16 +197,12 @@ class Flow(ABC):
         return {
             "flow_config": self.flow_config,
             "flow_state": self.flow_state,
-            "history": self.history,
         }
 
     def __setstate__(self, state):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
         self.flow_config = state["flow_config"]
         self.flow_state = state["flow_state"]
-        # ToDo: Make sure that the below is soft copy, by updating the __getstate__ of the history
-        self.history = state["history"]
-
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
@@ -205,8 +214,9 @@ class Flow(ABC):
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    def get_hash_data(self):
-        raise NotImplementedError()
+    # ToDo: Move the repr logic here
+    # def get_hash_string(self):
+    #     raise NotImplementedError()
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
@@ -259,6 +269,15 @@ class Flow(ABC):
                 missing_keys.append(expected_key)
                 continue
 
+        # ~~~ Apply output transformations ~~~
+        for outputs_transformation in self.outputs_transformations:
+            outputs = outputs_transformation(outputs)
+
+        if self.flow_config["verbose"] and len(missing_keys) != 0:
+            flow_name = self.flow_config['name']
+            log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
+                        f"Available outputs are: `{str(list(outputs.keys()))}`")
+
         return OutputMessage(
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
@@ -298,7 +317,7 @@ class Flow(ABC):
         packaged_data = {}
         for input_key in input_keys:
             if input_key not in data:
-                raise ValueError(f"Input data does not contain the expected key: {input_key}")
+                raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
 
             packaged_data[input_key] = data[input_key]
 
@@ -428,5 +447,6 @@ class CompositeFlow(Flow, ABC):
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
         kwargs["subflows"] = cls._set_up_subflows(flow_config)
+        kwargs["outputs_transformations"] = cls._set_up_outputs_transformations(flow_config)
 
         return cls(**kwargs)
