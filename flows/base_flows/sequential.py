@@ -1,23 +1,21 @@
-import pdb
 from typing import List, Dict, Any, Optional
 
 from flows.base_flows import CompositeFlow
 import flows.utils
+from flows.utils.general_helpers import validate_parameters
 
 log = flows.utils.get_pylogger(__name__)
 
 
 class SequentialFlow(CompositeFlow):
+    REQUIRED_KEYS_KWARGS = ["subflows"]
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     @classmethod
     def _validate_parameters(cls, kwargs):
-        # ToDo: Deal with this in a cleaner way (with less repetition)
-        cls.__base__._validate_parameters(kwargs)
-
-        if "subflows" not in kwargs:
-            raise KeyError("Generator Critic needs a `subflows` parameter")
+        validate_parameters(cls, kwargs)
 
         assert len(kwargs["subflows"]) > 0, f"Sequential flow needs at least one flow, currently has 0"
 
@@ -25,24 +23,23 @@ class SequentialFlow(CompositeFlow):
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+        self.api_keys = input_data["api_keys"]
+        del input_data["api_keys"]
 
+        # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
         for current_flow in self.subflows.values():
             # ~~~ Execute the flow and update state with answer ~~~
-            flow_answer = self._call_flow_from_state(
+            output_message = self._call_flow_from_state(
                 flow_to_call=current_flow, private_keys=private_keys, keys_to_ignore_for_hash=keys_to_ignore_for_hash
             )
-            # self._update_state(flow_answer)
-            self._state_update_dict(update_data=flow_answer)
+            self._state_update_dict(update_data=output_message)
 
-            # ~~~ Check whether we can exit already ~~~
+            # ~~~ Check for end of interaction
             if self._early_exit():
                 log.info(f"[{self.flow_config['name']}] End of interaction detected")
                 break
-
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
-        # self._state_update_dict(flow_answer)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
