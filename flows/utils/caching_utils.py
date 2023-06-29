@@ -7,7 +7,7 @@ from typing import Dict, List
 import copy
 from diskcache import Index
 
-# ToDo: Implement loading
+# ToDo: Add logging
 
 
 @dataclass
@@ -28,6 +28,7 @@ class CACHING_PARAMETERS:
 class CachingValue:
     output_results: Dict
     full_state: Dict
+    history_messages_created: List
 
 
 def get_cache_dir() -> str:
@@ -89,8 +90,17 @@ def flow_run_cache():
                 if key in cache:
                     # Custom retrieval behavior
                     cached_value: CachingValue = cache[key]
+
+                    # Retrieve output from cache
                     result = cached_value.output_results
+
+                    # Restore the flow to the state it was in when the output was created
                     flow.__setstate__(cached_value.full_state)
+
+                    # Restore the history messages
+                    for message in cached_value.history_messages_created:
+                        message_softcopy = message  # ToDo: Get a softcopy with an updated timestamp
+                        flow._log_message(message_softcopy)
 
                     print(f"Retrieved from cache: {flow.__class__.__name__} "
                           f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
@@ -98,11 +108,19 @@ def flow_run_cache():
                     print("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function
+                    history_len_pre_execution = len(flow.history)
+
+                    # Execute the call
                     result = method(*args, **kwargs)
+
+                    # Retrieve the messages created during the execution
+                    num_created_messages = len(flow.history) - history_len_pre_execution
+                    new_history_messages = flow.history.get_last_n_messages(num_created_messages)
 
                     value_to_cache = CachingValue(
                         output_results=result,
-                        full_state=copy.deepcopy(flow.__getstate__())
+                        full_state=flow.__getstate__(),
+                        history_messages_created=new_history_messages
                     )
 
                     cache[key] = value_to_cache
