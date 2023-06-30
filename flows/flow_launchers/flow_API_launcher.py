@@ -106,7 +106,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                 else:
                     # For development and debugging purposes
                     api_keys = {"openai": self.api_keys[api_key_idx]}
-                    input_message = flow.package_input_message(data=sample,
+                    input_message = flow.package_input_message(data_dict=sample,
                                                                src_flow="Launcher",
                                                                output_keys=self.output_keys,
                                                                api_keys=api_keys)

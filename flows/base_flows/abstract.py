@@ -3,7 +3,7 @@ import sys
 import copy
 
 from abc import ABC
-from typing import List, Dict, Any, Union, Optional
+from typing import List, Dict, Any, Union, Optional, Callable
 
 import colorama
 import hydra
@@ -12,6 +12,7 @@ from omegaconf import OmegaConf
 # ToDo: make imports relative
 import flows
 from flows import utils
+from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
@@ -28,11 +29,12 @@ class Flow(ABC):
     SUPPORTS_CACHING = False
 
     REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end", "output_keys"]
-    REQUIRED_KEYS_KWARGS = ["flow_config"]
+    REQUIRED_KEYS_KWARGS = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
+    response_annotators: Dict[str, Callable]
 
     def __init__(
             self,
@@ -41,6 +43,7 @@ class Flow(ABC):
         self.flow_state = None
         self.flow_config = None
         self.history = None
+        self.response_annotators = None
 
         self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
@@ -77,9 +80,12 @@ class Flow(ABC):
         """
         if cls == Flow:
             config = {
+                "input_data_transformations": [],
                 "output_keys": [],
+                "output_data_transformations": [],
                 "verbose": True,
                 "clear_flow_namespace_on_run_end": True,
+                "keep_raw_response": True
             }
             return config
         elif cls == ABC:
@@ -110,21 +116,19 @@ class Flow(ABC):
         return config
 
     @classmethod
-    def _set_up_outputs_transformations(cls, config):
-        outputs_transformations_cfgs = config.get("outputs_transformations", [])
-        outputs_transformations_cfgs = copy.deepcopy(outputs_transformations_cfgs)
+    def _set_up_data_transformations(cls, data_transformation_configs):
+        data_transformations = []
+        if len(data_transformation_configs) > 0:
+            for config in data_transformation_configs:
+                data_transformations.append(hydra.utils.instantiate(config, _convert_="partial"))
 
-        outputs_transformations = []
-        if len(outputs_transformations_cfgs) > 0:
-            for config in outputs_transformations_cfgs:
-                outputs_transformations.append(hydra.utils.instantiate(config))
-
-        return outputs_transformations
+        return data_transformations
 
     @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
-        kwargs["outputs_transformations"] = cls._set_up_outputs_transformations(copy.deepcopy(config))
+        kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
+        kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
         return cls(**kwargs)
 
     @classmethod
@@ -170,7 +174,7 @@ class Flow(ABC):
 
         """
         if isinstance(update_data, Message):
-            update_data = update_data.data["outputs"]
+            update_data = update_data.data["output_data"]
 
         if len(update_data) == 0:  # ToDo: Should we allow empty state updates, with a warning? When would this happen?
             raise ValueError("The state_update_dict was called with an empty dictionary.")
@@ -231,7 +235,10 @@ class Flow(ABC):
             log.info(message.to_string())
         return self.history.add_message(message)
 
-    def _fetch_state_attributes_by_keys(self, keys: List[str], allow_class_attributes: bool = True):
+    def _fetch_state_attributes_by_keys(self,
+                                        keys: Union[List[str], None],
+                                        allow_class_attributes: bool = True):
+        # ToDo: Add support for nested keys (e.g. "a.b.c")
         data = {}
 
         if keys is None:
@@ -258,39 +265,9 @@ class Flow(ABC):
                     data[key] = self.__dict__[key]
         return data
 
-    def _package_output_message(
-            self,
-            input_message: InputMessage,
-            outputs: Dict[str, Any],
-    ):
-        missing_keys = []
-        for expected_key in input_message.data["output_keys"]:
-            if expected_key not in outputs:
-                missing_keys.append(expected_key)
-                continue
-
-        # ~~~ Apply output transformations ~~~
-        for outputs_transformation in self.outputs_transformations:
-            outputs = outputs_transformation(outputs)
-
-        if self.flow_config["verbose"] and len(missing_keys) != 0:
-            flow_name = self.flow_config['name']
-            log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
-                        f"Available outputs are: `{str(list(outputs.keys()))}`")
-
-        return OutputMessage(
-            created_by=self.flow_config['name'],
-            src_flow=self.flow_config['name'],
-            dst_flow=input_message.data["src_flow"],
-            output_keys=input_message.data["output_keys"],
-            outputs=outputs,
-            missing_output_keys=missing_keys,
-            history=self.history,
-        )
-
     def package_input_message(
             self,
-            data: Dict[str, Any],
+            data_dict: Dict[str, Any],
             src_flow: Optional[Union["Flow", str]] = "Launcher",
             input_keys: Optional[List[str]] = None,
             output_keys: Optional[List[str]] = None,
@@ -303,23 +280,24 @@ class Flow(ABC):
         dst_flow = self.flow_config["name"]
 
         # ~~~ Get the expected inputs and outputs ~~~
+        data_dict = self._apply_data_transformations(data_dict,
+                                                     self.input_data_transformations,
+                                                     input_keys)
         if input_keys is None:
-            input_keys = self.get_input_keys(data)
+            input_keys = self.get_input_keys(data_dict)
         assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
         if output_keys is None:
-            output_keys = self.get_output_keys(data)
-        if "raw_response" not in output_keys:  # Corresponds to the raw unprocessed response
-            output_keys.append("raw_response")
+            output_keys = self.get_output_keys(data_dict)
 
         # ~~~ Get the data payload ~~~
         packaged_data = {}
         for input_key in input_keys:
-            if input_key not in data:
+            if input_key not in data_dict:
                 raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
 
-            packaged_data[input_key] = data[input_key]
+            packaged_data[input_key] = data_dict[input_key]
 
         # ~~~ Create the message ~~~
         msg = InputMessage(
@@ -334,6 +312,62 @@ class Flow(ABC):
         )
         return msg
 
+    def _apply_data_transformations(self,
+                                    data_dict: Dict,
+                                    data_transformations: List[DataTransformation],
+                                    keys: List[str]):
+        data_transforms_to_apply = []
+        for data_transform in data_transformations:
+            if data_transform.output_key is None or data_transform.output_key in keys:
+                data_transforms_to_apply.append(data_transform)
+
+        for data_transform in data_transforms_to_apply:
+            data_dict = data_transform(data_dict)
+
+        return data_dict
+
+    def _package_output_message(
+            self,
+            input_message: InputMessage,
+            raw_response: Any,
+    ):
+        output_keys = input_message.data["output_keys"]
+
+        output_data = {"raw_response": raw_response}
+        output_data = self._apply_data_transformations(output_data,
+                                                       self.output_data_transformations,
+                                                       output_keys)
+
+        missing_keys = []
+        for expected_key in input_message.data["output_keys"]:  # ToDo: Add support for nested keys (e.g. "a.b.c")
+            if expected_key not in output_data:
+                missing_keys.append(expected_key)
+                continue
+
+        # ~~~ Apply output transformations ~~~
+        if not self.flow_config["keep_raw_response"]:
+            del output_data["raw_response"]
+            log.warning("The raw response was not logged.")
+
+        if len(output_data) == 0:
+            raise Exception(f"The output dictionary is empty. "
+                            f"None of the expected outputs: `{str(output_keys)}` were found.")
+
+        if self.flow_config["verbose"] and len(missing_keys) != 0:
+            flow_name = self.flow_config['name']
+            log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
+                        f"Available outputs are: `{str(list(output_data.keys()))}`")
+
+        return OutputMessage(
+            created_by=self.flow_config['name'],
+            src_flow=self.flow_config['name'],
+            dst_flow=input_message.data["src_flow"],
+            output_keys=input_message.data["output_keys"],
+            output_data=output_data,
+            missing_output_keys=missing_keys,
+            history=self.history,
+        )
+
     def run(self,
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
@@ -345,16 +379,17 @@ class Flow(ABC):
         self._log_message(input_message)
 
         # ~~~ Execute the logic of the flow, it should populate state with output_keys ~~~
-        assert "output_keys" in input_message.data and len(input_message.data["output_keys"]) > 0, \
+        assert "output_keys" in input_message.data and \
+               (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
             "The input message must contain the key 'output_keys' with at least one expected output"
-        outputs = self.run(input_data=input_message.data,
-                           private_keys=input_message.private_keys,
-                           keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
+        raw_response = self.run(input_data=input_message.data,
+                                private_keys=input_message.private_keys,
+                                keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
             input_message=input_message,
-            outputs=outputs,
+            raw_response=raw_response,
         )
 
         self._post_call_hook()
@@ -412,7 +447,7 @@ class CompositeFlow(Flow, ABC):
             keys=None,
             allow_class_attributes=search_class_namespace_for_inputs
         )
-        input_message = flow_to_call.package_input_message(data=input_data,
+        input_message = flow_to_call.package_input_message(data_dict=input_data,
                                                            src_flow=self,
                                                            private_keys=private_keys,
                                                            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
@@ -425,10 +460,6 @@ class CompositeFlow(Flow, ABC):
         self._log_message(output_message)
 
         return output_message
-
-    @classmethod
-    def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
 
     @classmethod
     def _set_up_subflows(cls, config):
@@ -447,6 +478,7 @@ class CompositeFlow(Flow, ABC):
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
         kwargs["subflows"] = cls._set_up_subflows(flow_config)
-        kwargs["outputs_transformations"] = cls._set_up_outputs_transformations(flow_config)
+        kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
+        kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         return cls(**kwargs)
