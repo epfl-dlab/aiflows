@@ -1,2 +1,0 @@
-from .regex_extractor_first import RegexFirstOccurrenceExtractor
-from .end_of_interaction import EndOfInteraction

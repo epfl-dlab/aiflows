@@ -126,7 +126,7 @@ class OutputMessage(Message):
                  src_flow: str,
                  dst_flow: str,
                  output_keys: List[str],
-                 outputs: Dict[str, Any],
+                 output_data: Dict[str, Any],
                  missing_output_keys: List[str],
                  history: 'FlowHistory',
                  **kwargs):
@@ -135,7 +135,7 @@ class OutputMessage(Message):
         self.data["src_flow"] = src_flow
         self.data["dst_flow"] = dst_flow
         self.data["output_keys"] = output_keys
-        self.data["outputs"] = outputs
+        self.data["output_data"] = output_data
         self.data["missing_output_keys"] = missing_output_keys
         self.history = history.to_list()
 
