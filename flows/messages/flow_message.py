@@ -6,6 +6,8 @@ from flows.messages import Message
 
 colorama.init()
 
+# ToDo: When logging the "\n" in the nested messages is not mapped to a new line which makes it hard to debug. Fix that.
+
 
 @dataclass
 class InputMessage(Message):
@@ -18,8 +20,8 @@ class InputMessage(Message):
                  **kwargs):
         super().__init__(**kwargs)
 
-        self.data["src_flow"] = src_flow
-        self.data["dst_flow"] = dst_flow
+        self.src_flow = src_flow
+        self.dst_flow = dst_flow
         self.data["output_keys"] = output_keys
         if api_keys:
             self.data["api_keys"] = api_keys
@@ -32,8 +34,8 @@ class InputMessage(Message):
             self.keys_to_ignore_for_hash.append("api_keys")
 
     def to_string(self):
-        src_flow = self.data["src_flow"]
-        dst_flow = self.data["dst_flow"]
+        src_flow = self.src_flow
+        dst_flow = self.dst_flow
 
         message = f"\n{colorama.Fore.GREEN} ~~~ InputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n" \
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
@@ -47,10 +49,10 @@ class UpdateMessage_Generic(Message):
                  updated_flow: str,
                  **kwargs):
         super().__init__(**kwargs)
-        self.data["updated_flow"] = updated_flow
+        self.updated_flow = updated_flow
 
     def to_string(self):
-        updated_flow = self.data["updated_flow"]
+        updated_flow = self.updated_flow
 
         message = f"\n{colorama.Fore.MAGENTA} ~~~ UpdateMessage ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
@@ -71,7 +73,7 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
         self.data["content"] = content
 
     def to_string(self):
-        updated_flow = self.data["updated_flow"]
+        updated_flow = self.updated_flow
         role = self.data["role"]
         color = colorama.Fore.RED if role == "assistant" else colorama.Fore.YELLOW
 
@@ -89,11 +91,11 @@ class UpdateMessage_NamespaceReset(Message):
                  created_by: str,
                  keys_deleted_from_namespace: List[str]):
         super().__init__(created_by=created_by, data={})
-        self.data["updated_flow"] = updated_flow
+        self.updated_flow = updated_flow
         self.data["keys_deleted_from_namespace"] = keys_deleted_from_namespace
 
     def to_string(self):
-        updated_flow = self.data["updated_flow"]
+        updated_flow = self.updated_flow
 
         message = f"\n{colorama.Fore.CYAN} ~~~ ResetMessageNamespaceOnly ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
@@ -108,11 +110,11 @@ class UpdateMessage_FullReset(Message):
                  created_by: str,
                  keys_deleted_from_namespace: List[str]):
         super().__init__(created_by=created_by, data={})
-        self.data["updated_flow"] = updated_flow
+        self.updated_flow = updated_flow
         self.data["keys_deleted_from_namespace"] = keys_deleted_from_namespace
 
     def to_string(self):
-        updated_flow = self.data["updated_flow"]
+        updated_flow = self.updated_flow
 
         message = f"\n{colorama.Fore.CYAN} ~~~ ResetMessageFull ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
@@ -128,20 +130,22 @@ class OutputMessage(Message):
                  output_keys: List[str],
                  output_data: Dict[str, Any],
                  missing_output_keys: List[str],
+                 input_message_id: str,
                  history: 'FlowHistory',
                  **kwargs):
         super().__init__(**kwargs)
 
-        self.data["src_flow"] = src_flow
-        self.data["dst_flow"] = dst_flow
+        self.src_flow = src_flow
+        self.dst_flow = dst_flow
+        self.input_message_id = input_message_id
         self.data["output_keys"] = output_keys
         self.data["output_data"] = output_data
         self.data["missing_output_keys"] = missing_output_keys
         self.history = history.to_list()
 
     def to_string(self):
-        src_flow = self.data["src_flow"]
-        dst_flow = self.data["dst_flow"]
+        src_flow = self.src_flow
+        dst_flow = self.dst_flow
 
         message = f"\n{colorama.Fore.BLUE} ~~~ OutputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n" \
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
