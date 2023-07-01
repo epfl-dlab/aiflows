@@ -85,6 +85,11 @@ class GeneratorCriticFlow(CompositeFlow):
             )
             self._state_update_dict(critic_output_message)
 
+            # ~~~ Check for end of interaction (decided by the critic) ~~~
+            if self._early_exit():
+                log.info(f"[{self.flow_config['name']}] End of interaction detected")
+                break
+
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
                                                        allow_class_attributes=False)
