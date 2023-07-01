@@ -6,6 +6,8 @@ from flows.utils.general_helpers import validate_parameters
 
 log = utils.get_pylogger(__name__)
 
+# ToDo: Add a flag controlling whether to skip the critic in the last round
+
 
 class GeneratorCriticFlow(CompositeFlow):
     REQUIRED_KEYS_CONFIG = ["max_rounds", "reset_generator_every_round", "reset_critic_every_round", "early_exit_key"]
