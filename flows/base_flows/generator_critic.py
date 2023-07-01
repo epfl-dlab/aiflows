@@ -6,6 +6,8 @@ from flows.utils.general_helpers import validate_parameters
 
 log = utils.get_pylogger(__name__)
 
+# ToDo: Add a flag controlling whether to skip the critic in the last round
+
 
 class GeneratorCriticFlow(CompositeFlow):
     REQUIRED_KEYS_CONFIG = ["max_rounds", "reset_generator_every_round", "reset_critic_every_round", "early_exit_key"]
@@ -82,6 +84,11 @@ class GeneratorCriticFlow(CompositeFlow):
                 keys_to_ignore_for_hash=keys_to_ignore_for_hash
             )
             self._state_update_dict(critic_output_message)
+
+            # ~~~ Check for end of interaction (decided by the critic) ~~~
+            if self._early_exit():
+                log.info(f"[{self.flow_config['name']}] End of interaction detected")
+                break
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],

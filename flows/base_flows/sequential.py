@@ -6,6 +6,8 @@ from flows.utils.general_helpers import validate_parameters
 
 log = flows.utils.get_pylogger(__name__)
 
+# ToDo: Add support for multiple runs (c.f. generator_critic.py)
+
 
 class SequentialFlow(CompositeFlow):
     REQUIRED_KEYS_KWARGS = ["subflows"]

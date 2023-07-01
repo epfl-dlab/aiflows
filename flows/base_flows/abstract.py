@@ -17,13 +17,13 @@ from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
     OutputMessage
-from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters
+from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters, flatten_dict, unflatten_dict
 
 log = utils.get_pylogger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history"}
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history", "input_message"}
 
     KEYS_TO_IGNORE_HASH = {"name", "description", "verbose"}
     SUPPORTS_CACHING = False
@@ -34,7 +34,6 @@ class Flow(ABC):
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
-    response_annotators: Dict[str, Callable]
 
     def __init__(
             self,
@@ -43,7 +42,6 @@ class Flow(ABC):
         self.flow_state = None
         self.flow_config = None
         self.history = None
-        self.response_annotators = None
 
         self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
@@ -238,7 +236,6 @@ class Flow(ABC):
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None],
                                         allow_class_attributes: bool = True):
-        # ToDo: Add support for nested keys (e.g. "a.b.c")
         data = {}
 
         if keys is None:
@@ -256,13 +253,15 @@ class Flow(ABC):
             return data
 
         for key in keys:
-            if key in self.flow_state:
+            flat_flow_state = flatten_dict(self.flow_state)
+            if key in flat_flow_state:
                 data[key] = self.flow_state[key]
                 continue
 
             if allow_class_attributes:
                 if key in self.__dict__:
                     data[key] = self.__dict__[key]
+        data = unflatten_dict(data)
         return data
 
     def package_input_message(
@@ -329,22 +328,29 @@ class Flow(ABC):
     def _package_output_message(
             self,
             input_message: InputMessage,
-            raw_response: Any,
+            response: Any,
     ):
-        output_keys = input_message.data["output_keys"]
+        output_data = {"raw_response": response}
 
-        output_data = {"raw_response": raw_response}
+        # ~~~ Flatten the output data ~~~
+        output_data = flatten_dict(output_data)
+
+        # ~~~ Apply output transformations ~~~
+        output_keys = input_message.data["output_keys"]
         output_data = self._apply_data_transformations(output_data,
                                                        self.output_data_transformations,
                                                        output_keys)
 
+        # ~~~ Check that all expected keys are present ~~~
         missing_keys = []
-        for expected_key in input_message.data["output_keys"]:  # ToDo: Add support for nested keys (e.g. "a.b.c")
+        for expected_key in input_message.data["output_keys"]:
             if expected_key not in output_data:
                 missing_keys.append(expected_key)
                 continue
 
-        # ~~~ Apply output transformations ~~~
+        # ~~~ Unflatten the output data ~~~
+        output_data = unflatten_dict(output_data)
+
         if not self.flow_config["keep_raw_response"]:
             del output_data["raw_response"]
             log.warning("The raw response was not logged.")
@@ -361,9 +367,10 @@ class Flow(ABC):
         return OutputMessage(
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
-            dst_flow=input_message.data["src_flow"],
+            dst_flow=input_message.src_flow,
             output_keys=input_message.data["output_keys"],
             output_data=output_data,
+            input_message_id=input_message.message_id,
             missing_output_keys=missing_keys,
             history=self.history,
         )
@@ -375,6 +382,8 @@ class Flow(ABC):
         raise NotImplementedError
 
     def __call__(self, input_message: InputMessage):
+        self.input_message = input_message
+
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
@@ -382,14 +391,14 @@ class Flow(ABC):
         assert "output_keys" in input_message.data and \
                (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
             "The input message must contain the key 'output_keys' with at least one expected output"
-        raw_response = self.run(input_data=input_message.data,
-                                private_keys=input_message.private_keys,
-                                keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
+        response = self.run(input_data=input_message.data,
+                            private_keys=input_message.private_keys,
+                            keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
             input_message=input_message,
-            raw_response=raw_response,
+            response=response,
         )
 
         self._post_call_hook()
