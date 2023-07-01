@@ -33,6 +33,32 @@ def validate_parameters(cls, kwargs):
         if key not in kwargs:
             raise ValueError(f"{key} is a required parameter in the constructor.")
 
+
+def flatten_dict(d, parent_key='', sep='.'):
+    items = []
+    for k, v in d.items():
+        new_key = parent_key + sep + k if parent_key else k
+        if isinstance(v, dict):
+            items.extend(flatten_dict(v, new_key, sep=sep).items())
+        else:
+            items.append((new_key, v))
+    return dict(items)
+
+
+# Function to unflatten dictionary
+def unflatten_dict(d, sep='.'):
+    result_dict = dict()
+    for k, v in d.items():
+        parts = k.split(sep)
+        d = result_dict
+        for part in parts[:-1]:
+            if part not in d:
+                d[part] = dict()
+            d = d[part]
+        d[parts[-1]] = v
+    return result_dict
+
+
 def read_jsonlines(path_to_file):
     with open(path_to_file, "r") as f:
         json_reader = jsonlines.Reader(f)
