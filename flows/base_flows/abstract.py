@@ -66,6 +66,18 @@ class Flow(ABC):
             self.__setattr__(k, v)
 
     @classmethod
+    def initiate_from_default_yaml(cls, overrides: Optional[Dict[str, Any]] = None):
+        """
+        This method is called by the FlowLauncher to build the flow.
+        """
+        if overrides is None:
+            overrides = {}
+
+        config = cls.get_config(**overrides)
+
+        return cls.instantiate_from_config(config)
+
+    @classmethod
     def _validate_parameters(cls, kwargs):
         validate_parameters(cls, kwargs)
 
