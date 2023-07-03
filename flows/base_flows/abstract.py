@@ -130,6 +130,13 @@ class Flow(ABC):
         data_transformations = []
         if len(data_transformation_configs) > 0:
             for config in data_transformation_configs:
+                if not config["_target_"].startswith("."):
+                    raise ValueError(f"_target_ {config['_target_']} must be relative to the flow.")
+                # assumption: cls is associated with relative data_transformation_configs
+                # for example, CF_Code and CF_Code.yaml should be in the same directory,
+                # and all _target_ in CF_Code.yaml should be relative
+                cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
+                config["_target_"] = cls_parent_module + config["_target_"]
                 data_transformations.append(hydra.utils.instantiate(config, _convert_="partial"))
 
         return data_transformations
