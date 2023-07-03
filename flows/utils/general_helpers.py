@@ -127,11 +127,41 @@ def write_outputs(path_to_output_file, summary, mode):
         raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
     def to_dict_dumps(obj):
-        return json.dumps(obj, default=to_dict_serializer, indent=4)
+        # return json.dumps(obj, default=to_dict_serializer, indent=4) breaks the jsonlines reader (see below)
+        # ToDo: If you update this, make sure that the reader is consistent with the writer
+        # ToDo: Also, we should gzip the output file because it has a lot of redundancy
+        return json.dumps(obj, default=to_dict_serializer)
 
     with open(path_to_output_file, mode) as fp:
         json_writer = jsonlines.Writer(fp, dumps=to_dict_dumps)
         json_writer.write_all(summary)
+
+
+def read_outputs(outputs_dir):
+    items_dict = dict()
+
+    for filename in os.listdir(outputs_dir):
+        if not filename.endswith(".jsonl"):
+            continue
+
+        input_file_path = os.path.join(outputs_dir, filename)
+        with open(input_file_path, "r+") as fp:
+            # reader = jsonlines.Reader(fp)
+            # for element in reader:
+            for idx, line in enumerate(fp):
+                try:
+                    element = json.loads(line)
+                except json.decoder.JSONDecodeError:
+                    log.error(f"Failed to decode line {idx} in file {input_file_path}")
+                    continue
+                assert "id" in element
+                # due to potentially non-even splits across processes, inference with ddp might result in duplicates
+                # (i.e., the same datapoint might have been seen multiple times)
+                # however we will always consider only one prediction (the last one)
+                items_dict[element["id"]] = element
+
+    items = [items_dict[_id] for _id in sorted(items_dict.keys())]
+    return items
 
 
 def recursive_dictionary_update(d, u):

@@ -1,2 +1,2 @@
 from .abstract import AbstractDataset
-from .demonstrations import GenericDemonstrationsDataset
+from .outputs import OutputsDataset
