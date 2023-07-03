@@ -2,9 +2,9 @@ from typing import Dict, Any
 
 from .abstract import DataTransformation
 
-from flows import utils
+from ..utils import logging
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 
 class EndOfInteraction(DataTransformation):

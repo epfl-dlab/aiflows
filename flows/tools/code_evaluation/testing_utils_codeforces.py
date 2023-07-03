@@ -15,7 +15,7 @@ from wrapt_timeout_decorator import timeout as wrapt_timeout
 
 import flows.utils as utils
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 lock = threading.Lock()
 
 

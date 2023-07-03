@@ -3,8 +3,9 @@ from typing import List, Dict, Any, Optional
 from flows.base_flows import CompositeFlow
 import flows.utils
 from flows.utils.general_helpers import validate_parameters
+from ..utils import logging
 
-log = flows.utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 # ToDo: Add support for multiple runs (c.f. generator_critic.py)
 

@@ -10,9 +10,9 @@ from tqdm import tqdm
 from flows.utils import general_helpers
 from typing import List, Dict, Optional, Iterable
 
-from flows import utils
+from ..utils import logging
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 
 class BaseLauncher(ABC):

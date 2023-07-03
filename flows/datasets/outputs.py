@@ -1,9 +1,8 @@
-from flows import utils
+from ..utils import logging
 from flows.datasets import AbstractDataset
 from flows.utils.general_helpers import read_outputs
 
-log = utils.get_pylogger(__name__)
-
+log = logging.get_logger(__name__)
 
 class OutputsDataset(AbstractDataset):
     def __init__(self, data=None, **kwargs):

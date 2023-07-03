@@ -6,10 +6,10 @@ from flows.flow_launcher.collators import Collator, NoCollationCollator
 from flows.flow_launcher import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from flows.utils import general_helpers
-from flows import utils
+from ..utils import logging
 
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 
 class FlowAPILauncher(MultiThreadedAPILauncher):

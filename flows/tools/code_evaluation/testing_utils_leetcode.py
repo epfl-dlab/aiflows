@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 import flows.utils as utils
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 lock = threading.Lock()
 
 
