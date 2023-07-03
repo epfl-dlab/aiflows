@@ -27,11 +27,12 @@ class FlowLauncher(ABC):
         for sample in inputs:
             self.flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
-            input_message = self.flow.package_input_message(data=sample,
+            input_message = self.flow.package_input_message(data_dict=sample,
                                                         src_flow="Launcher",
                                                         output_keys=self.output_keys)
             output_message = self.flow(input_message)
-            outputs.append(output_message.data["outputs"])
+            output_data = output_message.data["output_data"]
+            outputs.append(output_data)
 
         return outputs
 
