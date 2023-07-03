@@ -27,7 +27,7 @@ import huggingface_hub
 
 from typing import List, Dict
 
-
+# TODO(yeeef): delete legacy functions
 def add_to_sys_path(path):
     # Make sure the path is absolute
     absolute_path = os.path.abspath(path)
@@ -76,6 +76,7 @@ def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_d
 
 
 def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None):
+    logger.warn(f"{colorama.Fore.RED}[load_class] is deprecated, please use [sync_dependencies] and normal import{colorama.Style.RESET_ALL}")
     path_to_local_repository = _sync_repository(repository_id,
                                                 local_dir=local_dir,
                                                 cache_dir=cache_dir)
@@ -92,6 +93,7 @@ def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_di
 
 
 def instantiate_flow(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}): # TODO(yeeef): this default value might cause problems
+    logger.warn(f"{colorama.Fore.RED}[initiate_flow] is deprecated, please use [sync_dependencies] and normal import{colorama.Style.RESET_ALL}")
     flow_class = load_class(repository_id=repository_id,
                             local_dir=local_dir,
                             class_name=class_name,
@@ -218,7 +220,6 @@ def sync_dependency(dep: Dict[str, str], overwrite: bool=False):
         else:
             logger.warn(f"{mod_id} already synced, skip") 
 
-# TODO(yeeef): check duplication
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool=False):
     frame = inspect.currentframe().f_back
     module_name = inspect.getmodule(frame).__name__
