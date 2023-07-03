@@ -1,6 +1,8 @@
+from abc import ABC
+
 import time
 
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 
 import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
@@ -9,6 +11,31 @@ from flows import utils
 
 
 log = utils.get_pylogger(__name__)
+
+
+class FlowLauncher(ABC):
+    def __init__(
+            self,
+            flow: Flow,
+            output_keys: Optional[List[str]] = None) -> None:
+        
+        self.flow = flow
+        self.output_keys = output_keys
+
+    def launch(self, inputs: List[Dict]) -> List[Dict]:
+        outputs = []
+        for sample in inputs:
+            self.flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
+
+            input_message = self.flow.package_input_message(data_dict=sample,
+                                                        src_flow="Launcher",
+                                                        output_keys=self.output_keys)
+            output_message = self.flow(input_message)
+            output_data = output_message.data["output_data"]
+            outputs.append(output_data)
+
+        return outputs
+
 
 
 class FlowAPILauncher(MultiThreadedAPILauncher):
@@ -25,7 +52,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
     def __init__(
             self,
-            flow: Union[Flow, List[Flow]],
+            flow: Union[Flow, List[Flow]], # TODO(yeeef): not good for a list of flows which is of same class
             n_independent_samples: int,
             fault_tolerant_mode: bool,
             n_batch_retries: int,

@@ -66,6 +66,18 @@ class Flow(ABC):
             self.__setattr__(k, v)
 
     @classmethod
+    def initiate_from_default_yaml(cls, overrides: Optional[Dict[str, Any]] = None):
+        """
+        This method is called by the FlowLauncher to build the flow.
+        """
+        if overrides is None:
+            overrides = {}
+
+        config = cls.get_config(**overrides)
+
+        return cls.instantiate_from_config(config)
+
+    @classmethod
     def _validate_parameters(cls, kwargs):
         validate_parameters(cls, kwargs)
 
@@ -229,6 +241,7 @@ class Flow(ABC):
         return self.flow_config["output_keys"]
 
     def _log_message(self, message: Message):
+        # TODO(yeeef): use log debug level, rather than verbose
         if self.flow_config["verbose"]:
             log.info(message.to_string())
         return self.history.add_message(message)
@@ -299,6 +312,8 @@ class Flow(ABC):
             packaged_data[input_key] = data_dict[input_key]
 
         # ~~~ Create the message ~~~
+        # TODO(yeeef): dont pass through `api_keys` everywhere
+        #              InputMessage contains `output_keys`, strange
         msg = InputMessage(
             created_by=self.flow_config['name'],
             data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
@@ -375,6 +390,8 @@ class Flow(ABC):
             history=self.history,
         )
 
+    # TODO(yeeef): `output_keys` is in input_message.data, which is an implicit assumption
+    #              `raw_response` is in outputs, which is an implicit assumption
     def run(self,
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
