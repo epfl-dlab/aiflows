@@ -6,8 +6,9 @@ from dataclasses import dataclass
 from typing import Dict, List
 import copy
 from diskcache import Index
+from ..utils import logging
 
-# ToDo: Add logging
+log = logging.get_logger(__name__)
 
 
 @dataclass
@@ -103,10 +104,10 @@ def flow_run_cache():
                         flow._log_message(message_softcopy)
 
                     # TODO(yeeef): use log.debug
-                    # print(f"Retrieved from cache: {flow.__class__.__name__} "
-                    #       f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
-                    #       f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
-                    # print("Retrieved from cache:", cached_value)
+                    log.debug(f"Retrieved from cache: {flow.__class__.__name__} "
+                          f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
+                          f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+                    log.debug("Retrieved from cache:", cached_value)
                 else:
                     # Call the original function
                     history_len_pre_execution = len(flow.history)
@@ -125,13 +126,13 @@ def flow_run_cache():
                     )
 
                     cache[key] = value_to_cache
-                    # print("Cached:", value_to_cache)
+                    log.info("Cached:", value_to_cache)
 
             return result
 
         def clear_cache():
             with lock:
-                print("Cache clearing")
+                log.info("Cache clearing")
                 cache.clear()
 
         wrapper.clear_cache = clear_cache

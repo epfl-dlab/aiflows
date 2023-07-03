@@ -60,7 +60,7 @@ def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None
     else:
         path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
 
-    logger.warn("The flow repository was synced to:", path_to_local_repository)  # ToDo: Replace with log.info once the logger is set up
+    logger.warn(f"The flow repository was synced to:{path_to_local_repository}", )  # ToDo: Replace with log.info once the logger is set up
     return path_to_local_repository
 
 
