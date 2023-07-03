@@ -211,8 +211,10 @@ def sync_dependency(dep: Dict[str, str], overwrite: bool=False):
             
         elif os.path.isdir(local_dir) and read_mod_id(local_dir) != mod_id:
             # local dir exists, but revision is not the same, overwrite with new revision
-            logger.warn(f"{local_dir} exists, but revision is not the same(old revision: {read_mod_id(local_dir)}), overwrite with new revision {mod_id}")
-            fetch_remote(repo_id, revision, mod_id, DEFAULT_CACHE_PATH, local_dir)
+            logger.warn(f"{colorama.Fore.RED}{read_mod_id(local_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+            user_input = input()
+            if user_input == "Y":
+                fetch_remote(repo_id, revision, mod_id, DEFAULT_CACHE_PATH, local_dir)
         else:
             logger.warn(f"{mod_id} already synced, skip") 
 
