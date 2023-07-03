@@ -11,6 +11,7 @@ from omegaconf import OmegaConf
 
 # ToDo: make imports relative
 import flows
+from flows import flow_verse
 from ..utils import logging
 from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
@@ -130,13 +131,12 @@ class Flow(ABC):
         data_transformations = []
         if len(data_transformation_configs) > 0:
             for config in data_transformation_configs:
-                if not config["_target_"].startswith("."):
-                    raise ValueError(f"_target_ {config['_target_']} must be relative to the flow.")
-                # assumption: cls is associated with relative data_transformation_configs
-                # for example, CF_Code and CF_Code.yaml should be in the same directory,
-                # and all _target_ in CF_Code.yaml should be relative
-                cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
-                config["_target_"] = cls_parent_module + config["_target_"]
+                if config["_target_"].startswith("."):
+                    # assumption: cls is associated with relative data_transformation_configs
+                    # for example, CF_Code and CF_Code.yaml should be in the same directory,
+                    # and all _target_ in CF_Code.yaml should be relative
+                    cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
+                    config["_target_"] = cls_parent_module + config["_target_"]
                 data_transformations.append(hydra.utils.instantiate(config, _convert_="partial"))
 
         return data_transformations
@@ -500,6 +500,8 @@ class CompositeFlow(Flow, ABC):
         subflows_config = config["subflows_config"]
 
         for subflow_config in subflows_config:
+            subflow_config["_target_"] = flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER + "." + subflow_config.pop("class") + ".initiate_from_default_yaml"
+
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             subflows[flow_obj.flow_config["name"]] = flow_obj
 
