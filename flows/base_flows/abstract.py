@@ -11,7 +11,7 @@ from omegaconf import OmegaConf
 
 # ToDo: make imports relative
 import flows
-from flows import utils
+from ..utils import logging
 from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
@@ -19,7 +19,7 @@ from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     OutputMessage
 from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters, flatten_dict, unflatten_dict
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 
 class Flow(ABC):

@@ -5,10 +5,10 @@ from typing import List, Dict, Union
 import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
-from flows import utils
+from ..utils import logging
 
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 
 class FlowAPILauncher(MultiThreadedAPILauncher):

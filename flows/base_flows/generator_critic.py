@@ -1,10 +1,10 @@
 from typing import List, Dict, Any, Optional
 
 from flows.base_flows import CompositeFlow
-from flows import utils
+from ..utils import logging
 from flows.utils.general_helpers import validate_parameters
 
-log = utils.get_pylogger(__name__)
+log = logging.get_logger(__name__)
 
 # ToDo: Add a flag controlling whether to skip the critic in the last round
 
