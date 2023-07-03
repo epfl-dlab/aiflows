@@ -1,6 +1,7 @@
 import os
 import re
 import shutil
+import filecmp
 import logging
 import inspect
 
@@ -60,7 +61,7 @@ def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None
     else:
         path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir, local_dir=local_dir,  **kwargs)
 
-    logger.warn(f"The flow repository was synced to:{path_to_local_repository}", )  # ToDo: Replace with log.info once the logger is set up
+    logger.warn(f"The flow repository was synced to: {path_to_local_repository}")
     return path_to_local_repository
 
 
@@ -158,9 +159,14 @@ def fetch_remote(repo_id: str, revision: str, flow_mod_id: str, cache_dir: str, 
     write_or_append_gitignore(local_dir, "a", MODULE_ID_FILE_NAME)
 
 def fetch_local(file_path: str, revision: str, flow_mod_id: str, cache_dir: str, local_dir: str, overwrite: bool=False):
-    shutil.copytree(file_path, local_dir, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=overwrite)
+    # shutil.copytree(file_path, local_dir, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=overwrite)
+    if overwrite:
+        os.remove(local_dir)
+    os.symlink(file_path, local_dir) # TODO(yeeef): offer another choice to directly make a copy
     # write the revision info in the folder
     write_mod_id(local_dir, flow_mod_id)
+    # add FLOW_MODULE_ID to .gitignore
+    write_or_append_gitignore(local_dir, "a", MODULE_ID_FILE_NAME)
 
 def build_mod_id(repo_id_or_file_path: str, revision: str):
     match = re.search(r"\W", revision)
@@ -169,10 +175,8 @@ def build_mod_id(repo_id_or_file_path: str, revision: str):
     
     return f"{repo_id_or_file_path}:{revision}"
 
-def sync_dependency(dep: Dict[str, str], overwrite: bool=False):
-    url, revision = dep["url"], dep["revision"]
-
-    mod_id = build_mod_id(url, revision)
+def sync_dependency(repo_id_or_file_path: str, revision: str, is_local: bool, overwrite: bool=False):
+    mod_id = build_mod_id(repo_id_or_file_path, revision)
 
     if overwrite:
         logger.warn(f"{colorama.Fore.RED}{mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
@@ -180,8 +184,8 @@ def sync_dependency(dep: Dict[str, str], overwrite: bool=False):
         if user_input != "Y":
             overwrite = False
 
-    if os.path.exists(url): # url is a local path
-        file_path = url
+    if is_local: # url is a local path
+        file_path = repo_id_or_file_path
         if revision != LOCAL_REVISION:
             raise ValueError(f"revision {revision} is not valid for local dependency {file_path}, only {LOCAL_REVISION} is allowed")
 
@@ -199,12 +203,11 @@ def sync_dependency(dep: Dict[str, str], overwrite: bool=False):
 
 
     else: # huggingface url
-        repo_id = url
+        repo_id = repo_id_or_file_path
         basename = repo_id
         # check revision
         # check if basename exists in local dir
         local_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, basename)
-        mod_id = build_mod_id(url, revision)
 
         if not os.path.isdir(local_dir) or overwrite:
             # first fetch / overwrite
@@ -236,7 +239,13 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool=Fa
     for dep in dependencies:
         dep = validate_and_augment_dependency(dep)
         dep_overwrite = dep.get("overwrite", False)
-        sync_dependency(dep, all_overwrite or dep_overwrite)
+        dep_is_local = False
+        url, revision = dep["url"], dep["revision"]
+        if os.path.exists(dep["url"]): # url is a local path
+            dep_is_local = True
+            url = os.path.abspath(url)
+        
+        sync_dependency(url, revision, dep_is_local, all_overwrite or dep_overwrite)
 
     logger.warn(f"{colorama.Fore.GREEN}[{module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
 
