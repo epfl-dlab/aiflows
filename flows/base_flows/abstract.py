@@ -270,7 +270,7 @@ class Flow(ABC):
             src_flow: Optional[Union["Flow", str]] = "Launcher",
             input_keys: Optional[List[str]] = None,
             output_keys: Optional[List[str]] = None,
-            api_keys: Optional[List[str]] = None,
+            api_keys: Optional[Dict[str, str]] = None,
             private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
             keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
     ):
