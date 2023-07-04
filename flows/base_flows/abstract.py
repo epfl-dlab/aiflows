@@ -432,6 +432,28 @@ class Flow(ABC):
         if self.flow_config['clear_flow_namespace_on_run_end']:
             self.reset(full_reset=False, recursive=False)
 
+    def __str__(self):
+        return self._to_string()
+    def _to_string(self, indent_level=0):
+        """Generates a string representation of the flow"""
+        indent = "\t" * indent_level
+        name = self.flow_config["name"]
+        description = self.flow_config["description"]
+        input_keys = self.flow_config["input_keys"]
+        output_keys = self.flow_config["output_keys"]
+        class_name = self.__class__.__name__
+
+        entries = [
+            f"{indent}Name: {name}",
+            f"{indent}Class name: {class_name}",
+            f"{indent}Description: {description}",
+            f"{indent}Input keys: {input_keys}",
+            f"{indent}Output keys: {output_keys}",
+        ]
+        return "\n".join(entries) + "\n"
+
+
+
 
 class AtomicFlow(Flow, ABC):
 
@@ -515,3 +537,27 @@ class CompositeFlow(Flow, ABC):
         kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         return cls(**kwargs)
+
+    def __str__(self):
+        return self._to_string()
+
+    def _to_string(self, indent_level=0):
+        """Generates a string representation of the flow"""
+        indent = "\t" * indent_level
+        name = self.flow_config["name"]
+        description = self.flow_config["description"]
+        input_keys = self.flow_config["input_keys"]
+        output_keys = self.flow_config["output_keys"]
+        class_name = self.__class__.__name__
+        subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}" for subflow in self.subflows.values()])
+
+        entries = [
+            f"{indent}Name: {name}",
+            f"{indent}Class name: {class_name}",
+            f"{indent}Description: {description}",
+            f"{indent}Input keys: {input_keys}",
+            f"{indent}Output keys: {output_keys}",
+            f"{indent}Subflows:",
+            f"{subflows_repr}"
+        ]
+        return "\n".join(entries)
