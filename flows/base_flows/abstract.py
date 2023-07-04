@@ -437,10 +437,10 @@ class Flow(ABC):
     def _to_string(self, indent_level=0):
         """Generates a string representation of the flow"""
         indent = "\t" * indent_level
-        name = self.flow_config["name"]
-        description = self.flow_config["description"]
-        input_keys = self.flow_config["input_keys"]
-        output_keys = self.flow_config["output_keys"]
+        name = self.flow_config.get("name", "unnamed")
+        description = self.flow_config.get("description", "no description")
+        input_keys = self.flow_config.get("input_keys", "no input keys")
+        output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
 
         entries = [
@@ -544,10 +544,10 @@ class CompositeFlow(Flow, ABC):
     def _to_string(self, indent_level=0):
         """Generates a string representation of the flow"""
         indent = "\t" * indent_level
-        name = self.flow_config["name"]
-        description = self.flow_config["description"]
-        input_keys = self.flow_config["input_keys"]
-        output_keys = self.flow_config["output_keys"]
+        name = self.flow_config.get("name", "unnamed")
+        description = self.flow_config.get("description", "no description")
+        input_keys = self.flow_config.get("input_keys", "no input keys")
+        output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
         subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}" for subflow in self.subflows.values()])
 
