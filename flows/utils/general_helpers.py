@@ -9,8 +9,8 @@ import json
 import jsonlines
 import gzip
 
-import logging
-log = logging.getLogger(__name__)
+from flows import logging
+log = logging.get_logger(__name__)
 
 
 def validate_parameters(cls, kwargs):

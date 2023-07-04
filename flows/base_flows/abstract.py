@@ -67,7 +67,7 @@ class Flow(ABC):
             self.__setattr__(k, v)
 
     @classmethod
-    def initiate_from_default_yaml(cls, overrides: Optional[Dict[str, Any]] = None):
+    def instantiate_from_default_config(cls, overrides: Optional[Dict[str, Any]] = None):
         """
         This method is called by the FlowLauncher to build the flow.
         """
@@ -500,8 +500,8 @@ class CompositeFlow(Flow, ABC):
         subflows_config = config["subflows_config"]
 
         for subflow_config in subflows_config:
-            subflow_config["_target_"] = flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER + "." + subflow_config.pop("class") + ".initiate_from_default_yaml"
-
+            # Let's use hydra for now
+            # subflow_config["_target_"] = flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER + "." + subflow_config.pop("class") + ".instantiate_from_default_config"
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             subflows[flow_obj.flow_config["name"]] = flow_obj
 

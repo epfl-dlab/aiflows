@@ -36,8 +36,7 @@ from typing import Optional
 
 _lock = threading.Lock()
 _default_handler: Optional[logging.Handler] = None
-_logger=None
-
+_logger = None
 
 
 log_levels = {
@@ -104,7 +103,9 @@ def _configure_library_root_logger() -> None:
         _init_logger_from_cfg()
         _logger = _get_library_root_logger()
 
+
 _configure_library_root_logger()
+
 
 def _reset_library_root_logger() -> None:
     global _default_handler
