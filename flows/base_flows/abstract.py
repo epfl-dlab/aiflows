@@ -446,13 +446,16 @@ class Flow(ABC):
         entries = [
             f"{indent}Name: {name}",
             f"{indent}Class name: {class_name}",
+            f"{indent}Type: {self.type()}",
             f"{indent}Description: {description}",
             f"{indent}Input keys: {input_keys}",
             f"{indent}Output keys: {output_keys}",
         ]
         return "\n".join(entries) + "\n"
 
-
+    @classmethod
+    def type(cls):
+        raise NotImplementedError
 
 
 class AtomicFlow(Flow, ABC):
@@ -462,6 +465,10 @@ class AtomicFlow(Flow, ABC):
             **kwargs
     ):
         super().__init__(**kwargs)
+
+    @classmethod
+    def type(cls):
+        return "atomic"
 
 
 class CompositeFlow(Flow, ABC):
@@ -554,6 +561,7 @@ class CompositeFlow(Flow, ABC):
         entries = [
             f"{indent}Name: {name}",
             f"{indent}Class name: {class_name}",
+            f"{indent}Type: {self.type()}",
             f"{indent}Description: {description}",
             f"{indent}Input keys: {input_keys}",
             f"{indent}Output keys: {output_keys}",
@@ -561,3 +569,7 @@ class CompositeFlow(Flow, ABC):
             f"{subflows_repr}"
         ]
         return "\n".join(entries)
+
+    @classmethod
+    def type(cls):
+        return "composite"

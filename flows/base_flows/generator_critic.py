@@ -94,3 +94,7 @@ class GeneratorCriticFlow(CompositeFlow):
         outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
                                                        allow_class_attributes=False)
         return outputs
+
+    @classmethod
+    def type(cls):
+        return "generator_critic"

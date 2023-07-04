@@ -50,4 +50,8 @@ class SequentialFlow(CompositeFlow):
 
         return outputs
 
+    @classmethod
+    def type(cls):
+        return "sequential"
+
 

@@ -16,3 +16,4 @@ class FixedReplyAtomicFlow(AtomicFlow):
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
 
         return self.flow_config["fixed_reply"]
+
