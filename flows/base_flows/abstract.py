@@ -120,7 +120,7 @@ class Flow(ABC):
             config = recursive_dictionary_update(parent_default_config, default_config)
         elif overrides.get("verbose", True):
             config = parent_default_config
-            log.warning(f"Flow config not found at {path_to_config}.")
+            log.debug(f"Flow config not found at {path_to_config}.")
 
         # ~~~~ Apply the overrides ~~~~
         config = recursive_dictionary_update(config, overrides)
@@ -248,9 +248,7 @@ class Flow(ABC):
         return self.flow_config["output_keys"]
 
     def _log_message(self, message: Message):
-        # TODO(yeeef): use log debug level, rather than verbose
-        if self.flow_config["verbose"]:
-            log.info(message.to_string())
+        log.debug(message.to_string())
         return self.history.add_message(message)
 
     def _fetch_state_attributes_by_keys(self,
