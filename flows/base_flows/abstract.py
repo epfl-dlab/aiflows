@@ -533,7 +533,12 @@ class CompositeFlow(Flow, ABC):
 
         for subflow_config in subflows_config:
             # Let's use hydra for now
-            # subflow_config["_target_"] = flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER + "." + subflow_config.pop("class") + ".instantiate_from_default_config"
+            # subflow_config["_target_"] = ".".join([
+            #     flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER,
+            #     subflow_config.pop("class"),
+            #     cls.instantiate_from_default_config.__name__
+            # ])
+            
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             subflows[flow_obj.flow_config["name"]] = flow_obj
 
