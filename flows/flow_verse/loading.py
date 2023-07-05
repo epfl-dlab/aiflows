@@ -102,7 +102,8 @@ def fetch_local(file_path: str, flow_mod_id: str, sync_dir: str):
     # shutil.copytree(file_path, sync_dir, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=overwrite)
     sync_dir = os.path.abspath(sync_dir)
     # when fetch_local is triggered, the old dir is always going to be removed
-    os.remove(sync_dir)
+    if is_local_sync_dir_valid(sync_dir):
+        os.remove(sync_dir)
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
     os.symlink(file_path, sync_dir)  # TODO(yeeef): offer another choice to directly make a copy
     # write the revision info in the folder
