@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import shutil
 import inspect
 from typing import List, Dict
 
@@ -86,8 +87,20 @@ def read_mod_id(local_dir: str):
 
         return lines[3].strip()
 
+def remove_dir_or_link(sync_dir: str):
+    if os.path.isdir(sync_dir):
+        shutil.rmtree(sync_dir)
+    elif os.path.islink(sync_dir):
+        os.remove(sync_dir)
+    else:
+        raise ValueError(f"Invalid sync_dir: {sync_dir}, it is not a valid directory nor a valid link")
 
 def fetch_remote(repo_id: str, revision: str, flow_mod_id: str, cache_dir: str, local_dir: str):
+    sync_dir = os.path.abspath(sync_dir)
+    if is_local_sync_dir_valid(sync_dir):
+        remove_dir_or_link(sync_dir)
+
+    os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
     huggingface_hub.snapshot_download(repo_id, cache_dir=cache_dir, local_dir=local_dir, revision=revision)
     # write the revision info in the folder
     write_mod_id(local_dir, flow_mod_id)
@@ -99,7 +112,8 @@ def fetch_local(file_path: str, flow_mod_id: str, sync_dir: str):
     sync_dir = os.path.abspath(sync_dir)
     # when fetch_local is triggered, the old dir is always going to be removed
     if is_local_sync_dir_valid(sync_dir):
-        os.remove(sync_dir)
+        remove_dir_or_link(sync_dir)
+
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
     os.symlink(file_path, sync_dir)  # TODO(yeeef): offer another choice to directly make a copy
     # write the revision info in the folder
@@ -171,7 +185,7 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, caller_module_
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False):
     caller_frame = inspect.currentframe().f_back
     caller_module = inspect.getmodule(caller_frame)
-    if caller_module is None:
+    if caller_module is None: # https://github.com/epfl-dlab/flows/issues/50
         caller_module_name = "<interactive>"
     else:
         caller_module_name = caller_module.__name__
