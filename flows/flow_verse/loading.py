@@ -51,10 +51,6 @@ def validate_and_augment_dependency(dependency: Dict[str, str]):
 
 def write_or_append_gitignore(local_dir: str, mode: str, content: str):
     gitignore_path = os.path.join(local_dir, ".gitignore")
-    with open(gitignore_path, "r") as gitignore_f:
-        full_content = gitignore_f.read()
-        if content in full_content:
-            return
         
     with open(gitignore_path, mode) as gitignore_f:
         lines = [
