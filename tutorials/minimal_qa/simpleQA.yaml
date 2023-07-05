@@ -1,0 +1,26 @@
+name: "SimpleQA"
+description: "A flow that answers questions."
+model: "gpt-3.5-turbo"
+
+input_data_transformations: []
+input_keys:
+  - "question"
+
+output_data_transformations:
+  - _target_: flows.data_transformations.KeyRename
+    old_key2new_key:
+      raw_response: "answer"
+output_keys:
+  - "answer"
+
+system_message_prompt_template:
+  template: |2-
+    You are a helpful chatbot that truthfully answers questions.
+  input_variables: []
+  partial_variables: {}
+
+query_message_prompt_template:
+  template: |2-
+    Answer the following question: {{question}}
+  input_variables: ["question"]
+  partial_variables: {}

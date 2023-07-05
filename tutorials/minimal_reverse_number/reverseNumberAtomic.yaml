@@ -1,0 +1,14 @@
+name: "ReverseNumber"
+description: "A flow that takes in a number and reverses it."
+
+input_data_transformations: []
+input_keys:
+  - "number"
+
+output_data_transformations:
+  - _target_: flows.data_transformations.KeyCopy
+    old_key2new_key:
+      raw_response.output_number: "reversed_number"
+output_keys:
+  - "reversed_number"
+keep_raw_response: False  # Set to True to keep the raw flow response in the output data

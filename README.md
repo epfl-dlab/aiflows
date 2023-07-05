@@ -1,2 +1,1 @@
-# flows
-The flows library
+# Flows: Building Blocks of Reasoning and Collaborating AI

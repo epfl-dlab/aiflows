@@ -9,6 +9,8 @@ import json
 import jsonlines
 import gzip
 
+from omegaconf import OmegaConf
+
 from flows import logging
 log = logging.get_logger(__name__)
 
@@ -175,3 +177,12 @@ def recursive_dictionary_update(d, u):
         else:
             d[k] = v
     return d
+
+
+def read_yaml_file(path_to_file, resolve=True):
+    with open(path_to_file, "r") as f:
+        cfg = OmegaConf.load(f)
+
+    cfg = OmegaConf.to_container(cfg, resolve=resolve)
+    return cfg
+
