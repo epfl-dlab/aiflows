@@ -117,7 +117,7 @@ def build_mod_id(repo_id_or_file_path: str, revision: str):
 def is_local_sync_dir_valid(sync_dir: str):
     return os.path.isdir(sync_dir) or os.path.islink(sync_dir)
 
-def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module_name: str, overwrite: bool = False) -> str:
+def sync_dependency(mod_name: str, revision: str, is_local: bool, caller_module_name: str, overwrite: bool = False) -> str:
     mod_id = build_mod_id(mod_name, revision)
 
     # ToDo (Martin): Add a check of whether the local copy (when it exists) matches the one suggested bu the depenedency?
@@ -125,7 +125,7 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module
     #    If it doesn't, verbose flag is set and overwrite is not set sent a warning message.
     #    If it doesn't and overwrite is set, ask for confirmation.
     if overwrite:
-        logger.warn(f"{colorama.Fore.RED}[{current_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
         user_input = input()
         if user_input != "Y":
             overwrite = False
@@ -142,7 +142,7 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module
             fetch_local(module_local_dir, mod_id, sync_dir)
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
             logger.warn(
-                f"{colorama.Fore.RED}[{current_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+                f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
                 fetch_local(module_local_dir, mod_id, sync_dir)
@@ -161,7 +161,7 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
             # local dir exists, but revision is not the same, overwrite with new revision
             logger.warn(
-                f"{colorama.Fore.RED}[{current_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+                f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
                 fetch_remote(mod_name, revision, mod_id, DEFAULT_CACHE_PATH, sync_dir)
@@ -172,11 +172,15 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module
 
 
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False):
-    frame = inspect.currentframe().f_back
-    current_module_name = inspect.getmodule(frame).__name__ # who calls sync_dependencies
-
+    caller_frame = inspect.currentframe().f_back
+    caller_module = inspect.getmodule(caller_frame)
+    if caller_module is None:
+        caller_module_name = "<interactive>"
+    else:
+        caller_module_name = caller_module.__name__
+    
     logger.info(
-        f"{colorama.Fore.GREEN}[{current_module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies...")
+        f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies...")
     flow_module_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER)
     if not os.path.exists(flow_module_dir):
         os.mkdir(flow_module_dir)
@@ -202,8 +206,8 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
             if match is not None:
                 raise ValueError(f"{revision} is identified as remote, as it does not exist locally. But it not a valid remote revision, it contains illegal characters: {match.group(0)}")
 
-        sync_dir = sync_dependency(url, revision, dep_is_local, current_module_name, all_overwrite or dep_overwrite)
+        sync_dir = sync_dependency(url, revision, dep_is_local, caller_module_name, all_overwrite or dep_overwrite)
         sync_dirs.append(sync_dir)
 
-    logger.info(f"{colorama.Fore.GREEN}[{current_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
+    logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
     return sync_dirs
