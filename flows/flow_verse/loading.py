@@ -1,13 +1,15 @@
 import os
 import re
-import logging
+import sys
 import inspect
-import pathlib
+from typing import List, Dict
 
 import colorama
-import hydra
+import huggingface_hub
 
-logger = logging.getLogger(__name__)
+from flows.utils import logging
+
+logger = logging.get_logger(__name__)
 
 default_home = os.path.join(os.path.expanduser("~"), ".cache")
 flows_cache_home = os.path.expanduser(os.path.join(default_home, "flows"))
@@ -21,14 +23,6 @@ REVISION_FILE_HEADER = """\
 """
 DEFAULT_REMOTE_REVISION = "main"
 
-import sys
-import importlib
-import huggingface_hub
-
-from typing import List, Dict
-
-
-# TODO(yeeef): delete legacy functions
 # TODO(yeeef): huggingface username might not be a valid python module name... for example `1f`
 def add_to_sys_path(path):
     # Make sure the path is absolute
@@ -41,91 +35,6 @@ def add_to_sys_path(path):
 
 
 add_to_sys_path(f"./{DEFAULT_FLOW_MODULE_FOLDER}")
-
-
-def _is_local_path(path_to_dir):
-    """Returns True if path_to_dir is a path to a local directory."""
-
-    # check if the directory exists
-    if os.path.isdir(path_to_dir):
-        # check if directory is not empty
-        if os.listdir(path_to_dir):
-            return True
-        else:
-            return False
-    else:
-        return False
-
-
-def _sync_repository(repository_id, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, override=False, **kwargs):
-    if override:
-        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir,
-                                                                     local_dir=local_dir, **kwargs)
-    elif _is_local_path(repository_id):
-        path_to_local_repository = repository_id
-    else:
-        path_to_local_repository = huggingface_hub.snapshot_download(repository_id, cache_dir=cache_dir,
-                                                                     local_dir=local_dir, **kwargs)
-
-    logger.warn(f"The flow repository was synced to: {path_to_local_repository}")
-    return path_to_local_repository
-
-
-def load_config(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None, overrides={}):
-    flow_class = load_class(repository_id=repository_id,
-                            class_name=class_name,
-                            local_dir=local_dir,
-                            cache_dir=cache_dir)
-
-    config = flow_class.get_config(**overrides)
-
-    return config
-
-
-def load_class(repository_id, class_name, cache_dir=DEFAULT_CACHE_PATH, local_dir=None):
-    logger.warn(
-        f"{colorama.Fore.RED}loading {class_name}, [load_class] is deprecated, please use [sync_dependencies] and normal import{colorama.Style.RESET_ALL}")
-    path_to_local_repository = _sync_repository(repository_id,
-                                                local_dir=local_dir,
-                                                cache_dir=cache_dir)
-
-    # split local_repo_path into parent and folder name
-    local_repo_path_parent = os.path.dirname(path_to_local_repository)
-    local_repo_dir_name = os.path.basename(path_to_local_repository)
-
-    add_to_sys_path(local_repo_path_parent)
-    flow_module = importlib.import_module(local_repo_dir_name)
-    flow_class = getattr(flow_module, class_name)
-
-    return flow_class
-
-
-# TODO(yeeef): this default value might cause problems
-# TODO(Martin) Although this works now, I would remove it.
-def instantiate_flow(repository_id, class_name, overrides={}, revision=None, overwrite=False):
-    logger.warn(
-        f"{colorama.Fore.RED}[instantiate_flow] is deprecated, please use [sync_dependencies] and normal import{colorama.Style.RESET_ALL}")
-
-    path_to_module = sync_dependencies([{"url": repository_id, "revision": revision}],
-                                       all_overwrite=overwrite)[0]
-    rel_import_path = os.path.relpath(path_to_module, os.path.curdir)
-    module_name = rel_import_path.replace("/", ".")
-    kwargs = {"_target_": f"{module_name}.{class_name}.instantiate_from_default_config",
-              "overrides": overrides}
-    flow_obj = hydra.utils.instantiate(kwargs,
-                                       _convert_="partial",
-                                       _recursive_=False)
-    return flow_obj
-
-    # flow_class = load_class(repository_id=repository_id,
-    #                         local_dir=local_dir,
-    #                         class_name=class_name,
-    #                         cache_dir=cache_dir)
-    #
-    # config = flow_class.get_config(**overrides)
-    #
-    # return flow_class.instantiate_from_config(config)
-
 
 def validate_and_augment_dependency(dependency: Dict[str, str]):
     if "url" not in dependency: # TODO(yeeef): url is not descriptive
@@ -208,7 +117,7 @@ def build_mod_id(repo_id_or_file_path: str, revision: str):
 def is_local_sync_dir_valid(sync_dir: str):
     return os.path.isdir(sync_dir) or os.path.islink(sync_dir)
 
-def sync_dependency(mod_name: str, revision: str, is_local: bool, overwrite: bool = False) -> str:
+def sync_dependency(mod_name: str, revision: str, is_local: bool, current_module_name: str, overwrite: bool = False) -> str:
     mod_id = build_mod_id(mod_name, revision)
 
     # ToDo (Martin): Add a check of whether the local copy (when it exists) matches the one suggested bu the depenedency?
@@ -216,7 +125,7 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, overwrite: boo
     #    If it doesn't, verbose flag is set and overwrite is not set sent a warning message.
     #    If it doesn't and overwrite is set, ask for confirmation.
     if overwrite:
-        logger.warn(f"{colorama.Fore.RED}{mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        logger.warn(f"{colorama.Fore.RED}[{current_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
         user_input = input()
         if user_input != "Y":
             overwrite = False
@@ -233,12 +142,12 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, overwrite: boo
             fetch_local(module_local_dir, mod_id, sync_dir)
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
             logger.warn(
-                f"{colorama.Fore.RED}{read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+                f"{colorama.Fore.RED}[{current_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
                 fetch_local(module_local_dir, mod_id, sync_dir)
         else:
-            logger.warn(f"{mod_id} already synced, skip")
+            logger.info(f"{mod_id} already synced, skip")
 
     else:  # huggingface url
         basename = mod_name
@@ -246,28 +155,28 @@ def sync_dependency(mod_name: str, revision: str, is_local: bool, overwrite: boo
 
         if not is_local_sync_dir_valid(sync_dir) or overwrite:
             # first fetch / overwrite
-            logger.warn(f"first fetch / overwrite {mod_id}")
+            logger.info(f"first fetch / overwrite {mod_id}")
             fetch_remote(mod_name, revision, mod_id, DEFAULT_CACHE_PATH, sync_dir)
 
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
             # local dir exists, but revision is not the same, overwrite with new revision
             logger.warn(
-                f"{colorama.Fore.RED}{read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+                f"{colorama.Fore.RED}[{current_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
                 fetch_remote(mod_name, revision, mod_id, DEFAULT_CACHE_PATH, sync_dir)
         else:
-            logger.warn(f"{mod_id} already synced, skip")
+            logger.info(f"{mod_id} already synced, skip")
 
     return sync_dir
 
 
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False):
     frame = inspect.currentframe().f_back
-    module_name = inspect.getmodule(frame).__name__
+    current_module_name = inspect.getmodule(frame).__name__ # who calls sync_dependencies
 
-    logger.warn(
-        f"{colorama.Fore.GREEN}[{module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies...")
+    logger.info(
+        f"{colorama.Fore.GREEN}[{current_module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies...")
     flow_module_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER)
     if not os.path.exists(flow_module_dir):
         os.mkdir(flow_module_dir)
@@ -276,7 +185,7 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
 
     write_or_append_gitignore(flow_module_dir, "w", content="*")
 
-    local_dirs = []
+    sync_dirs = []
     for dep in dependencies:
         dep = validate_and_augment_dependency(dep)
         dep_overwrite = dep.get("overwrite", False)
@@ -293,8 +202,8 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
             if match is not None:
                 raise ValueError(f"{revision} is identified as remote, as it does not exist locally. But it not a valid remote revision, it contains illegal characters: {match.group(0)}")
 
-        local_dir = sync_dependency(url, revision, dep_is_local, all_overwrite or dep_overwrite)
-        local_dirs.append(local_dir)
+        sync_dir = sync_dependency(url, revision, dep_is_local, current_module_name, all_overwrite or dep_overwrite)
+        sync_dirs.append(sync_dir)
 
-    logger.warn(f"{colorama.Fore.GREEN}[{module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
-    return local_dirs
+    logger.info(f"{colorama.Fore.GREEN}[{current_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
+    return sync_dirs
