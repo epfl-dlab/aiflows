@@ -26,10 +26,10 @@ def validate_parameters(cls, kwargs):
         if key not in flow_config:
             raise ValueError(f"{key} is a required parameter in the flow_config.")
 
-    if not hasattr(cls, "REQUIRED_KEYS_KWARGS"):
-        raise ValueError("REQUIRED_KEYS_KWARGS should be defined for each Flow class.")
+    if not hasattr(cls, "REQUIRED_KEYS_CONSTRUCTOR"):
+        raise ValueError("REQUIRED_KEYS_CONSTRUCTOR should be defined for each Flow class.")
 
-    for key in cls.REQUIRED_KEYS_KWARGS:
+    for key in cls.REQUIRED_KEYS_CONSTRUCTOR:
         if key not in kwargs:
             raise ValueError(f"{key} is a required parameter in the constructor.")
 

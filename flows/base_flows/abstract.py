@@ -29,8 +29,8 @@ class Flow(ABC):
     KEYS_TO_IGNORE_HASH = {"name", "description", "verbose"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end", "output_keys"]
-    REQUIRED_KEYS_KWARGS = ["flow_config", "input_data_transformations", "output_data_transformations"]
+    REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]  # ToDo: Change this to REQUIRED_KEYS_CONSTRUCTOR and propagate the change
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
@@ -235,7 +235,7 @@ class Flow(ABC):
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    # ToDo: Move the repr logic here
+    # ToDo: Move the repr logic here and update the hashing function to use this instead
     # def get_hash_string(self):
     #     raise NotImplementedError()
 
@@ -292,6 +292,8 @@ class Flow(ABC):
             private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
             keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
     ):
+        self.api_keys = api_keys
+
         if isinstance(src_flow, Flow):
             src_flow = src_flow.flow_config["name"]
         dst_flow = self.flow_config["name"]
@@ -319,6 +321,8 @@ class Flow(ABC):
         # ~~~ Create the message ~~~
         # TODO(yeeef): dont pass through `api_keys` everywhere
         #              InputMessage contains `output_keys`, strange
+        # Martin: The InputMessage serves as a definition of a task, and the output_keys are part of the task definition
+        #    Re the api_keys, we need to keep the them dynamic as we're parallelizing over api_keys to avoid rate limits
         msg = InputMessage(
             created_by=self.flow_config['name'],
             data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
@@ -434,6 +438,7 @@ class Flow(ABC):
 
     def __str__(self):
         return self._to_string()
+
     def _to_string(self, indent_level=0):
         """Generates a string representation of the flow"""
         indent = "\t" * indent_level
@@ -468,12 +473,12 @@ class AtomicFlow(Flow, ABC):
 
     @classmethod
     def type(cls):
-        return "atomic"
+        return "AtomicFlow"
 
 
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
-    REQUIRED_KEYS_KWARGS = ["flow_config", "subflows"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows"]
 
     subflows: Dict[str, Flow]  # Dictionaries are ordered in Python 3.7+
 
@@ -545,9 +550,6 @@ class CompositeFlow(Flow, ABC):
 
         return cls(**kwargs)
 
-    def __str__(self):
-        return self._to_string()
-
     def _to_string(self, indent_level=0):
         """Generates a string representation of the flow"""
         indent = "\t" * indent_level
@@ -556,7 +558,8 @@ class CompositeFlow(Flow, ABC):
         input_keys = self.flow_config.get("input_keys", "no input keys")
         output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
-        subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}" for subflow in self.subflows.values()])
+        subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}"
+                                   for subflow in self.subflows.values()])
 
         entries = [
             f"{indent}Name: {name}",
@@ -572,4 +575,4 @@ class CompositeFlow(Flow, ABC):
 
     @classmethod
     def type(cls):
-        return "composite"
+        return "CompositeFlow"

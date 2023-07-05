@@ -5,7 +5,7 @@ from flows.base_flows.abstract import AtomicFlow
 
 class FixedReplyAtomicFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["fixed_reply"]
-    REQUIRED_KEYS_KWARGS = []
+    REQUIRED_KEYS_CONSTRUCTOR = []
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)

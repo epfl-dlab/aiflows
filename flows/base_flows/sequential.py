@@ -1,7 +1,6 @@
 from typing import List, Dict, Any, Optional
 
 from flows.base_flows import CompositeFlow
-import flows.utils
 from flows.utils.general_helpers import validate_parameters
 from ..utils import logging
 
@@ -11,7 +10,7 @@ log = logging.get_logger(__name__)
 
 
 class SequentialFlow(CompositeFlow):
-    REQUIRED_KEYS_KWARGS = ["subflows"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -26,9 +25,6 @@ class SequentialFlow(CompositeFlow):
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
-        self.api_keys = input_data["api_keys"]
-        del input_data["api_keys"]
-
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
