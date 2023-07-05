@@ -1,0 +1,51 @@
+name: "ReverseNumberTwice"
+description: "A sequential flow that reverses a number twice."
+
+input_data_transformations: []
+input_keys:
+  - "number"
+
+output_data_transformations:
+  - _target_: flows.data_transformations.KeyCopy
+    old_key2new_key:
+      raw_response.output_number: "output_number"
+output_keys:
+  - "output_number"
+keep_raw_response: False  # Set to True to keep the raw flow response in the output data
+
+subflows_config:
+  - _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
+    overrides:
+      name: "ReverseNumberFirst"
+      description: "A flow that takes in a number and reverses it."
+
+      input_data_transformations: [ ]
+      input_keys:
+        - "number"
+
+      output_data_transformations:
+        - _target_: flows.data_transformations.KeyCopy
+          old_key2new_key:
+            raw_response.output_number: "first_reverse_output"
+      output_keys:
+        - "first_reverse_output"
+      keep_raw_response: False
+  - _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
+    overrides:
+      name: "ReverseNumberSecond"
+      description: "A flow that takes in a number and reverses it."
+
+      input_data_transformations:
+        - _target_: flows.data_transformations.KeyRename
+          old_key2new_key:
+            first_reverse_output: "number"
+      input_keys:
+        - "number"
+
+      output_data_transformations:
+        - _target_: flows.data_transformations.KeyCopy
+          old_key2new_key:
+            raw_response.output_number: "output_number"
+      output_keys:
+        - "output_number"
+      keep_raw_response: False
