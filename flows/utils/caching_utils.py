@@ -62,10 +62,13 @@ def _custom_hash(all_args):
 
 def flow_run_cache():
     if not CACHING_PARAMETERS.do_caching:
+        log.info("Caching is disabled.")
         def no_decorator(method):
             return method
 
         return no_decorator
+
+    log.info("Caching is enabled.")
 
     def decorator(method):
         cache_dir = get_cache_dir()
@@ -106,7 +109,7 @@ def flow_run_cache():
                     log.debug(f"Retrieved from cache: {flow.__class__.__name__} "
                           f"-- {method.__name__}(input_data.keys()={list(input_data_to_hash.keys())}, "
                           f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
-                    log.debug("Retrieved from cache:", cached_value)
+                    log.debug(f"Retrieved from cache: {str(cached_value)}")
                 else:
                     # Call the original function
                     history_len_pre_execution = len(flow.history)
@@ -125,7 +128,7 @@ def flow_run_cache():
                     )
 
                     cache[key] = value_to_cache
-                    log.info("Cached:", value_to_cache)
+                    log.debug(f"Cached: {str(value_to_cache)}")
 
             return result
 
