@@ -26,6 +26,7 @@ class FlowLauncher(ABC):
             data = [data]
 
         outputs = []
+        user_outputs = []
         for sample in data:
             flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
@@ -34,12 +35,15 @@ class FlowLauncher(ABC):
                                                        output_keys=output_keys,
                                                        api_keys=api_keys)
             output_message = flow(input_message)
-            output = {
-                "id": sample["id"],
-                "inference_outputs": [output_message],
-                "error": None
-            }
-            outputs.append(output)
+            user_outputs.append(output_message.data["output_data"])
+
+            if path_to_output_file is not None:
+                output = {
+                    "id": sample["id"],
+                    "inference_outputs": [output_message],
+                    "error": None
+                }
+                outputs.append(output)
 
         if path_to_output_file is not None:
             FlowAPILauncher.write_batch_output(outputs,
@@ -48,7 +52,7 @@ class FlowLauncher(ABC):
                                                               "inference_outputs",
                                                               "error"])
 
-        return outputs
+        return user_outputs
 
 
 class FlowAPILauncher(MultiThreadedAPILauncher):
