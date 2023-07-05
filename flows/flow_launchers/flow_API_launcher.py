@@ -9,33 +9,44 @@ from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from ..utils import logging
 
-
 log = logging.get_logger(__name__)
 
 
 class FlowLauncher(ABC):
-    def __init__(
-            self,
-            flow: Flow,
-            output_keys: Optional[List[str]] = None) -> None:
-        
-        self.flow = flow
-        self.output_keys = output_keys
+    @staticmethod
+    def launch(flow: Flow,
+               data: Union[Dict, List[Dict]],
+               output_keys: Optional[List[str]] = None,
+               path_to_output_file: Optional[str] = None,
+               api_keys: Optional[Dict[str,str]] = None) -> List[Dict]:
 
-    def launch(self, inputs: List[Dict]) -> List[Dict]:
+        if isinstance(data, dict):
+            data = [data]
+
         outputs = []
-        for sample in inputs:
-            self.flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
+        for sample in data:
+            flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
-            input_message = self.flow.package_input_message(data_dict=sample,
-                                                        src_flow="Launcher",
-                                                        output_keys=self.output_keys)
-            output_message = self.flow(input_message)
-            output_data = output_message.data["output_data"]
-            outputs.append(output_data)
+            input_message = flow.package_input_message(data_dict=sample,
+                                                       src_flow="Launcher",
+                                                       output_keys=output_keys,
+                                                       api_keys=api_keys)
+            output_message = flow(input_message)
+            output = {
+                "id": sample["id"],
+                "inference_outputs": [output_message],
+                "error": None
+            }
+            outputs.append(output)
+
+        if path_to_output_file is not None:
+            FlowAPILauncher.write_batch_output(outputs,
+                                               path_to_output_file=path_to_output_file,
+                                               keys_to_write=["id",
+                                                              "inference_outputs",
+                                                              "error"])
 
         return outputs
-
 
 
 class FlowAPILauncher(MultiThreadedAPILauncher):
@@ -52,7 +63,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
     def __init__(
             self,
-            flow: Union[Flow, List[Flow]], # TODO(yeeef): not good for a list of flows which is of same class
+            flow: Union[Flow, List[Flow]],  # TODO(yeeef): not good for a list of flows which is of same class
             n_independent_samples: int,
             fault_tolerant_mode: bool,
             n_batch_retries: int,
