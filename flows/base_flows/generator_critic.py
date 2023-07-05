@@ -11,7 +11,7 @@ log = logging.get_logger(__name__)
 
 class GeneratorCriticFlow(CompositeFlow):
     REQUIRED_KEYS_CONFIG = ["max_rounds", "reset_generator_every_round", "reset_critic_every_round", "early_exit_key"]
-    REQUIRED_KEYS_KWARGS = ["subflows"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -47,9 +47,6 @@ class GeneratorCriticFlow(CompositeFlow):
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],
             keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
-        self.api_keys = input_data["api_keys"]
-        del input_data["api_keys"]
-
         generator_flow, critic_flow = self._identify_flows()
 
         # ~~~ sets the input_data in the flow_state dict ~~~
@@ -94,3 +91,7 @@ class GeneratorCriticFlow(CompositeFlow):
         outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
                                                        allow_class_attributes=False)
         return outputs
+
+    @classmethod
+    def type(cls):
+        return "GeneratorCriticFlow"

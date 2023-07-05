@@ -15,7 +15,6 @@ class InputMessage(Message):
                  src_flow: str,
                  dst_flow: str,
                  output_keys: List[str],
-                 api_keys: Optional[Dict[str, str]] = None,
                  keys_to_ignore_for_hash: Optional[List[str]] = None,
                  **kwargs):
         super().__init__(**kwargs)
@@ -23,14 +22,12 @@ class InputMessage(Message):
         self.src_flow = src_flow
         self.dst_flow = dst_flow
         self.data["output_keys"] = output_keys
-        if api_keys:
-            self.data["api_keys"] = api_keys
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
         if keys_to_ignore_for_hash:
             self.keys_to_ignore_for_hash = keys_to_ignore_for_hash
-        if "api_keys" not in self.keys_to_ignore_for_hash:
+        if "api_keys" not in self.keys_to_ignore_for_hash:  # ToDo: It can probably be removed
             self.keys_to_ignore_for_hash.append("api_keys")
 
     def to_string(self):
