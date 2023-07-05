@@ -172,7 +172,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                     c = c + 1
                     log.info("~~~~~~~~~~~~ Progress: {}/{} batches finished ~~~~~~~~~~~~~".format(c, num_datapoints))
                     try:
-                        sample = future.result()
+                        sample = future.result()[0]
                         if sample["error"] is not None:
                             num_failures += 1
                     except Exception as e:

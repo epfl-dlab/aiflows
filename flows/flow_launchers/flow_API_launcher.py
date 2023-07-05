@@ -11,6 +11,8 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
+# ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
+
 
 class FlowLauncher(ABC):
     @staticmethod
@@ -117,11 +119,10 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
                     while _attempt_idx <= self.n_batch_retries:
                         try:
                             api_keys = {"openai": self.api_keys[api_key_idx]}
-                            input_message = flow.package_input_message(data=sample,
+                            input_message = flow.package_input_message(data_dict=sample,
                                                                        src_flow="Launcher",
                                                                        output_keys=self.output_keys,
                                                                        api_keys=api_keys)
-                            # ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
 
                             output_message = flow(input_message)
 
