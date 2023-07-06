@@ -15,6 +15,7 @@
 """ Logging utilities."""
 import errno
 import functools
+import inspect
 import logging
 import os
 import shutil
@@ -100,6 +101,7 @@ def _configure_library_root_logger() -> None:
         _init_logger_from_cfg()
         _logger = _get_library_root_logger()
         _logger.setLevel(_get_default_logging_level())
+        _default_handler = _logger.handlers[0]
 
 
 _configure_library_root_logger()
@@ -317,7 +319,7 @@ logging.Logger.warning_once = warning_once
 
 
 def _get_time_str():
-    return datetime.now().strftime('%m%d-%H%M%S')
+    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 
 
 def _set_file(path):
@@ -409,9 +411,12 @@ def auto_set_dir(action=None, name=None):
     """
     Use :func:`logger.set_logger_dir` to set log directory to
     "./.flows/logs/{scriptname}:{name}". "scriptname" is the name of the main python file currently running"""
-    mod = sys.modules['__main__']
-    basename = os.path.basename(mod.__file__)
-    auto_dirname = os.path.join('.flows', "logs", basename[:basename.rfind('.')])
+    # Get the directory of the current module
+    current_module_file = inspect.getfile(inspect.currentframe())
+    current_module_dir = os.path.dirname(os.path.abspath(current_module_file))
+    flow_root_dir = os.path.dirname(os.path.dirname(current_module_dir))
+    timestamp = _get_time_str()
+    auto_dirname = os.path.join(flow_root_dir, "logs", f"{timestamp}")
     if name:
         auto_dirname += '_%s' % name if os.name == 'nt' else ':%s' % name
     set_dir(auto_dirname, action=action)

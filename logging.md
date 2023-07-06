@@ -60,7 +60,7 @@ You can add a file handler to the logger, so that all the logs are also written 
 ```python
 from flows import logging
 
-logging.auto_set_dir() # by default, the logs are written to the directory ~/.flows/logs
+logging.auto_set_dir() # by default, the logs are written to the library's root directory (flows/logs/{timestamp}/log.log)
 logger = logging.get_logger()
 logger.info("INFO")
 logger.warning("WARN")
