@@ -9,9 +9,7 @@ import colorama
 import hydra
 from omegaconf import OmegaConf
 
-# ToDo: make imports relative
-import flows
-from flows import flow_verse
+# ToDo(https://github.com/epfl-dlab/flows/issues/69): make imports relative?
 from ..utils import logging
 from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
@@ -30,7 +28,7 @@ class Flow(ABC):
     SUPPORTS_CACHING = False
 
     REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]  # ToDo: Change this to REQUIRED_KEYS_CONSTRUCTOR and propagate the change
+    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
@@ -49,7 +47,7 @@ class Flow(ABC):
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
         if self.flow_config["verbose"]:
-            # ToDo: print the flow config with Rich
+            # ToDo(https://github.com/epfl-dlab/flows/issues/57): print the flow config with Rich
             pass
 
         self.set_up_flow_state()
@@ -173,7 +171,7 @@ class Flow(ABC):
 
         if full_reset:
             message = UpdateMessage_FullReset(
-                created_by=self.flow_config['name'],  # ToDo: Update this to the flow from which the reset was called
+                created_by=self.flow_config['name'],  # ToDo(https://github.com/epfl-dlab/flows/issues/58): Update this to the flow from which the reset was called
                 updated_flow=self.flow_config["name"],
                 keys_deleted_from_namespace=keys_deleted_from_namespace
             )
@@ -181,7 +179,7 @@ class Flow(ABC):
             self.set_up_flow_state()  # resets the flow state
         else:
             message = UpdateMessage_NamespaceReset(
-                created_by=self.flow_config['name'],  # ToDo: Update this to the flow from which the reset was called
+                created_by=self.flow_config['name'],  # ToDo(https://github.com/epfl-dlab/flows/issues/58): Update this to the flow from which the reset was called
                 updated_flow=self.flow_config["name"],
                 keys_deleted_from_namespace=keys_deleted_from_namespace
             )
@@ -195,7 +193,7 @@ class Flow(ABC):
         if isinstance(update_data, Message):
             update_data = update_data.data["output_data"]
 
-        if len(update_data) == 0:  # ToDo: Should we allow empty state updates, with a warning? When would this happen?
+        if len(update_data) == 0:  # ToDo(https://github.com/epfl-dlab/flows/issues/59): Should we allow empty state updates, with a warning? When would this happen?
             raise ValueError("The state_update_dict was called with an empty dictionary.")
 
         updates = {}
@@ -229,7 +227,7 @@ class Flow(ABC):
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
-        # ToDo: Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
+        # ToDo(https://github.com/epfl-dlab/flows/issues/60): Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
         config_hashing_params = {k: v for k, v in self.flow_config.items() if k not in self.KEYS_TO_IGNORE_HASH}
@@ -237,7 +235,7 @@ class Flow(ABC):
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    # ToDo: Move the repr logic here and update the hashing function to use this instead
+    # ToDo(https://github.com/epfl-dlab/flows/issues/60): Move the repr logic here and update the hashing function to use this instead
     # def get_hash_string(self):
     #     raise NotImplementedError()
 
@@ -321,9 +319,7 @@ class Flow(ABC):
             packaged_data[input_key] = data_dict[input_key]
 
         # ~~~ Create the message ~~~
-        # TODO(yeeef): dont pass through `api_keys` everywhere
-        #              InputMessage contains `output_keys`, strange
-        # Martin: The InputMessage serves as a definition of a task, and the output_keys are part of the task definition
+        # TODO(https://github.com/epfl-dlab/flows/issues/61): dont pass through `api_keys` everywhere
         #    Re the api_keys, we need to keep the them dynamic as we're parallelizing over api_keys to avoid rate limits
         msg = InputMessage(
             created_by=self.flow_config['name'],
@@ -401,8 +397,6 @@ class Flow(ABC):
             history=self.history,
         )
 
-    # TODO(yeeef): `output_keys` is in input_message.data, which is an implicit assumption
-    #              `raw_response` is in outputs, which is an implicit assumption
     def run(self,
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],

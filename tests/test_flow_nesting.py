@@ -1,6 +1,6 @@
 import langchain
 
-from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyAtomicFlow, OpenAIChatAtomicFlow
+from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, OpenAIChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
@@ -43,14 +43,14 @@ def test_loading_nested_flow() -> None:
     openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
 
     crit_flow_dict = {
-        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyFlow",
         "name": "dummy_crit_name_fr",
         "description": "dummy_crit_desc_fr",
         "fixed_reply": "DUMMY CRITIC",
         "output_keys": ["query"]
     }
 
-    critic_flow = FixedReplyAtomicFlow(**crit_flow_dict)
+    critic_flow = FixedReplyFlow(**crit_flow_dict)
 
     first_flow_dict = {
         "_target_": "flows.base_flows.GeneratorCriticFlow",
@@ -66,14 +66,14 @@ def test_loading_nested_flow() -> None:
     gen_critic_flow = GeneratorCriticFlow(**first_flow_dict)
 
     second_flow_dict = {
-        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyFlow",
         "name": "dummy_name_fr",
         "description": "dummy_desc_fr",
         "fixed_reply": "dummy_fixed_reply",
         "output_keys": ["output_key"]
     }
 
-    second_flow = FixedReplyAtomicFlow(**second_flow_dict)
+    second_flow = FixedReplyFlow(**second_flow_dict)
 
     sequential_flow_config = {
         "_target_": "flows.base_flows.SequentialFlow",
@@ -100,9 +100,9 @@ def test_loading_nested_flow() -> None:
     assert gen_flow.system_message_prompt_template.template == "You are a helpful assistant"
 
     crit_flow = first_flow.flows["critic_flow"]
-    assert isinstance(crit_flow, FixedReplyAtomicFlow)
+    assert isinstance(crit_flow, FixedReplyFlow)
     assert crit_flow.fixed_reply == "DUMMY CRITIC"
 
     second_flow = nested_flow.flows[1]
-    assert isinstance(second_flow, FixedReplyAtomicFlow)
+    assert isinstance(second_flow, FixedReplyFlow)
     assert second_flow.fixed_reply == "dummy_fixed_reply"

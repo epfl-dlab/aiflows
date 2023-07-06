@@ -37,7 +37,7 @@ class GenericLCChain(AtomicFlow):
 
     def run(self, input_data: Dict[str, Any], output_keys: List[str]) -> Dict[str, Any]:
         answer = self.lc_chain.run(input_data)
-        ## ToDo: sync the langchain memory into the history of the atomic flow, need to retrieve system_prompt
+        ## ToDo(https://github.com/epfl-dlab/flows/issues/64): sync the langchain memory into the history of the atomic flow, need to retrieve system_prompt
 
         # LangChain chains require 1 expected output
         return {output_keys[0]: answer}

@@ -1,6 +1,6 @@
 import langchain
 
-from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyAtomicFlow, OpenAIChatAtomicFlow
+from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, OpenAIChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
@@ -15,7 +15,7 @@ def test_empty_loading() -> None:
 
 def test_example_loading() -> None:
     cfg = OmegaConf.create({
-        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
         "fixed_reply": "dummy_fixed_reply"
@@ -68,7 +68,7 @@ def test_openai_atomic_loading() -> None:
 
 def test_loading_wrong_inputs() -> None:
     cfg = OmegaConf.create({
-        "_target_": "flows.base_flows.FixedReplyAtomicFlow",
+        "_target_": "flows.base_flows.FixedReplyFlow",
         "name": "dummy_name",
         "description": "dummy_desc",
         "fixed_reply": "dummy_fixed_reply",

@@ -1,6 +1,6 @@
 import pytest
 
-from flows.base_flows import AtomicFlow, GeneratorCriticFlow, FixedReplyAtomicFlow
+from flows.base_flows import AtomicFlow, GeneratorCriticFlow, FixedReplyFlow
 
 
 def atomic_flow_builder():
@@ -47,7 +47,7 @@ def test_basic_instantiating() -> None:
         GeneratorCriticFlow(name="name", description="description")
 
     flow_a = atomic_flow_builder()
-    flow_b = FixedReplyAtomicFlow(
+    flow_b = FixedReplyFlow(
         name="name",
         description="description",
         input_keys=[],
@@ -89,13 +89,13 @@ def test_basic_instantiating() -> None:
     assert not flow.dry_run
     assert len(flow.flow_config["flows"]) == 2
     assert isinstance(flow.flow_config["flows"]["generator"], AtomicFlow)
-    assert isinstance(flow.flow_config["flows"]["critic"], FixedReplyAtomicFlow)
+    assert isinstance(flow.flow_config["flows"]["critic"], FixedReplyFlow)
 
 
 def test_basic_call():
     flow_a = atomic_flow_builder()
 
-    flow_b = FixedReplyAtomicFlow(
+    flow_b = FixedReplyFlow(
         name="name",
         description="description",
         input_keys=[],

@@ -13,7 +13,7 @@ log = logging.get_logger(__name__)
 
 @dataclass
 class CACHING_PARAMETERS:
-    # ToDo: Expose these params in the launcher (and the configs when available)
+    # ToDo(https://github.com/epfl-dlab/flows/issues/66): Expose these params in the launcher (and the configs when available)
     #   The params should be updated before the library is loaded. Make sure to do this reliably.
     #   How to do this in a clean way?
     # ToDo: Add support for infinite cache if we intend to use it for resuming/extending runs.

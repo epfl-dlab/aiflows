@@ -6,7 +6,7 @@ from flows.utils.general_helpers import validate_parameters
 
 log = logging.get_logger(__name__)
 
-# ToDo: Add a flag controlling whether to skip the critic in the last round
+# ToDo(https://github.com/epfl-dlab/flows/issues/62): Add a flag controlling whether to skip the critic in the last round
 
 
 class GeneratorCriticFlow(CompositeFlow):

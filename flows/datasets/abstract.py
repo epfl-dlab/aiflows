@@ -1,11 +1,7 @@
 import numpy as np
-from torch.utils.data import Dataset
-
-# ToDo: Remove dependence on torch and have the dataset implemented as an Iterable
-# ToDo: Remove torch from the pip_requirements.txt
 
 
-class AbstractDataset(Dataset):
+class AbstractDataset:
     """
     A dataset implements 2 functions
         - __len__  (returns the number of samples in our dataset)
@@ -22,6 +18,10 @@ class AbstractDataset(Dataset):
 
     def __getitem__(self, idx):
         raise NotImplementedError()
+
+    def __iter__(self):
+        for idx in range(len(self)):
+            yield self[idx]
 
     def _load_data(self):
         raise NotImplementedError()
