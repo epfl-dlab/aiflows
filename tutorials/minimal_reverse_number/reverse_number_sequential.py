@@ -27,14 +27,12 @@ if __name__ == "__main__":
     data = {"id": 0, "number": 1234}  # This can be a list of samples
 
     # ~~~ Run inference ~~~
-    outputs = FlowLauncher.launch(
+    _, outputs = FlowLauncher.launch(
         flow=flow,
         data=data,
         path_to_output_file=path_to_output_file,
     )
 
     # ~~~ Print the output ~~~
-    first_inference_output_for_sample = outputs[0]["inference_outputs"][0]
-    output_message_data = first_inference_output_for_sample.data
-    flow_output_data = output_message_data["output_data"]
+    flow_output_data = outputs[0]
     print(flow_output_data)
