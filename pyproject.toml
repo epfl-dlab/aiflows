@@ -8,7 +8,7 @@ py-modules = ["flows"]
 [project]
 name = "flows"
 version = "0.0.1"
-description = "ToDo"  # ToDo:
+description = "ToDo"  # ToDo: https://github.com/epfl-dlab/flows/issues/70
 readme = "ToDo" # ToDo:
 authors = [
   { name = "ToDo", email = "my_email@domain.com" },  # ToDo:

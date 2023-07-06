@@ -32,7 +32,7 @@ if __name__ == "__main__":
     another_output = another_judge(another_judge_task)
     print(another_output.data)
 
-    # ToDo: should we assert that the target flow actually matches the flow that's executing the task
+    # ToDo(https://github.com/epfl-dlab/flows/issues/65): should we assert that the target flow actually matches the flow that's executing the task
     # there is a target_flow_run_id field in the task message
     # also: should we make sure that a task message is only used once?
     repeated_task_output = another_judge(judge_task)

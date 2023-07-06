@@ -14,7 +14,7 @@ from flows.utils.general_helpers import read_yaml_file
 
 if __name__ == "__main__":
     path_to_output_file = None
-    # path_to_output_file = "output.jsonl"  # ToDo: Uncomment this line to save the output to a file
+    # path_to_output_file = "output.jsonl"  # ToDo(https://github.com/epfl-dlab/flows/issues/65): Uncomment this line to save the output to a file
 
     root_dir = "."
     cfg_path = os.path.join(root_dir, "reverseNumberSequential.yaml")

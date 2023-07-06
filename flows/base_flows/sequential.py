@@ -6,7 +6,7 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
-# ToDo: Add support for multiple runs (c.f. generator_critic.py)
+# ToDo(https://github.com/epfl-dlab/flows/issues/63): Add support for multiple runs (c.f. generator_critic.py)
 
 
 class SequentialFlow(CompositeFlow):

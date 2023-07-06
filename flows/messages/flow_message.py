@@ -27,7 +27,7 @@ class InputMessage(Message):
         self.keys_to_ignore_for_hash = []
         if keys_to_ignore_for_hash:
             self.keys_to_ignore_for_hash = keys_to_ignore_for_hash
-        if "api_keys" not in self.keys_to_ignore_for_hash:  # ToDo: It can probably be removed
+        if "api_keys" not in self.keys_to_ignore_for_hash:  # ToDo(https://github.com/epfl-dlab/flows/issues/61): It can probably be removed
             self.keys_to_ignore_for_hash.append("api_keys")
 
     def to_string(self):

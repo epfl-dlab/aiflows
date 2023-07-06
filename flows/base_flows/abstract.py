@@ -9,9 +9,7 @@ import colorama
 import hydra
 from omegaconf import OmegaConf
 
-# ToDo: make imports relative
-import flows
-from flows import flow_verse
+# ToDo(https://github.com/epfl-dlab/flows/issues/69): make imports relative?
 from ..utils import logging
 from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
