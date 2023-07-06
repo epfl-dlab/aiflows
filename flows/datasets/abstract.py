@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class AbstractDataset:
     """
     A dataset implements 2 functions
@@ -17,6 +18,10 @@ class AbstractDataset:
 
     def __getitem__(self, idx):
         raise NotImplementedError()
+
+    def __iter__(self):
+        for idx in range(len(self)):
+            yield self[idx]
 
     def _load_data(self):
         raise NotImplementedError()

@@ -4,6 +4,7 @@ from flows.utils.general_helpers import read_outputs
 
 log = logging.get_logger(__name__)
 
+
 class OutputsDataset(AbstractDataset):
     def __init__(self, data=None, **kwargs):
         super().__init__(kwargs)
