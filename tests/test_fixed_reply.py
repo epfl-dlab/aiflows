@@ -1,15 +1,15 @@
 import pytest
-from flows.base_flows import FixedReplyAtomicFlow
+from flows.base_flows import FixedReplyFlow
 
 
 def test_basic_instantiating() -> None:
     with pytest.raises(KeyError):
-        FixedReplyAtomicFlow()
+        FixedReplyFlow()
 
     with pytest.raises(KeyError):
-        FixedReplyAtomicFlow(name="name", description="description")
+        FixedReplyFlow(name="name", description="description")
 
-    flow = FixedReplyAtomicFlow(
+    flow = FixedReplyFlow(
         name="name",
         description="description",
         input_keys=[],
@@ -27,13 +27,13 @@ def test_basic_instantiating() -> None:
     cfg = flow.flow_config
     state = flow.__getstate__()
 
-    new_flow = FixedReplyAtomicFlow.load_from_config(cfg)
+    new_flow = FixedReplyFlow.load_from_config(cfg)
 
     assert not new_flow.verbose
     assert new_flow.dry_run
     assert new_flow.fixed_reply == "reply"
 
-    new_flow_s = FixedReplyAtomicFlow.load_from_state(state)
+    new_flow_s = FixedReplyFlow.load_from_state(state)
 
     assert not new_flow_s.verbose
     assert new_flow_s.dry_run
@@ -41,7 +41,7 @@ def test_basic_instantiating() -> None:
 
 
 def test_basic_call() -> None:
-    flow = FixedReplyAtomicFlow(
+    flow = FixedReplyFlow(
         name="name",
         description="description",
         input_keys=[],
