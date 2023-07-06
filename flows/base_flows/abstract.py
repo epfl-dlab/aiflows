@@ -397,8 +397,6 @@ class Flow(ABC):
             history=self.history,
         )
 
-    # TODO(yeeef): `output_keys` is in input_message.data, which is an implicit assumption
-    #              `raw_response` is in outputs, which is an implicit assumption
     def run(self,
             input_data: Dict[str, Any],
             private_keys: Optional[List[str]] = [],

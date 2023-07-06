@@ -69,7 +69,7 @@ class FlowAPILauncher(MultiThreadedAPILauncher):
 
     def __init__(
             self,
-            flow: Union[Flow, List[Flow]],  # TODO(yeeef): not good for a list of flows which is of same class
+            flow: Union[Flow, List[Flow]],
             n_independent_samples: int,
             fault_tolerant_mode: bool,
             n_batch_retries: int,

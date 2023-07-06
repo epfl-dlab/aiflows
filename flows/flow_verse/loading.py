@@ -24,7 +24,6 @@ REVISION_FILE_HEADER = """\
 """
 DEFAULT_REMOTE_REVISION = "main"
 
-# TODO(yeeef): huggingface username might not be a valid python module name... for example `1f`
 def add_to_sys_path(path):
     # Make sure the path is absolute
     absolute_path = os.path.abspath(path)
