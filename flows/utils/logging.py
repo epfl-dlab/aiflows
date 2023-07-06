@@ -33,11 +33,9 @@ from logging import (
 )
 from typing import Optional
 
-
 _lock = threading.Lock()
 _default_handler: Optional[logging.Handler] = None
 _logger = None
-
 
 log_levels = {
     "debug": logging.DEBUG,
@@ -47,10 +45,9 @@ log_levels = {
     "critical": logging.CRITICAL,
 }
 
-_default_log_level = logging.WARNING
+_default_log_level = log_levels["info"]
 LOG_DIR = None
 _FILE_HANDLER = None
-
 
 import logging.config
 
@@ -79,7 +76,7 @@ def _get_default_logging_level():
         else:
             logging.getLogger().warning(
                 f"Unknown option FLOWS_VERBOSITY={env_level_str}, "
-                f"has to be one of: { ', '.join(log_levels.keys()) }"
+                f"has to be one of: {', '.join(log_levels.keys())}"
             )
     return _default_log_level
 
@@ -102,6 +99,7 @@ def _configure_library_root_logger() -> None:
             return
         _init_logger_from_cfg()
         _logger = _get_library_root_logger()
+        _logger.setLevel(_get_default_logging_level())
 
 
 _configure_library_root_logger()
@@ -318,11 +316,8 @@ logging.Logger.warning_once = warning_once
 ########################
 
 
-
 def _get_time_str():
     return datetime.now().strftime('%m%d-%H%M%S')
-
-
 
 
 def _set_file(path):
@@ -395,6 +390,7 @@ Press any other key to exit. """)
         else:
             raise OSError("Directory {} exits!".format(dirname))
     LOG_DIR = dirname
+
     def mkdir_p(dirname):
         assert dirname is not None
         if dirname == '' or os.path.isdir(dirname):
@@ -404,6 +400,7 @@ Press any other key to exit. """)
         except OSError as e:
             if e.errno != errno.EEXIST:
                 raise e
+
     mkdir_p(dirname)
     _set_file(os.path.join(dirname, 'log.log'))
 
@@ -427,6 +424,3 @@ def get_logger_dir():
         The directory is used for general logging, tensorboard events, checkpoints, etc.
     """
     return LOG_DIR
-
-
-

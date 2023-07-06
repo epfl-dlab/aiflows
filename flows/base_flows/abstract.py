@@ -118,6 +118,8 @@ class Flow(ABC):
                 resolve=True
             )
             config = recursive_dictionary_update(parent_default_config, default_config)
+        elif hasattr(cls, "DEFAULT_CONFIG"):
+            config = recursive_dictionary_update(parent_default_config, cls.DEFAULT_CONFIG)
         elif overrides.get("verbose", True):
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
