@@ -25,10 +25,10 @@ log = logging.get_logger(__name__)
 class Flow(ABC):
     KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history", "input_message"}
 
-    KEYS_TO_IGNORE_HASH = {"name", "description", "verbose"}
+    KEYS_TO_IGNORE_HASH = {"name", "description"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description", "verbose", "clear_flow_namespace_on_run_end"]
+    REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end"]
     REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
@@ -117,7 +117,7 @@ class Flow(ABC):
             config = recursive_dictionary_update(parent_default_config, default_config)
         elif hasattr(cls, "DEFAULT_CONFIG"):
             config = recursive_dictionary_update(parent_default_config, cls.DEFAULT_CONFIG)
-        elif overrides.get("verbose", True):
+        else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
 

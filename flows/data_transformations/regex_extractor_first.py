@@ -15,7 +15,7 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
                  output_key: str,
                  assert_unique: bool,
                  strip: bool,
-                 verbose: bool,
+                 verbose: bool = False,
                  regex_fallback: str = None,
                  input_key: str = "raw_response"):
         super().__init__(output_key=output_key)
@@ -24,7 +24,6 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
         self.regex_fallback = regex_fallback
         self.strip = strip
         self.assert_unique = assert_unique
-        self.verbose = verbose
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         txt = self._search(data_dict[self.input_key], self.regex)
@@ -36,8 +35,7 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
             for fallback_regex in self.regex_fallback:
                 txt = self._search(data_dict[self.input_key], fallback_regex)
                 if txt is not None:
-                    if self.verbose:
-                        log.info(f"Regex {self.regex} was not found, but {fallback_regex} was successful.")
+                    log.info(f"Regex {self.regex} was not found, but {fallback_regex} was successful.")
                     break
 
         if txt is not None and self.strip:
