@@ -28,7 +28,6 @@ class GenericLCChain(AtomicFlow):
 
         self.KEYS_TO_IGNORE_HASH += ["lc_chain"]  # but needs to override __repr__ to have meaningful hash
         self.lc_chain = lc_chain
-        self.lc_chain.verbose = self.verbose
 
     # def __repr__(self):
     #     # override for caching, needs to repr that without repr all sub-object with their pointers

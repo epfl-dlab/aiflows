@@ -148,12 +148,12 @@ def is_local_sync_dir_valid(sync_dir: str):
 def sync_dependency(url: str, mod_name: str, revision: str, is_local: bool, caller_module_name: str, overwrite: bool = False) -> str:
     mod_id = build_mod_id(url, revision)
 
-    # ToDo (Martin): Add a check of whether the local copy (when it exists) matches the one suggested bu the depenedency?
+    # ToDo (Martin): Add a check of whether the local copy (when it exists) matches the one suggested by the depenedency?
     #    Skip everything if it does.
     #    If it doesn't, verbose flag is set and overwrite is not set sent a warning message.
     #    If it doesn't and overwrite is set, ask for confirmation.
     if overwrite:
-        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        logger.warning(f"{colorama.Fore.RED}[{caller_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
         user_input = input()
         if user_input != "Y":
             overwrite = False
@@ -169,7 +169,7 @@ def sync_dependency(url: str, mod_name: str, revision: str, is_local: bool, call
         if not is_local_sync_dir_valid(sync_dir) or overwrite:
             fetch_local(module_local_dir, mod_id, sync_dir)
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
-            logger.warn(
+            logger.warning(
                 f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
@@ -188,7 +188,7 @@ def sync_dependency(url: str, mod_name: str, revision: str, is_local: bool, call
 
         elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
             # local dir exists, but revision is not the same, overwrite with new revision
-            logger.warn(
+            logger.warning(
                 f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
             user_input = input()
             if user_input == "Y":
