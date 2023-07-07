@@ -28,7 +28,7 @@ class Flow(ABC):
     KEYS_TO_IGNORE_HASH = {"name", "description"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end"]
+    REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end", "keep_raw_response"]
     REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
@@ -47,7 +47,7 @@ class Flow(ABC):
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
-        if log.getEffectiveLevel() == logging.INFO:
+        if log.getEffectiveLevel() == logging.DEBUG:
             print_config_tree(self.flow_config)
 
         self.set_up_flow_state()
