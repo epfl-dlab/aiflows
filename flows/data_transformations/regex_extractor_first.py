@@ -15,7 +15,6 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
                  output_key: str,
                  assert_unique: bool,
                  strip: bool,
-                 verbose: bool = False,
                  regex_fallback: str = None,
                  input_key: str = "raw_response"):
         super().__init__(output_key=output_key)

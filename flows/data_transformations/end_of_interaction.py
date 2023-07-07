@@ -11,7 +11,6 @@ class EndOfInteraction(DataTransformation):
     def __init__(self,
                  output_key: str,
                  end_of_interaction_string: str,
-                 verbose: bool = False,
                  input_key: str = "raw_response"):
         super().__init__(output_key=output_key)
         self.input_key = input_key
