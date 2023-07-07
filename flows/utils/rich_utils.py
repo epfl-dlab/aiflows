@@ -6,7 +6,6 @@ import rich.syntax
 import rich.tree
 
 from omegaconf import DictConfig, OmegaConf
-from pytorch_lightning.utilities import rank_zero_only
 from typing import Sequence
 
 from . import logging
@@ -14,16 +13,9 @@ from . import logging
 log = logging.get_logger(__name__)
 
 
-@rank_zero_only
 def print_config_tree(
     cfg: DictConfig,
-    print_order: Sequence[str] = (
-        "datamodule",
-        "model",
-        "callbacks",
-        "logger",
-        "trainer",
-    ),
+    print_order: Sequence[str] = [],
     resolve: bool = False,
     save_to_file: bool = False,
 ) -> None:
