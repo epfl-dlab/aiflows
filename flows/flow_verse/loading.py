@@ -3,10 +3,13 @@ import re
 import sys
 import shutil
 import inspect
-from typing import List, Dict
+import filecmp
+from typing import List, Dict, Tuple
+from collections import namedtuple
 
 import colorama
 import huggingface_hub
+from huggingface_hub.hf_api import HfApi
 
 from flows.utils import logging
 
@@ -24,6 +27,9 @@ REVISION_FILE_HEADER = """\
 """
 DEFAULT_REMOTE_REVISION = "main"
 
+FlowModuleSpec = namedtuple("FlowModuleSpec", ["mod_id", "repo_id", "revision", "commit_hash", "cache_dir"])
+INVALID_FLOW_MOD_SPEC = FlowModuleSpec(None, None, None, None, None)
+
 def add_to_sys_path(path):
     # Make sure the path is absolute
     absolute_path = os.path.abspath(path)
@@ -36,21 +42,25 @@ def add_to_sys_path(path):
 
 add_to_sys_path(f"./{DEFAULT_FLOW_MODULE_FOLDER}")
 
+# TODO(yeeef): add a check to make sure the module name is valid
+def _is_valid_python_module_name(name):
+    return re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name) is not None
+
 # TODO(Yeeef): caller_module_name is shared at several places, so we should refactor the sync process into
 # a class.
-def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_name: str):
+def _validate_and_augment_dependency(dependency: Dict[str, str], caller_module_name: str):
     if "url" not in dependency: # TODO(yeeef): url is not descriptive
         raise ValueError("dependency must have a `url` field")
 
-    match = re.search(r"(\w+)/(\w+)", dependency["url"])
+    match = re.search(r"^(\w+)/(\w+)$", dependency["url"])
     if not match:
         raise ValueError("dependency url must be in the format of `username/repo_name`(huggingface repo)")
     username, repo_name = match.group(1), match.group(2)
 
-    if re.search(r"\d+\w+", repo_name): # repo_name is prefixed with a number
+    if re.search(r"^\d+\w+$", repo_name): # repo_name is prefixed with a number
         raise ValueError(f"url's repo name `{repo_name}` is prefixed with a number, which is illegal in Flows, please adjust your repo name")
     
-    if re.search(r"\d+\w+", username): # username is prefixed with a number
+    if re.search(r"^\d+\w+$", username): # username is prefixed with a number
         
         logger.warning(f"[{caller_module_name}] url's username `{username}` is prefixed with a number, which is not a valid python module name, the module will be synced to ./flow_modules/user_{username}.{repo_name}, please import it as `import flow_modules.user_{username}.{repo_name}`")
         username = f"user_{username}"
@@ -61,8 +71,7 @@ def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_na
 
     return dependency
 
-
-def write_or_append_gitignore(sync_dir: str, mode: str, content: str):
+def _write_or_append_gitignore(sync_dir: str, mode: str, content: str):
     gitignore_path = os.path.join(sync_dir, ".gitignore")
     
     if os.path.exists(gitignore_path):
@@ -77,34 +86,7 @@ def write_or_append_gitignore(sync_dir: str, mode: str, content: str):
         ]
         gitignore_f.writelines(lines)
 
-
-def write_mod_id(sync_dir: str, mod_id: str):
-    revision_file_path = os.path.join(sync_dir, MODULE_ID_FILE_NAME)
-    with open(revision_file_path, "w") as revision_f:
-        lines = [
-            REVISION_FILE_HEADER,
-            mod_id,
-        ]
-        revision_f.writelines(lines)
-        revision_f.write("\n")
-
-
-def read_mod_id(sync_dir: str):
-    revision_file_path = os.path.join(sync_dir, MODULE_ID_FILE_NAME)
-    if not os.path.exists(revision_file_path):
-        return "INVALID_REVISION"
-
-    with open(revision_file_path, "r") as revision_f:
-        lines = revision_f.readlines()
-        if len(lines) != 4:
-            return None
-
-        if "".join(lines[:3]) != REVISION_FILE_HEADER:
-            return None
-
-        return lines[3].strip()
-
-def remove_dir_or_link(sync_dir: str):
+def _remove_dir_or_link(sync_dir: str):
     if os.path.islink(sync_dir):
         os.remove(sync_dir)
     elif os.path.isdir(sync_dir): # it need to be decided after islink, because isdir is also True for link
@@ -112,97 +94,213 @@ def remove_dir_or_link(sync_dir: str):
     else:
         raise ValueError(f"Invalid sync_dir: {sync_dir}, it is not a valid directory nor a valid link")
 
-def fetch_remote(repo_id: str, revision: str, flow_mod_id: str, cache_dir: str, sync_dir: str):
+# TODO(Yeeef): add repo_hash and modified_flag to decrease computing
+def _write_flow_mod_spec(sync_dir: str, flow_mod_spec: FlowModuleSpec):
+    revision_file_path = os.path.join(sync_dir, MODULE_ID_FILE_NAME)
+    with open(revision_file_path, "w") as revision_f:
+        lines = [
+            REVISION_FILE_HEADER,
+            flow_mod_spec.mod_id + "\n", # xxx/yyy:{revision}
+            flow_mod_spec.commit_hash + "\n", # commithash corresponding to the revision
+            flow_mod_spec.cache_dir + "\n", # huggingface cache_dir
+        ]
+        revision_f.writelines(lines)
+
+def _read_flow_mod_spec(sync_dir: str) -> FlowModuleSpec:
+    revision_file_path = os.path.join(sync_dir, MODULE_ID_FILE_NAME)
+    if not os.path.exists(revision_file_path):
+        return INVALID_FLOW_MOD_SPEC
+
+    with open(revision_file_path, "r") as revision_f:
+        lines = revision_f.readlines()
+        if len(lines) != 6: # 3 lines of header + flow_mod_id + commit_hash + cache_dir 
+            return INVALID_FLOW_MOD_SPEC
+
+        if "".join(lines[:3]) != REVISION_FILE_HEADER: # check header
+            return INVALID_FLOW_MOD_SPEC
+
+        flow_mod_id = lines[3].strip()
+        repo_id, revision = flow_mod_id.split(":")
+        commit_hash = lines[4].strip()
+        cache_dir = lines[5].strip()
+        return FlowModuleSpec(flow_mod_id, repo_id, revision, commit_hash, cache_dir)
+
+def _fetch_remote(repo_id: str, revision: str, cache_root_dir: str, sync_dir: str) -> Tuple[str, str]:
+    
     sync_dir = os.path.abspath(sync_dir)
-    if is_local_sync_dir_valid(sync_dir):
-        remove_dir_or_link(sync_dir)
+    if _is_local_sync_dir_valid(sync_dir):
+        _remove_dir_or_link(sync_dir)
 
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
-    huggingface_hub.snapshot_download(repo_id, cache_dir=cache_dir, local_dir=sync_dir, revision=revision)
-    # write the revision info in the folder
-    write_mod_id(sync_dir, flow_mod_id)
-    # add FLOW_MODULE_ID to .gitignore
-    write_or_append_gitignore(sync_dir, "a", MODULE_ID_FILE_NAME)
+    # this call is only used to download the repo to cache and get cache path
+    cache_mod_dir = huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root_dir, revision=revision)
 
-def fetch_local(file_path: str, flow_mod_id: str, sync_dir: str):
+    # this call will fetch the cached snapshot to the sync_dir
+    huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root_dir, local_dir=sync_dir, revision=revision)
+    return cache_mod_dir, _retrive_commit_hash(repo_id, revision)
+
+def _fetch_remote_and_write_flow_mod_spec(repo_id: str, revision: str, flow_mod_id: str, sync_dir: str):
+    cache_dir, commit_hash = _fetch_remote(repo_id, revision, DEFAULT_CACHE_PATH, sync_dir)
+    _write_flow_mod_spec(
+        sync_dir, FlowModuleSpec(flow_mod_id, repo_id, revision, commit_hash, cache_dir)
+    )
+    _write_or_append_gitignore(sync_dir, "a", MODULE_ID_FILE_NAME)
+
+def _fetch_local_and_write_flow_mod_spec(repo_id: str, file_path: str, flow_mod_id: str, sync_dir: str):
     # shutil.copytree(file_path, sync_dir, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=overwrite)
     sync_dir = os.path.abspath(sync_dir)
     # when fetch_local is triggered, the old dir is always going to be removed
-    if is_local_sync_dir_valid(sync_dir):
-        remove_dir_or_link(sync_dir)
+    if _is_local_sync_dir_valid(sync_dir):
+        _remove_dir_or_link(sync_dir)
 
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
-    os.symlink(file_path, sync_dir)  # TODO(yeeef): offer another choice to directly make a copy
-    # write the revision info in the folder
-    write_mod_id(sync_dir, flow_mod_id)
-    # add FLOW_MODULE_ID to .gitignore
-    write_or_append_gitignore(sync_dir, "a", MODULE_ID_FILE_NAME)
+    os.symlink(file_path, sync_dir)
+    _write_flow_mod_spec(
+        sync_dir, FlowModuleSpec(flow_mod_id, repo_id, file_path, "no_commit_hash", file_path)
+    )
+    _write_or_append_gitignore(sync_dir, "a", MODULE_ID_FILE_NAME)
 
-
-def build_mod_id(repo_id_or_file_path: str, revision: str):
+def _build_mod_id(repo_id_or_file_path: str, revision: str):
     return f"{repo_id_or_file_path}:{revision}"
 
-def is_local_sync_dir_valid(sync_dir: str):
+def _is_local_sync_dir_valid(sync_dir: str):
     return os.path.isdir(sync_dir) or os.path.islink(sync_dir)
 
-def sync_dependency(url: str, mod_name: str, revision: str, is_local: bool, caller_module_name: str, overwrite: bool = False) -> str:
-    mod_id = build_mod_id(url, revision)
+def _retrive_commit_hash(repo_id: str, revision: str):
+    hf_api = HfApi()
+    repo_info = hf_api.repo_info(repo_id=repo_id, repo_type="model", revision=revision, token=None)
+    commit_hash = repo_info.sha
+    return commit_hash
 
-    # ToDo (Martin): Add a check of whether the local copy (when it exists) matches the one suggested bu the depenedency?
-    #    Skip everything if it does.
-    #    If it doesn't, verbose flag is set and overwrite is not set sent a warning message.
-    #    If it doesn't and overwrite is set, ask for confirmation.
+def _is_sync_dir_modified(sync_dir: str, cache_dir: str) -> bool:
+    with os.scandir(cache_dir) as it:
+        for entry in it:
+            if entry.name.startswith('.') or entry.name == "__pycache__":
+                continue
+
+            if entry.is_file():
+                same = filecmp.cmp(
+                    os.path.join(cache_dir, entry.name), 
+                    os.path.join(sync_dir, entry.name),
+                    shallow=False
+                )
+                if not same:
+                    logger.debug(f"File {os.path.join(cache_dir, entry.name)} is not the same as {os.path.join(sync_dir, entry.name)}")
+                    return True
+            elif entry.is_dir():
+                dir_same = _is_sync_dir_modified(
+                    os.path.join(sync_dir, entry.name), 
+                    os.path.join(cache_dir, entry.name)
+                )
+                if not dir_same:
+                    return True
+            else:
+                raise ValueError(f"Invalid file: {os.path.join(cache_dir, entry.name)}, it is not file or dir or valid symlink")
+            
+    return False
+            
+
+def _sync_remote_dep(repo_id: str, mod_name: str, revision: str, caller_module_name: str, overwrite: bool = False) -> str:
+    flow_mod_id = _build_mod_id(repo_id, revision)
+    sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name)
+
     if overwrite:
-        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
         user_input = input()
         if user_input != "Y":
+            logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}")
             overwrite = False
 
-    sync_dir = None
-    if is_local:  # revision is a local path
-        module_local_dir = revision
+    # read current flow spec
+    synced_flow_mod_spec = _read_flow_mod_spec(sync_dir)
 
-        if not os.path.isdir(module_local_dir):
-            raise ValueError(f"{mod_id}'s revision {revision} is not a valid local directory")
+    # no valid flow spec, we fetch the remote directly
+    # overwrite is True, we fetch the remote directly
+    if synced_flow_mod_spec == INVALID_FLOW_MOD_SPEC or overwrite: 
+        logger.info(f"{flow_mod_id} will be fetched from remote.{colorama.Style.RESET_ALL}")
+        _fetch_remote_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir)
+        return sync_dir
+    
+    # user has supplied a new flow_mod_id, we fetch the remote directly with warning
+    if synced_flow_mod_spec.mod_id != flow_mod_id:
+        logger.warn(
+                f"{colorama.Fore.RED}[{caller_module_name}] {synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        user_input = input()
+        if user_input != "Y":
+            logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}")
+        else:
+            _fetch_remote_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir)
+
+        return sync_dir
+    
+
+    # user has supplied same flow_mod_id, we check if the remote has changed
+
+    # check if the commit hash changes from the remote
+    remote_revision_commit_hash_changed = False
+    # TODO(yeeef): _retrive_commit_hash is slow
+    remote_commit_hash = _retrive_commit_hash(synced_flow_mod_spec.repo_id, synced_flow_mod_spec.revision)
+    remote_revision_commit_hash_changed = remote_commit_hash != synced_flow_mod_spec.commit_hash
+
+    # check if the file is modified compared to the cache_dir
+    sync_dir_modified = _is_sync_dir_modified(sync_dir, synced_flow_mod_spec.cache_dir)
+
+    logger.debug(f"{flow_mod_id} remote_revision_commit_hash_changed: {remote_revision_commit_hash_changed}, sync_dir_modified: {sync_dir_modified}")
+    # sync_dir is not modified but remote_commit_hash hash has changed
+    # we do nothing, with a warning message
+    if not remote_revision_commit_hash_changed:
+        # trivial case, we do nothing
+        logger.info(f"{flow_mod_id} already synced, skip")
+    elif not sync_dir_modified:
+        # remote has changed but local is not modified, we fetch the remote with a warning
+        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {synced_flow_mod_spec.mod_id}'s commit hash has changed from {synced_flow_mod_spec.commit_hash} to {remote_commit_hash}, as synced module is not modified, the newest commit regarding {synced_flow_mod_spec.mod_id} will be fetched{colorama.Style.RESET_ALL}")
+        _fetch_remote_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir)
+    else: 
+        # synced dir is modified and remote has changed, we do nothing with a warning
+        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {synced_flow_mod_spec.mod_id}'s commit hash has changed from {synced_flow_mod_spec.commit_hash} to {remote_commit_hash}, but synced module is already modified, the newest commit regarding {synced_flow_mod_spec.mod_id} will NOT be fetched{colorama.Style.RESET_ALL}")
         
-        sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name)
-        if not is_local_sync_dir_valid(sync_dir) or overwrite:
-            fetch_local(module_local_dir, mod_id, sync_dir)
-        elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
-            user_input = input()
-            if user_input == "Y":
-                fetch_local(module_local_dir, mod_id, sync_dir)
+    return sync_dir 
+
+def _sync_local_dep(repo_id: str, mod_name: str, revision: str, caller_module_name: str, overwrite: bool = False) -> str:
+    flow_mod_id = _build_mod_id(repo_id, revision)
+    if overwrite:
+        logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        user_input = input()
+        if user_input != "Y":
+            logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}")
+            overwrite = False
+
+    module_local_dir = revision
+
+    if not os.path.isdir(module_local_dir):
+        raise ValueError(f"local dependency {flow_mod_id}'s revision {revision} is not a valid local directory")
+    
+    sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name)
+    synced_flow_mod_spec = _read_flow_mod_spec(sync_dir)
+
+    if synced_flow_mod_spec == INVALID_FLOW_MOD_SPEC or overwrite:
+        logger.info(f"{flow_mod_id} will be fetched from local.{colorama.Style.RESET_ALL}")
+        _fetch_local_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir)
+        return sync_dir
+    elif synced_flow_mod_spec.mod_id != flow_mod_id:
+        logger.warn(
+            f"{colorama.Fore.RED}[{caller_module_name}] {synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
+        user_input = input()
+        if user_input != "Y":
+            logger.warn(f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}")
         else:
-            logger.info(f"{mod_id} already synced, skip")
-
-    else:  # huggingface url
-        basename = mod_name
-        sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, basename)
-
-        if not is_local_sync_dir_valid(sync_dir) or overwrite:
-            # first fetch / overwrite
-            logger.info(f"first fetch / overwrite {mod_id}")
-            fetch_remote(url, revision, mod_id, DEFAULT_CACHE_PATH, sync_dir)
-
-        elif is_local_sync_dir_valid(sync_dir) and read_mod_id(sync_dir) != mod_id:
-            # local dir exists, but revision is not the same, overwrite with new revision
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {read_mod_id(sync_dir)} already synced, it will be overwritten by new revision {mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}")
-            user_input = input()
-            if user_input == "Y":
-                fetch_remote(url, revision, mod_id, DEFAULT_CACHE_PATH, sync_dir)
-        else:
-            logger.info(f"{mod_id} already synced, skip")
-
+            _fetch_local_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir)
+    else:
+        logger.info(f"{flow_mod_id} already synced, skip")
+    
+        
     return sync_dir
 
 
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False):
     caller_frame = inspect.currentframe().f_back
     caller_module = inspect.getmodule(caller_frame)
-    if caller_module is None: # https://github.com/epfl-dlab/flows/issues/50
+    if caller_module is None: # TODO: https://github.com/epfl-dlab/flows/issues/50
         caller_module_name = "<interactive>"
     else:
         caller_module_name = caller_module.__name__
@@ -215,14 +313,15 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
     elif not os.path.isdir(flow_module_dir):
         raise ValueError(f"flow module folder {flow_module_dir} is not a directory")
 
-    write_or_append_gitignore(flow_module_dir, "w", content="*")
+    _write_or_append_gitignore(flow_module_dir, "w", content="*")
 
     sync_dirs = []
     for dep in dependencies:
-        dep = validate_and_augment_dependency(dep, caller_module_name)
+        dep = _validate_and_augment_dependency(dep, caller_module_name)
         dep_overwrite = dep.get("overwrite", False)
         dep_is_local = False
         url, revision, mod_name = dep["url"], dep["revision"], dep["mod_name"]
+        sync_dir = None
 
         if os.path.exists(revision): # revision point to a local path
             dep_is_local = True
@@ -234,7 +333,10 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
             if match is not None:
                 raise ValueError(f"{revision} is identified as remote, as it does not exist locally. But it not a valid remote revision, it contains illegal characters: {match.group(0)}")
 
-        sync_dir = sync_dependency(url, mod_name, revision, dep_is_local, caller_module_name, all_overwrite or dep_overwrite)
+        if dep_is_local:
+            sync_dir = _sync_local_dep(url, mod_name, revision, caller_module_name, all_overwrite or dep_overwrite)
+        else:
+            sync_dir = _sync_remote_dep(url, mod_name, revision, caller_module_name, all_overwrite or dep_overwrite)
         sync_dirs.append(sync_dir)
 
     logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
