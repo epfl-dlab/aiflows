@@ -17,6 +17,7 @@ from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
     OutputMessage
 from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters, flatten_dict, unflatten_dict
+from flows.utils.rich_utils import print_config_tree
 
 log = logging.get_logger(__name__)
 
@@ -46,9 +47,8 @@ class Flow(ABC):
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
-        if self.flow_config["verbose"]:
-            # ToDo(https://github.com/epfl-dlab/flows/issues/57): print the flow config with Rich
-            pass
+        if log.getEffectiveLevel() == logging.INFO:
+            print_config_tree(self.flow_config)
 
         self.set_up_flow_state()
 
@@ -92,7 +92,6 @@ class Flow(ABC):
                 "input_data_transformations": [],
                 "output_keys": [],
                 "output_data_transformations": [],
-                "verbose": True,
                 "clear_flow_namespace_on_run_end": True,
                 "keep_raw_response": True
             }
@@ -382,7 +381,7 @@ class Flow(ABC):
             raise Exception(f"The output dictionary is empty. "
                             f"None of the expected outputs: `{str(output_keys)}` were found.")
 
-        if self.flow_config["verbose"] and len(missing_keys) != 0:
+        if len(missing_keys) != 0:
             flow_name = self.flow_config['name']
             log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
                         f"Available outputs are: `{str(list(output_data.keys()))}`")
