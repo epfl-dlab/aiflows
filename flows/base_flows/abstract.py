@@ -193,8 +193,9 @@ class Flow(ABC):
         if isinstance(update_data, Message):
             update_data = update_data.data["output_data"]
 
-        if len(update_data) == 0:  # ToDo(https://github.com/epfl-dlab/flows/issues/59): Should we allow empty state updates, with a warning? When would this happen?
-            raise ValueError("The state_update_dict was called with an empty dictionary.")
+        if len(update_data) == 0:
+            raise ValueError("The state_update_dict was called with an empty dictionary. If there is a justified "
+                             "reason to allow this, please replace the ValueError with a log.warning, and make a PR")
 
         updates = {}
         for key, value in update_data.items():
