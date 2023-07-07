@@ -12,7 +12,7 @@ from ..utils import logging
 log = logging.get_logger(__name__)
 
 
-class FlowAPILauncher(MultiThreadedAPILauncher):
+class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
     """
     A class for querying the OpenAI API using the LangChain library with interactive chatting capabilities.
 
