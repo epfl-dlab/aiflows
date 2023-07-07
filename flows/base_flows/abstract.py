@@ -156,7 +156,14 @@ class Flow(ABC):
         self.flow_state = {}
         self.history = FlowHistory()
 
-    def reset(self, full_reset: bool, recursive: bool):
+    def reset(self, 
+              full_reset: bool, 
+              recursive: bool, 
+              src_flow: Optional[Union["Flow", str]] = "Launcher"):
+        
+        if isinstance(src_flow, Flow):
+            src_flow = src_flow.flow_config["name"]
+        
         # ~~~ Delete all extraneous attributes ~~~
         keys_deleted_from_namespace = []
         for key, value in list(self.__dict__.items()):
@@ -170,7 +177,7 @@ class Flow(ABC):
 
         if full_reset:
             message = UpdateMessage_FullReset(
-                created_by=self.flow_config['name'],  # ToDo(https://github.com/epfl-dlab/flows/issues/58): Update this to the flow from which the reset was called
+                created_by=src_flow,
                 updated_flow=self.flow_config["name"],
                 keys_deleted_from_namespace=keys_deleted_from_namespace
             )
@@ -178,7 +185,7 @@ class Flow(ABC):
             self.set_up_flow_state()  # resets the flow state
         else:
             message = UpdateMessage_NamespaceReset(
-                created_by=self.flow_config['name'],  # ToDo(https://github.com/epfl-dlab/flows/issues/58): Update this to the flow from which the reset was called
+                created_by=src_flow,
                 updated_flow=self.flow_config["name"],
                 keys_deleted_from_namespace=keys_deleted_from_namespace
             )
@@ -430,7 +437,7 @@ class Flow(ABC):
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
         if self.flow_config['clear_flow_namespace_on_run_end']:
-            self.reset(full_reset=False, recursive=False)
+            self.reset(full_reset=False, recursive=False, src_flow=self)
 
     def __str__(self):
         return self._to_string()
