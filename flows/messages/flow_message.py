@@ -148,3 +148,6 @@ class OutputMessage(Message):
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
 
         return message
+
+    def get_output_data(self):
+        return self.data["output_data"]
