@@ -46,16 +46,16 @@ class FlowLauncher(ABC):
                 full_outputs.append(output)
 
         if path_to_output_file is not None:
-            FlowMultiThearedAPILauncher.write_batch_output(full_outputs,
-                                               path_to_output_file=path_to_output_file,
-                                               keys_to_write=["id",
+            FlowMultiThreadedAPILauncher.write_batch_output(full_outputs,
+                                                            path_to_output_file=path_to_output_file,
+                                                            keys_to_write=["id",
                                                               "inference_outputs",
                                                               "error"])
 
         return full_outputs, human_readable_outputs
 
 
-class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
+class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
     """
     A class for querying the OpenAI API using the LangChain library with interactive chatting capabilities.
 
@@ -84,7 +84,7 @@ class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
 
         self.flows = flow
 
-        assert self.n_workers == len(self.flows), "FlowMultiThearedAPILauncher must be given as many flows as workers. " \
+        assert self.n_workers == len(self.flows), "FlowMultiThreadedAPILauncher must be given as many flows as workers. " \
                                                   "# of flows passed: {}, # of workers: {}".format(len(self.flows),
                                                                                                    self.n_workers)
 
