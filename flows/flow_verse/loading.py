@@ -453,7 +453,7 @@ def sync_local_dep(previous_synced_flow_mod_spec: Optional[FlowModuleSpec], repo
     synced_flow_mod_spec = None
     flow_mod_id = FlowModuleSpec.build_mod_id(repo_id, revision)
     module_synced_from_dir = revision
-    sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name)
+    sync_dir = os.path.abspath(os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name))
 
     if not os.path.isdir(module_synced_from_dir):
         raise ValueError(f"local dependency {flow_mod_id}'s revision {module_synced_from_dir} is not a valid local directory")
