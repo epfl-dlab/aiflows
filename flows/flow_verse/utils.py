@@ -1,4 +1,5 @@
 import os
+import re
 
 def build_hf_cache_path(username: str, modelname: str, commit_hash: str, cache_root: str) -> str:
     """
@@ -22,3 +23,6 @@ def build_hf_cache_path(username: str, modelname: str, commit_hash: str, cache_r
         commit_hash
     )
     return os.path.join(cache_root, relative_path)
+
+def is_local_revision(revision: str):
+    return os.path.exists(revision)

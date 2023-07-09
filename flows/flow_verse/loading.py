@@ -18,9 +18,9 @@ from . import utils
 
 logger = logging.get_logger(__name__)
 
-default_home = os.path.join(os.path.expanduser("~"), ".cache")
-flows_cache_home = os.path.expanduser(os.path.join(default_home, "flows"))
-DEFAULT_CACHE_PATH = os.path.join(flows_cache_home, "flow_verse")
+_default_home = os.path.join(os.path.expanduser("~"), ".cache")
+_flows_cache_home = os.path.expanduser(os.path.join(_default_home, "flows"))
+DEFAULT_CACHE_PATH = os.path.join(_flows_cache_home, "flow_verse")
 DEFAULT_FLOW_MODULE_FOLDER = "flow_modules"
 MODULE_ID_FILE_NAME = "FLOW_MODULE_ID"
 FLOW_MODULE_SUMMARY_FILE_NAME = "flow.mod"
@@ -113,7 +113,7 @@ class FlowModuleSpecSummary:
         """        
         
         sync_root_pattern = re.compile(r"^sync_root: (.+)$")
-        flow_mod_spec_match = re.compile(r"^(\w+)/(\w+) (\w+) (\w+) -> _/(.+)$")
+        flow_mod_spec_pattern = re.compile(r"^(.+)/(.+) (.+) (.+) -> _/(.+)$")
         if not os.path.exists(file_path):
             return None
         
@@ -122,20 +122,26 @@ class FlowModuleSpecSummary:
             if len(lines) < 1 + len(REVISION_FILE_HEADER.split("\n")):
                 raise ValueError(f"Invalid flow module file {file_path}, at least 1 line is required for `sync_root`")
 
-            sync_root_match = re.search(sync_root_pattern, lines[0])
+            sync_root_match = re.search(sync_root_pattern, lines[len(REVISION_FILE_HEADER.split("\n"))])
             if not sync_root_match:
                 raise ValueError(f"Invalid flow module file {file_path}, the first line must be `sync_root: xxxx`")
             sync_root = sync_root_match.group(1)
 
             mods = []
             for line in lines[4:]:
-                flow_mod_spec_match = re.search(flow_mod_spec_match, line)
+                flow_mod_spec_match = re.search(flow_mod_spec_pattern, line)
                 if not flow_mod_spec_match:
-                    continue
+                    raise ValueError(f"Invalid flow module file {file_path}, line '{line}' is not a valid flow module spec")
+                
                 username, repo_name, revision, commit_hash, relative_sync_dir = flow_mod_spec_match.groups()
                 repo_id = f"{username}/{repo_name}"
-                cache_dir = utils.build_hf_cache_path(username, repo_name, commit_hash, flows_cache_home)
                 sync_dir = os.path.join(sync_root, relative_sync_dir)
+
+                if not is_local_revision(revision): # remote revision
+                    cache_dir = utils.build_hf_cache_path(username, repo_name, commit_hash, DEFAULT_CACHE_PATH)
+                else:
+                    cache_dir = sync_dir
+                
                 flow_mod_spec = FlowModuleSpec(repo_id, revision, commit_hash, cache_dir, sync_dir)
                 mods.append(flow_mod_spec)
 
@@ -145,7 +151,7 @@ class FlowModuleSpecSummary:
     def serialize(self) -> str:
         lines = []
         lines.append(f"sync_root: {self._sync_root}")
-        for mod in self._mods:
+        for mod in self._mods.values():
             lines.append(f"{mod.repo_id} {mod.revision} {mod.commit_hash} -> _/{os.path.relpath(mod.sync_dir, self._sync_root)}")
 
         return "\n".join(lines)
@@ -172,9 +178,31 @@ add_to_sys_path(f"./{DEFAULT_FLOW_MODULE_FOLDER}")
 def _is_valid_python_module_name(name):
     return re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name) is not None
 
+def is_local_revision(legal_revision: str) -> bool:
+    """
+    Check if a given revision is a local revision.
+
+    :param legal_revision: A string representing the revision to check.
+    :type legal_revision: str
+    :return: True if the revision is a local revision, False otherwise.
+    :rtype: bool
+    """
+    return os.path.exists(legal_revision)
+
 # TODO(Yeeef): caller_module_name is shared at several places, so we should refactor the sync process into
 # a class.
-def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_name: str):
+def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_name: str) -> bool:
+    """
+    Validates and augments a dependency dictionary.
+
+    :param dependency: A dictionary containing information about the dependency.
+    :type dependency: Dict[str, str]
+    :param caller_module_name: The name of the calling module.
+    :type caller_module_name: str
+    :return: True if the dependency is local, False otherwise.
+    :rtype: bool
+    """
+    
     if "url" not in dependency: # TODO(yeeef): url is not descriptive
         raise ValueError("dependency must have a `url` field")
 
@@ -192,10 +220,27 @@ def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_na
         username = f"user_{username}"
 
     dependency["mod_name"] = f"{username}/{repo_name}"
-    if "revision" not in dependency:
-        dependency["revision"] = DEFAULT_REMOTE_REVISION
 
-    return dependency
+    # revision sanity check
+    revision = dependency.get("revision", DEFAULT_REMOTE_REVISION)
+    dep_is_local = False
+
+    if not os.path.exists(revision): # remote revision
+        match = re.search(r"\W", revision)  # ToDo (Martin): This often fails with a cryptic error message
+        if match is not None:
+            raise ValueError(f"{revision} is identified as remote, as it does not exist locally. But it not a valid remote revision, it contains illegal characters: {match.group(0)}")
+
+    elif not os.path.isdir(revision): # illegal local revision
+        raise ValueError(f"local revision {revision} is not a valid directory")
+    elif DEFAULT_FLOW_MODULE_FOLDER in revision: # illgal local revision
+        raise ValueError(f"syncing a local revision from {DEFAULT_FLOW_MODULE_FOLDER} is not recommended")
+    else: # local revision
+        dep_is_local = True
+        revision = os.path.abspath(revision)
+    
+    dependency["revision"] = revision
+
+    return dep_is_local
 
 def write_or_append_gitignore(sync_dir: str, mode: str, content: str):
     gitignore_path = os.path.join(sync_dir, ".gitignore")
@@ -247,9 +292,10 @@ def fetch_remote(repo_id: str, revision: str, cache_root_dir: str, sync_dir: str
     huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root_dir, local_dir=sync_dir, revision=revision)
     return cache_mod_dir, retrive_commit_hash_from_cache_mod_dir(cache_mod_dir)
 
+# TODO(yeeef): rename
 def fetch_remote_and_write_flow_mod_spec(repo_id: str, revision: str, sync_dir: str) -> FlowModuleSpec:
     cache_dir, commit_hash = fetch_remote(repo_id, revision, DEFAULT_CACHE_PATH, sync_dir)
-    flow_mod_spec = FlowModuleSpec(repo_id, revision, commit_hash, cache_dir)
+    flow_mod_spec = FlowModuleSpec(repo_id, revision, commit_hash, cache_dir, sync_dir)
 
     return flow_mod_spec
 
@@ -263,7 +309,7 @@ def fetch_local_and_write_flow_mod_spec(repo_id: str, file_path: str, sync_dir: 
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
     os.symlink(file_path, sync_dir)
 
-    flow_mod_spec = FlowModuleSpec(repo_id, file_path, NO_COMMIT_HASH, file_path)
+    flow_mod_spec = FlowModuleSpec(repo_id, file_path, NO_COMMIT_HASH, file_path, sync_dir)
 
     return flow_mod_spec
 
@@ -328,7 +374,7 @@ def sync_remote_dep(previous_synced_flow_mod_spec: Optional[FlowModuleSpec], rep
     """
     synced_flow_mod_spec = None
     flow_mod_id = FlowModuleSpec.build_mod_id(repo_id, revision)
-    sync_dir = os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name)
+    sync_dir = os.path.abspath(os.path.join(os.path.curdir, DEFAULT_FLOW_MODULE_FOLDER, mod_name))
 
     if previous_synced_flow_mod_spec is None: # directly sync without any warning
         logger.info(f"{flow_mod_id} will be fetched from remote")
@@ -451,7 +497,7 @@ def sync_local_dep(previous_synced_flow_mod_spec: Optional[FlowModuleSpec], repo
 def create_empty_flow_mod_file(sync_root: str, overwrite: bool = False) -> str:
     flow_mod_summary_path = os.path.join(sync_root, FLOW_MODULE_SUMMARY_FILE_NAME)
     if os.path.exists(flow_mod_summary_path) and not overwrite:
-        return
+        return flow_mod_summary_path
 
     with open(flow_mod_summary_path, "w") as f:
         lines = [
@@ -466,8 +512,11 @@ def create_empty_flow_mod_file(sync_root: str, overwrite: bool = False) -> str:
 
 def write_flow_mod_summary(flow_mod_summary_path: str, flow_mod_summary: FlowModuleSpecSummary):
     with open(flow_mod_summary_path, "w") as f:
+        f.write(REVISION_FILE_HEADER)
+        f.write("\n")
         f.write(flow_mod_summary.serialize())
         f.write("\n")
+
 
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False) -> List[str]:
     caller_frame = inspect.currentframe().f_back
@@ -488,34 +537,27 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
     
     flow_mod_summary_path = create_empty_flow_mod_file(sync_root)
     flow_mod_summary = FlowModuleSpecSummary.from_flow_mod_file(flow_mod_summary_path) 
+    # logger.debug(f"flow mod summary: {flow_mod_summary}")
 
     sync_dirs = []
     for dep in dependencies:
-        dep = validate_and_augment_dependency(dep, caller_module_name)
+        dep_is_local = validate_and_augment_dependency(dep, caller_module_name)
         dep_overwrite = dep.get("overwrite", False)
-        dep_is_local = False
         url, revision, mod_name = dep["url"], dep["revision"], dep["mod_name"]
-
-        if os.path.exists(revision): # revision point to a local path
-            dep_is_local = True
-            revision = os.path.abspath(revision)
-            if DEFAULT_FLOW_MODULE_FOLDER in revision:
-                raise ValueError(f"syncing a local revision from {DEFAULT_FLOW_MODULE_FOLDER} is not recommended")
-        else:
-            match = re.search(r"\W", revision)  # ToDo (Martin): This often fails with a cryptic error message
-            if match is not None:
-                raise ValueError(f"{revision} is identified as remote, as it does not exist locally. But it not a valid remote revision, it contains illegal characters: {match.group(0)}")
 
         synced_flow_mod_spec = None
         previous_synced_flow_mod_spec = flow_mod_summary.get_mod(url)
         if dep_is_local:
             synced_flow_mod_spec = sync_local_dep(previous_synced_flow_mod_spec, url, mod_name, revision, caller_module_name, all_overwrite or dep_overwrite)
+            # logger.debug(f"add local dep {synced_flow_mod_spec} to flow_mod_summary")
         else:
             synced_flow_mod_spec = sync_remote_dep(previous_synced_flow_mod_spec, url, mod_name, revision, caller_module_name, all_overwrite or dep_overwrite)
+            # logger.debug(f"add remote dep {synced_flow_mod_spec} to flow_mod_summary")
         sync_dirs.append(synced_flow_mod_spec.sync_dir)
         flow_mod_summary.add_mod(synced_flow_mod_spec)
 
     # write flow.mod
+    # logger.debug(f"write flow mod summary: {flow_mod_summary}")
     write_flow_mod_summary(flow_mod_summary_path, flow_mod_summary)
 
     logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
