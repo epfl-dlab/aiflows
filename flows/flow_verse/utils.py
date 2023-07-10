@@ -1,15 +1,14 @@
 import os
 import re
 
-def build_hf_cache_path(username: str, modelname: str, commit_hash: str, cache_root: str) -> str:
+def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     """
     Builds the path to the cache directory for a given Hugging Face model.
+    The path is constructed as follows:
     {CACHE_ROOT}/models--{username}--{modelname}/snapshots/{commit_hash}
 
-    :param username: The username of the model owner.
-    :type username: str
-    :param modelname: The name of the model.
-    :type modelname: str
+    :param repo_id: The repository ID in the format of "username/modelname".
+    :type repo_id: str
     :param commit_hash: The commit hash of the model snapshot.
     :type commit_hash: str
     :param cache_root: The root directory of the cache.
@@ -17,6 +16,7 @@ def build_hf_cache_path(username: str, modelname: str, commit_hash: str, cache_r
     :return: The path to the cache directory for the given model snapshot.
     :rtype: str
     """
+    username, modelname = repo_id.split("/")
     relative_path = os.path.join(
         f"models--{username}--{modelname}",
         "snapshots",
