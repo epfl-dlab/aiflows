@@ -55,7 +55,7 @@ class GeneratorCriticFlow(CompositeFlow):
         for idx in range(self.flow_config["max_rounds"]):
             # ~~~ Reset the generator flow if needed ~~~
             if self.flow_config["reset_generator_every_round"]:
-                generator_flow.reset(full_reset=True, recursive=True)
+                generator_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
             # ~~~ Execute the generator flow and update the state with the outputs ~~~
             generator_output_message = self._call_flow_from_state(
@@ -72,7 +72,7 @@ class GeneratorCriticFlow(CompositeFlow):
 
             # ~~~ Reset the critic flow ~~~
             if self.flow_config["reset_critic_every_round"]:
-                critic_flow.reset(full_reset=True, recursive=True)
+                critic_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
             # ~~~ Execute the critic flow and update the state with the outputs ~~~
             critic_output_message = self._call_flow_from_state(
