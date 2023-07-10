@@ -17,6 +17,7 @@ from flows.utils import logging
 from . import utils
 
 logger = logging.get_logger(__name__)
+logger.warn = logger.warning
 
 _default_home = os.path.join(os.path.expanduser("~"), ".cache")
 _flows_cache_home = os.path.expanduser(os.path.join(_default_home, "flows"))
@@ -374,6 +375,7 @@ def extract_commit_hash_from_cache_mod_dir(cache_mod_dir: str) -> str:
 def is_sync_dir_modified(sync_dir: str, cache_dir: str) -> bool:
     with os.scandir(cache_dir) as it:
         for entry in it:
+            # TODO(Yeeef): remove `entry.name.startswith('.')`
             if entry.name.startswith('.') or entry.name == "__pycache__":
                 continue
 
