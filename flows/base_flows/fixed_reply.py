@@ -12,8 +12,9 @@ class FixedReplyFlow(AtomicFlow):
 
     def run(self,
             input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            private_keys: Optional[List[str]] = None,
+            keys_to_ignore_for_hash: Optional[List[str]] = None,
+            enable_cache: bool = True) -> Dict[str, Any]:
 
         return self.flow_config["fixed_reply"]
 
