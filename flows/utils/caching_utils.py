@@ -63,13 +63,13 @@ def _custom_hash(all_args):
 
 def flow_run_cache():
     if not CACHING_PARAMETERS.do_caching:
-        log.warning("Caching is disabled globally")
+        log.info("Caching is disabled globally")
         def no_decorator(method):
             return method
 
         return no_decorator
 
-    log.warning("Caching is enabled globally")
+    log.info("Caching is enabled globally")
 
     def decorator(method):
         cache_dir = get_cache_dir()
@@ -85,6 +85,7 @@ def flow_run_cache():
             if not enable_cache or not CACHING_PARAMETERS.do_caching:
                 result = method(*args, **kwargs)
                 return result
+
 
             # Check how API_keys are handles
             all_args = list(args) + list(kwargs.values())
