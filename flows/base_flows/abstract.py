@@ -28,7 +28,13 @@ class Flow(ABC):
     KEYS_TO_IGNORE_HASH = {"name", "description"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end", "keep_raw_response"]
+    # TODO(Yeeef): shall we put it here? if a user uses instantiate_from_default_config, the below config is actually not required
+    # what about input_keys? is input_keys and output_keys required?
+    # REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end", "keep_raw_response", "input_keys"]
+    REQUIRED_KEYS_CONFIG = ["name", "description", "input_keys"]
+
+    # TODO(yeeef): the simplest and most natural way to declare required keys constructor is to .... declare them in the constructor signature, instead of this
+    # why the input_data_transformation cannot be a lambda? not everything can be described by yaml... we need to find a boundary
     REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
@@ -130,6 +136,10 @@ class Flow(ABC):
         data_transformations = []
         if len(data_transformation_configs) > 0:
             for config in data_transformation_configs:
+                if isinstance(config, DataTransformation):
+                    data_transformations.append(config)
+                    continue
+
                 if config["_target_"].startswith("."):
                     # assumption: cls is associated with relative data_transformation_configs
                     # for example, CF_Code and CF_Code.yaml should be in the same directory,
@@ -359,7 +369,13 @@ class Flow(ABC):
             input_message: InputMessage,
             response: Any,
     ):
-        output_data = {"raw_response": response}
+        output_data = response
+        raw_response = None
+        if not self.flow_config["keep_raw_response"]:
+            raw_response = None
+            log.info("The raw response will not be added into OutputMessage")
+        else:
+            raw_response = copy.deepcopy(response)
 
         # ~~~ Flatten the output data ~~~
         output_data = flatten_dict(output_data)
@@ -380,9 +396,7 @@ class Flow(ABC):
         # ~~~ Unflatten the output data ~~~
         output_data = unflatten_dict(output_data)
 
-        if not self.flow_config["keep_raw_response"]:
-            del output_data["raw_response"]
-            log.warning("The raw response was not logged.")
+
 
         if len(output_data) == 0:
             raise Exception(f"The output dictionary is empty. "
@@ -399,18 +413,21 @@ class Flow(ABC):
             dst_flow=input_message.src_flow,
             output_keys=input_message.data["output_keys"],
             output_data=output_data,
+            raw_response=raw_response,
             input_message_id=input_message.message_id,
             missing_output_keys=missing_keys,
             history=self.history,
         )
 
     def run(self,
+            *,
             input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            private_keys: Optional[List[str]] = None,
+            keys_to_ignore_for_hash: Optional[List[str]] = None,
+            enable_cache: bool = True) -> Dict[str, Any]:
         raise NotImplementedError
 
-    def __call__(self, input_message: InputMessage):
+    def __call__(self, input_message: InputMessage, *, enable_cache: bool = True):
         self.input_message = input_message
 
         # ~~~ check and log input ~~~
@@ -422,7 +439,8 @@ class Flow(ABC):
             "The input message must contain the key 'output_keys' with at least one expected output"
         response = self.run(input_data=input_message.data,
                             private_keys=input_message.private_keys,
-                            keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
+                            keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash,
+                            enable_cache=enable_cache)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
