@@ -24,6 +24,7 @@ class CACHING_PARAMETERS:
     do_caching: bool = True
     cache_dir: str = None
 
+CACHING_PARAMETERS.do_caching = os.getenv("FLOW_DISABLE_CACHE", "false").lower() == "false"
 
 @dataclass
 class CachingValue:
@@ -62,21 +63,29 @@ def _custom_hash(all_args):
 
 def flow_run_cache():
     if not CACHING_PARAMETERS.do_caching:
-        log.info("Caching is disabled.")
+        log.warning("Caching is disabled globally")
         def no_decorator(method):
             return method
 
         return no_decorator
 
-    log.info("Caching is enabled.")
+    log.warning("Caching is enabled globally")
 
     def decorator(method):
         cache_dir = get_cache_dir()
-        cache = Index(cache_dir)
         lock = threading.Lock()
+        
 
         @functools.wraps(method)
         def wrapper(*args, **kwargs):
+            cache = Index(cache_dir)
+            enable_cache = kwargs.get("enable_cache", False)
+
+            ### only cache when both are true
+            if not enable_cache or not CACHING_PARAMETERS.do_caching:
+                result = method(*args, **kwargs)
+                return result
+
             # Check how API_keys are handles
             all_args = list(args) + list(kwargs.values())
 

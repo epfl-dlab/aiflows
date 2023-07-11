@@ -126,6 +126,7 @@ class OutputMessage(Message):
                  dst_flow: str,
                  output_keys: List[str],
                  output_data: Dict[str, Any],
+                 raw_response: Optional[Dict[str, Any]],
                  missing_output_keys: List[str],
                  input_message_id: str,
                  history: 'FlowHistory',
@@ -136,8 +137,11 @@ class OutputMessage(Message):
         self.dst_flow = dst_flow
         self.input_message_id = input_message_id
         self.data["output_keys"] = output_keys
+        if missing_output_keys:
+            self.data["missing_output_keys"] = missing_output_keys
+        if raw_response is not None:
+            self.data["raw_response"] = raw_response
         self.data["output_data"] = output_data
-        self.data["missing_output_keys"] = missing_output_keys
         self.history = history.to_list()
 
     def to_string(self):
