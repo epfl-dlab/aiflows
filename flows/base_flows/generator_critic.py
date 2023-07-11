@@ -10,11 +10,8 @@ log = logging.get_logger(__name__)
 
 
 class GeneratorCriticFlow(CircularFlow):
-    REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key"]
-    # REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     def __init__(self, **kwargs):
-        kwargs.get("flow_config", {}).update({"reset_every_round": {flow_name: True for flow_name in kwargs["subflows"].keys()}})
         super().__init__(**kwargs)
 
     @classmethod
@@ -32,27 +29,6 @@ class GeneratorCriticFlow(CircularFlow):
                                 f"{kwargs['subflows'].keys()}"
 
                 raise Exception(error_message)
-
-    # def _identify_flows(self):
-    #     generator, critic = None, None
-    #
-    #     for flow_name, flow in self.subflows.items():
-    #         if "generator" in flow_name.lower():
-    #             generator = flow
-    #         elif "critic" in flow_name.lower():
-    #             critic = flow
-    #
-    #     return generator, critic
-
-    def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
-
-        # GeneratorCriticFlow requires the Generator and Critic to reset every round
-        self.flow_config["reset_every_round"] = {flow_name: True for flow_name in self.subflows.keys()}
-
-        return super().run(input_data=input_data, private_keys=private_keys, keys_to_ignore_for_hash=keys_to_ignore_for_hash)
 
 
     @classmethod
