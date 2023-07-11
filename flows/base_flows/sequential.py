@@ -23,8 +23,9 @@ class SequentialFlow(CompositeFlow):
 
     def run(self,
             input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            private_keys: Optional[List[str]] = None,
+            keys_to_ignore_for_hash: Optional[List[str]] = None,
+            enable_cache: bool = True) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
