@@ -4,5 +4,6 @@ from .human_input import HumanInputFlow
 from .circular import CircularFlow
 from .generator_critic import GeneratorCriticFlow
 from .sequential import SequentialFlow
+from .branching import BranchingFlow
 
 
