@@ -29,6 +29,7 @@ class BranchingFlow(CompositeFlow):
         if branch is None:
             raise ValueError("Branching flow needs a branch key in the input_data")
         if branch not in self.subflows:
+            print(f"Branching flow has subflows: {self.subflows}")
             raise ValueError(f"Branching flow has no subflow with name {branch}")
         current_flow = self.subflows[branch]
         # ~~~ Execute the flow and update state with answer ~~~
@@ -38,7 +39,7 @@ class BranchingFlow(CompositeFlow):
         self._state_update_dict(update_data=output_message)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
-        outputs = self._fetch_state_attributes_by_keys(keys=input_data["output_keys"],
+        outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"],
                                                          allow_class_attributes=False)
 
         return outputs
