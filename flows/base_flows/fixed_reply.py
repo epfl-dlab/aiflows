@@ -16,5 +16,5 @@ class FixedReplyFlow(AtomicFlow):
             keys_to_ignore_for_hash: Optional[List[str]] = None,
             enable_cache: bool = True) -> Dict[str, Any]:
 
-        return self.flow_config["fixed_reply"]
+        return {"fixed_reply": self.flow_config["fixed_reply"]}
 

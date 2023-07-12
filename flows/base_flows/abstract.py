@@ -28,10 +28,7 @@ class Flow(ABC):
     KEYS_TO_IGNORE_HASH = {"name", "description"}
     SUPPORTS_CACHING = False
 
-    # TODO(Yeeef): shall we put it here? if a user uses instantiate_from_default_config, the below config is actually not required
-    # what about input_keys? is input_keys and output_keys required?
-    # REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end", "keep_raw_response", "input_keys"]
-    REQUIRED_KEYS_CONFIG = ["name", "description", "input_keys"]
+    REQUIRED_KEYS_CONFIG = ["name", "description"]
 
     # TODO(yeeef): the simplest and most natural way to declare required keys constructor is to .... declare them in the constructor signature, instead of this
     # why the input_data_transformation cannot be a lambda? not everything can be described by yaml... we need to find a boundary
@@ -136,10 +133,6 @@ class Flow(ABC):
         data_transformations = []
         if len(data_transformation_configs) > 0:
             for config in data_transformation_configs:
-                if isinstance(config, DataTransformation):
-                    data_transformations.append(config)
-                    continue
-
                 if config["_target_"].startswith("."):
                     # assumption: cls is associated with relative data_transformation_configs
                     # for example, CF_Code and CF_Code.yaml should be in the same directory,
@@ -258,7 +251,7 @@ class Flow(ABC):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config["input_keys"]
+        return self.flow_config.get("input_keys", list(data.keys()))
 
     def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
@@ -370,12 +363,7 @@ class Flow(ABC):
             response: Any,
     ):
         output_data = response
-        raw_response = None
-        if not self.flow_config["keep_raw_response"]:
-            raw_response = None
-            log.info("The raw response will not be added into OutputMessage")
-        else:
-            raw_response = copy.deepcopy(response)
+        raw_response = copy.deepcopy(response)
 
         # ~~~ Flatten the output data ~~~
         output_data = flatten_dict(output_data)
@@ -396,7 +384,11 @@ class Flow(ABC):
         # ~~~ Unflatten the output data ~~~
         output_data = unflatten_dict(output_data)
 
-
+        # add raw_response into output_data if keep_raw_response=True
+        if not self.flow_config["keep_raw_response"]:
+            log.info("The raw response will not be added to output_data")
+        else:
+            output_data["raw_response"] = raw_response
 
         if len(output_data) == 0:
             raise Exception(f"The output dictionary is empty. "
