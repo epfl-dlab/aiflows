@@ -14,7 +14,6 @@ from flows.base_flows.abstract import AtomicFlow
 
 from flows.utils import logging
 from flows.messages.flow_message import UpdateMessage_ChatMessage
-from flows.utils.caching_utils import flow_run_cache
 
 log = logging.get_logger(__name__)
 
@@ -227,11 +226,8 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._state_update_add_chat_message(role=self.flow_config["user_name"],
                                             content=user_message_content)
 
-    @flow_run_cache()
     def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
         # ~~~ Process input ~~~
         self._process_input(input_data)
 
@@ -242,4 +238,4 @@ class OpenAIChatAtomicFlow(AtomicFlow):
             content=response
         )
 
-        return response  # ToDo: Make this a dictionary {"api_output": response} and propagate the change to CC_Flows
+        return {"api_output": response}

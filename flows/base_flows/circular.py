@@ -30,8 +30,7 @@ class CircularFlow(CompositeFlow):
 
         max_round = self.flow_config.get("max_rounds", 1)
 
-        output_message = self._sequential_run(max_round=max_round, private_keys=private_keys,
-                                              keys_to_ignore_for_hash=keys_to_ignore_for_hash)
+        output_message = self._sequential_run(max_round=max_round)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"],
@@ -43,8 +42,7 @@ class CircularFlow(CompositeFlow):
     def type(cls):
         return "circular"
 
-    def _sequential_run(self, max_round:int,  private_keys: Optional[List[str]] = [],
-                       keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+    def _sequential_run(self, max_round:int) -> Dict[str, Any]:
         # default value, though it should never be returned because max_round should be > 0
         output_message = {}
         for idx in range(max_round):
@@ -53,8 +51,7 @@ class CircularFlow(CompositeFlow):
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
                 output_message = self._call_flow_from_state(
-                    flow_to_call=current_flow, private_keys=private_keys, keys_to_ignore_for_hash=keys_to_ignore_for_hash
-                )
+                    flow_to_call=current_flow)
                 self._state_update_dict(update_data=output_message)
 
                 # ~~~ Check for end of interaction

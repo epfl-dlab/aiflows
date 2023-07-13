@@ -34,7 +34,7 @@ class BranchingFlow(CompositeFlow):
         current_flow = self.subflows[branch]
         # ~~~ Execute the flow and update state with answer ~~~
         output_message = self._call_flow_from_state(
-            flow_to_call=current_flow, private_keys=private_keys, keys_to_ignore_for_hash=keys_to_ignore_for_hash
+            flow_to_call=current_flow
         )
         self._state_update_dict(update_data=output_message)
 

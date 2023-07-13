@@ -295,7 +295,7 @@ class Flow(ABC):
 
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None],
-                                        allow_class_attributes: bool = True):
+                                        allow_class_attributes: bool = False):
         data = {}
 
         if keys is None:
@@ -440,13 +440,13 @@ class Flow(ABC):
     def run(self,
             input_data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
-
+    
     def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         assert self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching
 
         if not self.SUPPORTS_CACHING:
             raise Exception(f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
-
+        
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
         input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
@@ -492,7 +492,7 @@ class Flow(ABC):
             log.debug(f"Cached: {str(value_to_cache)} \n"
                       f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
                       f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
-
+        
         return response
 
     def __call__(self, input_message: InputMessage):
@@ -506,11 +506,12 @@ class Flow(ABC):
         #        (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
         #     "The input message must contain the key 'output_keys' with at least one expected output"
         #
-        response = None
+        # response = None
         if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
             response = self.run(input_message.data)
         else:
             response = self.__get_from_cache(input_message.data)
+
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
             input_message=input_message,
@@ -591,13 +592,13 @@ class CompositeFlow(Flow, ABC):
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,
-            search_class_namespace_for_inputs: bool = True
+            search_class_namespace_for_inputs: bool = False # TODO, can we remove this argument?
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = getattr(self, 'api_keys', None)
         input_data = self._fetch_state_attributes_by_keys(
-            keys=None,
+            keys=None, # TODO, why is this set to be None?
             allow_class_attributes=search_class_namespace_for_inputs
         )
         input_message = flow_to_call.package_input_message(data_dict=input_data,
