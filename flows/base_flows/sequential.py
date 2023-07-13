@@ -29,6 +29,7 @@ class SequentialFlow(CompositeFlow):
         for current_flow in self.subflows.values():
             # ~~~ Execute the flow and update state with answer ~~~
             output_message = self._call_flow_from_state(
+                current_flow
             )
             self._state_update_dict(update_data=output_message)
 
