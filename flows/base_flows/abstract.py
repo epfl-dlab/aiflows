@@ -315,7 +315,7 @@ class Flow(ABC):
         for key in keys:
             flat_flow_state = flatten_dict(self.flow_state)
             if key in flat_flow_state:
-                data[key] = self.flow_state[key]
+                data[key] = flat_flow_state[key]
                 continue
 
             if allow_class_attributes:

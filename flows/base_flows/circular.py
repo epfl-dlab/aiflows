@@ -29,8 +29,25 @@ class CircularFlow(CompositeFlow):
         self._state_update_dict(update_data=input_data)
 
         max_round = self.flow_config.get("max_rounds", 1)
+
+        output_message = self._sequential_run(max_round=max_round, private_keys=private_keys,
+                                              keys_to_ignore_for_hash=keys_to_ignore_for_hash)
+
+        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
+        outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"],
+                                                       allow_class_attributes=False)
+
+        return outputs
+
+    @classmethod
+    def type(cls):
+        return "circular"
+
+    def _sequential_run(self, max_round:int,  private_keys: Optional[List[str]] = [],
+                       keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+        # default value, though it should never be returned because max_round should be > 0
+        output_message = {}
         for idx in range(max_round):
-            # ~~~ Reset the generator flow if needed ~~~
             for flow_name, current_flow in self.subflows.items():
                 if self.flow_config["reset_every_round"].get(flow_name, False):
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
@@ -43,16 +60,7 @@ class CircularFlow(CompositeFlow):
                 # ~~~ Check for end of interaction
                 if self._early_exit():
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
-                    break
-
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
-        outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"],
-                                                       allow_class_attributes=False)
-
-        return outputs
-
-    @classmethod
-    def type(cls):
-        return "circular"
-
+                    return output_message
+        log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
+        return output_message
 
