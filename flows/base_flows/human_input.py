@@ -18,7 +18,7 @@ class HumanInputFlow(AtomicFlow):
 
     query_message_prompt_template: PromptTemplate = None
 
-    DEFAULT_CONFIG = {
+    __default_flow_config = {
         "end_of_input_string": "EOI",
         "input_keys": [],
         "description": "A flow that asks the user for input.",
@@ -31,7 +31,7 @@ class HumanInputFlow(AtomicFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self._extend_keys_to_ignore_when_resetting_namespace(["DEFAULT_CONFIG"])
+        self._extend_keys_to_ignore_when_resetting_namespace(["__default_flow_config"])
 
     @classmethod
     def _set_up_prompts(cls, config):
