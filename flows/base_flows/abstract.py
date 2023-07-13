@@ -55,8 +55,8 @@ class Flow(ABC):
         "output_keys": [],
 
         "input_keys": [],
-        "private_keys": [],
-        "keys_to_ignore_for_hash": [],
+        "private_keys": ["api_keys"],
+        "keys_to_ignore_for_hash": ["api_keys"],
 
         "input_data_transformations": [],
         "output_data_transformations": [],
@@ -325,8 +325,6 @@ class Flow(ABC):
             input_keys: Optional[List[str]] = None,
             output_keys: Optional[List[str]] = None,
             api_keys: Optional[Dict[str, str]] = None,
-            private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
-            keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
     ):
         self.api_keys = api_keys
 
@@ -358,8 +356,8 @@ class Flow(ABC):
         msg = InputMessage(
             created_by=self.flow_config['name'],
             data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
-            private_keys=private_keys,
-            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
+            private_keys=self.flow_config["private_keys"],
+            keys_to_ignore_for_hash=self.flow_config["keys_to_ignore_for_hash"],
             src_flow=src_flow,
             dst_flow=dst_flow,
             output_keys=output_keys,
@@ -487,7 +485,9 @@ class Flow(ABC):
             )
 
             self.cache.set(cache_key, value_to_cache)
-            log.debug(f"Cached: {str(value_to_cache)}")
+            log.debug(f"Cached: {str(value_to_cache)} \n"
+                      f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+                      f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
         
         return response
 

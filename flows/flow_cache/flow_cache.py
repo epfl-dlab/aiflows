@@ -65,6 +65,7 @@ class FlowCache:
 
     def get(self, key: CachingKey) -> Optional[CachingValue]:
         key = key.hash_string()
+        log.debug("Getting key: %s", key)
 
         with self.__lock:
             return self._index.get(key, None)
