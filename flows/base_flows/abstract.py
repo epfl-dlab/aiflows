@@ -54,7 +54,6 @@ class Flow(ABC):
     __default_flow_config = {
         "output_keys": [],
 
-        "input_keys": [],
         "private_keys": ["api_keys"],
         "keys_to_ignore_for_hash": ["api_keys"],
 
@@ -124,7 +123,7 @@ class Flow(ABC):
         The default implementation construct the default config by recursively merging the configs of the base classes.
         """
         if cls == Flow:
-            return cls.__default_flow_config
+            return copy.deepcopy(cls.__default_flow_config)
         elif cls == ABC:
             return {}
         elif cls == object:
@@ -145,7 +144,7 @@ class Flow(ABC):
             )
             config = recursive_dictionary_update(parent_default_config, default_config)
         elif hasattr(cls, "__default_flow_config"): # no yaml but __default_flow_config exists in class declaration
-            config = recursive_dictionary_update(parent_default_config, cls.__default_flow_config)
+            config = recursive_dictionary_update(parent_default_config, copy.deepcopy(cls.__default_flow_config))
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
@@ -277,7 +276,10 @@ class Flow(ABC):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config.get("input_keys", list(data.keys()))
+        pre_runtime_input_keys = self.flow_config.get("input_keys", None)
+        if pre_runtime_input_keys is None:
+            return list(data.keys())
+        return pre_runtime_input_keys
 
     def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
@@ -441,7 +443,7 @@ class Flow(ABC):
         assert self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching
 
         if not self.SUPPORTS_CACHING:
-            raise Exception(f"Flow {self.flow_config['name']} does not support caching")
+            raise Exception(f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
         
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
