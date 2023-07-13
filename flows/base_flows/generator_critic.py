@@ -44,10 +44,7 @@ class GeneratorCriticFlow(CompositeFlow):
         return generator, critic
 
     def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = None,
-            keys_to_ignore_for_hash: Optional[List[str]] = None,
-            enable_cache: bool = True) -> Dict[str, Any]:
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
         generator_flow, critic_flow = self._identify_flows()
 
         # ~~~ sets the input_data in the flow_state dict ~~~
@@ -61,8 +58,6 @@ class GeneratorCriticFlow(CompositeFlow):
             # ~~~ Execute the generator flow and update the state with the outputs ~~~
             generator_output_message = self._call_flow_from_state(
                 flow_to_call=generator_flow,
-                private_keys=private_keys,
-                keys_to_ignore_for_hash=keys_to_ignore_for_hash
             )
             self._state_update_dict(generator_output_message)
 
@@ -78,8 +73,6 @@ class GeneratorCriticFlow(CompositeFlow):
             # ~~~ Execute the critic flow and update the state with the outputs ~~~
             critic_output_message = self._call_flow_from_state(
                 flow_to_call=critic_flow,
-                private_keys=private_keys,
-                keys_to_ignore_for_hash=keys_to_ignore_for_hash
             )
             self._state_update_dict(critic_output_message)
 

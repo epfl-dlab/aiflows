@@ -74,28 +74,28 @@ def flow_run_cache():
     def decorator(method):
         cache_dir = get_cache_dir()
         lock = threading.Lock()
-        
+        cache = Index(cache_dir) # TODO(yeeef): what is the performance implication?
+
 
         @functools.wraps(method)
         def wrapper(*args, **kwargs):
-            cache = Index(cache_dir)
-            enable_cache = kwargs.get("enable_cache", False)
+
+            # Check how API_keys are handles
+            all_args = list(args) + list(kwargs.values())
+
+            flow = get_calling_flow(all_args)
+            input_data = kwargs["input_data"]
+            enable_cache = flow.flow_config["enable_cache"]
+            keys_to_ignore_for_hash = flow.flow_config["keys_to_ignore_for_hash"]
 
             ### only cache when both are true
             if not enable_cache or not CACHING_PARAMETERS.do_caching:
                 result = method(*args, **kwargs)
                 return result
 
-
-            # Check how API_keys are handles
-            all_args = list(args) + list(kwargs.values())
-
-            flow = get_calling_flow(all_args)
-            if not flow.SUPPORTS_CACHING:
+            if not flow.SUPPORTS_CACHING: # TODO(yeeef): sort out paremters to caching and converge
                 raise Exception(f"Flow {flow.__class__.__name__} does not support caching")
-
-            input_data = kwargs["input_data"]
-            keys_to_ignore_for_hash = kwargs["keys_to_ignore_for_hash"]
+            
             input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
             key = _custom_hash([flow, input_data_to_hash, keys_to_ignore_for_hash])
 

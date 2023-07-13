@@ -86,10 +86,7 @@ class HumanInputFlow(AtomicFlow):
         return human_input
 
     def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = None,
-            keys_to_ignore_for_hash: Optional[List[str]] = None,
-            enable_cache: bool = True) -> Dict[str, Any]:
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
 
         query_message = self._get_message(self.query_message_prompt_template, input_data)
         state_update_message = UpdateMessage_Generic(
