@@ -1,7 +1,48 @@
 name: "SimpleQA"
 description: "A flow that answers questions."
-model: "gpt-3.5-turbo"
 
+# ~~~ OpenAI model parameters ~~
+model: "gpt-3.5-turbo"
+generation_parameters:
+  n: 1
+  max_tokens: 3000
+  temperature: 0.3
+
+  model_kwargs:
+    top_p: 0.2
+    frequency_penalty: 0
+    presence_penalty: 0
+
+n_api_retries: 6
+wait_time_between_retries: 20
+
+# ~~~ Prompt specification ~~~
+system_message_prompt_template:
+  _target_: langchain.PromptTemplate
+  template: |2-
+    You are a helpful chatbot that truthfully answers questions.
+  input_variables: []
+  partial_variables: {}
+  template_format: jinja2
+
+query_message_prompt_template:
+  _target_: langchain.PromptTemplate
+  template: |2-
+    Answer the following question: {{question}}
+  input_variables: ["question"]
+  partial_variables: {}
+  template_format: jinja2
+
+human_message_prompt_template:
+  _target_: langchain.PromptTemplate
+  template: "{{query}}"
+  input_variables:
+    - "query"
+  template_format: jinja2
+default_human_input_keys:
+  - "query"
+
+# ~~~ Flow specification ~~~
 input_data_transformations: []
 input_keys:
   - "question"
@@ -12,15 +53,3 @@ output_data_transformations:
       raw_response: "answer"
 output_keys:
   - "answer"
-
-system_message_prompt_template:
-  template: |2-
-    You are a helpful chatbot that truthfully answers questions.
-  input_variables: []
-  partial_variables: {}
-
-query_message_prompt_template:
-  template: |2-
-    Answer the following question: {{question}}
-  input_variables: ["question"]
-  partial_variables: {}
