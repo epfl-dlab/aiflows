@@ -189,6 +189,14 @@ class Flow(ABC):
               full_reset: bool, 
               recursive: bool, 
               src_flow: Optional[Union["Flow", str]] = "Launcher"):
+        """
+        Reset the flow state and history. If recursive is True, reset all subflows as well.
+
+        :param full_reset:  If True, remove all data in flow_state. If False, keep the data in flow_state.
+        :param recursive:
+        :param src_flow:
+        :return:
+        """
         
         if isinstance(src_flow, Flow):
             src_flow = src_flow.flow_config["name"]
@@ -351,6 +359,7 @@ class Flow(ABC):
         packaged_data = {}
         for input_key in input_keys:
             if input_key not in data_dict:
+                import pdb; pdb.set_trace()
                 raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
 
             packaged_data[input_key] = data_dict[input_key]
@@ -363,7 +372,6 @@ class Flow(ABC):
             keys_to_ignore_for_hash=self.flow_config["keys_to_ignore_for_hash"],
             src_flow=src_flow,
             dst_flow=dst_flow,
-            output_keys=None, # TODO, remove output_keys from Input Message
             api_keys=api_keys,
         )
         return msg
@@ -373,8 +381,11 @@ class Flow(ABC):
                                     data_transformations: List[DataTransformation],
                                     keys: List[str]):
         data_transforms_to_apply = []
+        # TODO(saibo): why don't we just apply all data transformations? Is there a
+        # situation where we don't want to apply all data transformations?
         for data_transform in data_transformations:
             if data_transform.output_key is None or data_transform.output_key in keys:
+                # TODO(saibo): what is the situation where output_key is None?
                 data_transforms_to_apply.append(data_transform)
 
         for data_transform in data_transforms_to_apply:
@@ -592,13 +603,13 @@ class CompositeFlow(Flow, ABC):
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,
-            search_class_namespace_for_inputs: bool = False # TODO, can we remove this argument?
+            search_class_namespace_for_inputs: bool = False
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = getattr(self, 'api_keys', None)
         input_data = self._fetch_state_attributes_by_keys(
-            keys=None, # TODO, why is this set to be None?
+            keys=None, # set to be None to fetch all keys
             allow_class_attributes=search_class_namespace_for_inputs
         )
         input_message = flow_to_call.package_input_message(data_dict=input_data,

@@ -1,1 +1,1 @@
-from .OpenAIChat.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow
+from .OpenAIChatAtomicFlow.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow

@@ -21,10 +21,7 @@ class CircularFlow(CompositeFlow):
 
         assert len(kwargs["subflows"]) > 0, f"Circular flow needs at least one flow, currently has 0"
 
-    def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
@@ -47,8 +44,7 @@ class CircularFlow(CompositeFlow):
         output_message = {}
         for idx in range(max_round):
             for flow_name, current_flow in self.subflows.items():
-                if self.flow_config["reset_every_round"].get(flow_name, False):
-                    current_flow.reset(full_reset=True, recursive=True, src_flow=self)
+                current_flow.reset(src_flow=self, **self.flow_config["reset_every_round"].get(flow_name))
 
                 output_message = self._call_flow_from_state(
                     flow_to_call=current_flow)
