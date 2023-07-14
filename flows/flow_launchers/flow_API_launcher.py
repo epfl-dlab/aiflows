@@ -1,6 +1,7 @@
 from abc import ABC
 
 import time
+from copy import deepcopy
 
 from typing import List, Dict, Union, Optional
 
@@ -11,6 +12,7 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
+
 # ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
 
 
@@ -20,7 +22,7 @@ class FlowLauncher(ABC):
                data: Union[Dict, List[Dict]],
                output_keys: Optional[List[str]] = None,
                path_to_output_file: Optional[str] = None,
-               api_keys: Optional[Dict[str,str]] = None) -> List[Dict]:
+               api_keys: Optional[Dict[str, str]] = None) -> List[Dict]:
 
         if isinstance(data, dict):
             data = [data]
@@ -28,6 +30,7 @@ class FlowLauncher(ABC):
         full_outputs = []
         human_readable_outputs = []
         for sample in data:
+            sample = deepcopy(sample)
             flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
             input_message = flow.package_input_message(data_dict=sample,
@@ -49,8 +52,8 @@ class FlowLauncher(ABC):
             FlowMultiThreadedAPILauncher.write_batch_output(full_outputs,
                                                             path_to_output_file=path_to_output_file,
                                                             keys_to_write=["id",
-                                                              "inference_outputs",
-                                                              "error"])
+                                                                           "inference_outputs",
+                                                                           "error"])
 
         return full_outputs, human_readable_outputs
 
@@ -84,9 +87,10 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
         self.flows = flow
 
-        assert self.n_workers == len(self.flows), "FlowMultiThreadedAPILauncher must be given as many flows as workers. " \
-                                                  "# of flows passed: {}, # of workers: {}".format(len(self.flows),
-                                                                                                   self.n_workers)
+        assert self.n_workers == len(
+            self.flows), "FlowMultiThreadedAPILauncher must be given as many flows as workers. " \
+                         "# of flows passed: {}, # of workers: {}".format(len(self.flows),
+                                                                          self.n_workers)
 
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode
@@ -122,8 +126,9 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
                     while _attempt_idx <= self.n_batch_retries:
                         try:
+                            # ToDo: Use the same format as the FlowLauncher for passing API keys
                             api_keys = {"openai": self.api_keys[api_key_idx]}
-                            input_message = flow.package_input_message(data_dict=sample,
+                            input_message = flow.package_input_message(data_dict=deepcopy(sample),
                                                                        src_flow="Launcher",
                                                                        output_keys=self.output_keys,
                                                                        api_keys=api_keys)
@@ -149,7 +154,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                 else:
                     # For development and debugging purposes
                     api_keys = {"openai": self.api_keys[api_key_idx]}
-                    input_message = flow.package_input_message(data_dict=sample,
+                    input_message = flow.package_input_message(data_dict=deepcopy(sample),
                                                                src_flow="Launcher",
                                                                output_keys=self.output_keys,
                                                                api_keys=api_keys)
@@ -162,7 +167,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                     # Break if one of the independent samples failed
                     break
 
-            sample["inference_outputs"] = inference_outputs
+            sample["inference_outputs"] = inference_outputs  # ToDo: Use an output object instead of the sample directly
             # ToDo: how is None written/loaded to/from a JSON file --> Mention this in the documentation and remove ToDo
             sample["error"] = _error
 
