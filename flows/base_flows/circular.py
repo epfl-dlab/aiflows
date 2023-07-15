@@ -30,7 +30,7 @@ class CircularFlow(CompositeFlow):
         output_message = self._sequential_run(max_round=max_round)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
-        outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"],
+        outputs = self._fetch_state_attributes_by_keys(keys=self.get_output_keys(),
                                                        allow_class_attributes=False)
 
         return outputs
@@ -44,7 +44,8 @@ class CircularFlow(CompositeFlow):
         output_message = {}
         for idx in range(max_round):
             for flow_name, current_flow in self.subflows.items():
-                current_flow.reset(src_flow=self, **self.flow_config["reset_every_round"].get(flow_name))
+                if self.flow_config["reset_every_round"].get(flow_name):
+                    current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
                 output_message = self._call_flow_from_state(
                     flow_to_call=current_flow)

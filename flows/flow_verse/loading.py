@@ -648,7 +648,6 @@ def _sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool, 
         write_flow_mod_summary(flow_mod_summary_path, flow_mod_summary)
 
         logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
-        logger.info(f"{flow_mod_summary}")
         return flow_mod_summary
 
 

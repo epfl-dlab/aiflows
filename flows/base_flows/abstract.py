@@ -284,7 +284,7 @@ class Flow(ABC):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        pre_runtime_input_keys = self.flow_config.get("input_keys", None)
+        pre_runtime_input_keys = self.flow_config["input_keys"]
         if pre_runtime_input_keys is None:
             return list(data.keys())
         return pre_runtime_input_keys
