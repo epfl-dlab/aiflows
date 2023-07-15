@@ -636,6 +636,9 @@ class CompositeFlow(Flow, ABC):
             #     subflow_config.pop("class"),
             #     cls.instantiate_from_default_config.__name__
             # ])
+            if subflow_config["_target_"].startswith("."):
+                cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
+                subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
             
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             subflows[flow_obj.flow_config["name"]] = flow_obj
