@@ -34,9 +34,9 @@ class Flow(ABC):
     SUPPORTS_CACHING = False
 
     KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
-        "flow_config", "flow_state", "history", 
-        "input_message", 
-        "cache", 
+        "flow_config", "flow_state", "history",
+        "input_message",
+        "cache",
         "input_data_transformations", "output_data_transformations"}
 
     KEYS_TO_IGNORE_HASH = {"name", "description"} # TODO(yeeef): rename it to something else. It is different from `keys_to_ignore_for_hash`(this is for input_keys and input_data when caching). KEYS_TO_IGNORE_HASH is for flow_config and flow_state when caching
@@ -72,7 +72,6 @@ class Flow(ABC):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
-        
         self.flow_state = None
         self.flow_config = None
         self.history = None
@@ -83,6 +82,7 @@ class Flow(ABC):
         self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
         if log.getEffectiveLevel() == logging.DEBUG:
+            log.debug(f"Flow {self.flow_config.get('name','unknown_name')} instantiated with the following parameters:")
             print_config_tree(self.flow_config)
 
         self.set_up_flow_state()
@@ -188,6 +188,14 @@ class Flow(ABC):
               full_reset: bool, 
               recursive: bool, 
               src_flow: Optional[Union["Flow", str]] = "Launcher"):
+        """
+        Reset the flow state and history. If recursive is True, reset all subflows as well.
+
+        :param full_reset:  If True, remove all data in flow_state. If False, keep the data in flow_state.
+        :param recursive:
+        :param src_flow:
+        :return:
+        """
         
         if isinstance(src_flow, Flow):
             src_flow = src_flow.flow_config["name"]
@@ -283,7 +291,10 @@ class Flow(ABC):
 
     def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config["output_keys"]
+        pre_runtime_output_keys = self.flow_config.get("output_keys", None)
+        if pre_runtime_output_keys is None:
+            return list(data.keys())
+        return pre_runtime_output_keys
 
     def _log_message(self, message: Message):
         log.debug(message.to_string())
@@ -291,7 +302,7 @@ class Flow(ABC):
 
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None],
-                                        allow_class_attributes: bool = True):
+                                        allow_class_attributes: bool = False):
         data = {}
 
         if keys is None:
@@ -311,7 +322,7 @@ class Flow(ABC):
         for key in keys:
             flat_flow_state = flatten_dict(self.flow_state)
             if key in flat_flow_state:
-                data[key] = self.flow_state[key]
+                data[key] = flat_flow_state[key]
                 continue
 
             if allow_class_attributes:
@@ -343,13 +354,11 @@ class Flow(ABC):
         assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
-        if output_keys is None:
-            output_keys = self.get_output_keys(data_dict)
-
         # ~~~ Get the data payload ~~~
         packaged_data = {}
         for input_key in input_keys:
             if input_key not in data_dict:
+                import pdb; pdb.set_trace()
                 raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
 
             packaged_data[input_key] = data_dict[input_key]
@@ -362,7 +371,6 @@ class Flow(ABC):
             keys_to_ignore_for_hash=self.flow_config["keys_to_ignore_for_hash"],
             src_flow=src_flow,
             dst_flow=dst_flow,
-            output_keys=output_keys,
             api_keys=api_keys,
         )
         return msg
@@ -372,8 +380,11 @@ class Flow(ABC):
                                     data_transformations: List[DataTransformation],
                                     keys: List[str]):
         data_transforms_to_apply = []
+        # TODO(saibo): why don't we just apply all data transformations? Is there a
+        # situation where we don't want to apply all data transformations?
         for data_transform in data_transformations:
             if data_transform.output_key is None or data_transform.output_key in keys:
+                # TODO(saibo): what is the situation where output_key is None?
                 data_transforms_to_apply.append(data_transform)
 
         for data_transform in data_transforms_to_apply:
@@ -393,14 +404,14 @@ class Flow(ABC):
         output_data = flatten_dict(output_data)
 
         # ~~~ Apply output transformations ~~~
-        output_keys = input_message.data["output_keys"]
+        output_keys = self.get_output_keys(output_data)
         output_data = self._apply_data_transformations(output_data,
                                                        self.output_data_transformations,
                                                        output_keys)
 
         # ~~~ Check that all expected keys are present ~~~
         missing_keys = []
-        for expected_key in input_message.data["output_keys"]:
+        for expected_key in output_keys:
             if expected_key not in output_data:
                 missing_keys.append(expected_key)
                 continue
@@ -416,7 +427,8 @@ class Flow(ABC):
 
         if len(output_data) == 0:
             raise Exception(f"The output dictionary is empty. "
-                            f"None of the expected outputs: `{str(output_keys)}` were found.")
+                            f"None of the expected outputs: `{str(output_keys)}` were found. "
+                            f"Available outputs are: `{str(list(output_data.keys()))}`")
 
         if len(missing_keys) != 0:
             flow_name = self.flow_config['name']
@@ -427,7 +439,7 @@ class Flow(ABC):
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.src_flow,
-            output_keys=input_message.data["output_keys"],
+            output_keys=output_keys,
             output_data=output_data,
             raw_response=raw_response,
             input_message_id=input_message.message_id,
@@ -499,12 +511,12 @@ class Flow(ABC):
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
-        # ~~~ Execute the logic of the flow, it should populate state with output_keys ~~~
-        assert "output_keys" in input_message.data and \
-               (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
-            "The input message must contain the key 'output_keys' with at least one expected output"
-        
-        response = None
+        # # ~~~ Execute the logic of the flow, it should populate state with output_keys ~~~
+        # assert "output_keys" in input_message.data and \
+        #        (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
+        #     "The input message must contain the key 'output_keys' with at least one expected output"
+        #
+        # response = None
         if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
             response = self.run(input_message.data)
         else:
@@ -590,13 +602,13 @@ class CompositeFlow(Flow, ABC):
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,
-            search_class_namespace_for_inputs: bool = True
+            search_class_namespace_for_inputs: bool = False
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = getattr(self, 'api_keys', None)
         input_data = self._fetch_state_attributes_by_keys(
-            keys=None,
+            keys=None, # set to be None to fetch all keys
             allow_class_attributes=search_class_namespace_for_inputs
         )
         input_message = flow_to_call.package_input_message(data_dict=input_data,

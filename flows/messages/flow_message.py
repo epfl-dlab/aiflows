@@ -14,14 +14,12 @@ class InputMessage(Message):
     def __init__(self,
                  src_flow: str,
                  dst_flow: str,
-                 output_keys: List[str],
                  keys_to_ignore_for_hash: Optional[List[str]] = None,
                  **kwargs):
         super().__init__(**kwargs)
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow
-        self.data["output_keys"] = output_keys
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
