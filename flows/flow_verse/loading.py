@@ -183,7 +183,7 @@ class FlowModuleSpecSummary:
                 sync_dir = os.path.join(sync_root, relative_sync_dir)
 
                 if not is_local_revision(revision):  # remote revision
-                    cache_dir = utils.build_hf_cache_path(repo_id, commit_hash, DEFAULT_CACHE_PATH)
+                    cache_dir = utils.build_hf_cache_path(repo_id, commit_hash, cache_root)
                 else:
                     cache_dir = sync_dir
 

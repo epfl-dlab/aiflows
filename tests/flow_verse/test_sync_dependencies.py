@@ -270,16 +270,10 @@ def test_sync_dependency_chain(tmpdir, cache_root, sync_root, remote_sync_yeeef_
             ),
             FlowModuleSpec("yeeef/GPT4Flow", 
                            "main", 
-                           "b503b0bf722d9637b221d6ccfde29bfdd97d529a", 
-                           build_hf_cache_path("yeeef/GPT4Flow", "b503b0bf722d9637b221d6ccfde29bfdd97d529a", cache_root),
+                           "4b2766dd0229d2e9b6f6887b163522f03aefd83f", 
+                           build_hf_cache_path("yeeef/GPT4Flow", "4b2766dd0229d2e9b6f6887b163522f03aefd83f", cache_root),
                            os.path.join(sync_root, "yeeef/GPT4Flow/")
-            ),
-            FlowModuleSpec("martinjosifoski/OpenAIChatAtomicFlow", 
-                           "main", 
-                           "921cf6a54be33ca9ad4f336827699616f7ea75d1", 
-                           build_hf_cache_path("martinjosifoski/OpenAIChatAtomicFlow", "921cf6a54be33ca9ad4f336827699616f7ea75d1", cache_root),
-                           os.path.join(sync_root, "martinjosifoski/OpenAIChatAtomicFlow/")
-            ),
+            )
         ]
     )
     assert_flow_module_summary(new_flow_mod_summary, correct_summary)
