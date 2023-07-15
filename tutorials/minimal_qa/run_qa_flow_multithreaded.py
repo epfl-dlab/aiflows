@@ -4,11 +4,10 @@ import hydra.utils
 
 from flows import logging
 from flows.datasets import OutputsDataset
-from flows.utils import caching_utils
+from flows.flow_cache import CACHING_PARAMETERS, clear_cache
 from flows.flow_launchers import FlowMultiThreadedAPILauncher
-from flows.utils.caching_utils import clear_cache
 
-caching_utils.CACHING_PARAMETERS.do_caching = False  # Set to false to disable caching
+CACHING_PARAMETERS.do_caching = False  # Set to false to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
 from flows.flow_launchers import FlowLauncher
