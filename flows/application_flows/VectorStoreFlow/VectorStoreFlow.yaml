@@ -1,0 +1,14 @@
+name: "VectorStoreFlow"
+description: "VectorStoreFlow"
+
+input_keys:
+  - "operation" # read or write
+  - "content"
+
+output_keys:
+  - "retrieved_content"
+
+type: "chroma"
+
+
+

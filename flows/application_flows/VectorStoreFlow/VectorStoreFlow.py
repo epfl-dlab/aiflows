@@ -1,7 +1,7 @@
 from copy import deepcopy
 from typing import Dict, List, Any
 
-import faiss
+# import faiss
 
 from langchain.docstore import InMemoryDocstore
 from langchain.embeddings import OpenAIEmbeddings
@@ -11,7 +11,7 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 from flows.base_flows import AtomicFlow
 
-class GenericLCVectorStore(AtomicFlow):
+class VectorStoreFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["type"]
     REQUIRED_KEYS_CONSTRUCTOR = ["embeddings", "vector_db"]
 
@@ -20,6 +20,9 @@ class GenericLCVectorStore(AtomicFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+        self.api_keys = None
+
 
     @classmethod
     def _set_up_retriever(cls, config: Dict[str, Any]) -> Dict[str, Any]:
@@ -57,10 +60,6 @@ class GenericLCVectorStore(AtomicFlow):
         kwargs.update(cls._set_up_retriever(flow_config))
 
         return cls(**kwargs)
-    
-    def _set_api_key(self, api_key: str):
-        # TODO: this doesn't work
-        self.embeddings.openai_api_key = api_key
 
     @staticmethod
     def package_documents(documents: List[str]) -> List[Document]:
@@ -69,17 +68,18 @@ class GenericLCVectorStore(AtomicFlow):
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         self.embeddings.openai_api_key = self.api_keys["openai"]
 
-        documents = self.package_documents(input_data["documents"])
-        query = input_data["query"]
+        operation = input_data["operation"]
+        content = input_data["content"]
+
         response = {}
-
-        if documents is not None:
+        assert operation in ["read", "write"], operation
+        if operation == "read":
+            response["retrieved"] = \
+                [doc.page_content for doc in self.vector_db.get_relevant_documents(content)]
+        elif operation == "write":
+            documents = self.package_documents(content)
             self.vector_db.add_documents(documents)
-            response["success"] = True
-
-        if query is not None:
-            retrieved_documents = self.vector_db.get_relevant_documents(query)
-            response[input_data["output_keys"][0]] = retrieved_documents
+            response["retrieved"] = ""
 
         return response
 
