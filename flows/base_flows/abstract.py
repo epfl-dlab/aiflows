@@ -143,8 +143,10 @@ class Flow(ABC):
                 resolve=True
             )
             config = recursive_dictionary_update(parent_default_config, default_config)
-        elif hasattr(cls, "__default_flow_config"): # no yaml but __default_flow_config exists in class declaration
-            config = recursive_dictionary_update(parent_default_config, copy.deepcopy(cls.__default_flow_config))
+        # TODO(yeeef): ugly fix, figure out why only this works
+        elif hasattr(cls, f"_{cls.__name__}__default_flow_config"): # no yaml but __default_flow_config exists in class declaration
+            # log.warn(f'{cls.__name__}, {cls.__default_flow_config}, {getattr(cls, f"_{cls.__name__}__default_flow_config")}')
+            config = recursive_dictionary_update(parent_default_config, copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")))
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
