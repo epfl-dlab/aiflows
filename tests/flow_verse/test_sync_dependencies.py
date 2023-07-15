@@ -1,4 +1,5 @@
 import os
+import sys
 import mock
 import pytest
 import importlib
@@ -26,8 +27,13 @@ def cache_root(tmpdir: str):
 @pytest.fixture
 def sync_root(tmpdir: str):
     ret = os.path.join(tmpdir, DEFAULT_FLOW_MODULE_FOLDER)
-    add_to_sys_path(tmpdir)
     return ret
+
+@pytest.fixture(autouse=True)
+def restore_sys_path_after_test():
+    original = sys.path[:]
+    yield None
+    sys.path = original[:]
 
 @pytest.fixture(autouse=True)
 def mock_sync_flow_dependencies(tmpdir, cache_root):
@@ -246,7 +252,6 @@ def test_sync_dependency_chain(tmpdir, cache_root, sync_root, remote_sync_yeeef_
     assert len(flow_mod_summary.get_mods()) == 1, flow_mod_summary.get_mods()
     
     sync_dir = os.path.relpath(flow_mod_summary.get_mods()[0].sync_dir, tmpdir)
-    # print(sync_dir)
     importlib.import_module(sync_dir.replace("/", "."))
     # import flow_modules.yeeef.UsefulChatBots
 
@@ -271,8 +276,8 @@ def test_sync_dependency_chain(tmpdir, cache_root, sync_root, remote_sync_yeeef_
             ),
             FlowModuleSpec("martinjosifoski/OpenAIChatAtomicFlow", 
                            "main", 
-                           "c7096b5cc25c35046c670b7313df82e0eda3c4bb", 
-                           build_hf_cache_path("martinjosifoski/OpenAIChatAtomicFlow", "c7096b5cc25c35046c670b7313df82e0eda3c4bb", cache_root),
+                           "921cf6a54be33ca9ad4f336827699616f7ea75d1", 
+                           build_hf_cache_path("martinjosifoski/OpenAIChatAtomicFlow", "921cf6a54be33ca9ad4f336827699616f7ea75d1", cache_root),
                            os.path.join(sync_root, "martinjosifoski/OpenAIChatAtomicFlow/")
             ),
         ]
