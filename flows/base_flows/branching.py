@@ -25,10 +25,11 @@ class BranchingFlow(CompositeFlow):
         branch = input_data.get("branch", None)
         if branch is None:
             raise ValueError("Branching flow needs a branch key in the input_data")
-        if branch not in self.subflows:
+        
+        current_flow = self._get_subflow(branch)
+        if current_flow is None:
             print(f"Branching flow has subflows: {self.subflows}")
             raise ValueError(f"Branching flow has no subflow with name {branch}")
-        current_flow = self.subflows[branch]
         # ~~~ Execute the flow and update state with answer ~~~
         output_message = self._call_flow_from_state(
             flow_to_call=current_flow

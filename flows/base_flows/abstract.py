@@ -4,7 +4,7 @@ import copy
 import threading
 
 from abc import ABC
-from typing import List, Dict, Any, Union, Optional, Callable
+from typing import List, Dict, Any, Union, Optional, Callable, Tuple
 
 
 import colorama
@@ -210,7 +210,7 @@ class Flow(ABC):
                 keys_deleted_from_namespace.append(key)
 
         if recursive and hasattr(self, "subflows"):
-            for flow in self.subflows.values():
+            for _, flow in self.subflows:
                 flow.reset(full_reset=full_reset, recursive=True)
 
         if full_reset:
@@ -580,9 +580,10 @@ class AtomicFlow(Flow, ABC):
 
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows", "subflows_dict"]
 
-    subflows: Dict[str, Flow]  # Dictionaries are ordered in Python 3.7+
+    subflows: List[Tuple[str, Flow]]
+    subflows_dict: Dict[str, Flow]
 
     def __init__(
             self,
@@ -603,30 +604,38 @@ class CompositeFlow(Flow, ABC):
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,
-            search_class_namespace_for_inputs: bool = False
+            search_class_namespace_for_inputs: bool = False,
+            keys: Optional[List[str]] = None
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = getattr(self, 'api_keys', None)
         input_data = self._fetch_state_attributes_by_keys(
-            keys=None, # set to be None to fetch all keys
+            keys=keys, # set to be None to fetch all keys
             allow_class_attributes=search_class_namespace_for_inputs
         )
+        # print(f"keys: {keys}, input_data: {input_data}, flow_to_call: {flow_to_call}")
         input_message = flow_to_call.package_input_message(data_dict=input_data,
                                                            src_flow=self,
                                                            api_keys=api_keys)
 
         # ~~~ Execute the call ~~~
         output_message = flow_to_call(input_message)
-
+        # print(f"output_message: {output_message}")
         # ~~~ Logs the output message to history ~~~
         self._log_message(output_message)
 
         return output_message
 
     @classmethod
+    def _get_subflow(cls, subflow_name: str) -> Optional[Flow]:
+        """Returns the subflow with the given name"""
+        return cls.subflows_dict.get(subflow_name, None)
+
+    @classmethod
     def _set_up_subflows(cls, config):
-        subflows = {}  # Dictionaries are ordered in Python 3.7+
+        subflows = []  # Dictionaries are ordered in Python 3.7+
+        subflows_dict = dict()
         subflows_config = config["subflows_config"]
 
         for subflow_config in subflows_config:
@@ -642,18 +651,21 @@ class CompositeFlow(Flow, ABC):
                     subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
                 
                 flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
-                subflows[flow_obj.flow_config["name"]] = flow_obj
+                subflows.append((flow_obj.flow_config["name"], flow_obj))
+                subflows_dict[flow_obj.flow_config["name"]] = flow_obj
+                
             elif "_reference_" in subflow_config:
-                subflows[subflow_config["name"]] = subflows[subflow_config["_reference_"]]
+                flow_obj = subflows_dict[subflow_config["_reference_"]]
+                subflows.append((flow_obj.flow_config["name"], flow_obj))
 
-        return subflows
+        return subflows, subflows_dict
 
     @classmethod
     def instantiate_from_config(cls, config):
         flow_config = copy.deepcopy(config)
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
-        kwargs["subflows"] = cls._set_up_subflows(flow_config)
+        kwargs["subflows"], kwargs["subflows_dict"] = cls._set_up_subflows(flow_config)
         kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
         kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
@@ -668,7 +680,7 @@ class CompositeFlow(Flow, ABC):
         output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
         subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}"
-                                   for subflow in self.subflows.values()])
+                                   for subflow in [flow for _, flow in self.subflows]])
 
         entries = [
             f"{indent}Name: {name}",
