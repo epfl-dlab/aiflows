@@ -11,13 +11,15 @@ def test_vec():
     print(mem_flow)
     
     input_message = mem_flow.package_input_message(
-        {"write": ["hello world", "bye world"]},
+        {"operation": "write",
+         "content": ["hello world", "bye world"]},
     )
     output_message = mem_flow(input_message)
     assert output_message.data["output_data"]["retrieved"] == ""
 
     input_message = mem_flow.package_input_message(
-        {"query": "world"},
+        {"operation": "read",
+         "content": "world"},
     )
     output_message = mem_flow(input_message)
     assert output_message.data["output_data"]["retrieved"] == ["hello world", "bye world"]

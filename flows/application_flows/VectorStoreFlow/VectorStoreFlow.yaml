@@ -2,8 +2,8 @@ name: "VectorStoreFlow"
 description: "VectorStoreFlow"
 
 input_keys:
-  - "query"
-  - "write"
+  - "operation" # read or write
+  - "content"
 
 output_keys:
   - "retrieved"

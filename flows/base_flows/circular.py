@@ -49,7 +49,7 @@ class CircularFlow(CompositeFlow):
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
                 output_message = self._call_flow_from_state(
-                    flow_to_call=current_flow, keys=last_output_data.keys())
+                    flow_to_call=current_flow)
                 self._state_update_dict(update_data=output_message)
                 last_output_data = output_message.data["output_data"]
                 # ~~~ Check for end of interaction
