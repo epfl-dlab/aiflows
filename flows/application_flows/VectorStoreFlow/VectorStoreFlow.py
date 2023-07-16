@@ -1,7 +1,7 @@
 from copy import deepcopy
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
-# import faiss
+import faiss
 
 from langchain.docstore import InMemoryDocstore
 from langchain.embeddings import OpenAIEmbeddings
@@ -12,28 +12,34 @@ from langchain.vectorstores.base import VectorStoreRetriever
 from flows.base_flows import AtomicFlow
 
 class VectorStoreFlow(AtomicFlow):
-    REQUIRED_KEYS_CONFIG = ["type"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["embeddings", "vector_db"]
+    REQUIRED_KEYS_CONFIG = ["type", "api_keys"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["vector_db"]
 
-    embeddings: OpenAIEmbeddings
     vector_db: VectorStoreRetriever
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        self.api_keys = None
+    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
+        pre_runtime_input_keys = self.flow_config["input_keys"]
+        if data is None:
+            return pre_runtime_input_keys
 
+        ret = []
+        for key in data.keys():
+            if key in pre_runtime_input_keys:
+                ret.append(key)
+        return ret
 
     @classmethod
     def _set_up_retriever(cls, config: Dict[str, Any]) -> Dict[str, Any]:
-        # TODO: api_key
-        embeddings = OpenAIEmbeddings(openai_api_key=".") # dummy key, to replace at run time
-        kwargs = {"embeddings": embeddings}
+        embeddings = OpenAIEmbeddings(openai_api_key=config["api_keys"]["openai"])
+        kwargs = {}
 
         vs_type = config["type"]
 
         if vs_type == "chroma":
-            vectorstore = Chroma(embedding_function=embeddings)
+            vectorstore = Chroma(config["name"], embedding_function=embeddings)
         elif vs_type == "faiss":
             index = faiss.IndexFlatL2(config.get("embedding_size", 1536)) 
             vectorstore = FAISS(
@@ -63,23 +69,23 @@ class VectorStoreFlow(AtomicFlow):
 
     @staticmethod
     def package_documents(documents: List[str]) -> List[Document]:
-        return [Document(page_content=doc) for doc in documents]
+        # TODO(yeeef): support metadata
+        return [Document(page_content=doc, metadata={"": ""}) for doc in documents]
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        self.embeddings.openai_api_key = self.api_keys["openai"]
-
-        operation = input_data["operation"]
-        content = input_data["content"]
-
         response = {}
-        assert operation in ["read", "write"], operation
-        if operation == "read":
-            response["retrieved"] = \
-                [doc.page_content for doc in self.vector_db.get_relevant_documents(content)]
-        elif operation == "write":
-            documents = self.package_documents(content)
+        
+        documents = input_data.get("write", None)
+        query = input_data.get("query", None)
+
+        if documents: # write documents to vector store
+            documents = self.package_documents(documents)
             self.vector_db.add_documents(documents)
             response["retrieved"] = ""
+
+        if query: # retrieve documents from vector store
+            retrieved_documents = self.vector_db.get_relevant_documents(query)
+            response["retrieved"] = [doc.page_content for doc in retrieved_documents]
 
         return response
 

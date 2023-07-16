@@ -2,13 +2,14 @@ name: "VectorStoreFlow"
 description: "VectorStoreFlow"
 
 input_keys:
-  - "operation" # read or write
-  - "content"
+  - "query"
+  - "write"
 
 output_keys:
-  - "retrieved_content"
+  - "retrieved"
 
 type: "chroma"
-
+api_keys:
+  openai: "YOUR_OPENAI_API_KEY"
 
 
