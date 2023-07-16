@@ -627,10 +627,9 @@ class CompositeFlow(Flow, ABC):
 
         return output_message
 
-    @classmethod
-    def _get_subflow(cls, subflow_name: str) -> Optional[Flow]:
+    def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
         """Returns the subflow with the given name"""
-        return cls.subflows_dict.get(subflow_name, None)
+        return self.subflows_dict.get(subflow_name, None)
 
     @classmethod
     def _set_up_subflows(cls, config):

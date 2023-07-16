@@ -8,7 +8,7 @@ log = logging.get_logger(__name__)
 
 
 class BranchingFlow(CompositeFlow):
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
