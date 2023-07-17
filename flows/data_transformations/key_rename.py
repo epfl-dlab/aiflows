@@ -2,6 +2,8 @@ from typing import Dict, Any
 
 from flows.data_transformations.abstract import DataTransformation
 from flows.utils.general_helpers import flatten_dict, unflatten_dict
+from flows.utils.logging import get_logger
+log = get_logger(__name__)
 
 
 class KeyRename(DataTransformation):
@@ -19,6 +21,8 @@ class KeyRename(DataTransformation):
         for old_key, new_key in self.old_key2new_key.items():
             if old_key in data_dict:
                 data_dict[new_key] = data_dict.pop(old_key)
+            else:
+                log.warning(f'old_key: {old_key} not in data_dict, available keys: {data_dict.keys()}')
 
         if self.flatten_data_dict:
             data_dict = unflatten_dict(data_dict)

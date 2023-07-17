@@ -1,4 +1,5 @@
-from .abstract import Flow, AtomicFlow, CompositeFlow
+from .abstract import Flow, AtomicFlow
+from .composite import CompositeFlow
 from .fixed_reply import FixedReplyFlow
 from .human_input import HumanInputFlow
 from .circular import CircularFlow

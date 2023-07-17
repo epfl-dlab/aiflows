@@ -32,6 +32,13 @@ class CircularFlow(CompositeFlow):
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         # print(f"output keys: {self.get_output_keys()}")
         outputs = self._fetch_state_attributes_by_keys(keys=self.get_output_keys(),
+                                                       # TODO: the current doesn't work because the output_keys are "asnwer"
+                                                       # but at the moment, the answer is still called "observation"
+                                                       # and it will only be renamed in l522 in abstract_flow.py(ReActFlow)
+                                                       # workaround: use `output_message.data["output_keys"]` instead
+
+                                                       # Further thoughts: maybe we should call data_transformation before _fetch_state_attributes_by_keys
+                                                       # as well as for input_data_transformation.
                                                        allow_class_attributes=False)
         return outputs
 

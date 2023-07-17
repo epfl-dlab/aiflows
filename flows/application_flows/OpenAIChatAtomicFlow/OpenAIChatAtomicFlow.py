@@ -100,10 +100,10 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given tshe current state and, optionally, the input data"""
-        if self._is_conversation_initialized():
-            return self.flow_config["input_keys"]
-        else:
+        if not self._is_conversation_initialized() and self.flow_config.get("init_input_keys", None) is not None:
             return self.flow_config["init_input_keys"]
+        else:
+            return self.flow_config["input_keys"]
 
     @staticmethod
     def _get_message(prompt_template, input_data: Dict[str, Any]):
@@ -220,8 +220,11 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         else:
             # Initialize the conversation (add the system message, and potentially the demonstrations)
             self._initialize_conversation(input_data)
-            # Construct the message using the query message prompt template
-            user_message_content = self._get_message(self.init_human_message_prompt_template, input_data)
+            if getattr(self, "init_human_message_prompt_template", None) is not None:
+                # Construct the message using the query message prompt template
+                user_message_content = self._get_message(self.init_human_message_prompt_template, input_data)
+            else:
+                user_message_content = self._get_message(self.human_message_prompt_template, input_data)
 
         self._state_update_add_chat_message(role=self.flow_config["user_name"],
                                             content=user_message_content)
