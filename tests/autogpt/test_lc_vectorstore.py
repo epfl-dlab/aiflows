@@ -23,3 +23,7 @@ def test_vec():
     )
     output_message = mem_flow(input_message)
     assert output_message.data["output_data"]["retrieved"] == ["hello world", "bye world"]
+
+
+if __name__ == '__main__':
+    test_vec()

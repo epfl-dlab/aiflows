@@ -74,6 +74,8 @@ class VectorStoreFlow(AtomicFlow):
             retrieved_documents = self.vector_db.get_relevant_documents(query)
             response["retrieved"] = [doc.page_content for doc in retrieved_documents]
         elif operation == "write":
+            if isinstance(content, str):
+                content = [content]
             assert isinstance(content, list), f"Content must be a list of strings, got {type(content)}"
             documents = content
             documents = self.package_documents(documents)
