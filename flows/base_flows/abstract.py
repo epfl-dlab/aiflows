@@ -1,13 +1,17 @@
 import os
 import sys
 import copy
+import threading
 
 from abc import ABC
 from typing import List, Dict, Any, Union, Optional, Callable
 
+
 import colorama
 import hydra
 from omegaconf import OmegaConf
+
+from diskcache import Index
 
 # ToDo(https://github.com/epfl-dlab/flows/issues/69): make imports relative?
 from ..utils import logging
@@ -18,30 +22,61 @@ from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     OutputMessage
 from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters, flatten_dict, unflatten_dict
 from flows.utils.rich_utils import print_config_tree
+from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 
 log = logging.get_logger(__name__)
 
 
 class Flow(ABC):
-    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"flow_config", "flow_state", "history", "input_message"}
+    # user should at least provide `REQUIRED_KEYS_CONFIG` when instantiate a flow
+    REQUIRED_KEYS_CONFIG = ["name", "description"]
 
-    KEYS_TO_IGNORE_HASH = {"name", "description"}
     SUPPORTS_CACHING = False
 
-    REQUIRED_KEYS_CONFIG = ["name", "description", "clear_flow_namespace_on_run_end", "keep_raw_response"]
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
+        "flow_config", "flow_state", "history", 
+        "input_message", 
+        "cache", 
+        "input_data_transformations", "output_data_transformations"}
+
+    KEYS_TO_IGNORE_HASH = {"name", "description"} # TODO(yeeef): rename it to something else. It is different from `keys_to_ignore_for_hash`(this is for input_keys and input_data when caching). KEYS_TO_IGNORE_HASH is for flow_config and flow_state when caching
+
+    # TODO(yeeef): the simplest and most natural way to declare required keys constructor is to .... declare them in the constructor signature, instead of this
+    # why the input_data_transformation cannot be a lambda? not everything can be described by yaml... we need to find a boundary
     REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
 
+    # below parameters are essential for flow instantiation, but we provide value for them,
+    # so user is not required to provide them in the flow config
+    __default_flow_config = {
+        "output_keys": [],
+
+        "private_keys": ["api_keys"],
+        "keys_to_ignore_for_hash": ["api_keys"],
+
+        "input_data_transformations": [],
+        "output_data_transformations": [],
+
+        "clear_flow_namespace_on_run_end": True,
+        "keep_raw_response": True,
+        "enable_cache": False, # wheter to enable cache for this flow
+    }
+
     def __init__(
             self,
             **kwargs_passed_to_the_constructor
     ):
+        """
+        __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
+        """
+        
         self.flow_state = None
         self.flow_config = None
         self.history = None
+        self.cache = FlowCache() # TODO(yeeef): inject the dependency rather than directly initialize
 
         self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
@@ -88,14 +123,7 @@ class Flow(ABC):
         The default implementation construct the default config by recursively merging the configs of the base classes.
         """
         if cls == Flow:
-            config = {
-                "input_data_transformations": [],
-                "output_keys": [],
-                "output_data_transformations": [],
-                "clear_flow_namespace_on_run_end": True,
-                "keep_raw_response": True
-            }
-            return config
+            return copy.deepcopy(cls.__default_flow_config)
         elif cls == ABC:
             return {}
         elif cls == object:
@@ -115,8 +143,8 @@ class Flow(ABC):
                 resolve=True
             )
             config = recursive_dictionary_update(parent_default_config, default_config)
-        elif hasattr(cls, "DEFAULT_CONFIG"):
-            config = recursive_dictionary_update(parent_default_config, cls.DEFAULT_CONFIG)
+        elif hasattr(cls, "__default_flow_config"): # no yaml but __default_flow_config exists in class declaration
+            config = recursive_dictionary_update(parent_default_config, copy.deepcopy(cls.__default_flow_config))
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
@@ -248,7 +276,10 @@ class Flow(ABC):
 
     def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        return self.flow_config["input_keys"]
+        pre_runtime_input_keys = self.flow_config.get("input_keys", None)
+        if pre_runtime_input_keys is None:
+            return list(data.keys())
+        return pre_runtime_input_keys
 
     def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
@@ -296,8 +327,6 @@ class Flow(ABC):
             input_keys: Optional[List[str]] = None,
             output_keys: Optional[List[str]] = None,
             api_keys: Optional[Dict[str, str]] = None,
-            private_keys: Optional[List[str]] = None,  # Keys that should not be serialized or logged (e.g. api_keys)
-            keys_to_ignore_for_hash: Optional[List[str]] = None,  # Keys that should not be hashed (e.g. api_keys)
     ):
         self.api_keys = api_keys
 
@@ -326,13 +355,11 @@ class Flow(ABC):
             packaged_data[input_key] = data_dict[input_key]
 
         # ~~~ Create the message ~~~
-        # TODO(https://github.com/epfl-dlab/flows/issues/61): dont pass through `api_keys` everywhere
-        #    Re the api_keys, we need to keep the them dynamic as we're parallelizing over api_keys to avoid rate limits
         msg = InputMessage(
             created_by=self.flow_config['name'],
             data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
-            private_keys=private_keys,
-            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
+            private_keys=self.flow_config["private_keys"],
+            keys_to_ignore_for_hash=self.flow_config["keys_to_ignore_for_hash"],
             src_flow=src_flow,
             dst_flow=dst_flow,
             output_keys=output_keys,
@@ -357,9 +384,10 @@ class Flow(ABC):
     def _package_output_message(
             self,
             input_message: InputMessage,
-            response: Any,
+            response: Dict[str, Any],
     ):
-        output_data = {"raw_response": response}
+        output_data = response
+        raw_response = copy.deepcopy(response)
 
         # ~~~ Flatten the output data ~~~
         output_data = flatten_dict(output_data)
@@ -380,9 +408,11 @@ class Flow(ABC):
         # ~~~ Unflatten the output data ~~~
         output_data = unflatten_dict(output_data)
 
+        # add raw_response into output_data if keep_raw_response=True
         if not self.flow_config["keep_raw_response"]:
-            del output_data["raw_response"]
-            log.warning("The raw response was not logged.")
+            log.info("The raw response will not be added to output_data")
+        else:
+            output_data["raw_response"] = raw_response
 
         if len(output_data) == 0:
             raise Exception(f"The output dictionary is empty. "
@@ -399,16 +429,69 @@ class Flow(ABC):
             dst_flow=input_message.src_flow,
             output_keys=input_message.data["output_keys"],
             output_data=output_data,
+            raw_response=raw_response,
             input_message_id=input_message.message_id,
             missing_output_keys=missing_keys,
             history=self.history,
         )
 
     def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
+    
+    def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        assert self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching
+
+        if not self.SUPPORTS_CACHING:
+            raise Exception(f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
+        
+        # ~~~ get the hash string ~~~
+        keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
+        input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
+        cache_key = CachingKey(self, input_data_to_hash, keys_to_ignore_for_hash)
+        # ~~~ get from cache ~~~
+        response = None
+        cached_value: CachingValue = self.cache.get(cache_key)
+        if cached_value is not None:
+            # Retrieve output from cache
+            response = cached_value.output_results
+
+            # Restore the flow to the state it was in when the output was created
+            self.__setstate__(cached_value.full_state)
+
+            # Restore the history messages
+            for message in cached_value.history_messages_created:
+                message_softcopy = message  # ToDo: Get a softcopy with an updated timestamp
+                self._log_message(message_softcopy)
+
+            log.debug(f"Retrieved from cache: {self.__class__.__name__} "
+                    f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+                    f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+            log.debug(f"Retrieved from cache: {str(cached_value)}")
+
+        else:
+            # Call the original function
+            history_len_pre_execution = len(self.history)
+
+            # Execute the call
+            response = self.run(input_data)
+
+            # Retrieve the messages created during the execution
+            num_created_messages = len(self.history) - history_len_pre_execution
+            new_history_messages = self.history.get_last_n_messages(num_created_messages)
+
+            value_to_cache = CachingValue(
+                output_results=response,
+                full_state=self.__getstate__(),
+                history_messages_created=new_history_messages
+            )
+
+            self.cache.set(cache_key, value_to_cache)
+            log.debug(f"Cached: {str(value_to_cache)} \n"
+                      f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+                      f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+        
+        return response
 
     def __call__(self, input_message: InputMessage):
         self.input_message = input_message
@@ -420,9 +503,12 @@ class Flow(ABC):
         assert "output_keys" in input_message.data and \
                (len(input_message.data["output_keys"]) > 0 or self.flow_config["keep_raw_response"]), \
             "The input message must contain the key 'output_keys' with at least one expected output"
-        response = self.run(input_data=input_message.data,
-                            private_keys=input_message.private_keys,
-                            keys_to_ignore_for_hash=input_message.keys_to_ignore_for_hash)
+        
+        response = None
+        if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
+            response = self.run(input_message.data)
+        else:
+            response = self.__get_from_cache(input_message.data)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
@@ -504,8 +590,6 @@ class CompositeFlow(Flow, ABC):
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,
-            private_keys,
-            keys_to_ignore_for_hash,
             search_class_namespace_for_inputs: bool = True
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
@@ -517,8 +601,6 @@ class CompositeFlow(Flow, ABC):
         )
         input_message = flow_to_call.package_input_message(data_dict=input_data,
                                                            src_flow=self,
-                                                           private_keys=private_keys,
-                                                           keys_to_ignore_for_hash=keys_to_ignore_for_hash,
                                                            api_keys=api_keys)
 
         # ~~~ Execute the call ~~~

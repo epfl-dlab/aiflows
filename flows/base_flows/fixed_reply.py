@@ -11,9 +11,7 @@ class FixedReplyFlow(AtomicFlow):
         super().__init__(**kwargs)
 
     def run(self,
-            input_data: Dict[str, Any],
-            private_keys: Optional[List[str]] = [],
-            keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
 
-        return self.flow_config["fixed_reply"]
+        return {"fixed_reply": self.flow_config["fixed_reply"]}
 

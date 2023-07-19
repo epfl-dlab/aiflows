@@ -6,6 +6,7 @@ import inspect
 import filecmp
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
+import threading
 
 import colorama
 import huggingface_hub
@@ -22,7 +23,6 @@ _default_home = os.path.join(os.path.expanduser("~"), ".cache")
 _flows_cache_home = os.path.expanduser(os.path.join(_default_home, "flows"))
 DEFAULT_CACHE_PATH = os.path.join(_flows_cache_home, "flow_verse")
 DEFAULT_FLOW_MODULE_FOLDER = "flow_modules"
-MODULE_ID_FILE_NAME = "FLOW_MODULE_ID"
 FLOW_MODULE_SUMMARY_FILE_NAME = "flow.mod"
 REVISION_FILE_HEADER = """\
 ########################################
@@ -32,6 +32,8 @@ REVISION_FILE_HEADER = """\
 
 DEFAULT_REMOTE_REVISION = "main"
 NO_COMMIT_HASH = "NO_COMMIT_HASH"
+
+_lock = threading.Lock()
 
 
 @dataclass
@@ -45,10 +47,6 @@ class FlowModuleSpec:
     @staticmethod
     def build_mod_id(repo_id: str, revision: str):
         return f"{repo_id}:{revision}"
-
-    @staticmethod
-    def build_remote_dep(repo_id: str, revision: str, commit_hash: str, cache_root: str, sync_root: str):
-        return {"url": repo_id, "revision": revision}
 
     @property
     def mod_id(self):
@@ -223,9 +221,6 @@ def add_to_sys_path(path):
         sys.path.append(absolute_path)
 
 
-add_to_sys_path(f"./{DEFAULT_FLOW_MODULE_FOLDER}")
-
-
 # TODO(yeeef): add a check to make sure the module name is valid
 def _is_valid_python_module_name(name):
     return re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', name) is not None
@@ -315,6 +310,12 @@ def write_or_append_gitignore(sync_dir: str, mode: str, content: str):
         ]
         gitignore_f.writelines(lines)
 
+def create_init_py(base_dir: str):
+    init_py_path = os.path.join(base_dir, "__init__.py")
+    if not os.path.exists(init_py_path):
+        with open(init_py_path, "w") as init_py_f:
+            init_py_f.write("")
+
 
 def remove_dir_or_link(sync_dir: str):
     if os.path.islink(sync_dir):
@@ -326,41 +327,29 @@ def remove_dir_or_link(sync_dir: str):
 
 
 # # TODO(Yeeef): add repo_hash and modified_flag to decrease computing
-# def _write_flow_mod_spec(sync_dir: str, flow_mod_spec: FlowModuleSpec):
-#     revision_file_path = os.path.join(sync_dir, MODULE_ID_FILE_NAME)
-#     with open(revision_file_path, "w") as revision_f:
-#         lines = [
-#             REVISION_FILE_HEADER,
-#             flow_mod_spec.mod_id + "\n", # xxx/yyy:{revision}
-#             flow_mod_spec.commit_hash + "\n", # commithash corresponding to the revision
-#             flow_mod_spec.cache_dir + "\n", # huggingface cache_dir
-#             flow_mod_spec.sync_dir + "\n"
-#         ]
-#         revision_f.writelines(lines)
 
-def fetch_remote(repo_id: str, revision: str, cache_root_dir: str, sync_dir: str) -> Tuple[str, str]:
+def fetch_remote(repo_id: str, revision: str, sync_dir: str, cache_root: str) -> FlowModuleSpec:
     sync_dir = os.path.abspath(sync_dir)
     if is_local_sync_dir_valid(sync_dir):
         remove_dir_or_link(sync_dir)
 
     os.makedirs(os.path.dirname(sync_dir), exist_ok=True)
+    create_init_py(os.path.dirname(sync_dir))
+    
     # this call is only used to download the repo to cache and get cache path
-    cache_mod_dir = huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root_dir, revision=revision)
+    cache_mod_dir = huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root, revision=revision)
 
     # this call will fetch the cached snapshot to the sync_dir
-    huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root_dir, local_dir=sync_dir, revision=revision)
-    return cache_mod_dir, extract_commit_hash_from_cache_mod_dir(cache_mod_dir)
+    huggingface_hub.snapshot_download(repo_id, cache_dir=cache_root, local_dir=sync_dir, revision=revision)
 
+    commit_hash = extract_commit_hash_from_cache_mod_dir(cache_mod_dir)
 
-# TODO(yeeef): rename
-def fetch_remote_and_write_flow_mod_spec(repo_id: str, revision: str, sync_dir: str, cache_root: str) -> FlowModuleSpec:
-    cache_dir, commit_hash = fetch_remote(repo_id, revision, cache_root, sync_dir)
-    flow_mod_spec = FlowModuleSpec(repo_id, revision, commit_hash, cache_dir, sync_dir)
+    flow_mod_spec = FlowModuleSpec(repo_id, revision, commit_hash, cache_mod_dir, sync_dir)
 
     return flow_mod_spec
 
 
-def fetch_local_and_write_flow_mod_spec(repo_id: str, file_path: str, sync_dir: str) -> FlowModuleSpec:
+def fetch_local(repo_id: str, file_path: str, sync_dir: str) -> FlowModuleSpec:
     # shutil.copytree(file_path, sync_dir, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=overwrite)
     sync_dir = os.path.abspath(sync_dir)
     # when fetch_local is triggered, the old dir is always going to be removed
@@ -456,7 +445,7 @@ def sync_remote_dep(
 
     if previous_synced_flow_mod_spec is None:  # directly sync without any warning
         logger.info(f"{flow_mod_id} will be fetched from remote")
-        synced_flow_mod_spec = fetch_remote_and_write_flow_mod_spec(repo_id, revision, sync_dir, cache_root)
+        synced_flow_mod_spec = fetch_remote(repo_id, revision, sync_dir, cache_root)
         return synced_flow_mod_spec
 
     ### we have a previously synced flow mod spec which has same **repo_id**
@@ -482,7 +471,7 @@ def sync_remote_dep(
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
             logger.info(f"{flow_mod_id} will be fetched from remote.{colorama.Style.RESET_ALL}")
-            synced_flow_mod_spec = fetch_remote_and_write_flow_mod_spec(repo_id, revision, sync_dir, cache_root)
+            synced_flow_mod_spec = fetch_remote(repo_id, revision, sync_dir, cache_root)
     elif previous_synced_flow_mod_spec.mod_id != flow_mod_id:
         # user has supplied a new flow_mod_id, we fetch the remote directly with warning
         logger.warn(
@@ -493,7 +482,7 @@ def sync_remote_dep(
                 f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}")
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
-            synced_flow_mod_spec = fetch_remote_and_write_flow_mod_spec(repo_id, revision, sync_dir, cache_root)
+            synced_flow_mod_spec = fetch_remote(repo_id, revision, sync_dir, cache_root)
     ### user has supplied same flow_mod_id(repo_id:revision), we check if the remote commit has changed
     elif not remote_revision_commit_hash_changed:
         # trivial case, we do nothing
@@ -503,7 +492,7 @@ def sync_remote_dep(
         # remote has changed but local is not modified, we fetch the remote with a warning
         logger.warn(
             f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id}'s commit hash has changed from {previous_synced_flow_mod_spec.commit_hash} to {remote_commit_hash}, as synced module is not modified, the newest commit regarding {previous_synced_flow_mod_spec.mod_id} will be fetched{colorama.Style.RESET_ALL}")
-        synced_flow_mod_spec = fetch_remote_and_write_flow_mod_spec(repo_id, revision, flow_mod_id, sync_dir,
+        synced_flow_mod_spec = fetch_remote(repo_id, revision, flow_mod_id, sync_dir,
                                                                     cache_root)
     else:
         # synced dir is modified and remote has changed, we do nothing with a warning
@@ -552,7 +541,7 @@ def sync_local_dep(
 
     if previous_synced_flow_mod_spec is None:  # directly sync without any warning
         logger.info(f"{flow_mod_id} will be fetched from local")
-        synced_flow_mod_spec = fetch_local_and_write_flow_mod_spec(repo_id, revision, sync_dir)
+        synced_flow_mod_spec = fetch_local(repo_id, revision, sync_dir)
         return synced_flow_mod_spec
 
     ### we have a previously synced flow mod spec which has same **repo_id**
@@ -570,7 +559,7 @@ def sync_local_dep(
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
             logger.info(f"{flow_mod_id} will be fetched from local")
-            synced_flow_mod_spec = fetch_local_and_write_flow_mod_spec(repo_id, module_synced_from_dir, sync_dir)
+            synced_flow_mod_spec = fetch_local(repo_id, module_synced_from_dir, sync_dir)
 
     elif previous_synced_flow_mod_spec.mod_id != flow_mod_id:
         logger.warn(
@@ -582,7 +571,7 @@ def sync_local_dep(
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
             logger.info(f"{flow_mod_id} will be fetched from local")
-            synced_flow_mod_spec = fetch_local_and_write_flow_mod_spec(repo_id, module_synced_from_dir, sync_dir)
+            synced_flow_mod_spec = fetch_local(repo_id, module_synced_from_dir, sync_dir)
     else:
         logger.info(f"{flow_mod_id} already synced, skip")
         synced_flow_mod_spec = previous_synced_flow_mod_spec
@@ -618,43 +607,49 @@ def write_flow_mod_summary(flow_mod_summary_path: str, flow_mod_summary: FlowMod
 
 def _sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool, flow_modules_base_dir: str,
                        cache_root: str, caller_module_name: str) -> FlowModuleSpecSummary:
-    sync_root = os.path.abspath(os.path.join(flow_modules_base_dir, DEFAULT_FLOW_MODULE_FOLDER))
-    logger.info(
-        f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies to {sync_root}...")
+    with _lock:
+        add_to_sys_path(flow_modules_base_dir)
+        add_to_sys_path(os.path.join(flow_modules_base_dir, DEFAULT_FLOW_MODULE_FOLDER))
+        
+        sync_root = os.path.abspath(os.path.join(flow_modules_base_dir, DEFAULT_FLOW_MODULE_FOLDER))
+        logger.info(
+            f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} started to sync flow module dependencies to {sync_root}...")
 
-    if not os.path.exists(sync_root):
-        os.mkdir(sync_root)
-    elif not os.path.isdir(sync_root):
-        raise ValueError(f"flow module folder {sync_root} is not a directory")
+        if not os.path.exists(sync_root):
+            os.mkdir(sync_root)
+            create_init_py(sync_root)
+        elif not os.path.isdir(sync_root):
+            raise ValueError(f"flow module folder {sync_root} is not a directory")
 
-    flow_mod_summary_path = create_empty_flow_mod_file(sync_root, cache_root)
-    flow_mod_summary = FlowModuleSpecSummary.from_flow_mod_file(flow_mod_summary_path)
-    # logger.debug(f"flow mod summary: {flow_mod_summary}")
+        flow_mod_summary_path = create_empty_flow_mod_file(sync_root, cache_root)
+        flow_mod_summary = FlowModuleSpecSummary.from_flow_mod_file(flow_mod_summary_path)
+        # logger.debug(f"flow mod summary: {flow_mod_summary}")
 
-    for dep in dependencies:
-        dep_is_local = validate_and_augment_dependency(dep, caller_module_name)
-        dep_overwrite = dep.get("overwrite", False)
-        url, revision, mod_name = dep["url"], dep["revision"], dep["mod_name"]
+        for dep in dependencies:
+            dep_is_local = validate_and_augment_dependency(dep, caller_module_name)
+            dep_overwrite = dep.get("overwrite", False)
+            url, revision, mod_name = dep["url"], dep["revision"], dep["mod_name"]
 
-        synced_flow_mod_spec = None
-        previous_synced_flow_mod_spec = flow_mod_summary.get_mod(url)
-        if dep_is_local:
-            synced_flow_mod_spec = sync_local_dep(previous_synced_flow_mod_spec, url, mod_name, revision,
-                                                  caller_module_name, sync_root, all_overwrite or dep_overwrite)
-            # logger.debug(f"add local dep {synced_flow_mod_spec} to flow_mod_summary")
-        else:
-            synced_flow_mod_spec = sync_remote_dep(previous_synced_flow_mod_spec, url, mod_name, revision,
-                                                   caller_module_name, sync_root, cache_root,
-                                                   all_overwrite or dep_overwrite)
-            # logger.debug(f"add remote dep {synced_flow_mod_spec} to flow_mod_summary")
-        flow_mod_summary.add_mod(synced_flow_mod_spec)
+            synced_flow_mod_spec = None
+            previous_synced_flow_mod_spec = flow_mod_summary.get_mod(url)
+            if dep_is_local:
+                synced_flow_mod_spec = sync_local_dep(previous_synced_flow_mod_spec, url, mod_name, revision,
+                                                    caller_module_name, sync_root, all_overwrite or dep_overwrite)
+                # logger.debug(f"add local dep {synced_flow_mod_spec} to flow_mod_summary")
+            else:
+                synced_flow_mod_spec = sync_remote_dep(previous_synced_flow_mod_spec, url, mod_name, revision,
+                                                    caller_module_name, sync_root, cache_root,
+                                                    all_overwrite or dep_overwrite)
+                # logger.debug(f"add remote dep {synced_flow_mod_spec} to flow_mod_summary")
+            flow_mod_summary.add_mod(synced_flow_mod_spec)
 
-    # write flow.mod
-    # logger.debug(f"write flow mod summary: {flow_mod_summary}")
-    write_flow_mod_summary(flow_mod_summary_path, flow_mod_summary)
+        # write flow.mod
+        # logger.debug(f"write flow mod summary: {flow_mod_summary}")
+        write_flow_mod_summary(flow_mod_summary_path, flow_mod_summary)
 
-    logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
-    return flow_mod_summary
+        logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
+        logger.info(f"{flow_mod_summary}")
+        return flow_mod_summary
 
 
 def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = False) -> List[str]:
@@ -665,6 +660,12 @@ def sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool = 
     else:
         caller_module_name = caller_module.__name__
 
-    flow_mod_summary = _sync_dependencies(dependencies, all_overwrite, os.curdir, DEFAULT_CACHE_PATH,
-                                          caller_module_name)
+    flow_mod_summary = _sync_dependencies(
+        dependencies, 
+        all_overwrite, 
+        os.curdir, 
+        DEFAULT_CACHE_PATH, 
+        caller_module_name
+    )
+
     return [mod.sync_dir for mod in flow_mod_summary.get_mods()]
