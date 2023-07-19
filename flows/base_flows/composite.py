@@ -20,16 +20,6 @@ class CompositeFlow(Flow, ABC):
     ):
         super().__init__(**kwargs)
 
-    def _early_exit(self):
-        early_exit_key = self.flow_config.get("early_exit_key", None)
-        if early_exit_key:
-            if early_exit_key in self.flow_state:
-                return bool(self.flow_state[early_exit_key])
-            elif early_exit_key in self.__dict__:
-                return bool(self.__dict__[early_exit_key])
-
-        return False
-
     def _call_flow_from_state(
             self,
             flow_to_call: Flow,

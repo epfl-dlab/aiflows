@@ -21,6 +21,16 @@ class CircularFlow(CompositeFlow):
 
         assert len(kwargs["subflows"]) > 0, f"Circular flow needs at least one flow, currently has 0"
 
+    def _early_exit(self):
+        early_exit_key = self.flow_config.get("early_exit_key", None)
+        if early_exit_key:
+            if early_exit_key in self.flow_state:
+                return bool(self.flow_state[early_exit_key])
+            elif early_exit_key in self.__dict__:
+                return bool(self.__dict__[early_exit_key])
+
+        return False
+
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
