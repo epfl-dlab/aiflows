@@ -1,3 +1,3 @@
-from .OpenAIChatAtomicFlow.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow
-from .VectorStoreFlow import VectorStoreFlow
+from .OpenAIModule import OpenAIChatAtomicFlow
+from .VectorStoreModule import VectorStoreFlow
 from .LCToolFlowModule import LCToolFlow
