@@ -1,5 +1,5 @@
 import os
-from flows.application_flows.VectorStoreFlow import VectorStoreFlow
+from flows.application_flows.VectorStoreModule import VectorStoreFlow
 
 def test_vec():
     mem_flow = VectorStoreFlow.instantiate_from_default_config({
