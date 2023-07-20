@@ -11,7 +11,7 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 from flows.base_flows import AtomicFlow
 
-class GenericLCVectorStore(AtomicFlow):
+class LCVectorStoreFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["type"]
     REQUIRED_KEYS_CONSTRUCTOR = ["embeddings", "vector_db"]
 
@@ -113,7 +113,7 @@ if __name__ == "__main__":
         "retriever_config": {}
     }
 
-    glcv = GenericLCVectorStore.instantiate_from_config(flow_config)
+    glcv = LCVectorStoreFlow.instantiate_from_config(flow_config)
 
     tm1 = glcv.package_task_message(
         recipient_flow=glcv,

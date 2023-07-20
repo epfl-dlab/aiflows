@@ -7,7 +7,7 @@ from langchain.memory import ConversationBufferMemory
 from flows.base_flows import AtomicFlow
 
 
-class GenericLCChain(AtomicFlow):
+class LCChainFlow(AtomicFlow):
     lc_chain: Chain
 
     def __init__(self, lc_chain: Chain, **kwargs):
@@ -67,7 +67,7 @@ if __name__ == "__main__":
     answer = qa_with_docs.run(query)
     # print(qa_with_docs.memory)
 
-    flow_qa = GenericLCChain(
+    flow_qa = LCChainFlow(
         name="Wrapper around QA chain",
         description="Answer QA from documents",
         lc_chain=qa_with_docs
