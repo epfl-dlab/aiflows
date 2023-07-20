@@ -3,14 +3,14 @@ from flows.utils import logging
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "FlowsEpfl/ReActFlow_repo", "revision": "/Users/saibo/Development/Flow_dev/ReActFlow_repo"},
+    {"url": "FlowsEpfl/ReActModule", "revision": "/Users/saibo/Development/Flow_dev/ReActModule"},
 ]
 from flows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 import os
 
-from flow_modules.FlowsEpfl.ReActFlow_repo import ReActFlow
+from flow_modules.FlowsEpfl.ReActModule import ReActFlow
 from flows.flow_launchers import FlowLauncher
 
 

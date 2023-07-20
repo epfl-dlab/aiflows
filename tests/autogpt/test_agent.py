@@ -3,14 +3,14 @@ from flows.utils import logging
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "FlowsEpfl/AutoGPTFlow_repo", "revision": "/Users/saibo/Development/Flow_dev/AutoGPTFlow_repo"},
+    {"url": "FlowsEpfl/AutoGPTModule", "revision": "/Users/saibo/Development/Flow_dev/AutoGPTModule"},
 ]
 from flows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 import os
 
-from flow_modules.FlowsEpfl.AutoGPTFlow_repo import AgentAtomicFlow
+from flow_modules.FlowsEpfl.AutoGPTModule import AgentAtomicFlow
 
 if __name__ == "__main__":
     # python -m Flow_dev.WikipediaFlow.AgentFlow
