@@ -98,12 +98,13 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
         return False
 
-    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
+    def get_mandatory_run_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given tshe current state and, optionally, the input data"""
-        if not self._is_conversation_initialized() and self.flow_config.get("init_input_keys", None) is not None:
-            return self.flow_config["init_input_keys"]
+        init_input_keys = self.flow_config.get("init_run_input_keys", self.flow_config.get("init_input_keys", None))
+        if not self._is_conversation_initialized() and init_input_keys is not None:
+            return init_input_keys
         else:
-            return self.flow_config["input_keys"]
+            return super().get_mandatory_run_input_keys(data)
 
     @staticmethod
     def _get_message(prompt_template, input_data: Dict[str, Any]):

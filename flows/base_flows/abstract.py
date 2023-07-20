@@ -279,19 +279,34 @@ class Flow(ABC):
     # def get_hash_string(self):
     #     raise NotImplementedError()
 
-    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
+    def get_mandatory_run_input_keys(self, data: Optional[Dict[str, Any]] = None):
         """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        pre_runtime_input_keys = self.flow_config["input_keys"]
+        pre_runtime_input_keys = self.flow_config.get("run_input_keys", self.flow_config.get("input_keys", None))
         if pre_runtime_input_keys is None:
             return list(data.keys())
         return pre_runtime_input_keys
 
-    def get_output_keys(self, data: Optional[Dict[str, Any]] = None):
-        """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
-        pre_runtime_output_keys = self.flow_config.get("output_keys", None)
+    def get_mandatory_run_output_keys(self, data: Optional[Dict[str, Any]] = None):
+        pre_runtime_output_keys = self.flow_config.get("run_output_keys", self.flow_config.get("output_keys", None))
         if pre_runtime_output_keys is None:
             return list(data.keys())
         return pre_runtime_output_keys
+
+    def get_mandatory_call_input_keys(self, data: Optional[Dict[str, Any]] = None):
+        """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
+        pre_runtime_input_keys = self.flow_config.get("call_input_keys", self.flow_config.get("input_keys", None))
+        if pre_runtime_input_keys is None:
+            return list(data.keys())
+        return pre_runtime_input_keys
+
+    def get_mandatory_call_output_keys(self, data: Optional[Dict[str, Any]] = None):
+        """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
+        pre_runtime_output_keys = self.flow_config.get("call_output_keys", self.flow_config.get("output_keys", None))
+        if pre_runtime_output_keys is None:
+            return list(data.keys())
+        return pre_runtime_output_keys
+
+
 
     def _log_message(self, message: Message):
         log.debug(message.to_string())
@@ -332,7 +347,7 @@ class Flow(ABC):
             self,
             data_dict: Dict[str, Any],
             src_flow: Optional[Union["Flow", str]] = "Launcher",
-            input_keys: Optional[List[str]] = None,
+            mandatory_run_input_keys: Optional[List[str]] = None,
             output_keys: Optional[List[str]] = None,
             api_keys: Optional[Dict[str, str]] = None,
     ):
@@ -345,19 +360,20 @@ class Flow(ABC):
         # ~~~ Get the expected inputs and outputs ~~~
         data_dict = self._apply_data_transformations(data_dict,
                                                      self.input_data_transformations,
-                                                     input_keys)
-        if input_keys is None:
-            input_keys = self.get_input_keys(data_dict)
-        assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
+                                                     mandatory_run_input_keys)
+        if mandatory_run_input_keys is None:
+            mandatory_run_input_keys = self.get_mandatory_run_input_keys(data_dict)
+        assert len(set(["src_flow", "dst_flow"]).intersection(set(mandatory_run_input_keys))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
         # ~~~ Get the data payload ~~~
-        packaged_data = {}
-        for input_key in input_keys:
+        # packaged_data = {}
+        for input_key in mandatory_run_input_keys:
             if input_key not in data_dict:
-                raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
+                raise ValueError(f"Input data does not contain the expected mandatory key: `{input_key}`, available keys: {data_dict.keys()}")
 
-            packaged_data[input_key] = data_dict[input_key]
+            # packaged_data[input_key] = data_dict[input_key]
+        packaged_data = data_dict
 
         # ~~~ Create the message ~~~
         msg = InputMessage(
@@ -379,9 +395,9 @@ class Flow(ABC):
         #TODO(saibo): why don't we just apply all data transformations? Is there a
         # situation where we don't want to apply all data transformations?
         for data_transform in data_transformations:
-            if data_transform.output_key is None or data_transform.output_key in keys:
+            # if data_transform.output_key is None or data_transform.output_key in keys:
                 # TODO(saibo): what is the situation where output_key is None?
-                data_transforms_to_apply.append(data_transform)
+            data_transforms_to_apply.append(data_transform)
 
         for data_transform in data_transforms_to_apply:
             data_dict = data_transform(data_dict)
@@ -400,17 +416,16 @@ class Flow(ABC):
         output_data = flatten_dict(output_data)
 
         # ~~~ Apply output transformations ~~~
-        output_keys = self.get_output_keys(output_data)
+        call_output_keys = self.get_mandatory_call_output_keys(output_data)
         output_data = self._apply_data_transformations(output_data,
                                                        self.output_data_transformations,
-                                                       output_keys)
+                                                       call_output_keys)
 
         # ~~~ Check that all expected keys are present ~~~
         missing_keys = []
-        for expected_key in output_keys:
+        for expected_key in call_output_keys:
             if expected_key not in output_data:
-                missing_keys.append(expected_key)
-                continue
+                raise RuntimeError(f"Output data does not contain the expected key: `{expected_key}`, available keys: `{str(list(output_data.keys()))}`")
 
         # ~~~ Unflatten the output data ~~~
         output_data = unflatten_dict(output_data)
@@ -421,21 +436,21 @@ class Flow(ABC):
         else:
             output_data["raw_response"] = raw_response
 
-        if len(output_data) == 0:
-            raise Exception(f"The output dictionary is empty. "
-                            f"None of the expected outputs: `{str(output_keys)}` were found. "
-                            f"Available outputs are: `{str(list(output_data.keys()))}`")
-
-        if len(missing_keys) != 0:
-            flow_name = self.flow_config['name']
-            log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
-                        f"Available outputs are: `{str(list(output_data.keys()))}`")
+        # if len(output_data) == 0:
+        #     raise Exception(f"The output dictionary is empty. "
+        #                     f"None of the expected outputs: `{str(call_output_keys)}` were found. "
+        #                     f"Available outputs are: `{str(list(output_data.keys()))}`")
+        #
+        # if len(missing_keys) != 0:
+        #     flow_name = self.flow_config['name']
+        #     log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
+        #                 f"Available outputs are: `{str(list(output_data.keys()))}`")
 
         return OutputMessage(
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.src_flow,
-            output_keys=output_keys,
+            output_keys=call_output_keys,
             output_data=output_data,
             raw_response=raw_response,
             input_message_id=input_message.message_id,

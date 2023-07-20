@@ -32,6 +32,7 @@ class HumanInputFlow(AtomicFlow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._extend_keys_to_ignore_when_resetting_namespace(["__default_flow_config"])
+        # TODO(saibo): why do we need this?
 
     @classmethod
     def _set_up_prompts(cls, config):

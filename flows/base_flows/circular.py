@@ -33,6 +33,9 @@ class CircularFlow(CompositeFlow):
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
+        if "_status" in input_data:
+            log.debug(f"input_data contains _status key={input_data['_status']}")
+        input_data["_status"] = "unfinished"
         self._state_update_dict(update_data=input_data)
 
         max_round = self.flow_config.get("max_rounds", 1)
@@ -41,15 +44,20 @@ class CircularFlow(CompositeFlow):
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         # print(f"output keys: {self.get_output_keys()}")
-        outputs = self._fetch_state_attributes_by_keys(keys=self.get_output_keys(),
-                                                       # TODO: the current doesn't work because the output_keys are "asnwer"
-                                                       # but at the moment, the answer is still called "observation"
-                                                       # and it will only be renamed in l522 in abstract_flow.py(ReActFlow)
-                                                       # workaround: use `output_message.data["output_keys"]` instead
-
-                                                       # Further thoughts: maybe we should call data_transformation before _fetch_state_attributes_by_keys
-                                                       # as well as for input_data_transformation.
+        # outputs = self._fetch_state_attributes_by_keys(keys=output_message.data["output_keys"], #self.#get_mandatory_call_output_keys(),
+        #                                                #TODO: the current doesn't work because the output_keys are "asnwer"
+        #                                                # but at the moment, the answer is still called "observation"
+        #                                                # and it will only be renamed in l522 in abstract_flow.py(ReActFlow)
+        #                                                # workaround: use `output_message.data["output_keys"]` instead
+        #
+        #                                                # Further thoughts: maybe we should call data_transformation before _fetch_state_attributes_by_keys
+        #                                                # as well as for input_data_transformation.
+        #                                                allow_class_attributes=False)
+        # import pdb; pdb.set_trace()
+        run_output_keys = self.get_mandatory_run_output_keys()
+        outputs = self._fetch_state_attributes_by_keys(keys=run_output_keys,
                                                        allow_class_attributes=False)
+
         return outputs
 
     @classmethod
@@ -72,7 +80,10 @@ class CircularFlow(CompositeFlow):
                 # ~~~ Check for end of interaction
                 if self._early_exit():
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
+                    self._state_update_dict(update_data={"_status": "finished"})
                     return output_message
-        log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
+        if max_round > 1:
+            # ~~~ If max_round == 1, then there is not early exit, so we don't need to check for it
+            log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
         return output_message
 
