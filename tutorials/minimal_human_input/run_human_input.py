@@ -16,7 +16,7 @@ from flows.flow_launchers import FlowLauncher
 
 
 # from flows import flow_verse
-from flows.base_flows import HumanInputFlow
+from flows.application_flows import HumanInputFlow
 from flows.utils.general_helpers import read_yaml_file
 
 
