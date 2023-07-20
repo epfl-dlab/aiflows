@@ -13,3 +13,4 @@ yarn-error.log*
 /.changelog
 .npm/
 public/docs/_build/
+public/docs/built_with_sphinx
