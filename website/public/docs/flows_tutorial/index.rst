@@ -5,6 +5,22 @@ Getting started tutorial
 Welcome to the tutorial section of the Flows library! These tutorials will guide you through the essential features and functionalities of the library, teaching you to efficiently use existing flows, and craft new complex flows for your projects.
 
 -----------------------------
+Install Flows
+-----------------------------
+
+.. code-block:: shell
+
+    git clone git@github.com:epfl-dlab/flows.git
+    cd flows
+    pip install -e .
+
+-----------------------------
+Overview
+-----------------------------
+
+:ref:`overview`
+
+-----------------------------
 Existing Flows
 -----------------------------
 
@@ -23,11 +39,12 @@ The library really shines when you use existing flows as building blocks towards
 - :ref:`write_composite`, to craft ever more complex flows to fit your needs.
 - :ref:`caching`, to save time and money by not executing flows that were already executed before
 - :ref:`history`, to know what is logged and control what will appear in the visualization toolkit.
+- :ref:`logging`, TODO
 - :ref:`share_flow`, making your flows available for others to build upon
 
------------------------------
+--------------------------------------
 Putting It All Together: Complex Flows
------------------------------
+--------------------------------------
 
 Finally, we will put everything together and guide you through building complex flows. In this section, we will provide practical examples that demonstrate the capabilities of our library:
 
@@ -43,6 +60,7 @@ By the end of these tutorials, you will have a solid understanding of flows and 
     :titlesonly:
     :glob:
 
+    A0_overview
     A1_load_flowverse
     A2_flowlauncher
     A3_visualization
@@ -50,4 +68,5 @@ By the end of these tutorials, you will have a solid understanding of flows and 
     B2_write_composite
     B3_caching
     B4_history
-    B5_share_flow
+    B5_logging
+    B6_share_flow

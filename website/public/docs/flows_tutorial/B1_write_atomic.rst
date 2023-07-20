@@ -1,69 +1,73 @@
 .. _write_atomic:
 
-=========================
-Write an Atomic Flow
-=========================
-There are two ways of creating your own ``Flow``.
-You can derive from one of the abstract base classes and implement the ``run`` method.
-Or you can use one of the highly flexible ``Flow`` classes from the Flow-verse and tweak their behaviour by modifying a yaml configuration file.
+===========
+Atomic Flow
+===========
 
-Let's start by implementing a simple ``Flow`` that plays rock-paper-scissors.
+The ``AtomicFlow`` class is a subclass of ``Flow``, and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
 
-The RockPaperScissorsPlayer
-----------------------------
+One notable example is the `OpenAIChatAtomicFlow <https://huggingface.co/martinjosifoski/OpenAIChatAtomicFlow/discussions>`__, which is a wrapper around the OpenAI chat API.
 
-Creating your own ``Flow`` takes just a few lines of code.
-You derive from ``AtomicFlow`` and override the ``run`` `method <https://github.com/epfl-dlab/flows/blob/a41c55c38ea4111a88257c25dbac0344f8c59381/flows/base_flows/abstract.py#L378>`_.
-Your ``run`` implementation needs to accept a dictionary with ``input_data``.
-Optional paramters are ``private_keys`` and ``keys_to_ignore_for_hash``.
-For now, only the ``input_data`` is important::
+Another example is the `CodeTestingAtomicFlow <https://huggingface.co/martinjosifoski/CC_flows/blob/main/CodeTesting.py>`__, which takes code and tests (or generates the tests) and returns the execution results.
 
-    from flows.base_flows.abstract import AtomicFlow
+Writing an Atomic Flow
+======================
 
-    class RockPaperScissorsPlayer(AtomicFlow):
+Let's write an Atomic Flow that takes a number and returns the reverse of the number.
 
+This is how the flow_config would look like as a YAML file:
+
+..  code-block:: yaml
+
+    name: "ReverseNumber"
+    description: "A flow that takes in a number and reverses it."
+
+    input_data_transformations: []
+    input_keys:
+      - "number"
+
+    output_data_transformations:
+      - _target_: flows.data_transformations.KeyCopy
+        old_key2new_key:
+          raw_response.output_number: "reversed_number"
+    output_keys:
+      - "reversed_number"
+    clear_flow_namespace_on_run_end: True
+    keep_raw_response: False  # Set to True to keep the raw flow response in the output data
+
+Let's break it down:
+
+* The ``name`` and ``description`` parameters are self-explanatory.
+* The ``verbose`` parameter controls the verbosity of the logs for the Flow. 
+* According to the default implementation, the ``input_keys`` and ``output_keys`` parameters specify the required items in the ``input_data`` and the ``output_data``. They define the interface of the Flow.
+* The ``clear_flow_namespace_on_run_end`` parameter controls whether the Flow namespace will be reset after the execution of the Flow. In our case, it doesn't matter because we don't have any stateful variables in the flow namespace. This parameter can be excluded and, by default, is set to true.
+* Before any DataTranformations are applied, the Flow output is returned  ``keep_raw_response`` parameter 
+
+The Flow class would be implemented as follows:
+
+..  code-block:: python
+
+    class ReverseNumberAtomicFlow(AtomicFlow):
         def __init__(self, **kwargs):
-            super(RockPaperScissorsPlayer, self).__init__(**kwargs)
+            super().__init__(**kwargs)
 
-        def run(self, input_data, expected_outputs: List[str] = None):
-            assert expected_outputs ==["choice"], "RockPaperScissorsPlayer only has one output: choice"
-            choice = random.choice(["rock", "paper", "scissors"])
-            return {"choice": choice}
+        def run(self,
+                input_data: Dict[str, Any],
+                private_keys: Optional[List[str]] = [],
+                keys_to_ignore_for_hash: Optional[List[str]] = []) -> Dict[str, Any]:
 
-The constructor of your new ``Flow`` must call the constructor of the base class, passing all the arguments received in ``**kwargs``.
-When creating an instance of a ``Flow``, all arguments will be stored in ``flow_config``.
-At the least, you must pass a ``name`` and ``description``::
+            input_number = input_data["number"]
+            output_number = int(str(input_number)[::-1])
+            response = {"output_number": output_number}
+            return response
 
-    player = RockPaperScissorsPlayer(name="Player A", description="RockPaperScissorsPlayer")
-    print(player.flow_config)
+and instantiate the Flow by executing:
 
-``Flow`` instances communicate by sending each other messages.
-All messages are instances of the abstract ``Message`` base class.
-There are three special messages:
+..  code-block:: python
 
-* ``TaskMessage``: when a ``Flow`` instance receives a ``TaskMessage``, it's ``run`` method is called.
-* ``OutputMessage``: the results of ``run`` are packaged in an ``OutputMessage`` and returned to the calling ``Flow``.
-* ``StateUpdateMessage``: every update of the state of a flow should be logged with a ``StateUpdateMessage``.
+    overrides_config = read_yaml_file("reverseNumberAtomic.yaml")
+    flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
 
+You can find this example `here <https://github.com/epfl-dlab/flows/tree/main/tutorials/minimal_reverse_number>`__. Few other notable examples are the HumanInputFlow and the the FixedReply Flow.
 
-Don't worry, you don't have to create these messages yourself.
-The ``Flow`` base classes provides convenient methods to create them for you.
-The messaging system serves two important purposes (both will be explained in advanced tutorials):
-
-* Caching is based on the hash of a ``flow_state`` and ``TaskMessage``.
-* We provide a visualization toolkit that helps you debug the history of a ``Flow`` instance, by showing the Messages that were sent and received.
-
-For now, let's see how you can use the convenience methods to run your new ``RockPaperScissorsFlow``::
-
-    # a TaskMessage contains
-    # - the recipient flow
-    # - a description of the task
-    # - input data
-    # - a list of expected outputs
-    task_message = player.package_task_message(player, "play one round", {}, expected_outputs=["choice"])
-    output = player(task_message)
-
-    # as a response to a task, a flow will send an OutputMessage
-    # it contains metadata about the task execution, as well as results
-    print(output.data['choice'])
-
+Note that we can pass a Python dictionary as the ``overrides`` parameter and not rely on YAML files.
