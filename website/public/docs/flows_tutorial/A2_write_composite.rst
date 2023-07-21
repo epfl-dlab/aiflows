@@ -21,7 +21,8 @@ We currently provide two general patterns (to be extended): ``sequential`` and `
 * ``Sequential``: The list of subflows is executed sequentially.
 * ``GeneratorCritic``: The generator and the critic are called alternatingly for a specific number of rounds. 
 
-Writing a Composite Flow
+
+Write a Composite Flow
 ========================
 
 Writing a Composite Flow is even easier than writing an Atomic Flow --- the task is only to define the interface and the "flow" of the collaboration.

@@ -16,6 +16,18 @@ The :doc:`Introduction/index` section contains general introduction of the proje
 
     Introduction/index
 
+
+Get started
+=============
+
+Get started with FLOWS
+
+.. toctree::
+    :titlesonly:
+
+    get_started/index
+
+
 Tutorials
 ===========
 

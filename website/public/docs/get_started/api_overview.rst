@@ -1,13 +1,10 @@
-.. _overview:
+.. _api_overview:
 
-========
-Overview
-========
+============
+API overview
+============
 
-The ``Flow`` class is an abstract class (``ABC``) that is the basis for all flows.
-It defines the shared structure and behavior, such as managing the configuration, state, history, and, crucially, the standardized interface. 
-
-The ``Flow`` class contains the following key attributes and methods:
+The ``Flow`` class is an abstract class (``ABC``) serving as the basis for all flows. It defines the shared structure and behavior, including the management of configuration, state, history, and most importantly, the standardized interface.
 
 Attributes
 ==========

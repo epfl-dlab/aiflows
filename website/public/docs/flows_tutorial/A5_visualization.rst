@@ -48,7 +48,7 @@ The visualization tool allows you to investigate the state of the ``Flow``, the 
    :alt: visualization tool
 
 
-Stay Tuned
+Stay tuned
 ----------
 
 We're actively using the visualization tool in our research and can highly recommend it.

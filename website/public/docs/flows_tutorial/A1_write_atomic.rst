@@ -10,7 +10,8 @@ One notable example is the `OpenAIChatAtomicFlow <https://huggingface.co/martinj
 
 Another example is the `CodeTestingAtomicFlow <https://huggingface.co/martinjosifoski/CC_flows/blob/main/CodeTesting.py>`__, which takes code and tests (or generates the tests) and returns the execution results.
 
-Writing an Atomic Flow
+
+Write an Atomic Flow
 ======================
 
 Let's write an Atomic Flow that takes a number and returns the reverse of the number.
