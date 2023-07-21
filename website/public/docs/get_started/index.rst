@@ -1,4 +1,4 @@
-Introduction
+Get started
 =======================
 
 Get started with FLOWS
