@@ -13,13 +13,14 @@ from flows.base_flows import AtomicFlow
 
 class LCVectorStoreFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["type"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["embeddings", "vector_db"]
 
     embeddings: OpenAIEmbeddings
     vector_db: VectorStoreRetriever
 
-    def __init__(self, **kwargs):
+    def __init__(self,embeddings, vector_db, **kwargs):
         super().__init__(**kwargs)
+        self.embeddings = embeddings
+        self.vector_db = vector_db
 
     @classmethod
     def _set_up_retriever(cls, config: Dict[str, Any]) -> Dict[str, Any]:

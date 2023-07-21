@@ -9,16 +9,23 @@ from flows.base_flows import Flow
 
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows", "subflows_dict"]
 
     subflows: List[Tuple[str, Flow]]
     subflows_dict: Dict[str, Flow]
 
+    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
+        "subflows", "subflows_dict"
+    }
+
     def __init__(
             self,
+            subflows: List[Tuple[str, Flow]],
+            subflows_dict: Dict[str, Flow],
             **kwargs
     ):
         super().__init__(**kwargs)
+        self.subflows = subflows
+        self.subflows_dict = subflows_dict
 
     def _call_flow_from_state(
             self,

@@ -11,7 +11,6 @@ log = logging.get_logger(__name__)
 
 class SequentialFlow(CircularFlow):
     REQUIRED_KEYS_CONFIG = [] # this is empty because SequentialFlow doesn't have any config and we need to overwrite the parent class
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
 
     def __init__(self, **kwargs):
         kwargs.setdefault("flow_config", {}).update({"max_rounds": 1})

@@ -10,7 +10,7 @@ from langchain import PromptTemplate
 import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
-from flows.base_flows.abstract import AtomicFlow
+from flows.base_flows import AtomicFlow
 
 from flows.utils import logging
 from flows.messages.flow_message import UpdateMessage_ChatMessage
@@ -22,23 +22,17 @@ log = logging.get_logger(__name__)
 
 class OpenAIChatAtomicFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["system_message_prompt_template",
-                            "human_message_prompt_template",
-                            "init_human_message_prompt_template"]
+
 
     SUPPORTS_CACHING: bool = True
 
     api_keys: Dict[str, str]
 
-    system_message_prompt_template: PromptTemplate
-    human_message_prompt_template: PromptTemplate
-
-    init_human_message_prompt_template: Optional[PromptTemplate] = None
-    # demonstrations: GenericDemonstrationsDataset = None
-    demonstrations_response_template: PromptTemplate = None
-
-    def __init__(self, **kwargs):
+    def __init__(self,system_message_prompt_template, human_message_prompt_template, init_human_message_prompt_template, **kwargs):
         super().__init__(**kwargs)
+        self.system_message_prompt_template = system_message_prompt_template
+        self.human_message_prompt_template = human_message_prompt_template
+        self.init_human_message_prompt_template = init_human_message_prompt_template
 
         self.api_keys = None
 

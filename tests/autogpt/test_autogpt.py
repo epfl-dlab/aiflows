@@ -25,7 +25,8 @@ if __name__ == "__main__":
     input_data = [
         {
         "id": 0,
-        "goal": "Find the answer of the question: How many people live in canada as of 2023?", # , save it in a text file.
+        "goal": "Find the answer of the question: What is the capital of Switzerland?",
+        # "goal": "Find the answer of the question: What is the current population of Canada?", # will return unfinished
         "memory_operation": "read",
 
     }]

@@ -39,6 +39,8 @@ and finally upload it to the Flow-verse to share it with the community.
 
     flows_tutorial/index
 
+Documentation
+===========
 
 .. toctree::
     :titlesonly:

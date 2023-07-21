@@ -3,12 +3,12 @@
 ```
 # install node modules for react landing page
 cd website
-npm install -d
+npm install
 ```
 ```
 # install sphinx for API documentation
 pip install sphinx
-pip install sphinx_book_theme
+pip install sphinxawesome-theme
 pip install sphinx_copybutton
 ```
 

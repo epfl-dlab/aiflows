@@ -1,21 +1,22 @@
+"""
+
+"""
 import os
 import sys
 import copy
-
+import yaml
 from abc import ABC
 from typing import List, Dict, Any, Union, Optional
 
 import hydra
 from omegaconf import OmegaConf
-
-# ToDo(https://github.com/epfl-dlab/flows/issues/69): make imports relative?
 from ..utils import logging
 from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
     OutputMessage
-from flows.utils.general_helpers import recursive_dictionary_update, validate_parameters, flatten_dict, unflatten_dict
+from flows.utils.general_helpers import recursive_dictionary_update, flatten_dict, unflatten_dict
 from flows.utils.rich_utils import print_config_tree
 from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 
@@ -23,22 +24,26 @@ log = logging.get_logger(__name__)
 
 
 class Flow(ABC):
+    """
+    Abstract class for all flows.
+    """
     # user should at least provide `REQUIRED_KEYS_CONFIG` when instantiate a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
 
     SUPPORTS_CACHING = False
 
-    KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
-        "flow_config", "flow_state", "history",
-        "input_message",
-        "cache",
-        "input_data_transformations", "output_data_transformations"}
+    # KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
+    #     "flow_config", "flow_state", "history",
+    #     "input_message",
+    #     "cache",
+    #     "input_data_transformations", "output_data_transformations"}
 
-    KEYS_TO_IGNORE_HASH = {"name", "description"} # TODO(yeeef): rename it to something else. It is different from `keys_to_ignore_for_hash`(this is for input_keys and input_data when caching). KEYS_TO_IGNORE_HASH is for flow_config and flow_state when caching
+    KEYS_TO_IGNORE_HASH = {"name",
+                           "description"}  # TODO(yeeef): rename it to something else. It is different from `keys_to_ignore_for_hash`(this is for input_keys and input_data when caching). KEYS_TO_IGNORE_HASH is for flow_config and flow_state when caching
 
     # TODO(yeeef): the simplest and most natural way to declare required keys constructor is to .... declare them in the constructor signature, instead of this
     # why the input_data_transformation cannot be a lambda? not everything can be described by yaml... we need to find a boundary
-    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
+    # REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
@@ -57,42 +62,38 @@ class Flow(ABC):
 
         "clear_flow_namespace_on_run_end": True,
         "keep_raw_response": True,
-        "enable_cache": False, # wheter to enable cache for this flow
+        "enable_cache": False,  # wheter to enable cache for this flow
     }
 
     def __init__(
             self,
-            **kwargs_passed_to_the_constructor
+            flow_config: Dict[str, Any],
+            input_data_transformations: List[DataTransformation],
+            output_data_transformations: List[DataTransformation],
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
-        self.flow_state = None
-        self.flow_config = None
-        self.history = None
-        self.cache = FlowCache() # TODO(yeeef): inject the dependency rather than directly initialize
-
-        self._validate_parameters(kwargs_passed_to_the_constructor)
-        self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
-        self.__set_namespace_params(kwargs_passed_to_the_constructor)
-
-        if log.getEffectiveLevel() == logging.DEBUG:
-            log.debug(f"Flow {self.flow_config.get('name','unknown_name')} instantiated with the following parameters:")
-            print_config_tree(self.flow_config)
+        self.flow_config = flow_config
+        self.input_data_transformations = input_data_transformations
+        self.output_data_transformations = output_data_transformations
+        self.cache = FlowCache()  # TODO(yeeef): inject the dependency rather than directly initialize
+        self._validate_flow_config(flow_config)
+        # self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
+        # self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
         self.set_up_flow_state()
 
-    def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
-        self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
+        if log.getEffectiveLevel() == logging.DEBUG:
+            log.debug(
+                f"Flow {self.flow_config.get('name', 'unknown_name')} instantiated with the following parameters:")
+            print_config_tree(self.flow_config)
+
+    # def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
+    #     self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
 
     def _extend_keys_to_ignore_hash(self, keys_to_ignore: List[str]):
         self.KEYS_TO_IGNORE_HASH.update(keys_to_ignore)
-
-    def __set_namespace_params(self, kwargs):
-        for k, v in kwargs.items():
-            if k == "flow_config":
-                v = copy.deepcopy(v)  # Precautionary measure
-            self.__setattr__(k, v)
 
     @classmethod
     def instantiate_from_default_config(cls, overrides: Optional[Dict[str, Any]] = None):
@@ -107,8 +108,16 @@ class Flow(ABC):
         return cls.instantiate_from_config(config)
 
     @classmethod
-    def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
+    def _validate_flow_config(cls, flow_config: Dict[str, Any]):
+        if cls != Flow:
+            cls.__base__._validate_flow_config(flow_config)
+
+        if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
+            raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
+
+        for key in cls.REQUIRED_KEYS_CONFIG:
+            if key not in flow_config:
+                raise ValueError(f"{key} is a required parameter in the flow_config.")
 
     @classmethod
     def get_config(cls, **overrides):
@@ -137,17 +146,22 @@ class Flow(ABC):
                 OmegaConf.load(path_to_config),
                 resolve=True
             )
+            # config = cls.config_class.merge_configs(default_config)
             config = recursive_dictionary_update(parent_default_config, default_config)
         # TODO(yeeef): ugly fix, figure out why only this works
-        elif hasattr(cls, f"_{cls.__name__}__default_flow_config"): # no yaml but __default_flow_config exists in class declaration
+        elif hasattr(cls,
+                     f"_{cls.__name__}__default_flow_config"):  # no yaml but __default_flow_config exists in class declaration
             # log.warn(f'{cls.__name__}, {cls.__default_flow_config}, {getattr(cls, f"_{cls.__name__}__default_flow_config")}')
-            config = recursive_dictionary_update(parent_default_config, copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")))
+            config = recursive_dictionary_update(parent_default_config,
+                                                 copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")))
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
 
         # ~~~~ Apply the overrides ~~~~
         config = recursive_dictionary_update(config, overrides)
+
+        # return cls.config_class(**overrides)
         return config
 
     @classmethod
@@ -181,9 +195,9 @@ class Flow(ABC):
         self.flow_state = {}
         self.history = FlowHistory()
 
-    def reset(self, 
-              full_reset: bool, 
-              recursive: bool, 
+    def reset(self,
+              full_reset: bool,
+              recursive: bool,
               src_flow: Optional[Union["Flow", str]] = "Launcher"):
         """
         Reset the flow state and history. If recursive is True, reset all subflows as well.
@@ -193,16 +207,16 @@ class Flow(ABC):
         :param src_flow:
         :return:
         """
-        
+
         if isinstance(src_flow, Flow):
             src_flow = src_flow.flow_config["name"]
-        
-        # ~~~ Delete all extraneous attributes ~~~
-        keys_deleted_from_namespace = []
-        for key, value in list(self.__dict__.items()):
-            if key not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE:
-                del self.__dict__[key]
-                keys_deleted_from_namespace.append(key)
+
+        # # ~~~ Delete all extraneous attributes ~~~
+        # keys_deleted_from_namespace = []
+        # for key, value in list(self.__dict__.items()):
+        #     if key not in self.__class__.get_keys_to_ignore_when_resetting_namespace():
+        #         del self.__dict__[key]
+        #         keys_deleted_from_namespace.append(key)
 
         if recursive and hasattr(self, "subflows"):
             for _, flow in self.subflows:
@@ -212,7 +226,7 @@ class Flow(ABC):
             message = UpdateMessage_FullReset(
                 created_by=src_flow,
                 updated_flow=self.flow_config["name"],
-                keys_deleted_from_namespace=keys_deleted_from_namespace
+                keys_deleted_from_namespace=[]
             )
             self._log_message(message)
             self.set_up_flow_state()  # resets the flow state
@@ -220,7 +234,7 @@ class Flow(ABC):
             message = UpdateMessage_NamespaceReset(
                 created_by=src_flow,
                 updated_flow=self.flow_config["name"],
-                keys_deleted_from_namespace=keys_deleted_from_namespace
+                keys_deleted_from_namespace=[]
             )
             self._log_message(message)
 
@@ -306,8 +320,6 @@ class Flow(ABC):
             return list(data.keys())
         return pre_runtime_output_keys
 
-
-
     def _log_message(self, message: Message):
         log.debug(message.to_string())
         return self.history.add_message(message)
@@ -363,14 +375,15 @@ class Flow(ABC):
                                                      mandatory_run_input_keys)
         if mandatory_run_input_keys is None:
             mandatory_run_input_keys = self.get_mandatory_run_input_keys(data_dict)
-        assert len(set(["src_flow", "dst_flow"]).intersection(set(mandatory_run_input_keys))) == 0, \
+        assert len({"src_flow", "dst_flow"}.intersection(set(mandatory_run_input_keys))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
         # ~~~ Get the data payload ~~~
         # packaged_data = {}
         for input_key in mandatory_run_input_keys:
             if input_key not in data_dict:
-                raise ValueError(f"Input data does not contain the expected mandatory key: `{input_key}`, available keys: {data_dict.keys()}")
+                raise ValueError(
+                    f"Input data does not contain the expected mandatory key: `{input_key}`, available keys: {data_dict.keys()}")
 
             # packaged_data[input_key] = data_dict[input_key]
         packaged_data = data_dict
@@ -392,11 +405,11 @@ class Flow(ABC):
                                     data_transformations: List[DataTransformation],
                                     keys: List[str]):
         data_transforms_to_apply = []
-        #TODO(saibo): why don't we just apply all data transformations? Is there a
+        # TODO(saibo): why don't we just apply all data transformations? Is there a
         # situation where we don't want to apply all data transformations?
         for data_transform in data_transformations:
             # if data_transform.output_key is None or data_transform.output_key in keys:
-                # TODO(saibo): what is the situation where output_key is None?
+            # TODO(saibo): what is the situation where output_key is None?
             data_transforms_to_apply.append(data_transform)
 
         for data_transform in data_transforms_to_apply:
@@ -425,7 +438,8 @@ class Flow(ABC):
         missing_keys = []
         for expected_key in call_output_keys:
             if expected_key not in output_data:
-                raise RuntimeError(f"Output data does not contain the expected key: `{expected_key}`, available keys: `{str(list(output_data.keys()))}`")
+                raise RuntimeError(
+                    f"Output data does not contain the expected key: `{expected_key}`, available keys: `{str(list(output_data.keys()))}`")
 
         # ~~~ Unflatten the output data ~~~
         output_data = unflatten_dict(output_data)
@@ -435,16 +449,6 @@ class Flow(ABC):
             log.info("The raw response will not be added to output_data")
         else:
             output_data["raw_response"] = raw_response
-
-        # if len(output_data) == 0:
-        #     raise Exception(f"The output dictionary is empty. "
-        #                     f"None of the expected outputs: `{str(call_output_keys)}` were found. "
-        #                     f"Available outputs are: `{str(list(output_data.keys()))}`")
-        #
-        # if len(missing_keys) != 0:
-        #     flow_name = self.flow_config['name']
-        #     log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
-        #                 f"Available outputs are: `{str(list(output_data.keys()))}`")
 
         return OutputMessage(
             created_by=self.flow_config['name'],
@@ -461,13 +465,14 @@ class Flow(ABC):
     def run(self,
             input_data: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
-    
+
     def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         assert self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching
 
         if not self.SUPPORTS_CACHING:
-            raise Exception(f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
-        
+            raise Exception(
+                f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
+
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
         input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
@@ -488,8 +493,8 @@ class Flow(ABC):
                 self._log_message(message_softcopy)
 
             log.debug(f"Retrieved from cache: {self.__class__.__name__} "
-                    f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
-                    f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+                      f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+                      f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
             log.debug(f"Retrieved from cache: {str(cached_value)}")
 
         else:
@@ -513,7 +518,7 @@ class Flow(ABC):
             log.debug(f"Cached: {str(value_to_cache)} \n"
                       f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
                       f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
-        
+
         return response
 
     def __call__(self, input_message: InputMessage):
@@ -575,16 +580,6 @@ class Flow(ABC):
         raise NotImplementedError
 
 
-class AtomicFlow(Flow, ABC):
 
-    def __init__(
-            self,
-            **kwargs
-    ):
-        super().__init__(**kwargs)
-
-    @classmethod
-    def type(cls):
-        return "AtomicFlow"
 
 

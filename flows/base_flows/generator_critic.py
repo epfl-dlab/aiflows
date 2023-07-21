@@ -13,22 +13,9 @@ class GeneratorCriticFlow(CircularFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    @classmethod
-    def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
-
-        for flow_name, flow in kwargs["subflows_dict"].items():
-            if "generator" in flow_name.lower():
-                continue
-            elif "critic" in flow_name.lower():
-                continue
-            else:
-                error_message = f"{cls.__class__.__name__} needs one flow with `critic` in its name" \
-                                f"and one flow with `generator` in its name. Currently, the flow names are:" \
-                                f"{kwargs['subflows'].keys()}"
-
-                raise Exception(error_message)
+        # assert "generator" in kwargs["subflows_dict"].keys() and "critic" in kwargs["subflows_dict"].keys(), \
+        #     f"{self.__class__.__name__} needs one flow with `critic` in its name and one flow with `generator` in its name. " \
+        #     f"Currently, the flow names are: {kwargs['subflows_dict'].keys()}"
 
 
     @classmethod

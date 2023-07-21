@@ -13,12 +13,12 @@ from flows.base_flows import AtomicFlow
 
 class VectorStoreFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["type", "api_keys"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["vector_db"]
 
     vector_db: VectorStoreRetriever
 
-    def __init__(self, **kwargs):
+    def __init__(self, vector_db, **kwargs):
         super().__init__(**kwargs)
+        self.vector_db = vector_db
 
     @classmethod
     def _set_up_retriever(cls, config: Dict[str, Any]) -> Dict[str, Any]:

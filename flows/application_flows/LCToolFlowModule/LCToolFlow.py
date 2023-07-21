@@ -10,7 +10,6 @@ from flows.base_flows import AtomicFlow
 
 class LCToolFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["backend"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["backend"]
 
     # KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {"backend"}，TODO this will overwrite the KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE in base_flows.py
 
@@ -18,8 +17,9 @@ class LCToolFlow(AtomicFlow):
 
     backend: BaseTool
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, backend: BaseTool, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.backend = backend
         
     @classmethod
     def _set_up_backend(cls, config: Dict[str, Any]) -> BaseTool:

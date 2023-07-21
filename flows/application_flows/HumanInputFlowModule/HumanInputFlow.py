@@ -4,7 +4,7 @@ from typing import List, Dict, Any, Optional
 import hydra
 from langchain import PromptTemplate
 
-from flows.base_flows.abstract import AtomicFlow
+from flows.base_flows import AtomicFlow
 from flows.messages import UpdateMessage_Generic
 
 from flows.utils import logging
@@ -14,7 +14,6 @@ log = logging.get_logger(__name__)
 
 class HumanInputFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["request_multi_line_input_flag"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["query_message_prompt_template"]
 
     query_message_prompt_template: PromptTemplate = None
 
@@ -29,10 +28,11 @@ class HumanInputFlow(AtomicFlow):
         }
     }
 
-    def __init__(self, **kwargs):
+    def __init__(self, query_message_prompt_template, **kwargs):
         super().__init__(**kwargs)
-        self._extend_keys_to_ignore_when_resetting_namespace(["__default_flow_config"])
-        # TODO(saibo): why do we need this?
+        self.query_message_prompt_template = query_message_prompt_template
+        # self._extend_keys_to_ignore_when_resetting_namespace(["__default_flow_config"])
+        # # TODO(saibo): why do we need this?
 
     @classmethod
     def _set_up_prompts(cls, config):
