@@ -10,22 +10,25 @@ from flows.base_flows import Flow
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
 
-    subflows: List[Tuple[str, Flow]]
+    subflows: List[Flow]
     subflows_dict: Dict[str, Flow]
 
     KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
         "subflows", "subflows_dict"
     }
 
+    __default_flow_config = {
+        "subflows_config": None
+    }
+
     def __init__(
             self,
-            subflows: List[Tuple[str, Flow]],
-            subflows_dict: Dict[str, Flow],
+            subflows: List[Flow],
             **kwargs
     ):
         super().__init__(**kwargs)
         self.subflows = subflows
-        self.subflows_dict = subflows_dict
+        self.subflows_dict = {subflow.flow_config["name"]: subflow for subflow in subflows}
 
     def _call_flow_from_state(
             self,
@@ -58,10 +61,10 @@ class CompositeFlow(Flow, ABC):
         return self.subflows_dict.get(subflow_name, None)
 
     @classmethod
-    def _set_up_subflows(cls, config):
+    def _set_up_subflows(cls, config) -> List[Flow]:
         subflows = []  # Dictionaries are ordered in Python 3.7+
         subflows_dict = dict()
-        subflows_config = config["subflows_config"]
+        subflows_config = config["subflows_config"] if config["subflows_config"] is not None else []
 
         for subflow_config in subflows_config:
             # Let's use hydra for now
@@ -76,21 +79,25 @@ class CompositeFlow(Flow, ABC):
                     subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
 
                 flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
-                subflows.append((flow_obj.flow_config["name"], flow_obj))
+                subflows.append(flow_obj)
                 subflows_dict[flow_obj.flow_config["name"]] = flow_obj
 
             elif "_reference_" in subflow_config:
                 flow_obj = subflows_dict[subflow_config["_reference_"]]
-                subflows.append((flow_obj.flow_config["name"], flow_obj))
+                subflows.append(flow_obj)
 
-        return subflows, subflows_dict
+        return subflows
+
+    def add_subflow(self, subflow: Flow):
+        self.subflows.append(subflow)
+        self.subflows_dict[subflow.flow_config["name"]] = subflow
 
     @classmethod
     def instantiate_from_config(cls, config):
         flow_config = copy.deepcopy(config)
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
-        kwargs["subflows"], kwargs["subflows_dict"] = cls._set_up_subflows(flow_config)
+        kwargs["subflows"] = cls._set_up_subflows(flow_config)
         kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
         kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
@@ -105,7 +112,7 @@ class CompositeFlow(Flow, ABC):
         output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
         subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}"
-                                   for subflow in [flow for _, flow in self.subflows]])
+                                   for subflow in self.subflows])
 
         entries = [
             f"{indent}Name: {name}",

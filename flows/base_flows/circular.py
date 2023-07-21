@@ -9,7 +9,20 @@ log = logging.get_logger(__name__)
 
 
 class CircularFlow(CompositeFlow):
-    REQUIRED_KEYS_CONFIG = ["max_rounds", "reset_every_round", "early_exit_key"]
+    REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key"]
+
+    __default_flow_config = {
+        "max_rounds": 3,
+        # "reset_every_round": False,
+        # N.B.
+        # uncomment this line will cause error
+        # line 176, in recursive_dictionary_update
+        #     d[k] = v
+        # TypeError: 'bool' object does not support item assignment
+        # Just not set this key will be fine, and the default value is False
+        "early_exit_key": "EARLY_EXIT"
+    }
+
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -60,8 +73,8 @@ class CircularFlow(CompositeFlow):
         # default value, though it should never be returned because max_round should be > 0
         output_message = {}
         for idx in range(max_round):
-            for flow_name, current_flow in self.subflows:
-                if self.flow_config["reset_every_round"].get(flow_name):
+            for current_flow in self.subflows:
+                if self.flow_config.get("reset_subflows", False) and self.flow_config["reset_every_round"].get(current_flow.flow_config["name"], False):
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
                 output_message = self._call_flow_from_state(

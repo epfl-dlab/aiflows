@@ -52,6 +52,8 @@ class Flow(ABC):
     # below parameters are essential for flow instantiation, but we provide value for them,
     # so user is not required to provide them in the flow config
     __default_flow_config = {
+        "name": "Flow",
+        "description": "A flow",
         "output_keys": [],
 
         "private_keys": ["api_keys"],
@@ -179,6 +181,12 @@ class Flow(ABC):
 
         return data_transformations
 
+    def add_input_data_transformation(self, data_transformation: DataTransformation):
+        self.input_data_transformations.append(data_transformation)
+
+    def add_output_data_transformation(self, data_transformation: DataTransformation):
+        self.output_data_transformations.append(data_transformation)
+
     @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
@@ -219,7 +227,7 @@ class Flow(ABC):
         #         keys_deleted_from_namespace.append(key)
 
         if recursive and hasattr(self, "subflows"):
-            for _, flow in self.subflows:
+            for flow in self.subflows:
                 flow.reset(full_reset=full_reset, recursive=True)
 
         if full_reset:
