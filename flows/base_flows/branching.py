@@ -8,7 +8,10 @@ log = logging.get_logger(__name__)
 
 
 class BranchingFlow(CompositeFlow):
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
+    """
+    A composite flow that branches to one of its subflows based on the branch value in the input_data.
+    Input data should have a key called "branch" with the name of the subflow to call.
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
