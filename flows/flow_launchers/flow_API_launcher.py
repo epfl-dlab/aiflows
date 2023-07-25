@@ -8,6 +8,7 @@ from typing import List, Dict, Union, Optional
 import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
+from flows.messages import InputMessage
 from ..utils import logging
 
 log = logging.get_logger(__name__)
@@ -33,10 +34,14 @@ class FlowLauncher(ABC):
             sample = deepcopy(sample)
             flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
-            input_message = flow.package_input_message(data_dict=sample,
-                                                       src_flow="Launcher",
-                                                       output_keys=output_keys,
-                                                       api_keys=api_keys)
+            input_message = InputMessage.build(
+                full_payload=sample,
+                dst_flow_input_keys=flow.get_input_keys(),
+                src_flow="Launcher",
+                dst_flow=flow.name,
+                api_keys=api_keys
+            )
+
             output_message = flow(input_message)
             human_readable_outputs.append(output_message.data["output_data"])
 
@@ -109,7 +114,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         _resource_id = self._resource_IDs.get()  # The ID of the resources to be used by the thread for this sample
-        flow = self.flows[_resource_id]
+        flow: Flow = self.flows[_resource_id]
         path_to_output_file = self.paths_to_output_files[_resource_id]
 
         for sample in batch:
@@ -128,10 +133,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                         try:
                             # ToDo: Use the same format as the FlowLauncher for passing API keys
                             api_keys = {"openai": self.api_keys[api_key_idx]}
-                            input_message = flow.package_input_message(data_dict=deepcopy(sample),
-                                                                       src_flow="Launcher",
-                                                                       output_keys=self.output_keys,
-                                                                       api_keys=api_keys)
+                            input_message = InputMessage.build(
+                                full_payload=sample,
+                                dst_flow_input_keys=flow.get_input_keys(),
+                                src_flow="Launcher",
+                                dst_flow=flow.name,
+                                api_keys=api_keys
+                            )
 
                             output_message = flow(input_message)
 
@@ -154,10 +162,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                 else:
                     # For development and debugging purposes
                     api_keys = {"openai": self.api_keys[api_key_idx]}
-                    input_message = flow.package_input_message(data_dict=deepcopy(sample),
-                                                               src_flow="Launcher",
-                                                               output_keys=self.output_keys,
-                                                               api_keys=api_keys)
+                    input_message = InputMessage.build(
+                        full_payload=sample,
+                        dst_flow_input_keys=flow.get_input_keys(),
+                        src_flow="Launcher",
+                        dst_flow=flow.name,
+                        api_keys=api_keys
+                    )
                     output_message = flow(input_message)
 
                     inference_outputs.append(output_message)

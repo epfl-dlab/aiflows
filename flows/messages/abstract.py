@@ -25,25 +25,24 @@ class Message:
     # ~~~ Private keys that should not be serialized or logged ~~~
     private_keys: List[str]
 
-    def __init__(self, **kwargs):
-        kwargs = copy.deepcopy(kwargs)
+    def __init__(self, 
+                 data: Dict[str, Any], 
+                 created_by: str,
+                 private_keys: List[str] = None):
 
         # ~~~ Initialize message identifiers ~~~
         self.message_id = create_unique_id()
         self.created_at = get_current_datetime_ns()
 
         # ~~~ Initialize contextual information ~~~
-        assert "message_type" not in kwargs, "message_type should not be passed as a keyword argument"
         self.message_type = self.__class__.__name__
-        self.created_by = kwargs.pop("created_by")
+        self.created_by = created_by
 
         # ~~~ Initialize Data content ~~~
-        self.data = kwargs.pop("data", {})
+        self.data = data
 
         # ~~~ Initialize private keys ~~~
-        self.private_keys = []
-        if kwargs.get("private_keys", False):
-            self.private_keys = kwargs.pop("private_keys")
+        self.private_keys = [] if private_keys is None else private_keys
         if "api_keys" not in self.private_keys:
             self.private_keys.append("api_keys")
 

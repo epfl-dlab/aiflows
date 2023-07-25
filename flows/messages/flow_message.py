@@ -12,14 +12,20 @@ colorama.init()
 @dataclass
 class InputMessage(Message):
     def __init__(self,
+                 data: Dict[str, Any],
                  src_flow: str,
                  dst_flow: str,
-                 keys_to_ignore_for_hash: Optional[List[str]] = None,
-                 **kwargs):
-        super().__init__(**kwargs)
+                 created_by: str = None,
+                 private_keys: List[str] = None,
+                 api_keys: Dict[str, Any] = None,
+                 keys_to_ignore_for_hash: Optional[List[str]] = None): # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
+        
+        created_by = src_flow if created_by is None else created_by
+        super().__init__(data=data, created_by=created_by, private_keys=private_keys)
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow
+        self.api_keys = {} if api_keys is None else api_keys
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
@@ -36,6 +42,28 @@ class InputMessage(Message):
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
 
         return message
+    
+    @staticmethod
+    def build(full_payload: Dict[str, Any],
+              dst_flow_input_keys: List[str],
+              src_flow: str,
+              dst_flow: str,
+              private_keys: Optional[List[str]] = None,
+              api_keys: Optional[Dict[str, Any]] = None,
+              created_by: Optional[str] = None) -> 'InputMessage':
+        
+        if created_by is None:
+            created_by = src_flow
+        payload = {k: v for k, v in full_payload.items() if k in dst_flow_input_keys}
+        input_message = InputMessage(
+            data=payload,
+            src_flow=src_flow,
+            dst_flow=dst_flow,
+            created_by=created_by,
+            private_keys=private_keys,
+            api_keys=api_keys
+        )
+        return input_message
 
 
 @dataclass
@@ -63,7 +91,7 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
                  updated_flow: str,
                  **kwargs):
 
-        super().__init__(updated_flow=updated_flow, **kwargs)
+        super().__init__(data={}, updated_flow=updated_flow, **kwargs)
         self.data["role"] = role
         self.data["content"] = content
 
@@ -128,8 +156,9 @@ class OutputMessage(Message):
                  missing_output_keys: List[str],
                  input_message_id: str,
                  history: 'FlowHistory',
+                 created_by: str,
                  **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(data={}, created_by=created_by, **kwargs)
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow

@@ -4,7 +4,7 @@ import hydra
 
 import time
 
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any, Tuple
 
 from langchain import PromptTemplate
 import langchain
@@ -28,8 +28,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
     SUPPORTS_CACHING: bool = True
 
-    api_keys: Dict[str, str]
-
     system_message_prompt_template: PromptTemplate
     human_message_prompt_template: PromptTemplate
 
@@ -39,8 +37,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-        self.api_keys = None
 
         assert self.flow_config["name"] not in [
             "system",
@@ -98,8 +94,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
         return False
 
-    def get_input_keys(self, data: Optional[Dict[str, Any]] = None):
-        """Returns the expected inputs for the flow given tshe current state and, optionally, the input data"""
+    def get_input_keys(self):
         if self._is_conversation_initialized():
             return self.flow_config["input_keys"]
         else:
@@ -164,7 +159,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._log_message(chat_message)
 
     def _call(self):
-        api_key = self.api_keys["openai"]
+        api_key = self._get_from_state("api_keys")["openai"]
 
         backend = langchain.chat_models.ChatOpenAI(
             model_name=self.flow_config["model_name"],
