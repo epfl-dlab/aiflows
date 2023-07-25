@@ -17,6 +17,7 @@ class EndOfInteraction(DataTransformation):
         self.end_of_interaction_string = end_of_interaction_string
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        # print(f"EndOfInteraction: {data_dict}, {self.end_of_interaction_string}")
         is_in = self.end_of_interaction_string.lower() in data_dict[self.input_key].lower()
 
         if is_in:
@@ -24,3 +25,6 @@ class EndOfInteraction(DataTransformation):
 
         data_dict[self.output_key] = is_in
         return data_dict
+    
+    def __repr__(self) -> str:
+        return f"EndOfInteraction(output_key={self.output_key}, end_of_interaction_string={self.end_of_interaction_string}, input_key={self.input_key})"

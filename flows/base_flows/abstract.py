@@ -680,7 +680,7 @@ class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
     REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows", "subflows_dict"]
 
-    subflows: List[Tuple[str, Flow]]
+    subflows: List[Tuple[str, Flow]] # TODO(yeeef): remove it
     subflows_dict: Dict[str, Flow]
 
     def __init__(
@@ -738,26 +738,24 @@ class CompositeFlow(Flow, ABC):
         subflows_dict = dict()
         subflows_config = config["subflows_config"]
 
-        for subflow_config in subflows_config:
+        for subflow_name, subflow_config in subflows_config.items():
             # Let's use hydra for now
             # subflow_config["_target_"] = ".".join([
             #     flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER,
             #     subflow_config.pop("class"),
             #     cls.instantiate_from_default_config.__name__
             # ])
-            if "_target_" in subflow_config:
-                if subflow_config["_target_"].startswith("."):
-                    cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
-                    subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
-                
-                flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
-                subflows.append((flow_obj.flow_config["name"], flow_obj))
-                subflows_dict[flow_obj.flow_config["name"]] = flow_obj
-                
-            elif "_reference_" in subflow_config:
-                flow_obj = subflows_dict[subflow_config["_reference_"]]
-                subflows.append((flow_obj.flow_config["name"], flow_obj))
 
+            assert "_target_" in subflow_config
+            if subflow_config["_target_"].startswith("."):
+                cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
+                subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
+            
+            flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
+            flow_obj.flow_config["name"] = subflow_name
+            subflows.append((subflow_name, flow_obj))
+            subflows_dict[subflow_name] = flow_obj
+                
         return subflows, subflows_dict
 
     @classmethod
