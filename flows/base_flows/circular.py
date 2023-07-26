@@ -21,7 +21,7 @@ class TopologyNode:
 
 
 class CircularFlow(CompositeFlow):
-    REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key"]
+    REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key", "topology"]
     REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
 
     def __init__(self, **kwargs):
@@ -72,6 +72,9 @@ class CircularFlow(CompositeFlow):
     @classmethod
     def type(cls):
         return "circular"
+    
+    def _on_reach_max_round(self):
+        return
 
     def _sequential_run(self, max_round: int):
         # default value, though it should never be returned because max_round should be > 0
@@ -98,5 +101,6 @@ class CircularFlow(CompositeFlow):
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
                     return
 
+        self._on_reach_max_round()
         log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
 

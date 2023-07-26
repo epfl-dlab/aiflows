@@ -348,11 +348,25 @@ class Flow(ABC):
                     data[key] = self.__dict__[key]
 
             return data
+        
+        def level_keys_search(search_dict, level_keys):
+            if len(level_keys) == 1:
+                if level_keys[0] in search_dict:
+                    return search_dict[level_keys[0]], True
+                else:
+                    return None, False
+                
+            if level_keys[0] in search_dict:
+                return level_keys_search(search_dict[level_keys[0]], level_keys[1:])
+            else:
+                return None, False
 
         for key in keys:
-            flat_flow_state = flatten_dict(self.flow_state)
-            if key in flat_flow_state:
-                data[key] = flat_flow_state[key]
+            level_keys = key.split(".")
+            value, found = level_keys_search(self.flow_state, level_keys)
+
+            if found:
+                data[key] = value
             elif allow_class_attributes and key in self.__dict__:
                 data[key] = self.__dict__[key]
             else:
