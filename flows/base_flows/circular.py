@@ -22,7 +22,7 @@ class TopologyNode:
 
 class CircularFlow(CompositeFlow):
     REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key", "topology"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -38,10 +38,10 @@ class CircularFlow(CompositeFlow):
         # parse topology
         for topo_config in topology:
             flow_name = topo_config["flow"]
-            if flow_name not in self.subflows_dict:
+            if flow_name not in self.subflows:
                 raise ValueError(f"flow {flow_name} is not in subflow_configs")
             
-            flow = self.subflows_dict[flow_name]
+            flow = self.subflows[flow_name]
             reset_every_round = topo_config.get("reset_every_round", False)
             output_transformations = self._set_up_data_transformations(topo_config.get("output_transformations", []))
 

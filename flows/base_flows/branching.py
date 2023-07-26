@@ -8,7 +8,7 @@ log = logging.get_logger(__name__)
 
 
 class BranchingFlow(CompositeFlow):
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows", "subflows_dict"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     __default_flow_config = {
         "input_keys": ["branch", "branch_input_data"],
@@ -42,7 +42,6 @@ class BranchingFlow(CompositeFlow):
 
         current_flow = self._get_subflow(branch)
         if current_flow is None:
-            # print(f"Branching flow has subflows: {self.subflows}")
             raise ValueError(f"Branching flow has no subflow with name {branch}")
         # ~~~ Execute the flow and update state with answer ~~~
         output_message = self._call_flow_from_state(

@@ -75,7 +75,7 @@ class Flow(ABC):
         self.flow_state = None
         self.flow_config = None
         self.history = None
-        self.cache = FlowCache() # TODO(yeeef): inject the dependency rather than directly initialize
+        self.cache = FlowCache()
 
         self._validate_parameters(kwargs_passed_to_the_constructor)
         self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
@@ -214,7 +214,7 @@ class Flow(ABC):
                 keys_deleted_from_namespace.append(key)
 
         if recursive and hasattr(self, "subflows"):
-            for _, flow in self.subflows:
+            for _, flow in self.subflows.items():
                 flow.reset(full_reset=full_reset, recursive=True)
 
         if full_reset:
@@ -306,26 +306,11 @@ class Flow(ABC):
             raise ValueError(f"input_keys should be a list, but got {type(input_keys)}, input_keys: {input_keys}")
         return input_keys[:] # copy
     
-    # TODO(yeeef): make it private or we dont need it?
     def get_output_keys(self) -> List[str]:
         output_keys = self.flow_config["output_keys"]
         if not isinstance(output_keys, list):
             raise ValueError(f"output_keys should be a list, but got {type(output_keys)}, output_keys: {output_keys}")
         return output_keys[:] # copy
-
-    def get_input_keys_(self, data: Optional[Dict[str, Any]] = None):
-        """Returns the expected inputs for the flow given the current state and, optionally, the input data"""
-        pre_runtime_input_keys = self.flow_config["input_keys"]
-        if pre_runtime_input_keys is None:
-            return list(data.keys())
-        return pre_runtime_input_keys
-
-    def get_output_keys_(self, data: Optional[Dict[str, Any]] = None):
-        """Returns the expected outputs for the flow given the current state and, optionally, the input data"""
-        pre_runtime_output_keys = self.flow_config.get("output_keys", None)
-        if pre_runtime_output_keys is None:
-            return list(data.keys())
-        return pre_runtime_output_keys
 
     def _log_message(self, message: Message):
         log.debug(message.to_string())
@@ -381,7 +366,6 @@ class Flow(ABC):
             dst_flow: "Flow",
             api_keys: Optional[Dict[str, str]] = None,
     ):
-        # TODO(yeeef): formalize api_keys
         private_keys = dst_flow.flow_config["private_keys"]
         keys_to_ignore_for_hash = dst_flow.flow_config["keys_to_ignore_for_hash"]
 
@@ -472,7 +456,7 @@ class Flow(ABC):
     ):
         output_data = response
 
-        return OutputMessage( # TODO(Yeeef): formalize output message
+        return OutputMessage(
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.src_flow,
@@ -624,7 +608,6 @@ class Flow(ABC):
         else:
             raw_response = copy.deepcopy(response)
         
-        # TODO(Yeeef): think twice whether we preserve output_data_transformations
         response = self._apply_data_transformations(response,
                                                     self.output_data_transformations,
                                                     self.get_output_keys())
@@ -693,10 +676,9 @@ class AtomicFlow(Flow, ABC):
 
 class CompositeFlow(Flow, ABC):
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows", "subflows_dict"]
+    REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "subflows"]
 
-    subflows: List[Tuple[str, Flow]] # TODO(yeeef): remove it
-    subflows_dict: Dict[str, Flow]
+    subflows: Dict[str, Flow]
 
     def __init__(
             self,
@@ -745,12 +727,11 @@ class CompositeFlow(Flow, ABC):
 
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
         """Returns the subflow with the given name"""
-        return self.subflows_dict.get(subflow_name, None)
+        return self.subflows.get(subflow_name, None)
 
     @classmethod
     def _set_up_subflows(cls, config):
-        subflows = []  # Dictionaries are ordered in Python 3.7+
-        subflows_dict = dict()
+        subflows = dict()
         subflows_config = config["subflows_config"]
 
         for subflow_name, subflow_config in subflows_config.items():
@@ -768,17 +749,16 @@ class CompositeFlow(Flow, ABC):
             
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             flow_obj.flow_config["name"] = subflow_name
-            subflows.append((subflow_name, flow_obj))
-            subflows_dict[subflow_name] = flow_obj
+            subflows[subflow_name] = flow_obj
                 
-        return subflows, subflows_dict
+        return subflows
 
     @classmethod
     def instantiate_from_config(cls, config):
         flow_config = copy.deepcopy(config)
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
-        kwargs["subflows"], kwargs["subflows_dict"] = cls._set_up_subflows(flow_config)
+        kwargs["subflows"] = cls._set_up_subflows(flow_config)
         kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
         kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
@@ -793,7 +773,7 @@ class CompositeFlow(Flow, ABC):
         output_keys = self.flow_config.get("output_keys", "no output keys")
         class_name = self.__class__.__name__
         subflows_repr = "\n".join([f"{subflow._to_string(indent_level=indent_level + 1)}"
-                                   for subflow in [flow for _, flow in self.subflows]])
+                                   for subflow in [flow for _, flow in self.subflows.items()]])
 
         entries = [
             f"{indent}Name: {name}",

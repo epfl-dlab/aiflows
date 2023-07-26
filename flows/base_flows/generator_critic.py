@@ -18,7 +18,7 @@ class GeneratorCriticFlow(CircularFlow):
     def _validate_parameters(cls, kwargs):
         validate_parameters(cls, kwargs)
 
-        for flow_name, flow in kwargs["subflows_dict"].items():
+        for flow_name, flow in kwargs["subflows"].items():
             if "generator" in flow_name.lower():
                 continue
             elif "critic" in flow_name.lower():
