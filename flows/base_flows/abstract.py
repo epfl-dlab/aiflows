@@ -388,49 +388,6 @@ class Flow(ABC):
         )
         return msg
 
-    def package_input_message_(
-            self,
-            data_dict: Dict[str, Any],
-            src_flow: Optional[Union["Flow", str]] = "Launcher",
-            input_keys: Optional[List[str]] = None,
-            output_keys: Optional[List[str]] = None,
-            api_keys: Optional[Dict[str, str]] = None,
-    ):
-        self.api_keys = api_keys
-
-        if isinstance(src_flow, Flow):
-            src_flow = src_flow.flow_config["name"]
-        dst_flow = self.flow_config["name"]
-
-        # ~~~ Get the expected inputs and outputs ~~~
-        data_dict = self._apply_data_transformations(data_dict,
-                                                     self.input_data_transformations,
-                                                     input_keys)
-        if input_keys is None:
-            input_keys = self.get_input_keys(data_dict)
-        assert len(set(["src_flow", "dst_flow"]).intersection(set(input_keys))) == 0, \
-            "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
-
-        # ~~~ Get the data payload ~~~
-        packaged_data = {}
-        for input_key in input_keys:
-            if input_key not in data_dict:
-                raise ValueError(f"Input data does not contain the expected key: `{input_key}`")
-
-            packaged_data[input_key] = data_dict[input_key]
-
-        # ~~~ Create the message ~~~
-        msg = InputMessage(
-            created_by=self.flow_config['name'],
-            data=copy.deepcopy(packaged_data),  # ToDo: Think whether deepcopy is necessary
-            private_keys=self.flow_config["private_keys"],
-            keys_to_ignore_for_hash=self.flow_config["keys_to_ignore_for_hash"],
-            src_flow=src_flow,
-            dst_flow=dst_flow,
-            api_keys=api_keys,
-        )
-        return msg
-
     def _apply_data_transformations(self,
                                     data_dict: Dict,
                                     data_transformations: List[DataTransformation],
@@ -465,61 +422,6 @@ class Flow(ABC):
             output_data=output_data,
             raw_response=raw_response,
             input_message_id=input_message.message_id,
-            history=self.history,
-        )
-
-    def _package_output_message_(
-            self,
-            input_message: InputMessage,
-            response: Dict[str, Any],
-    ):
-        output_data = response
-        raw_response = copy.deepcopy(response)
-
-        # ~~~ Flatten the output data ~~~
-        output_data = flatten_dict(output_data)
-
-        # ~~~ Apply output transformations ~~~
-        output_keys = self.get_output_keys(output_data)
-        output_data = self._apply_data_transformations(output_data,
-                                                       self.output_data_transformations,
-                                                       output_keys)
-
-        # ~~~ Check that all expected keys are present ~~~
-        missing_keys = []
-        for expected_key in output_keys:
-            if expected_key not in output_data:
-                missing_keys.append(expected_key)
-                continue
-
-        # ~~~ Unflatten the output data ~~~
-        output_data = unflatten_dict(output_data)
-
-        # add raw_response into output_data if keep_raw_response=True
-        if not self.flow_config["keep_raw_response"]:
-            log.info("The raw response will not be added to output_data")
-        else:
-            output_data["raw_response"] = raw_response
-
-        if len(output_data) == 0:
-            raise Exception(f"The output dictionary is empty. "
-                            f"None of the expected outputs: `{str(output_keys)}` were found. "
-                            f"Available outputs are: `{str(list(output_data.keys()))}`")
-
-        if len(missing_keys) != 0:
-            flow_name = self.flow_config['name']
-            log.warning(f"[{flow_name}] Missing keys: `{str(missing_keys)}`. "
-                        f"Available outputs are: `{str(list(output_data.keys()))}`")
-
-        return OutputMessage(
-            created_by=self.flow_config['name'],
-            src_flow=self.flow_config['name'],
-            dst_flow=input_message.src_flow,
-            output_keys=output_keys,
-            output_data=output_data,
-            raw_response=raw_response,
-            input_message_id=input_message.message_id,
-            missing_output_keys=missing_keys,
             history=self.history,
         )
 
