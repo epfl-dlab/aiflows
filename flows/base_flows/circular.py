@@ -36,7 +36,8 @@ class CircularFlow(CompositeFlow):
             raise ValueError(f"topology is empty for flow {self.flow_config['name']}")
         
         # parse topology
-        for flow_name, topo_config in topology.items():
+        for topo_config in topology:
+            flow_name = topo_config["flow"]
             if flow_name not in self.subflows_dict:
                 raise ValueError(f"flow {flow_name} is not in subflow_configs")
             

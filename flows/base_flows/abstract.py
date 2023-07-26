@@ -306,6 +306,7 @@ class Flow(ABC):
             raise ValueError(f"input_keys should be a list, but got {type(input_keys)}, input_keys: {input_keys}")
         return input_keys[:] # copy
     
+    # TODO(yeeef): make it private or we dont need it?
     def get_output_keys(self) -> List[str]:
         output_keys = self.flow_config["output_keys"]
         if not isinstance(output_keys, list):
