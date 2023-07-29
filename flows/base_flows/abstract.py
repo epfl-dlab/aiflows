@@ -32,19 +32,6 @@ class Flow(ABC):
 
     SUPPORTS_CACHING = False
 
-    # KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE = {
-    #     "flow_config", "flow_state", "history",
-    #     "input_message",
-    #     "cache",
-    #     "input_data_transformations", "output_data_transformations"}
-
-    KEYS_TO_IGNORE_HASH = {"name",
-                           "description"}  # TODO(yeeef): rename it to something else. It is different from `keys_to_ignore_for_hash`(this is for input_keys and input_data when caching). KEYS_TO_IGNORE_HASH is for flow_config and flow_state when caching
-
-    # TODO(yeeef): the simplest and most natural way to declare required keys constructor is to .... declare them in the constructor signature, instead of this
-    # why the input_data_transformation cannot be a lambda? not everything can be described by yaml... we need to find a boundary
-    # REQUIRED_KEYS_CONSTRUCTOR = ["flow_config", "input_data_transformations", "output_data_transformations"]
-
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
@@ -57,7 +44,7 @@ class Flow(ABC):
         "output_keys": [],
 
         "private_keys": ["api_keys"],
-        "keys_to_ignore_for_hash": ["api_keys"],
+        "keys_to_ignore_for_hash": ["api_keys", "name", "description"],
 
         "input_data_transformations": [],
         "output_data_transformations": [],
@@ -81,8 +68,6 @@ class Flow(ABC):
         self.output_data_transformations = output_data_transformations
         self.cache = FlowCache()
         self._validate_flow_config(flow_config)
-        # self._extend_keys_to_ignore_when_resetting_namespace(list(kwargs_passed_to_the_constructor.keys()))
-        # self.__set_namespace_params(kwargs_passed_to_the_constructor)
 
         self.set_up_flow_state()
 
@@ -90,12 +75,6 @@ class Flow(ABC):
             log.debug(
                 f"Flow {self.flow_config.get('name', 'unknown_name')} instantiated with the following parameters:")
             print_config_tree(self.flow_config)
-
-    # def _extend_keys_to_ignore_when_resetting_namespace(self, keys_to_ignore: List[str]):
-    #     self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE.update(keys_to_ignore)
-
-    def _extend_keys_to_ignore_hash(self, keys_to_ignore: List[str]):
-        self.KEYS_TO_IGNORE_HASH.update(keys_to_ignore)
 
     @property
     def name(self):
@@ -115,8 +94,8 @@ class Flow(ABC):
 
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
-        if cls != Flow:
-            cls.__base__._validate_flow_config(flow_config)
+        # if cls != Flow:
+            # cls.__base__._validate_flow_config(flow_config) # TODO(yeeef): if child overrides _validate_flow_config, then we dont get what we want, so it is useless
 
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
@@ -299,8 +278,8 @@ class Flow(ABC):
         # ToDo(https://github.com/epfl-dlab/flows/issues/60): Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
-        config_hashing_params = {k: v for k, v in self.flow_config.items() if k not in self.KEYS_TO_IGNORE_HASH}
-        state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.KEYS_TO_IGNORE_HASH}
+        config_hashing_params = {k: v for k, v in self.flow_config.items() if k not in self.flow_config["keys_to_ignore_for_hash"]}
+        state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.flow_config["keys_to_ignore_for_hash"]}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
@@ -329,7 +308,7 @@ class Flow(ABC):
 
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None],
-                                        allow_class_attributes: bool = False):
+                                        allow_class_attributes: bool = False): # TODO(yeeef): remove this parameter
         data = {}
 
         if keys is None:

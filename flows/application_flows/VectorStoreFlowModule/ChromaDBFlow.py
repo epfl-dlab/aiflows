@@ -20,7 +20,6 @@ class ChromaDBFlow(AtomicFlow):
         super().__init__(**kwargs)
         self.client = ChromaClient()
         self.collection = self.client.get_or_create_collection(name=self.flow_config["name"])
-        self._extend_keys_to_ignore_when_resetting_namespace(["client", "collection"])
 
     def get_input_keys(self) -> List[str]:
         return self.flow_config["input_keys"]
