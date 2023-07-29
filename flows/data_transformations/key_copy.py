@@ -1,3 +1,4 @@
+import copy
 from typing import Dict, Any
 
 from flows.data_transformations import KeyRename
@@ -17,7 +18,7 @@ class KeyCopy(KeyRename):
 
         for old_key, new_key in self.old_key2new_key.items():
             if old_key in data_dict:
-                data_dict[new_key] = data_dict[old_key]
+                data_dict[new_key] = copy.deepcopy(data_dict[old_key])
 
         if self.flatten_data_dict:
             data_dict = unflatten_dict(data_dict)
