@@ -1,6 +1,6 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 
-from flows.base_flows import CompositeFlow
+from flows.base_flows import CompositeFlow, Flow
 from ..utils import logging
 from flows.utils.general_helpers import validate_parameters
 
@@ -8,7 +8,6 @@ log = logging.get_logger(__name__)
 
 
 class BranchingFlow(CompositeFlow):
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
     __default_flow_config = {
         "input_keys": ["branch", "branch_input_data"],
@@ -17,16 +16,6 @@ class BranchingFlow(CompositeFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
-    @classmethod
-    def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
-        flow_config = kwargs["flow_config"]
-        input_keys = flow_config["input_keys"]
-        if input_keys != ["branch", "branch_input_data"]:
-            raise ValueError(f"Branching flow is supposed to have fixed input_keys: ['branch', 'branch_input_data'], but current input_keys is {input_keys}")
-
-        assert len(kwargs["subflows"]) > 0, f"Branching flow needs at least one flow, currently has 0"
 
     def get_input_keys(self) -> List[str]:
         return ["branch", "branch_input_data"]

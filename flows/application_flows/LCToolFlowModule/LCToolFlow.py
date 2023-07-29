@@ -20,7 +20,6 @@ class LCToolFlow(AtomicFlow):
     def __init__(self, backend: BaseTool, **kwargs) -> None:
         super().__init__(**kwargs)
         self.backend = backend
-        self._extend_keys_to_ignore_when_resetting_namespace(["backend"])
         
     @classmethod
     def _set_up_backend(cls, config: Dict[str, Any]) -> BaseTool:

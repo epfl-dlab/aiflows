@@ -1,0 +1,149 @@
+{
+  "Header": {
+    "title": "Flows",
+    "paragraph": "The Building Blocks of Reasoning and Collaborative AI",
+    "code": "pip install flows\ngit clone git@github.com:epfl-dlab/flows.git \ncd flows/tutorials/getting-started",
+    "language": "bash",
+    "showLineNumbers": false,
+    "codeBGColor": "#2d2d2d"
+  },
+
+  "Features": [
+    {
+      "icon": "fa fa-comments-o",
+      "title": "FLOWS library",
+      "text": "A framework for building composable interactions between LLM agents, tools, and humans."
+    },
+    {
+      "icon": "fa fa-solid fa-share",
+      "title": "Flow-verse",
+      "text": "Share your flows with the community. Re-use and combine flows created by other researchers."
+    },
+    {
+      "icon": "fa fa-solid fa-eye",
+      "title": "Visualization toolkit",
+      "text": "Debug and visualize the reasoning process of your LLMs."
+    }
+  ],
+  "About": {
+    "paragraph": "Flows is a framework to orchestrate interactions between LLMs, tools and humans. It is designed to be modular and composable, allowing you to build complex reasoning processes from simple building blocks. The Flow-verse allows you to share your flows with the community, and re-use and combine flows created by other researchers.",
+    "Why": [
+      "Easy to get started: Create your own Flow in just a few lines of code",
+      "Flexible: Anything can be a Flow. With our library you can easily let your LLMs talk to other LLMs, tools, and even humans. Our tutorials show convenient templates that you can adjust to your needs.",
+      "Modular and composable: Chain together multiple Flows with smart branching and merging of data. Create deeply nested Flows to build complex reasoning processes from simple building blocks.",
+      "Seamlessly extends existing libraries, such as LangChain."
+    ],
+    "Why2": [
+      "Caching: Save time and resources by caching the results of your Flows. Our caching mechanism makes your Flows resilient to crashes and interruptions.",
+      "Share data: Our cache is based on an intelligent data and task driven hashing mechanism. You can share cached computations across deeply nested Flow architectures.",
+      "Multi-threaded: Our Flow execution engine is multi-threaded and offers a powerful waiting&retrying mechanism to integrate with external services.",
+      "Visualization toolkit: Debug and visualize the reasoning process of your LLMs."
+    ]
+  },
+
+  "Gallery": [
+    {
+      "title": "Competitive Coding Flows",
+      "largeImage": "https://github.com/epfl-dlab/multi-level-reasoning-for-code",
+      "smallImage": "img/portfolio/pexels-thirdman-7652039_small.jpg"
+    },
+    {
+      "title": "Flow-verse",
+      "largeImage": "link",
+      "smallImage": "img/portfolio/pexels-taryn-elliott-4390730_small.jpg"
+    },
+    {
+      "title": "Your project here",
+      "largeImage": "contribute",
+      "smallImage": "img/portfolio/03-small.jpg"
+    }
+  ],
+  "Contribute": [
+    {
+      "icon": "fa fa-github-square",
+      "name": "Code",
+      "text": "See something wrong? Have an awesome idea for a new feature? Contribute to the repository by fixing bugs or adding new features."
+    },
+    {
+      "icon": "fa fa-wrench",
+      "name": "Implement",
+      "text": "Find LLMs are not working well enough on some real-world tasks? Try to get better performance with FLOWS"
+    },
+    {
+      "icon": "fa fa-cloud-download",
+      "name": "Share",
+      "text": "Already got some projects implemented with FLOWS and want to share it with the conmunity? We'd love to feature your projects, and would especially love to see tutorials and how-to's."
+    }
+  ],
+  "Testimonials": [
+    {
+      "img": "img/testimonials/01.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/02.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    },
+    {
+      "img": "img/testimonials/03.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/04.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    },
+    {
+      "img": "img/testimonials/05.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "John Doe"
+    },
+    {
+      "img": "img/testimonials/06.jpg",
+      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+      "name": "Johnathan Doe"
+    }
+  ],
+  "Team": [
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Martin Josifoski",
+      "job": "Phd student"
+    },
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Lars Henning Klein",
+      "job": "Phd Student"
+    },
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Maxime Peyrard",
+      "job": "Phd Student"
+    },
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Julian Paul Schnitzler",
+      "job": "Master student"
+    },
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Yuxing Yao",
+      "job": "Master student"
+    },
+    {
+      "img": "img/team/lab_logo.png",
+      "name": "Debjit Paul",
+      "job": "Postdoc"
+    }
+  ],
+  "Contact": {
+    "address": "Rte Cantonale, 1015 Lausanne",
+    "phone": "+1 123 456 1234",
+    "email": "info@company.com",
+    "twitter": "twitter.com",
+    "youtube": "youtube.com"
+  }
+}

@@ -1,5 +1,5 @@
 import os
-from flows.application_flows.VectorStoreFlow import VectorStoreFlow
+from flows.application_flows.VectorStoreFlowModule import VectorStoreFlow
 
 def test_vec():
     mem_flow = VectorStoreFlow.instantiate_from_default_config({
@@ -23,3 +23,7 @@ def test_vec():
     )
     output_message = mem_flow(input_message)
     assert output_message.data["output_data"]["retrieved"] == ["hello world", "bye world"]
+
+
+if __name__ == '__main__':
+    test_vec()

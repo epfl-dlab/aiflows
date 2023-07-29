@@ -14,7 +14,6 @@ class TopologyNode:
                  flow: Flow, 
                  reset_every_round: bool,
                  output_transformations: List[DataTransformation]) -> None:
-        super().__init__()
         self.flow = flow
         self.reset_every_round = reset_every_round
         self.output_transformations = output_transformations
@@ -22,12 +21,37 @@ class TopologyNode:
 
 class CircularFlow(CompositeFlow):
     REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key", "topology"]
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    __default_flow_config = {
+        "max_rounds": 3,
+        "early_exit_key": "EARLY_EXIT",
+        "topology": []
+    }
+
+    def __init__(
+            self,
+            flow_config: Dict[str, Any],
+            input_data_transformations: List[DataTransformation],
+            output_data_transformations: List[DataTransformation],
+            subflows: List[Flow],
+    ):
+        super().__init__(flow_config=flow_config,
+                         input_data_transformations=input_data_transformations,
+                         output_data_transformations=output_data_transformations,
+                         subflows=subflows)
+        if len(self.subflows) <= 0: 
+            raise ValueError(f"Circular flow needs at least one subflow, currently has 0")  
         self.topology = self.__set_up_topology()
-        self._extend_keys_to_ignore_when_resetting_namespace(["topology"])
+
+    def _early_exit(self):
+        early_exit_key = self.flow_config.get("early_exit_key", None)
+        if early_exit_key:
+            if early_exit_key in self.flow_state:
+                return bool(self.flow_state[early_exit_key])
+            elif early_exit_key in self.__dict__:
+                return bool(self.__dict__[early_exit_key])
+
+        return False
     
     def __set_up_topology(self) -> List[TopologyNode]:
         topology = self.flow_config.get("topology", [])
@@ -49,12 +73,6 @@ class CircularFlow(CompositeFlow):
                                     reset_every_round=reset_every_round,
                                     output_transformations=output_transformations))
         return ret
-
-    @classmethod
-    def _validate_parameters(cls, kwargs):
-        validate_parameters(cls, kwargs)
-
-        assert len(kwargs["subflows"]) > 0, f"Circular flow needs at least one flow, currently has 0"
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         # ~~~ sets the input_data in the flow_state dict ~~~
@@ -104,4 +122,3 @@ class CircularFlow(CompositeFlow):
 
         self._on_reach_max_round()
         log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
-

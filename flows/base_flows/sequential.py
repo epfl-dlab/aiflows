@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 
-from flows.base_flows import CircularFlow
-from flows.utils.general_helpers import validate_parameters
+from flows.base_flows import CircularFlow, Flow
+from flows.data_transformations.abstract import DataTransformation
 from ..utils import logging
 
 log = logging.get_logger(__name__)
@@ -10,16 +10,22 @@ log = logging.get_logger(__name__)
 
 
 class SequentialFlow(CircularFlow):
-    REQUIRED_KEYS_CONFIG = [] # this is empty because SequentialFlow doesn't have any config and we need to overwrite the parent class
-    REQUIRED_KEYS_CONSTRUCTOR = ["subflows"]
 
-    def __init__(self, **kwargs):
-        kwargs.setdefault("flow_config", {}).update({"max_rounds": 1})
-        # set reset_every_round to False for all subflows but it should also work if it is set to be True
-        # because the reset is only called once at the beginning of the run, where the flow doesn't have any state
-        kwargs["flow_config"].update({"reset_every_round": {flow_name: False for flow_name in kwargs["subflows"].keys()}})
-        super().__init__(**kwargs)
+    __default_flow_config = {
+        "max_rounds": 1,
+    }
 
+    def __init__(
+            self,
+            flow_config: Dict[str, Any],
+            input_data_transformations: List[DataTransformation],
+            output_data_transformations: List[DataTransformation],
+            subflows: List[Flow],
+    ):
+        super().__init__(flow_config=flow_config,
+                         input_data_transformations=input_data_transformations,
+                         output_data_transformations=output_data_transformations,
+                         subflows=subflows)
 
     @classmethod
     def type(cls):
