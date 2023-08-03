@@ -8,6 +8,7 @@ from flows.base_flows import Flow
 from flows.data_transformations.abstract import DataTransformation
 
 from ..utils import logging
+
 log = logging.get_logger(__name__)
 
 
@@ -31,10 +32,12 @@ class CompositeFlow(Flow, ABC):
     @classmethod
     def instantiate_from_config(cls, config):
         flow_config = copy.deepcopy(config)
-        return cls(subflows=cls._set_up_subflows(flow_config), 
+        return cls(subflows=cls._set_up_subflows(flow_config),
                    flow_config=flow_config,
-                   input_data_transformations=cls._set_up_data_transformations(flow_config["input_data_transformations"]),
-                   output_data_transformations=cls._set_up_data_transformations(flow_config["output_data_transformations"]))
+                   input_data_transformations=cls._set_up_data_transformations(
+                       flow_config["input_data_transformations"]),
+                   output_data_transformations=cls._set_up_data_transformations(
+                       flow_config["output_data_transformations"]))
 
     def _call_flow_from_state(
             self,
@@ -48,7 +51,7 @@ class CompositeFlow(Flow, ABC):
 
         input_keys = flow_to_call.get_input_keys()
         input_data = self._fetch_state_attributes_by_keys(
-            keys=input_keys, # set to be None to fetch all keys
+            keys=input_keys,  # set to be None to fetch all keys
             allow_class_attributes=search_class_namespace_for_inputs
         )
         input_message = self._package_input_message(
@@ -75,22 +78,15 @@ class CompositeFlow(Flow, ABC):
         subflows_config = config["subflows_config"]
 
         for subflow_name, subflow_config in subflows_config.items():
-            # Let's use hydra for now
-            # subflow_config["_target_"] = ".".join([
-            #     flow_verse.loading.DEFAULT_FLOW_MODULE_FOLDER,
-            #     subflow_config.pop("class"),
-            #     cls.instantiate_from_default_config.__name__
-            # ])
-
             assert "_target_" in subflow_config
             if subflow_config["_target_"].startswith("."):
                 cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
                 subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
-            
+
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             flow_obj.flow_config["name"] = subflow_name
             subflows[subflow_name] = flow_obj
-                
+
         return subflows
 
     @classmethod

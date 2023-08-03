@@ -3,12 +3,13 @@ from abc import ABC
 import time
 from copy import deepcopy
 
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, Callable
 
 import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from flows.messages import InputMessage
+from ..interfaces.abstract import Interface
 from ..utils import logging
 
 log = logging.get_logger(__name__)
@@ -21,7 +22,8 @@ class FlowLauncher(ABC):
     @staticmethod
     def launch(flow: Flow,
                data: Union[Dict, List[Dict]],
-               output_keys: Optional[List[str]] = None,
+               input_interface: Optional[Interface] = None,
+               output_interface: Optional[Interface] = None,
                path_to_output_file: Optional[str] = None,
                api_keys: Optional[Dict[str, str]] = None) -> List[Dict]:
 
@@ -34,8 +36,13 @@ class FlowLauncher(ABC):
             sample = deepcopy(sample)
             flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
+            input_data = input_interface(goal="Process input data from launcher",
+                                         data=sample,
+                                         src_flow=None,
+                                         dst_flow=flow)
+
             input_message = InputMessage.build(
-                full_payload=sample,
+                full_payload=input_data,
                 dst_flow_input_keys=flow.get_input_keys(),
                 src_flow="Launcher",
                 dst_flow=flow.name,
@@ -43,7 +50,14 @@ class FlowLauncher(ABC):
             )
 
             output_message = flow(input_message)
-            human_readable_outputs.append(output_message.data["output_data"])
+            output_data = output_message.data["output_data"]
+
+            if output_interface is not None:
+                output_data = output_interface(goal="Process answer",
+                                                    src_flow=flow,
+                                                    dst_flow=None,
+                                                    data_dict=output_data)
+            human_readable_outputs.append(output_data)
 
             if path_to_output_file is not None:
                 output = {

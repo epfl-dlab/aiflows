@@ -9,13 +9,14 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
+
 class TopologyNode:
-    def __init__(self, 
-                 flow: Flow, 
-                 reset_every_round: bool,
+    def __init__(self,
+                 flow: Flow,
+                 reset: bool,
                  output_transformations: List[DataTransformation]) -> None:
         self.flow = flow
-        self.reset_every_round = reset_every_round
+        self.reset = reset
         self.output_transformations = output_transformations
 
 
@@ -39,8 +40,8 @@ class CircularFlow(CompositeFlow):
                          input_data_transformations=input_data_transformations,
                          output_data_transformations=output_data_transformations,
                          subflows=subflows)
-        if len(self.subflows) <= 0: 
-            raise ValueError(f"Circular flow needs at least one subflow, currently has 0")  
+        if len(self.subflows) <= 0:
+            raise ValueError(f"Circular flow needs at least one subflow, currently has 0")
         self.topology = self.__set_up_topology()
 
     def _early_exit(self):
@@ -52,25 +53,25 @@ class CircularFlow(CompositeFlow):
                 return bool(self.__dict__[early_exit_key])
 
         return False
-    
+
     def __set_up_topology(self) -> List[TopologyNode]:
         topology = self.flow_config.get("topology", [])
         ret = []
         if len(topology) == 0:
             raise ValueError(f"topology is empty for flow {self.flow_config['name']}")
-        
+
         # parse topology
         for topo_config in topology:
             flow_name = topo_config["flow"]
             if flow_name not in self.subflows:
                 raise ValueError(f"flow {flow_name} is not in subflow_configs")
-            
+
             flow = self.subflows[flow_name]
-            reset_every_round = topo_config.get("reset_every_round", False)
+            reset = topo_config.get("reset", False)
             output_transformations = self._set_up_data_transformations(topo_config.get("output_transformations", []))
 
-            ret.append(TopologyNode(flow=flow, 
-                                    reset_every_round=reset_every_round,
+            ret.append(TopologyNode(flow=flow,
+                                    reset=reset,
                                     output_transformations=output_transformations))
         return ret
 
@@ -78,9 +79,9 @@ class CircularFlow(CompositeFlow):
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
-        max_round = self.flow_config.get("max_rounds", 1)
+        max_rounds = self.flow_config.get("max_rounds", 1)
 
-        self._sequential_run(max_round=max_round)
+        self._sequential_run(max_rounds=max_rounds)
 
         # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
         # print(f"output keys: {self.get_output_keys()}")
@@ -91,21 +92,21 @@ class CircularFlow(CompositeFlow):
     @classmethod
     def type(cls):
         return "circular"
-    
-    def _on_reach_max_round(self):
+
+    def _on_reach_max_rounds(self):
+        log.info(f"[{self.flow_config['name']}] Max rounds reached. Returning output, answer might be incomplete.")
         return
 
-    def _sequential_run(self, max_round: int):
+    def _sequential_run(self, max_rounds: int):
         # default value, though it should never be returned because max_round should be > 0
-        for _ in range(max_round):
+        for _ in range(max_rounds):
             for node in self.topology:
                 current_flow = node.flow
                 output_transformations = node.output_transformations
-                if node.reset_every_round:
+                if node.reset:
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
-                output_message = self._call_flow_from_state(
-                    flow_to_call=current_flow)
+                output_message = self._call_flow_from_state(flow_to_call=current_flow)
                 output_data = output_message.data["output_data"]
 
                 # ~~~ Apply output transformations
@@ -120,5 +121,4 @@ class CircularFlow(CompositeFlow):
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
                     return
 
-        self._on_reach_max_round()
-        log.info(f"[{self.flow_config['name']}] Max round reached. Returning output, answer might be incomplete.")
+        self._on_reach_max_rounds()

@@ -54,7 +54,9 @@ class InputMessage(Message):
         
         if created_by is None:
             created_by = src_flow
+
         payload = {k: v for k, v in full_payload.items() if k in dst_flow_input_keys}
+
         input_message = InputMessage(
             data=payload,
             src_flow=src_flow,
@@ -63,6 +65,7 @@ class InputMessage(Message):
             private_keys=private_keys,
             api_keys=api_keys
         )
+
         return input_message
 
 

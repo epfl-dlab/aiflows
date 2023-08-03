@@ -28,7 +28,7 @@ class Flow(ABC):
     Abstract class for all flows.
     """
     # user should at least provide `REQUIRED_KEYS_CONFIG` when instantiate a flow
-    REQUIRED_KEYS_CONFIG = ["name", "description", "input_keys", "output_keys"]
+    REQUIRED_KEYS_CONFIG = ["name", "description"]
 
     SUPPORTS_CACHING = False
 
@@ -164,12 +164,6 @@ class Flow(ABC):
 
         return data_transformations
 
-    def add_input_data_transformation(self, data_transformation: DataTransformation):
-        self.input_data_transformations.append(data_transformation)
-
-    def add_output_data_transformation(self, data_transformation: DataTransformation):
-        self.output_data_transformations.append(data_transformation)
-
     @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
@@ -238,7 +232,7 @@ class Flow(ABC):
 
         """
         if isinstance(update_data, Message):
-            update_data = update_data.data["output_data"] # TODO(yeeef): error-prone
+            update_data = update_data.data["output_data"]  # TODO(yeeef): error-prone
 
         if len(update_data) == 0:
             raise ValueError("The state_update_dict was called with an empty dictionary. If there is a justified "
@@ -287,20 +281,24 @@ class Flow(ABC):
     # def get_hash_string(self):
     #     raise NotImplementedError()
 
-    def get_input_keys(self) -> List[str]:
-        """
-        Returns the expected inputs for the flow given the current state
-        """
-        input_keys = self.flow_config["input_keys"]
-        if not isinstance(input_keys, list):
-            raise ValueError(f"input_keys should be a list, but got {type(input_keys)}, input_keys: {input_keys}")
-        return input_keys[:] # copy
-    
-    def get_output_keys(self) -> List[str]:
-        output_keys = self.flow_config["output_keys"]
-        if not isinstance(output_keys, list):
-            raise ValueError(f"output_keys should be a list, but got {type(output_keys)}, output_keys: {output_keys}")
-        return output_keys[:] # copy
+    # def get_input_keys(self) -> List[str]:
+    #     """
+    #     Returns the expected inputs for the flow given the current state
+    #     """
+    #     input_keys = self.flow_config["input_keys"]
+    #     if not isinstance(input_keys, list):
+    #         raise ValueError(f"input_keys should be a list, but got {type(input_keys)}, input_keys: {input_keys}")
+    #     return input_keys[:]  # copy
+    #
+    # def get_output_keys(self) -> List[str]:
+    #     output_keys = self.flow_config["output_keys"]
+    #     if not isinstance(output_keys, list):
+    #         raise ValueError(f"output_keys should be a list, but got {type(output_keys)}, output_keys: {output_keys}")
+    #     return output_keys[:]  # copy
+
+    def get_interface_description(self):
+        """Default assumption is that it returns a docstring like description structured in a dict with an "input" and "output" key """
+        pass
 
     def _log_message(self, message: Message):
         log.debug(message.to_string())
@@ -308,7 +306,7 @@ class Flow(ABC):
 
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None],
-                                        allow_class_attributes: bool = False): # TODO(yeeef): remove this parameter
+                                        allow_class_attributes: bool = False):  # TODO(yeeef): remove this parameter
         data = {}
 
         if keys is None:
@@ -377,23 +375,6 @@ class Flow(ABC):
             created_by=self.name,
         )
         return msg
-
-    def _apply_data_transformations(self,
-                                    data_dict: Dict,
-                                    data_transformations: List[DataTransformation],
-                                    keys: List[str]):
-        data_transforms_to_apply = []
-        # TODO(saibo): why don't we just apply all data transformations? Is there a
-        # situation where we don't want to apply all data transformations?
-        for data_transform in data_transformations:
-            # if data_transform.output_key is None or data_transform.output_key in keys:
-            # TODO(saibo): what is the situation where output_key is None?
-            data_transforms_to_apply.append(data_transform)
-
-        for data_transform in data_transforms_to_apply:
-            data_dict = data_transform(data_dict)
-
-        return data_dict
     
     def _package_output_message(
             self,
@@ -497,7 +478,7 @@ class Flow(ABC):
 
         if not self.flow_config["keep_raw_response"]:
             raw_response = None
-            log.info("The raw response will not be added to output_data")
+            log.info("The raw response will not be kept in the output message.")
         else:
             raw_response = copy.deepcopy(response)
         
@@ -507,7 +488,7 @@ class Flow(ABC):
         response = {k: v for k, v in response.items() if k in self.get_output_keys()}
 
         # sanity check
-        # we dont tolerate missing keys, as `get_output_keys`` should be aware of the current flow state
+        # we don't tolerate missing keys, as `get_output_keys`` should be aware of the current flow state
         assert set(response.keys()) == set(self.get_output_keys()), \
             (response.keys(), self.get_output_keys())
         
@@ -552,7 +533,3 @@ class Flow(ABC):
     @classmethod
     def type(cls):
         raise NotImplementedError
-
-
-
-

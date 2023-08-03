@@ -492,8 +492,10 @@ def sync_remote_dep(
         # remote has changed but local is not modified, we fetch the remote with a warning
         logger.warn(
             f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id}'s commit hash has changed from {previous_synced_flow_mod_spec.commit_hash} to {remote_commit_hash}, as synced module is not modified, the newest commit regarding {previous_synced_flow_mod_spec.mod_id} will be fetched{colorama.Style.RESET_ALL}")
-        synced_flow_mod_spec = fetch_remote(repo_id, revision, flow_mod_id, sync_dir,
-                                                                    cache_root)
+        synced_flow_mod_spec = fetch_remote(repo_id,
+                                            revision,
+                                            sync_dir,
+                                            cache_root)
     else:
         # synced dir is modified and remote has changed, we do nothing with a warning
         logger.warn(

@@ -6,23 +6,26 @@ from flows.utils.logging import get_logger
 log = get_logger(__name__)
 
 
-class KeyRename(DataTransformation):
+class KeySelect(DataTransformation):
     def __init__(self,
-                 old_key2new_key: Dict[str, str],
+                 keys_to_select: str,
                  flatten_data_dict: bool = True):
         super().__init__()
-        self.old_key2new_key = old_key2new_key
         self.flatten_data_dict = flatten_data_dict
+        self.keys_to_select = keys_to_select
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         if self.flatten_data_dict:
             data_dict = flatten_dict(data_dict)
 
-        for old_key, new_key in self.old_key2new_key.items():
-            if old_key in data_dict:
-                data_dict[new_key] = data_dict.pop(old_key)
+        data_dict_to_return = {}
+        for key in self.keys_to_select:
+            data_dict_to_return[key] = data_dict[key]
 
         if self.flatten_data_dict:
-            data_dict = unflatten_dict(data_dict)
+            data_dict_to_return = unflatten_dict(data_dict_to_return)
 
-        return data_dict
+        return data_dict_to_return
+
+if __main__ == '__main__':
+    print("gaga")
