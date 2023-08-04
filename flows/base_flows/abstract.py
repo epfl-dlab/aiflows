@@ -39,33 +39,33 @@ class Flow(ABC):
     # below parameters are essential for flow instantiation, but we provide value for them,
     # so user is not required to provide them in the flow config
     __default_flow_config = {
-        "name": "Flow",
+        "name": "Flow",  # ToDo: Why are these set?
         "description": "A flow",
-        "output_keys": [],
+        # "output_keys": [],
 
         "private_keys": ["api_keys"],
         "keys_to_ignore_for_hash": ["api_keys", "name", "description"],
 
-        "input_data_transformations": [],
-        "output_data_transformations": [],
+        # "input_data_transformations": [],
+        # "output_data_transformations": [],
 
         "clear_flow_namespace_on_run_end": True,
         "keep_raw_response": True,
-        "enable_cache": False,  # wheter to enable cache for this flow
+        "enable_cache": False,  # whether to enable cache for this flow
     }
 
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            input_data_transformations: List[DataTransformation],
-            output_data_transformations: List[DataTransformation],
+            # input_data_transformations: List[DataTransformation],
+            # output_data_transformations: List[DataTransformation],
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
         self.flow_config = flow_config
-        self.input_data_transformations = input_data_transformations
-        self.output_data_transformations = output_data_transformations
+        # self.input_data_transformations = input_data_transformations
+        # self.output_data_transformations = output_data_transformations
         self.cache = FlowCache()
         self._validate_flow_config(flow_config)
 
@@ -81,7 +81,7 @@ class Flow(ABC):
         return self.flow_config["name"]
     
     @classmethod
-    def instantiate_from_default_config(cls, overrides: Optional[Dict[str, Any]] = None):
+    def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
         """
         This method is called by the FlowLauncher to build the flow.
         """
@@ -167,8 +167,8 @@ class Flow(ABC):
     @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
-        kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
+        # kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
+        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
         return cls(**kwargs)
 
     @classmethod
@@ -297,8 +297,7 @@ class Flow(ABC):
     #     return output_keys[:]  # copy
 
     def get_interface_description(self):
-        """Default assumption is that it returns a docstring like description structured in a dict with an "input" and "output" key """
-        pass
+        return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
 
     def _log_message(self, message: Message):
         log.debug(message.to_string())
@@ -366,7 +365,7 @@ class Flow(ABC):
         
         # ~~~ Create the message ~~~
         msg = InputMessage(
-            data=copy.deepcopy(payload),  # ToDo: Think whether deepcopy is necessary
+            data_dict=copy.deepcopy(payload),
             private_keys=private_keys,
             keys_to_ignore_for_hash=keys_to_ignore_for_hash,
             src_flow=src_flow,
@@ -382,14 +381,14 @@ class Flow(ABC):
             response: Dict[str, Any],
             raw_response: Dict[str, Any]
     ):
-        output_data = response
+        output_data = copy.deepcopy(response)
 
         return OutputMessage(
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.src_flow,
-            output_keys=self.get_output_keys(),
-            missing_output_keys=[],
+            # output_keys=self.get_output_keys(),
+            # missing_output_keys=[],
             output_data=output_data,
             raw_response=raw_response,
             input_message_id=input_message.message_id,
@@ -410,10 +409,10 @@ class Flow(ABC):
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
         input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
-        cache_key = CachingKey(self, input_data_to_hash, keys_to_ignore_for_hash)
+        cache_key_hash = CachingKey(self, input_data_to_hash, keys_to_ignore_for_hash).hash_string()
         # ~~~ get from cache ~~~
         response = None
-        cached_value: CachingValue = self.cache.get(cache_key)
+        cached_value: CachingValue = self.cache.get(cache_key_hash)
         if cached_value is not None:
             # Retrieve output from cache
             response = cached_value.output_results
@@ -448,17 +447,18 @@ class Flow(ABC):
                 history_messages_created=new_history_messages
             )
 
-            self.cache.set(cache_key, value_to_cache)
-            log.debug(f"Cached: {str(value_to_cache)} \n"
-                      f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
-                      f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+            self.cache.set(cache_key_hash, value_to_cache)
+            log.debug("Cached key: ", cache_key_hash)
+            # log.debug(f"Cached: {str(value_to_cache)} \n"
+            #           f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+            #           f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
 
         return response
 
     def __call__(self, input_message: InputMessage):
-        # sanity check input_data
-        assert set(input_message.data.keys()) == set(self.get_input_keys()), \
-            (input_message.data.keys(), self.get_input_keys())
+        # # sanity check input_data
+        # assert set(input_message.data.keys()) == set(self.get_input_keys()), \
+        #     (input_message.data.keys(), self.get_input_keys())
 
         # set api_keys in flow_state
         if input_message.api_keys:
@@ -470,33 +470,32 @@ class Flow(ABC):
         self._log_message(input_message)
 
         # ~~~ Execute the logic of the flow ~~~
-        response, raw_response = None, None
         if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
             response = self.run(input_message.data)
         else:
             response = self.__get_from_cache(input_message.data)
 
-        if not self.flow_config["keep_raw_response"]:
-            raw_response = None
-            log.info("The raw response will not be kept in the output message.")
-        else:
-            raw_response = copy.deepcopy(response)
-        
-        response = self._apply_data_transformations(response,
-                                                    self.output_data_transformations,
-                                                    self.get_output_keys())
-        response = {k: v for k, v in response.items() if k in self.get_output_keys()}
+        # if not self.flow_config["keep_raw_response"]:
+        #     raw_response = None
+        # else:
+        #     raw_response = copy.deepcopy(response)
+
+        # ToDo: Decide whether to keep "output_parsers" on the Flow (not the interface level)
+        # response = self._apply_data_transformations(response,
+        #                                             self.output_data_transformations,
+        #                                             self.get_output_keys())
+        # response = {k: v for k, v in response.items() if k in self.get_output_keys()}
 
         # sanity check
         # we don't tolerate missing keys, as `get_output_keys`` should be aware of the current flow state
-        assert set(response.keys()) == set(self.get_output_keys()), \
-            (response.keys(), self.get_output_keys())
+        # assert set(response.keys()) == set(self.get_output_keys()), \
+        #     (response.keys(), self.get_output_keys())
         
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
             input_message=input_message,
             response=response,
-            raw_response=raw_response
+            raw_response=None,
         )
 
         self._post_call_hook()

@@ -17,12 +17,12 @@ from flows.messages.flow_message import UpdateMessage_ChatMessage
 
 log = logging.get_logger(__name__)
 
+
 # ToDo: Add support for demonstrations
 
 
 class OpenAIChatAtomicFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters"]
-
 
     SUPPORTS_CACHING: bool = True
 
@@ -33,7 +33,11 @@ class OpenAIChatAtomicFlow(AtomicFlow):
     # demonstrations: GenericDemonstrationsDataset = None
     demonstrations_response_template: PromptTemplate = None
 
-    def __init__(self,system_message_prompt_template, human_message_prompt_template, init_human_message_prompt_template, **kwargs):
+    def __init__(self,
+                 system_message_prompt_template,
+                 human_message_prompt_template,
+                 init_human_message_prompt_template,
+                 **kwargs):
         super().__init__(**kwargs)
         self.system_message_prompt_template = system_message_prompt_template
         self.human_message_prompt_template = human_message_prompt_template
@@ -77,8 +81,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         flow_config = deepcopy(config)
 
         kwargs = {"flow_config": flow_config}
-        kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
+        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         # ~~~ Set up prompts ~~~
         kwargs.update(cls._set_up_prompts(flow_config))
@@ -95,11 +98,13 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
         return False
 
-    def get_input_keys(self):
+    def get_interface_description(self):
         if self._is_conversation_initialized():
-            return self.flow_config["input_keys"]
+            return {"input": self.flow_config["input_interface_initialized"],
+                    "output": self.flow_config["output_interface"]}
         else:
-            return self.flow_config["init_input_keys"]
+            return {"input": self.flow_config["input_interface_non_initialized"],
+                    "output": self.flow_config["output_interface"]}
 
     @staticmethod
     def _get_message(prompt_template, input_data: Dict[str, Any]):

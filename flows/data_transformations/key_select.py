@@ -3,6 +3,7 @@ from typing import Dict, Any
 from flows.data_transformations.abstract import DataTransformation
 from flows.utils.general_helpers import flatten_dict, unflatten_dict
 from flows.utils.logging import get_logger
+
 log = get_logger(__name__)
 
 
@@ -26,6 +27,3 @@ class KeySelect(DataTransformation):
             data_dict_to_return = unflatten_dict(data_dict_to_return)
 
         return data_dict_to_return
-
-if __main__ == '__main__':
-    print("gaga")

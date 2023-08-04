@@ -20,13 +20,14 @@ class CompositeFlow(Flow, ABC):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            input_data_transformations: List[DataTransformation],
-            output_data_transformations: List[DataTransformation],
+            # input_data_transformations: List[DataTransformation],
+            # output_data_transformations: List[DataTransformation],
             subflows: List[Flow],
     ):
         super().__init__(flow_config=flow_config,
-                         input_data_transformations=input_data_transformations,
-                         output_data_transformations=output_data_transformations)
+                         # input_data_transformations=input_data_transformations,
+                         # output_data_transformations=output_data_transformations
+                         )
         self.subflows = subflows
 
     @classmethod
@@ -34,42 +35,53 @@ class CompositeFlow(Flow, ABC):
         flow_config = copy.deepcopy(config)
         return cls(subflows=cls._set_up_subflows(flow_config),
                    flow_config=flow_config,
-                   input_data_transformations=cls._set_up_data_transformations(
-                       flow_config["input_data_transformations"]),
-                   output_data_transformations=cls._set_up_data_transformations(
-                       flow_config["output_data_transformations"]))
+                   # input_data_transformations=cls._set_up_data_transformations(
+                   #     flow_config["input_data_transformations"]),
+                   # output_data_transformations=cls._set_up_data_transformations(
+                   #     flow_config["output_data_transformations"])
+                   )
 
     def _call_flow_from_state(
             self,
-            flow_to_call: Flow,
-            search_class_namespace_for_inputs: bool = False
+            goal: str,
+            input_interface,
+            flow,
+            output_interface,
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
         api_keys = self._get_from_state("api_keys")
         log.debug(f"_call_flow_from_state: api_keys: {api_keys}")
 
-        input_keys = flow_to_call.get_input_keys()
-        input_data = self._fetch_state_attributes_by_keys(
-            keys=input_keys,  # set to be None to fetch all keys
-            allow_class_attributes=search_class_namespace_for_inputs
-        )
+        payload = input_interface(goal=f"[Input] {goal}",
+                                  data_dict=self.flow_state,
+                                  src_flow=self,
+                                  dst_flow=flow)
+
         input_message = self._package_input_message(
-            payload=input_data,
-            dst_flow=flow_to_call,
+            payload=payload,
+            dst_flow=flow,
             api_keys=api_keys
         )
 
         # ~~~ Execute the call ~~~
-        output_message = flow_to_call(input_message)
-        # print(f"output_message: {output_message}")
+        output_message = flow(input_message)
+
         # ~~~ Logs the output message to history ~~~
         self._log_message(output_message)
 
-        return output_message
+        # ~~~ Process the output ~~~
+        output_data = output_message.data["output_data"]
+        if output_interface is not None:
+            output_data = output_interface(goal=f"[Output] {goal}",
+                                           data_dict=output_data,
+                                           src_flow=flow,
+                                           dst_flow=None)
+
+        return output_message, output_data
 
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
-        """Returns the subflow with the given name"""
+        """Returns the sub-flow with the given name"""
         return self.subflows.get(subflow_name, None)
 
     @classmethod
@@ -95,8 +107,8 @@ class CompositeFlow(Flow, ABC):
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
         kwargs["subflows"] = cls._set_up_subflows(flow_config)
-        kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
+        # kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
+        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         return cls(**kwargs)
 

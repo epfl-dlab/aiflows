@@ -36,14 +36,16 @@ class FlowLauncher(ABC):
             sample = deepcopy(sample)
             flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
-            input_data = input_interface(goal="Process input data from launcher",
-                                         data=sample,
-                                         src_flow=None,
-                                         dst_flow=flow)
+            if input_interface is not None:
+                input_data_dict = input_interface(goal="[Input] Run Flow from the Launcher.",
+                                                  data_dict=sample,
+                                                  src_flow=None,
+                                                  dst_flow=flow)
+            else:
+                input_data_dict = sample
 
             input_message = InputMessage.build(
-                full_payload=input_data,
-                dst_flow_input_keys=flow.get_input_keys(),
+                data_dict=input_data_dict,
                 src_flow="Launcher",
                 dst_flow=flow.name,
                 api_keys=api_keys
@@ -53,10 +55,10 @@ class FlowLauncher(ABC):
             output_data = output_message.data["output_data"]
 
             if output_interface is not None:
-                output_data = output_interface(goal="Process answer",
-                                                    src_flow=flow,
-                                                    dst_flow=None,
-                                                    data_dict=output_data)
+                output_data = output_interface(goal="[Output] Run Flow from the Launcher.",
+                                               data_dict=output_data,
+                                               src_flow=flow,
+                                               dst_flow=None)
             human_readable_outputs.append(output_data)
 
             if path_to_output_file is not None:
@@ -193,7 +195,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                     break
 
             sample["inference_outputs"] = inference_outputs  # ToDo: Use an output object instead of the sample directly
-            # ToDo: how is None written/loaded to/from a JSON file --> Mention this in the documentation and remove ToDo
+            # ToDo: how is None written/loaded to/from a JSON file --> Mention this in the documentation and remove
             sample["error"] = _error
 
         self.write_batch_output(batch,

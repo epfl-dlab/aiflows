@@ -1,6 +1,9 @@
 import copy
 from typing import List, Dict, Any, Optional
 
+import hydra
+
+import flows.interfaces
 from flows.base_flows import CompositeFlow, Flow
 from flows.data_transformations.abstract import DataTransformation
 
@@ -12,12 +15,16 @@ log = logging.get_logger(__name__)
 
 class TopologyNode:
     def __init__(self,
+                 goal,
+                 input_interface,
                  flow: Flow,
-                 reset: bool,
-                 output_transformations: List[DataTransformation]) -> None:
+                 output_interface: List[DataTransformation],
+                 reset: bool) -> None:
+        self.goal = goal
+        self.input_interface = input_interface
         self.flow = flow
+        self.output_interface = output_interface
         self.reset = reset
-        self.output_transformations = output_transformations
 
 
 class CircularFlow(CompositeFlow):
@@ -32,13 +39,13 @@ class CircularFlow(CompositeFlow):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            input_data_transformations: List[DataTransformation],
-            output_data_transformations: List[DataTransformation],
+            # input_data_transformations: List[DataTransformation],
+            # output_data_transformations: List[DataTransformation],
             subflows: List[Flow],
     ):
         super().__init__(flow_config=flow_config,
-                         input_data_transformations=input_data_transformations,
-                         output_data_transformations=output_data_transformations,
+                         # input_data_transformations=input_data_transformations,
+                         # output_data_transformations=output_data_transformations,
                          subflows=subflows)
         if len(self.subflows) <= 0:
             raise ValueError(f"Circular flow needs at least one subflow, currently has 0")
@@ -68,11 +75,23 @@ class CircularFlow(CompositeFlow):
 
             flow = self.subflows[flow_name]
             reset = topo_config.get("reset", False)
-            output_transformations = self._set_up_data_transformations(topo_config.get("output_transformations", []))
+            input_interface = topo_config.get("input_interface", None)
+            if input_interface is not None:
+                input_interface = hydra.utils.instantiate(input_interface, _recursive_=False, _convert_="partial")
+            else:
+                input_interface = flows.interfaces.KeyInterface()
+                input_interface.transformations.append(flows.interfaces.KeyMatchInput)
 
-            ret.append(TopologyNode(flow=flow,
-                                    reset=reset,
-                                    output_transformations=output_transformations))
+            output_interface = topo_config.get("output_interface", None)
+            if output_interface is not None:
+                output_interface = hydra.utils.instantiate(output_interface, _recursive_=False, _convert_="partial")
+
+            ret.append(TopologyNode(goal=topo_config["goal"],
+                                    input_interface=input_interface,
+                                    flow=flow,
+                                    output_interface=output_interface,
+                                    reset=reset))
+
         return ret
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -83,9 +102,12 @@ class CircularFlow(CompositeFlow):
 
         self._sequential_run(max_rounds=max_rounds)
 
-        # ~~~ The final answer should be in self.flow_state, thus allow_class_attributes=False ~~~
-        # print(f"output keys: {self.get_output_keys()}")
-        outputs = self._fetch_state_attributes_by_keys(keys=self.get_output_keys(),
+        output = self._get_output_from_state()
+
+        return output
+
+    def _get_output_from_state(self):
+        outputs = self._fetch_state_attributes_by_keys(keys=self.get_interface_description()["output"],
                                                        allow_class_attributes=False)
         return outputs
 
@@ -98,24 +120,23 @@ class CircularFlow(CompositeFlow):
         return
 
     def _sequential_run(self, max_rounds: int):
-        # default value, though it should never be returned because max_round should be > 0
         for _ in range(max_rounds):
             for node in self.topology:
+                input_interface = node.input_interface
                 current_flow = node.flow
-                output_transformations = node.output_transformations
+                output_transformations = node.output_interface
+
                 if node.reset:
                     current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
-                output_message = self._call_flow_from_state(flow_to_call=current_flow)
-                output_data = output_message.data["output_data"]
-
-                # ~~~ Apply output transformations
-                # import pdb
-                # pdb.set_trace()
-                for output_transformation in output_transformations:
-                    output_data = output_transformation(output_data)
+                output_message, output_data = self._call_flow_from_state(
+                    goal=node.goal,
+                    input_interface=input_interface,
+                    flow=current_flow,
+                    output_interface=output_transformations)
 
                 self._state_update_dict(update_data=output_data)
+
                 # ~~~ Check for end of interaction
                 if self._early_exit():
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
