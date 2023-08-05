@@ -10,7 +10,7 @@ from tqdm import tqdm
 import hydra
 
 from flows.utils import general_helpers
-from typing import List, Dict, Optional, Iterable
+from typing import Any, List, Dict, Optional, Iterable
 
 from ..utils import logging
 
@@ -131,10 +131,9 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         return api_key_idx
 
     def predict_dataloader(self,
-                           dataloader: Iterable[Dict],
-                           path_to_cache: Optional[str] = None,
-                           input_interface_config: Optional[Dict[str, str]] = None,
-                           output_interface_config: Optional[Dict[str, str]] = None) -> None:
+                           dataloader: Iterable[dict],
+                           flows: List[Dict[str, Any]],
+                           path_to_cache: Optional[str] = None) -> None:
         """
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
@@ -144,29 +143,17 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
             path_to_cache: : A list of existing predictions to use as a starting point.
         """
         self._load_cache(path_to_cache)
+        self.flows = flows
 
         num_datapoints = len(dataloader)
         num_failures = 0
-
-        input_interface = (
-            None if input_interface_config is None
-            else hydra.utils.instantiate(input_interface_config, _recursive_=False)
-        )
-        output_interface = (
-            None if output_interface_config is None
-            else hydra.utils.instantiate(output_interface_config, _recursive_=False)
-        )
 
         if self.debug or self.single_threaded:
             log.info("Running in single-threaded mode.")
 
             with tqdm(total=len(dataloader)) as pbar:
                 for sample in tqdm(dataloader):
-                    sample = self.predict(
-                        batch=[sample],
-                        input_interface=input_interface,
-                        output_interface=output_interface
-                    )[0]
+                    sample = self.predict(batch=[sample])[0]
                     if sample["error"] is not None:
                         num_failures += 1
                     pbar.update(1)
@@ -183,12 +170,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                 futures = []
 
                 for sample in dataloader:
-                    futures.append(executor.submit(
-                        self.predict,
-                        batch=[sample],
-                        input_interface=input_interface,
-                        output_interface=output_interface
-                    ))
+                    futures.append(executor.submit(self.predict, batch=[sample]))
 
                 for future in as_completed(futures):
                     c = c + 1
