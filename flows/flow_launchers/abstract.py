@@ -7,8 +7,10 @@ from abc import ABC
 
 from tqdm import tqdm
 
+import hydra
+
 from flows.utils import general_helpers
-from typing import List, Dict, Optional, Iterable
+from typing import Any, List, Dict, Optional, Iterable
 
 from ..utils import logging
 
@@ -129,8 +131,9 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         return api_key_idx
 
     def predict_dataloader(self,
-                           dataloader: Iterable[Dict],
-                           path_to_cache: str = None) -> None:
+                           dataloader: Iterable[dict],
+                           flows: List[Dict[str, Any]],
+                           path_to_cache: Optional[str] = None) -> None:
         """
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
@@ -140,6 +143,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
             path_to_cache: : A list of existing predictions to use as a starting point.
         """
         self._load_cache(path_to_cache)
+        self.flows = flows
 
         num_datapoints = len(dataloader)
         num_failures = 0
