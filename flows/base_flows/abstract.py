@@ -4,14 +4,12 @@
 import os
 import sys
 import copy
-import yaml
 from abc import ABC
 from typing import List, Dict, Any, Union, Optional
 
 import hydra
 from omegaconf import OmegaConf
 from ..utils import logging
-from flows.data_transformations.abstract import DataTransformation
 from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
@@ -448,7 +446,7 @@ class Flow(ABC):
             )
 
             self.cache.set(cache_key_hash, value_to_cache)
-            log.debug("Cached key: ", cache_key_hash)
+            log.debug(f"Cached key: f{cache_key_hash}")
             # log.debug(f"Cached: {str(value_to_cache)} \n"
             #           f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
             #           f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")

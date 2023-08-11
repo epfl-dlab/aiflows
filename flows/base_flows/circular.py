@@ -126,9 +126,6 @@ class CircularFlow(CompositeFlow):
                 current_flow = node.flow
                 output_transformations = node.output_interface
 
-                if node.reset:
-                    current_flow.reset(full_reset=True, recursive=True, src_flow=self)
-
                 output_message, output_data = self._call_flow_from_state(
                     goal=node.goal,
                     input_interface=input_interface,
@@ -141,5 +138,8 @@ class CircularFlow(CompositeFlow):
                 if self._early_exit():
                     log.info(f"[{self.flow_config['name']}] End of interaction detected")
                     return
+
+                if node.reset:
+                    current_flow.reset(full_reset=True, recursive=True, src_flow=self)
 
         self._on_reach_max_rounds()

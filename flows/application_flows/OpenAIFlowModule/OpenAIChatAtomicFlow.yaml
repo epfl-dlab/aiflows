@@ -19,8 +19,6 @@ system_name: system
 user_name: user
 assistant_name: assistant
 
-output_data_transformations: []
-
 system_message_prompt_template:
   _target_: langchain.PromptTemplate
   template_format: jinja2
@@ -35,27 +33,6 @@ human_message_prompt_template:
   input_variables:
     - "query"
   template_format: jinja2
-
-#######################################################
-# Input keys
-#######################################################
-
-input_keys:
-  - "query"
-init_input_keys:
-  - "query"
-input_data_transformations: []
-
-#######################################################
-# Output keys
-#######################################################
-
-run_output_keys: # not used yet (only for the future)
-  - "api_output"
-
-#######################################################
-# over
-#######################################################
 
 query_message_prompt_template:
   _target_: langchain.PromptTemplate

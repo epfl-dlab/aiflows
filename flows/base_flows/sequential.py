@@ -18,13 +18,13 @@ class SequentialFlow(CircularFlow):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            input_data_transformations: List[DataTransformation],
-            output_data_transformations: List[DataTransformation],
+            # input_data_transformations: List[DataTransformation],
+            # output_data_transformations: List[DataTransformation],
             subflows: List[Flow],
     ):
         super().__init__(flow_config=flow_config,
-                         input_data_transformations=input_data_transformations,
-                         output_data_transformations=output_data_transformations,
+                         # input_data_transformations=input_data_transformations,
+                         # output_data_transformations=output_data_transformations,
                          subflows=subflows)
 
     @classmethod

@@ -151,7 +151,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                 )
             else:
                 input_data_dict = sample
-                
+
             inference_outputs = []
             human_readable_outputs = []
             _error = None
@@ -159,7 +159,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                 log.info("Running inference for ID (sample {}): {}".format(_sample_idx, sample["id"]))
                 api_key_idx = self._choose_next_api_key()
                 _error = None
-                flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
                 if self.fault_tolerant_mode:
                     _attempt_idx = 1
@@ -228,6 +227,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                 if _error is not None:
                     # Break if one of the independent samples failed
                     break
+                flow.reset(full_reset=True, recursive=True)  # Reset the flow to its initial state
 
             sample["inference_outputs"] = inference_outputs  # ToDo: Use an output object instead of the sample directly
             sample["human_readable_outputs"] = human_readable_outputs
