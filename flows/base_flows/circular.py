@@ -1,5 +1,5 @@
 import copy
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Union
 
 import hydra
 
@@ -80,7 +80,7 @@ class CircularFlow(CompositeFlow):
                 input_interface = hydra.utils.instantiate(input_interface, _recursive_=False, _convert_="partial")
             else:
                 input_interface = flows.interfaces.KeyInterface()
-                input_interface.transformations.append(flows.interfaces.KeyMatchInput)
+                input_interface.transformations.append(flows.data_transformations.KeyMatchInput)
 
             output_interface = topo_config.get("output_interface", None)
             if output_interface is not None:
@@ -99,6 +99,8 @@ class CircularFlow(CompositeFlow):
         self._state_update_dict(update_data=input_data)
 
         max_rounds = self.flow_config.get("max_rounds", 1)
+        if max_rounds is None:
+            log.info(f"Running {self.flow_config['name']} without `max_rounds` until the early exit condition is met.")
 
         self._sequential_run(max_rounds=max_rounds)
 
@@ -119,8 +121,10 @@ class CircularFlow(CompositeFlow):
         log.info(f"[{self.flow_config['name']}] Max rounds reached. Returning output, answer might be incomplete.")
         return
 
-    def _sequential_run(self, max_rounds: int):
-        for _ in range(max_rounds):
+    def _sequential_run(self, max_rounds: Union[int, None]):
+        curr_round = 0
+        while max_rounds is None or curr_round < max_rounds:
+            curr_round += 1
             for node in self.topology:
                 input_interface = node.input_interface
                 current_flow = node.flow
