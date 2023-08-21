@@ -80,7 +80,7 @@ class CircularFlow(CompositeFlow):
                 input_interface = hydra.utils.instantiate(input_interface, _recursive_=False, _convert_="partial")
             else:
                 input_interface = flows.interfaces.KeyInterface()
-                input_interface.transformations.append(flows.data_transformations.KeyMatchInput)
+                input_interface.transformations.append(flows.data_transformations.KeyMatchInput())
 
             output_interface = topo_config.get("output_interface", None)
             if output_interface is not None:
