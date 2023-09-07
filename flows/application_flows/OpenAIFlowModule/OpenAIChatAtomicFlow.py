@@ -11,6 +11,7 @@ import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
 from flows.base_flows import AtomicFlow
+from flows.datasets import GenericDemonstrationsDataset
 
 from flows.utils import logging
 from flows.messages.flow_message import UpdateMessage_ChatMessage
@@ -30,18 +31,24 @@ class OpenAIChatAtomicFlow(AtomicFlow):
     human_message_prompt_template: PromptTemplate
 
     init_human_message_prompt_template: Optional[PromptTemplate] = None
-    # demonstrations: GenericDemonstrationsDataset = None
-    demonstrations_response_template: PromptTemplate = None
+    demonstrations: GenericDemonstrationsDataset = None
+    demonstrations_k: Optional[int] = None
+    demonstrations_response_prompt_template: PromptTemplate = None
 
     def __init__(self,
                  system_message_prompt_template,
                  human_message_prompt_template,
                  init_human_message_prompt_template,
+                 demonstrations_response_prompt_template=None,
+                 demonstrations=None,
                  **kwargs):
         super().__init__(**kwargs)
         self.system_message_prompt_template = system_message_prompt_template
         self.human_message_prompt_template = human_message_prompt_template
         self.init_human_message_prompt_template = init_human_message_prompt_template
+        self.demonstrations_response_prompt_template = demonstrations_response_prompt_template
+        self.demonstrations = demonstrations
+        self.demonstrations_k = self.flow_config.get("demonstrations_k", None)
 
         assert self.flow_config["name"] not in [
             "system",
@@ -64,17 +71,12 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         kwargs["human_message_prompt_template"] = \
             hydra.utils.instantiate(config['human_message_prompt_template'], _convert_="partial")
 
-        return kwargs
+        if "demonstrations_response_prompt_template" in config:
+            kwargs["demonstrations_response_prompt_template"] = \
+                hydra.utils.instantiate(config['demonstrations_response_prompt_template'], _convert_="partial")
+            kwargs["demonstrations"] = GenericDemonstrationsDataset(**config['demonstrations'])
 
-    # @classmethod
-    # def _set_up_demonstration_templates(cls, config):
-    #     kwargs = {}
-    #
-    #     if "demonstrations_response_template" in config:
-    #         kwargs["demonstrations_response_template"] = \
-    #             hydra.utils.instantiate(config['demonstrations_response_template'], _convert_="partial")
-    #
-    #     return kwargs
+        return kwargs
 
     @classmethod
     def instantiate_from_config(cls, config):
@@ -85,9 +87,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
         # ~~~ Set up prompts ~~~
         kwargs.update(cls._set_up_prompts(flow_config))
-
-        # # ~~~ Set up demonstration templates ~~~
-        # kwargs.update(cls._set_up_demonstration_templates(flow_config))
 
         # ~~~ Instantiate flow ~~~
         return cls(**kwargs)
@@ -100,6 +99,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
 
     def get_interface_description(self):
         if self._is_conversation_initialized():
+
             return {"input": self.flow_config["input_interface_initialized"],
                     "output": self.flow_config["output_interface"]}
         else:
@@ -115,27 +115,31 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         msg_content = prompt_template.format(**template_kwargs)
         return msg_content
 
-    # def _get_demonstration_query_message_content(self, sample_data: Dict):
-    #     input_variables = self.query_message_prompt_template.input_variables
-    #     return self.query_message_prompt_template.format(**{k: sample_data[k] for k in input_variables}), []
-    #
-    # def _get_demonstration_response_message_content(self, sample_data: Dict):
-    #     input_variables = self.demonstrations_response_template.input_variables
-    #     return self.demonstrations_response_template.format(**{k: sample_data[k] for k in input_variables}), []
+    def _get_demonstration_query_message_content(self, sample_data: Dict):
+        input_variables = self.init_human_message_prompt_template.input_variables
+        return self.init_human_message_prompt_template.format(**{k: sample_data[k] for k in input_variables})
 
-    # def _add_demonstrations(self):
-    #     if self.demonstrations is not None:
-    #         for example in self.demonstrations:
-    #             query, parents = self._get_demonstration_query_message_content(example)
-    #             response, parents = self._get_demonstration_response_message_content(example)
-    #
-    #             self._log_chat_message(content=query,
-    #                                    role=self.user_name,
-    #                                    parent_message_ids=parents)
-    #
-    #             self._log_chat_message(content=response,
-    #                                    role=self.assistant_name,
-    #                                    parent_message_ids=parents)
+    def _get_demonstration_response_message_content(self, sample_data: Dict):
+        input_variables = self.demonstrations_response_prompt_template.input_variables
+        return self.demonstrations_response_prompt_template.format(**{k: sample_data[k] for k in input_variables})
+
+    def _add_demonstrations(self):
+        if self.demonstrations is not None:
+            demonstrations = self.demonstrations
+
+            c = 0
+            for example in demonstrations:
+                if self.demonstrations_k is not None and c >= self.demonstrations_k:
+                    break
+                c += 1
+                query = self._get_demonstration_query_message_content(example)
+                response = self._get_demonstration_response_message_content(example)
+
+                self._state_update_add_chat_message(content=query,
+                                                    role=self.flow_config["user_name"])
+
+                self._state_update_add_chat_message(content=response,
+                                                    role=self.flow_config["assistant_name"])
 
     def _state_update_add_chat_message(self,
                                        role: str,
@@ -167,6 +171,15 @@ class OpenAIChatAtomicFlow(AtomicFlow):
     def _call(self):
         api_key = self._get_from_state("api_keys")["openai"]
 
+        # import openai
+        #
+        # if openai.api_type == "azure":
+        #     backend = langchain.chat_models.ChatOpenAI(
+        #         engine=self.flow_config["model_name"],
+        #         openai_api_key=api_key,
+        #         **self.flow_config["generation_parameters"],
+        #     )
+        # else:
         backend = langchain.chat_models.ChatOpenAI(
             model_name=self.flow_config["model_name"],
             openai_api_key=api_key,
@@ -210,8 +223,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                                             role=self.flow_config["system_name"])
 
         # # ~~~ Add the demonstration query-response tuples (if any) ~~~
-        # self._add_demonstrations()
-        # self._update_state(update_data={"conversation_initialized": True})
+        self._add_demonstrations()
 
     def _process_input(self, input_data: Dict[str, Any]):
         if self._is_conversation_initialized():

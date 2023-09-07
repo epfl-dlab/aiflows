@@ -151,12 +151,13 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         if self.debug or self.single_threaded:
             log.info("Running in single-threaded mode.")
 
-            with tqdm(total=len(dataloader)) as pbar:
-                for sample in tqdm(dataloader):
-                    sample = self.predict(batch=[sample])[0]
-                    if sample["error"] is not None:
-                        num_failures += 1
-                    pbar.update(1)
+            c = 0
+            for sample in dataloader:
+                sample = self.predict(batch=[sample])[0]
+                if sample["error"] is not None:
+                    num_failures += 1
+                c += 1
+                log.info("~~~~~~~~~~~~ Progress: {}/{} batches finished ~~~~~~~~~~~~~".format(c, num_datapoints))
         else:
             log.info(
                 "Running in multi-threaded mode with {} keys and {} workers per key.".format(

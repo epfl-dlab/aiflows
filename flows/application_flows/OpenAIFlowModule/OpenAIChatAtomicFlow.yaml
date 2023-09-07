@@ -4,7 +4,7 @@ enable_cache: True
 model_name: "gpt-4"
 generation_parameters:
   n: 1
-  max_tokens: 3000
+  max_tokens: 2000
   temperature: 0.3
 
   model_kwargs:
