@@ -163,3 +163,6 @@ data
 .DS_Store
 .chroma
 *flow_modules*
+
+# VS Code
+.vscode/

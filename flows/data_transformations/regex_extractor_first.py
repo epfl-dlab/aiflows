@@ -17,6 +17,7 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
                  strip: bool,
                  input_key: str,
                  regex_fallback: str = None,
+                 match_group: int = 0
                  ):
         super().__init__(output_key=output_key)
         self.input_key = input_key
@@ -24,6 +25,7 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
         self.regex_fallback = regex_fallback
         self.strip = strip
         self.assert_unique = assert_unique
+        self.match_group = match_group
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         txt = self._search(data_dict[self.input_key], self.regex)
@@ -50,6 +52,6 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
             if self.assert_unique:
                 num_matches = len(match.groups())
                 assert num_matches == 1, f"Regex {regex} expected to have only one group, found {num_matches}"
-            return match.group(0)
+            return match.group(self.match_group)
         else:
             return None

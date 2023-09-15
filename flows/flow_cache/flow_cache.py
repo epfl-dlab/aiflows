@@ -20,7 +20,7 @@ class CACHING_PARAMETERS:
     #   Is that even a good idea?
     #   What happens if you want to resume/extend a run that has been already resumed/extended?
     # Global parameters that can be set before starting the outer-flow
-    max_cached_entries: int = 1000
+    max_cached_entries: int = 10000
     do_caching: bool = True
     cache_dir: str = None
 
@@ -34,7 +34,7 @@ class CachingValue:
 
 @dataclass
 class CachingKey:
-    flow: str
+    flow: str  # ToDo: This is not a string
     input_data: Dict[str, Any]
     keys_to_ignore_for_hash: List[str]
 
@@ -63,20 +63,21 @@ class FlowCache:
         # TODO(yeeef): why do we need the lock? from https://grantjenks.com/docs/diskcache/tutorial.html#index, Index can be even used to do inter-process / inter-thread communication
         self.__lock = threading.Lock()
 
-    def get(self, key: CachingKey) -> Optional[CachingValue]:
-        key = key.hash_string()
+    def get(self, key) -> Optional[CachingValue]:
+        # key = key.hash_string()
         log.debug("Getting key: %s", key)
 
         with self.__lock:
             return self._index.get(key, None)
     
-    def set(self, key: CachingKey, value: CachingValue):
-        key = key.hash_string()
+    def set(self, key, value: CachingValue):
+        # key = key.hash_string()
 
         with self.__lock:
             self._index[key] = value
 
     def pop(self, key: CachingKey):
+        # ToDo: Is this used anywhere? The previous two functions had a problem with the key, check if this is wrong too
         key = _custom_hash(key.flow, key.input_data, key.keys_to_ignore_for_hash)
 
         with self.__lock:

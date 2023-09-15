@@ -13,6 +13,10 @@ from flows.utils.logging import set_verbosity_debug
 class EchoFlow(AtomicFlow):
     SUPPORTS_CACHING = True
 
+    __default_flow_config = {
+        "input_keys": ["user_input"]
+    }
+
     def run(self,
             input_data: Dict[str, Any]) -> Dict[str, Any]:
         
@@ -63,9 +67,10 @@ def test_enable_cache_globally_disable_flow_wise(enable_cache_globally):
     echo_flow = EchoFlow.instantiate_from_default_config({
         "name": "EchoFlow",
         "description": "EchoFlow",
-        "enable_cache": False
+        "enable_cache": False,
     })
     assert len(echo_flow.cache) == 0
+    print(echo_flow)
 
     input_message = echo_flow.package_input_message(
         {"user_input": "hello"}

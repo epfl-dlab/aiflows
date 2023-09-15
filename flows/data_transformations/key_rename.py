@@ -2,12 +2,14 @@ from typing import Dict, Any
 
 from flows.data_transformations.abstract import DataTransformation
 from flows.utils.general_helpers import flatten_dict, unflatten_dict
+from flows.utils.logging import get_logger
+log = get_logger(__name__)
 
 
 class KeyRename(DataTransformation):
     def __init__(self,
                  old_key2new_key: Dict[str, str],
-                 flatten_data_dict: bool = False):
+                 flatten_data_dict: bool = True):
         super().__init__()
         self.old_key2new_key = old_key2new_key
         self.flatten_data_dict = flatten_data_dict

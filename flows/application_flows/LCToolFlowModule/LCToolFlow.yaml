@@ -1,0 +1,23 @@
+name: "search"
+description: "useful when you need to look for the answer online, especially for recent events"
+
+#######################################################
+# Input keys
+#######################################################
+
+input_keys:
+  - "query"
+
+
+#######################################################
+# Output keys
+#######################################################
+
+output_keys:
+  - "observation"
+
+keep_raw_response: false
+clear_flow_namespace_on_run_end: false
+
+backend:
+  _target_: langchain.tools.DuckDuckGoSearchRun

@@ -1,55 +1,51 @@
-name: "SimpleQA"
-description: "A flow that answers questions."
+input_interface:  # Connector between the "input data" and the Flow
+  _target_: flows.interfaces.KeyInterface
+  additional_transformations:
+    - _target_: flows.data_transformations.KeyMatchInput  # Pass the input parameters specified by the flow
 
-# ~~~ OpenAI model parameters ~~
-model: "gpt-3.5-turbo"
-generation_parameters:
-  n: 1
-  max_tokens: 3000
-  temperature: 0.3
+output_interface:  # Connector between the Flow's output and the caller
+  _target_: flows.interfaces.KeyInterface
+  keys_to_rename:
+    api_output: answer  # Rename the api_output to answer
 
-  model_kwargs:
-    top_p: 0.2
-    frequency_penalty: 0
-    presence_penalty: 0
+flow:  # Overrides the OpenAIChatAtomicFlow config
+  _target_: flows.application_flows.OpenAIChatAtomicFlow.instantiate_from_default_config
 
-n_api_retries: 6
-wait_time_between_retries: 20
+  name: "SimpleQA_Flow"
+  description: "A flow that answers questions."
 
-# ~~~ Prompt specification ~~~
-system_message_prompt_template:
-  _target_: langchain.PromptTemplate
-  template: |2-
-    You are a helpful chatbot that truthfully answers questions.
-  input_variables: []
-  partial_variables: {}
-  template_format: jinja2
+  # ~~~ Input interface specification ~~~
+  input_interface_non_initialized:
+    - "question"
 
-query_message_prompt_template:
-  _target_: langchain.PromptTemplate
-  template: |2-
-    Answer the following question: {{question}}
-  input_variables: ["question"]
-  partial_variables: {}
-  template_format: jinja2
+  # ~~~ OpenAI model parameters ~~
+  model: "gpt-3.5-turbo"
+  generation_parameters:
+    n: 1
+    max_tokens: 3000
+    temperature: 0.3
 
-human_message_prompt_template:
-  _target_: langchain.PromptTemplate
-  template: "{{query}}"
-  input_variables:
-    - "query"
-  template_format: jinja2
-default_human_input_keys:
-  - "query"
+    model_kwargs:
+      top_p: 0.2
+      frequency_penalty: 0
+      presence_penalty: 0
 
-# ~~~ Flow specification ~~~
-input_data_transformations: []
-input_keys:
-  - "question"
+  n_api_retries: 6
+  wait_time_between_retries: 20
 
-output_data_transformations:
-  - _target_: flows.data_transformations.KeyRename
-    old_key2new_key:
-      raw_response: "answer"
-output_keys:
-  - "answer"
+  # ~~~ Prompt specification ~~~
+  system_message_prompt_template:
+    _target_: langchain.PromptTemplate
+    template: |2-
+      You are a helpful chatbot that truthfully answers questions.
+    input_variables: []
+    partial_variables: {}
+    template_format: jinja2
+
+  init_human_message_prompt_template:
+    _target_: langchain.PromptTemplate
+    template: |2-
+      Answer the following question: {{question}}
+    input_variables: ["question"]
+    partial_variables: {}
+    template_format: jinja2

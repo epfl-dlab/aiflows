@@ -183,7 +183,7 @@ class FlowModuleSpecSummary:
                 sync_dir = os.path.join(sync_root, relative_sync_dir)
 
                 if not is_local_revision(revision):  # remote revision
-                    cache_dir = utils.build_hf_cache_path(repo_id, commit_hash, DEFAULT_CACHE_PATH)
+                    cache_dir = utils.build_hf_cache_path(repo_id, commit_hash, cache_root)
                 else:
                     cache_dir = sync_dir
 
@@ -492,8 +492,10 @@ def sync_remote_dep(
         # remote has changed but local is not modified, we fetch the remote with a warning
         logger.warn(
             f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id}'s commit hash has changed from {previous_synced_flow_mod_spec.commit_hash} to {remote_commit_hash}, as synced module is not modified, the newest commit regarding {previous_synced_flow_mod_spec.mod_id} will be fetched{colorama.Style.RESET_ALL}")
-        synced_flow_mod_spec = fetch_remote(repo_id, revision, flow_mod_id, sync_dir,
-                                                                    cache_root)
+        synced_flow_mod_spec = fetch_remote(repo_id,
+                                            revision,
+                                            sync_dir,
+                                            cache_root)
     else:
         # synced dir is modified and remote has changed, we do nothing with a warning
         logger.warn(
@@ -648,7 +650,6 @@ def _sync_dependencies(dependencies: List[Dict[str, str]], all_overwrite: bool, 
         write_flow_mod_summary(flow_mod_summary_path, flow_mod_summary)
 
         logger.info(f"{colorama.Fore.GREEN}[{caller_module_name}]{colorama.Style.RESET_ALL} finished syncing\n\n")
-        logger.info(f"{flow_mod_summary}")
         return flow_mod_summary
 
 
