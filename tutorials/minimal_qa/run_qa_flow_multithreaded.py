@@ -7,23 +7,20 @@ from flows.datasets import OutputsDataset
 from flows.flow_cache import CACHING_PARAMETERS, clear_cache
 from flows.flow_launchers import FlowMultiThreadedAPILauncher
 
-CACHING_PARAMETERS.do_caching = False  # Set to false to disable caching
+CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
-from flows.flow_launchers import FlowLauncher
+logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
-# logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
-
-
-from flows import flow_verse
 from flows.utils.general_helpers import read_yaml_file
 
-dependencies = [
-    {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "921cf6a54be33ca9ad4f336827699616f7ea75d1"},
-]
-flow_verse.sync_dependencies(dependencies)
+# from flows import flow_verse (if the script requires a Flow from FlowVerse)
+# dependencies = [
+#     {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"},
+# ]
+# flow_verse.sync_dependencies(dependencies)
 
-from martinjosifoski.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow
+from flows.application_flows import OpenAIChatAtomicFlow
 
 
 if __name__ == "__main__":
@@ -35,7 +32,7 @@ if __name__ == "__main__":
 
     launcher_config = {
         "api_keys": api_keys,
-        "single_threaded": True,
+        "single_threaded": False,
         "fault_tolerant_mode": False,
         "n_batch_retries": 2,
         "wait_time_between_retries": 6,
@@ -47,26 +44,37 @@ if __name__ == "__main__":
 
     # ~~~ Instantiate the Flows ~~~
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
-    overrides_config = read_yaml_file(cfg_path)
+    cfg = read_yaml_file(cfg_path)
 
     if launcher_config["single_threaded"]:
         n_workers = 1
     else:
         n_workers = launcher_config["n_workers_per_key"] * len(api_keys)
-    # We can initialize the flow with hydra (we need to add the target in the yaml in that case)
-    # flows = [hydra.utils.instantiate(overrides_config, _convert_="partial", _recursive_=False)
-    #          for _ in range(n_workers)]
-    # or
-    flows = [OpenAIChatAtomicFlow.instantiate_from_default_config(overrides=overrides_config) for _ in range(n_workers)]
+
+    flow_instances = []
+    for _ in range(n_workers):
+        flow_with_interfaces = {
+            "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
+            "input_interface": (
+                None
+                if getattr(cfg, "input_interface", None) is None
+                else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
+            ),
+            "output_interface": (
+                None
+                if getattr(cfg, "output_interface", None) is None
+                else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
+            ),
+        }
+        flow_instances.append(flow_with_interfaces)
 
     # ~~~ Get the data ~~~
     data = [{"id": 0, "question": "What is the capital of France?"},
             {"id": 1, "question": "What is the capital of Germany?"}]
 
     # ~~~ Run inference ~~~
-    launcher = FlowMultiThreadedAPILauncher(flow=flows,
-                                            **launcher_config)
-    launcher.predict_dataloader(data)
+    launcher = FlowMultiThreadedAPILauncher(**launcher_config)
+    launcher.predict_dataloader(data, flows_with_interfaces=flow_instances)
 
     # ~~~ Print the output ~~~
     output_dataset = OutputsDataset(data_dir=output_dir)

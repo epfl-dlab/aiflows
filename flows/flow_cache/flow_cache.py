@@ -20,7 +20,7 @@ class CACHING_PARAMETERS:
     #   Is that even a good idea?
     #   What happens if you want to resume/extend a run that has been already resumed/extended?
     # Global parameters that can be set before starting the outer-flow
-    max_cached_entries: int = 1000
+    max_cached_entries: int = 10000
     do_caching: bool = True
     cache_dir: str = None
 

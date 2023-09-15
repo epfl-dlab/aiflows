@@ -11,13 +11,14 @@ from langchain.vectorstores.base import VectorStoreRetriever
 
 from flows.base_flows import AtomicFlow
 
+
 class LCVectorStoreFlow(AtomicFlow):
     REQUIRED_KEYS_CONFIG = ["type"]
 
     embeddings: OpenAIEmbeddings
     vector_db: VectorStoreRetriever
 
-    def __init__(self,embeddings, vector_db, **kwargs):
+    def __init__(self, embeddings, vector_db, **kwargs):
         super().__init__(**kwargs)
         self.embeddings = embeddings
         self.vector_db = vector_db
@@ -25,7 +26,7 @@ class LCVectorStoreFlow(AtomicFlow):
     @classmethod
     def _set_up_retriever(cls, config: Dict[str, Any]) -> Dict[str, Any]:
         # TODO: api_key
-        embeddings = OpenAIEmbeddings(openai_api_key=".") # dummy key, to replace at run time
+        embeddings = OpenAIEmbeddings(openai_api_key=".")  # dummy key, to replace at run time
         kwargs = {"embeddings": embeddings}
 
         vs_type = config["type"]
@@ -33,7 +34,7 @@ class LCVectorStoreFlow(AtomicFlow):
         if vs_type == "chroma":
             vectorstore = Chroma(embedding_function=embeddings)
         elif vs_type == "faiss":
-            index = faiss.IndexFlatL2(config.get("embedding_size", 1536)) 
+            index = faiss.IndexFlatL2(config.get("embedding_size", 1536))
             vectorstore = FAISS(
                 embedding_function=embeddings.embed_query,
                 index=index,
@@ -42,9 +43,9 @@ class LCVectorStoreFlow(AtomicFlow):
             )
         else:
             raise NotImplementedError(f"Vector store '{vs_type}' not implemented")
-        
+
         kwargs["vector_db"] = vectorstore.as_retriever(**config.get("retriever_config", {}))
-        
+
         return kwargs
 
     @classmethod
@@ -58,7 +59,7 @@ class LCVectorStoreFlow(AtomicFlow):
         kwargs.update(cls._set_up_retriever(flow_config))
 
         return cls(**kwargs)
-    
+
     def _set_api_key(self, api_key: str):
         # TODO: this doesn't work
         self.embeddings.openai_api_key = api_key
@@ -164,4 +165,3 @@ if __name__ == "__main__":
     # retriever = db.as_retriever()
     # db.persist()
 """
-    

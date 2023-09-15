@@ -1,5 +1,4 @@
-import copy
-from typing import List, Dict, Any, Optional, Union
+from typing import List, Dict, Any, Union
 
 import hydra
 
@@ -7,7 +6,6 @@ import flows.interfaces
 from flows.base_flows import CompositeFlow, Flow
 from flows.data_transformations.abstract import DataTransformation
 
-from flows.utils.general_helpers import validate_parameters
 from ..utils import logging
 
 log = logging.get_logger(__name__)
@@ -39,13 +37,9 @@ class CircularFlow(CompositeFlow):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            # input_data_transformations: List[DataTransformation],
-            # output_data_transformations: List[DataTransformation],
             subflows: List[Flow],
     ):
         super().__init__(flow_config=flow_config,
-                         # input_data_transformations=input_data_transformations,
-                         # output_data_transformations=output_data_transformations,
                          subflows=subflows)
         if len(self.subflows) <= 0:
             raise ValueError(f"Circular flow needs at least one subflow, currently has 0")

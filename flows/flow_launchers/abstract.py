@@ -132,7 +132,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
 
     def predict_dataloader(self,
                            dataloader: Iterable[dict],
-                           flows: List[Dict[str, Any]],
+                           flows_with_interfaces: List[Dict[str, Any]],
                            path_to_cache: Optional[str] = None) -> None:
         """
         Runs inference for the data provided in the dataloader.
@@ -143,7 +143,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
             path_to_cache: : A list of existing predictions to use as a starting point.
         """
         self._load_cache(path_to_cache)
-        self.flows = flows
+        self.flows = flows_with_interfaces
 
         num_datapoints = len(dataloader)
         num_failures = 0

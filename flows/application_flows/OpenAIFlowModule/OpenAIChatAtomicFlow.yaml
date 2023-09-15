@@ -33,6 +33,8 @@ human_message_prompt_template:
   input_variables:
     - "query"
   template_format: jinja2
+input_interface_initialized:
+  - "query"
 
 query_message_prompt_template:
   _target_: langchain.PromptTemplate
@@ -40,3 +42,6 @@ query_message_prompt_template:
 
 demonstrations: null
 demonstrations_response_template: null
+
+output_interface:
+  - "api_output"

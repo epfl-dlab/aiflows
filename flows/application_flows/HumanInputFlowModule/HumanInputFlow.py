@@ -46,8 +46,6 @@ class HumanInputFlow(AtomicFlow):
         flow_config = deepcopy(config)
 
         kwargs = {"flow_config": flow_config}
-        # kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         # ~~~ Set up prompts ~~~
         kwargs.update(cls._set_up_prompts(flow_config))

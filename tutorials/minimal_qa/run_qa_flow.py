@@ -1,28 +1,26 @@
 import os
 
-import hydra.utils
+import hydra
 
-from flows import logging
-from flows.utils import caching_utils
-from flows.utils.caching_utils import clear_cache
-
-caching_utils.CACHING_PARAMETERS.do_caching = True # Set to false to disable caching
-# clear_cache() # Uncomment this line to clear the cache
-
+import flows
 from flows.flow_launchers import FlowLauncher
-
-# logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
-
-
-from flows import flow_verse
 from flows.utils.general_helpers import read_yaml_file
 
-dependencies = [
-    {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"},
-]
-flow_verse.sync_dependencies(dependencies)
+from flows import logging
+from flows.flow_cache import CACHING_PARAMETERS, clear_cache
 
-from martinjosifoski.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow
+CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
+# clear_cache() # Uncomment this line to clear the cache
+
+logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
+
+# from flows import flow_verse (if the script requires a Flow from FlowVerse)
+# dependencies = [
+#     {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"},
+# ]
+# flow_verse.sync_dependencies(dependencies)
+
+from flows.application_flows import OpenAIChatAtomicFlow
 
 
 if __name__ == "__main__":
@@ -33,20 +31,29 @@ if __name__ == "__main__":
 
     root_dir = "."
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
-    overrides_config = read_yaml_file(cfg_path)
+    cfg = read_yaml_file(cfg_path)
 
-    # ~~~ Instantiate the flow ~~~
-    # We can initialize the flow with hydra (we need to add the target in the yaml in that case)
-    # flow = hydra.utils.instantiate(overrides_config, _convert_="partial", _recursive_=False)
-    # or
-    flow = OpenAIChatAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
+    # ~~~ Instantiate the Flow ~~~
+    flow_with_interfaces = {
+        "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
+        "input_interface": (
+            None
+            if getattr(cfg, "input_interface", None) is None
+            else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
+        ),
+        "output_interface": (
+            None
+            if getattr(cfg, "output_interface", None) is None
+            else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
+        ),
+    }
 
     # ~~~ Get the data ~~~
     data = {"id": 0, "question": "What is the capital of France?"}  # This can be a list of samples
 
     # ~~~ Run inference ~~~
     _, outputs = FlowLauncher.launch(
-        flow=flow,
+        flow_with_interfaces=flow_with_interfaces,
         data=data,
         api_keys=api_keys,
         path_to_output_file=path_to_output_file,

@@ -17,9 +17,6 @@ from ..utils import logging
 log = logging.get_logger(__name__)
 
 
-# ToDO: Add private_keys and keys_to_ignore_for_hash to the Launcher config and pass to package_input_message
-
-
 class FlowLauncher(ABC):
     @staticmethod
     def launch(flow_with_interfaces: Dict[str, Any],
@@ -98,7 +95,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
     def __init__(
         self,
-        # flow: Union[Flow, List[Flow]],
         n_independent_samples: int,
         fault_tolerant_mode: bool,
         n_batch_retries: int,
@@ -107,16 +103,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         **kwargs,
     ):
         super().__init__(**kwargs)
-
-        # if isinstance(flow, Flow):
-        #     flow = [flow]
-
-        # self.flows = flow
-
-        # assert self.n_workers == len(
-        #     self.flows), "FlowMultiThreadedAPILauncher must be given as many flows as workers. " \
-        #                  "# of flows passed: {}, # of workers: {}".format(len(self.flows),
-        #                                                                   self.n_workers)
 
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode

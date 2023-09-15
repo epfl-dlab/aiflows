@@ -14,9 +14,6 @@ class GeneratorCriticFlow(CircularFlow):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        # assert "generator" in kwargs["subflows_dict"].keys() and "critic" in kwargs["subflows_dict"].keys(), \
-        #     f"{self.__class__.__name__} needs one flow with `critic` in its name and one flow with `generator` in its name. " \
-        #     f"Currently, the flow names are: {kwargs['subflows_dict'].keys()}"
 
     @classmethod
     def type(cls):
