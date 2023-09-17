@@ -3,14 +3,14 @@ import jinja2
 from .abstract import AbstractDataset
 
 import os
-import src.utils as utils
-import src.utils.general_helpers as general_helpers
+from flows.utils import logging
+import flows.utils.general_helpers as general_helpers
 
 
 if __name__ == "__main__":
-    log = utils.get_pylogger(__name__, stdout=True)
+    log = logging.get_logger(__name__, stdout=True)
 else:
-    log = utils.get_pylogger(__name__)
+    log = logging.get_logger(__name__)
 
 
 class GenericDemonstrationsDataset(AbstractDataset):
