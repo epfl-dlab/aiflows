@@ -14,7 +14,7 @@ from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
     OutputMessage
-from flows.utils.general_helpers import recursive_dictionary_update, flatten_dict, unflatten_dict
+from flows.utils.general_helpers import recursive_dictionary_update, nested_keys_search
 from flows.utils.rich_utils import print_config_tree
 from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 
@@ -55,15 +55,11 @@ class Flow(ABC):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            # input_data_transformations: List[DataTransformation],
-            # output_data_transformations: List[DataTransformation],
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
         self.flow_config = flow_config
-        # self.input_data_transformations = input_data_transformations
-        # self.output_data_transformations = output_data_transformations
         self.cache = FlowCache()
         self._validate_flow_config(flow_config)
 
@@ -320,21 +316,8 @@ class Flow(ABC):
 
             return data
         
-        def level_keys_search(search_dict, level_keys):
-            if len(level_keys) == 1:
-                if level_keys[0] in search_dict:
-                    return search_dict[level_keys[0]], True
-                else:
-                    return None, False
-                
-            if level_keys[0] in search_dict:
-                return level_keys_search(search_dict[level_keys[0]], level_keys[1:])
-            else:
-                return None, False
-
         for key in keys:
-            level_keys = key.split(".")
-            value, found = level_keys_search(self.flow_state, level_keys)
+            value, found = nested_keys_search(self.flow_state, key)
 
             if found:
                 data[key] = value
@@ -342,7 +325,6 @@ class Flow(ABC):
                 data[key] = self.__dict__[key]
             else:
                 raise KeyError(f"Key {key} not found in the flow state or the class namespace.")    
-        data = unflatten_dict(data)
         return data
     
     def _package_input_message(
