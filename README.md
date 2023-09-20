@@ -27,12 +27,7 @@ pip install -e .
 - [caching](docs/caching.md)
 - [Flow Modules](docs/flow_module_management.md)
 - [logging](docs/logging.md)
-
-## Tutorials
-
-A series of guides that explain how to build your own `Flow`, use our visualization toolkit to debug it, and finally upload it to the Flow-verse to share it with the community.
-
-- [Flows Tutorial](docs/tutorials/main.md)
+- [AutoGPT](docs/autogpt.md)
 
 ## Contributing
 
