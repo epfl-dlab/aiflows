@@ -14,7 +14,7 @@ from flows.history import FlowHistory
 from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
     UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
     OutputMessage
-from flows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_dict_leafs
+from flows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs
 from flows.utils.rich_utils import print_config_tree
 from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 
@@ -119,9 +119,10 @@ class Flow(ABC):
 
             cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
             
-            process_dict_leafs(default_config, 
+            process_config_leafs(default_config, 
                                lambda k, v: 
                                (cls_parent_module + v  if k == "_target_" and v.startswith(".") else v))
+
             config = recursive_dictionary_update(parent_default_config, default_config)
 
         # TODO(yeeef): ugly fix, figure out why only this works
