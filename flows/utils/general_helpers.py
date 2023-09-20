@@ -1,6 +1,6 @@
 import collections
 from pathlib import Path
-from typing import List, Any, Tuple
+from typing import List, Any, Tuple, Dict, Callable
 import uuid
 import time
 import os
@@ -127,6 +127,14 @@ def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
         
     return do_search(search_dict, nested_key.split("."))
 
+def process_dict_leafs(d: Dict, leaf_processor: Callable[[Tuple[Any, Any]], Any]):
+    if not d:
+        return
+    for k, v in d.items():
+        if isinstance(v, dict):
+            process_dict_leafs(v, leaf_processor)
+        else:
+            d[k] = leaf_processor(k, v)
 
 def read_jsonlines(path_to_file):
     with open(path_to_file, "r") as f:
