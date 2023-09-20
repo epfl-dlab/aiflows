@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 
 from flows.base_flows import CircularFlow
-from ..utils import logging
+from flows.utils import logging
 from flows.utils.general_helpers import validate_parameters
 
 log = logging.get_logger(__name__)

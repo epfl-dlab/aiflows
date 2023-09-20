@@ -41,7 +41,7 @@ if __name__ == "__main__":
 
     # ~~~ Run inference ~~~
     _, outputs = FlowLauncher.launch(
-        flow=flow,
+        flow_with_interfaces={"flow": flow},
         data=data,
         path_to_output_file=path_to_output_file,
     )

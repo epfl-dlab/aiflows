@@ -37,16 +37,10 @@ class Flow(ABC):
     # below parameters are essential for flow instantiation, but we provide value for them,
     # so user is not required to provide them in the flow config
     __default_flow_config = {
-        "name": "Flow",  # ToDo: Why are these set?
+        "name": "Flow",
         "description": "A flow",
-        # "output_keys": [],
-
         "private_keys": ["api_keys"],
         "keys_to_ignore_for_hash": ["api_keys", "name", "description"],
-
-        # "input_data_transformations": [],
-        # "output_data_transformations": [],
-
         "clear_flow_namespace_on_run_end": True,
         "keep_raw_response": True,
         "enable_cache": False,  # whether to enable cache for this flow
@@ -88,9 +82,6 @@ class Flow(ABC):
 
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
-        # if cls != Flow:
-            # cls.__base__._validate_flow_config(flow_config) # TODO(yeeef): if child overrides _validate_flow_config, then we dont get what we want, so it is useless
-
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
 
@@ -150,25 +141,8 @@ class Flow(ABC):
         return config
 
     @classmethod
-    def _set_up_data_transformations(cls, data_transformation_configs):
-        data_transformations = []
-        if len(data_transformation_configs) > 0:
-            for config in data_transformation_configs:
-                if config["_target_"].startswith("."):
-                    # assumption: cls is associated with relative data_transformation_configs
-                    # for example, CF_Code and CF_Code.yaml should be in the same directory,
-                    # and all _target_ in CF_Code.yaml should be relative
-                    cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
-                    config["_target_"] = cls_parent_module + config["_target_"]
-                data_transformations.append(hydra.utils.instantiate(config, _convert_="partial"))
-
-        return data_transformations
-
-    @classmethod
     def instantiate_from_config(cls, config):
         kwargs = {"flow_config": copy.deepcopy(config)}
-        # kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
         return cls(**kwargs)
 
     @classmethod
@@ -196,13 +170,6 @@ class Flow(ABC):
         if isinstance(src_flow, Flow):
             src_flow = src_flow.flow_config["name"]
 
-        # # ~~~ Delete all extraneous attributes ~~~
-        # keys_deleted_from_namespace = []
-        # for key, value in list(self.__dict__.items()):
-        #     if key not in self.__class__.get_keys_to_ignore_when_resetting_namespace():
-        #         del self.__dict__[key]
-        #         keys_deleted_from_namespace.append(key)
-
         if recursive and hasattr(self, "subflows"):
             for _, flow in self.subflows.items():
                 flow.reset(full_reset=full_reset, recursive=True)
@@ -229,7 +196,6 @@ class Flow(ABC):
     def _state_update_dict(self, update_data: Union[Dict[str, Any], Message]):
         """
         Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
-
         """
         if isinstance(update_data, Message):
             update_data = update_data.data["output_data"]  # TODO(yeeef): error-prone
@@ -280,21 +246,6 @@ class Flow(ABC):
     # ToDo(https://github.com/epfl-dlab/flows/issues/60): Move the repr logic here and update the hashing function to use this instead
     # def get_hash_string(self):
     #     raise NotImplementedError()
-
-    # def get_input_keys(self) -> List[str]:
-    #     """
-    #     Returns the expected inputs for the flow given the current state
-    #     """
-    #     input_keys = self.flow_config["input_keys"]
-    #     if not isinstance(input_keys, list):
-    #         raise ValueError(f"input_keys should be a list, but got {type(input_keys)}, input_keys: {input_keys}")
-    #     return input_keys[:]  # copy
-    #
-    # def get_output_keys(self) -> List[str]:
-    #     output_keys = self.flow_config["output_keys"]
-    #     if not isinstance(output_keys, list):
-    #         raise ValueError(f"output_keys should be a list, but got {type(output_keys)}, output_keys: {output_keys}")
-    #     return output_keys[:]  # copy
 
     def get_interface_description(self):
         return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
