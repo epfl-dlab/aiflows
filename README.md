@@ -1,3 +1,5 @@
+[![arXiv](https://img.shields.io/badge/arXiv-2308.01285-b31b1b.svg)](https://arxiv.org/abs/2305.13971)
+
 # Flows: Building Blocks of Reasoning and Collaborating AI
 
 ## Introduction
@@ -10,7 +12,7 @@
 
 These patterns are composable, allowing you to build complex flows of execution.
 
-## Get started
+## Installation
 
 To install flows, run the following command:
 
@@ -29,6 +31,10 @@ pip install -e .
 - [logging](docs/logging.md)
 - [AutoGPT](docs/autogpt.md)
 
+## Running the experiments in the paper
+
+The flows for reproducing the results in [paper](https://arxiv.org/pdf/2308.01285.pdf) are available in [CCFlows](https://huggingface.co/aiflows/CCFlows). 
+
 ## Contributing
 
 There are two ways to contribute to the project: by contributing to the **codebase** or by contributing to the **Flow-verse**.
@@ -39,3 +45,19 @@ There are two ways to contribute to the project: by contributing to the **codeba
 Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you! We are happy to link to your content from the project website.
 
 All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
+
+## Citation
+
+This repository contains the code for the models and experiments in [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf)
+
+```
+@misc{josifoski2023flows,
+      title={Flows: Building Blocks of Reasoning and Collaborating AI}, 
+      author={Martin Josifoski and Lars Klein and Maxime Peyrard and Yifei Li and Saibo Geng and Julian Paul Schnitzler and Yuxing Yao and Jiheng Wei and Debjit Paul and Robert West},
+      year={2023},
+      eprint={2308.01285},
+      archivePrefix={arXiv},
+      primaryClass={cs.AI}
+}
+```
+**Please consider citing our work, if you found the provided resources useful.**<br>
