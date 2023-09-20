@@ -24,8 +24,8 @@ class FlowLauncher(ABC):
                path_to_output_file: Optional[str] = None,
                api_keys: Optional[Dict[str, str]] = None) -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
-        input_interface = flow_with_interfaces["input_interface"]
-        output_interface = flow_with_interfaces["output_interface"]
+        input_interface = flow_with_interfaces.get("input_interface", None)
+        output_interface = flow_with_interfaces.get("output_interface", None)
 
         if isinstance(data, dict):
             data = [data]

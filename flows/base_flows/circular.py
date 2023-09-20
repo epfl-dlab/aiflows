@@ -10,7 +10,6 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
-
 class TopologyNode:
     def __init__(self,
                  goal,
@@ -34,6 +33,27 @@ class CircularFlow(CompositeFlow):
         "topology": []
     }
 
+    __input_msg_payload_builder_registry = {}
+    __output_msg_payload_processor_registry = {}
+
+    @staticmethod
+    def input_msg_payload_builder(builder_fn):
+        def wrapper(goal, data_dict, src_flow: Flow, dst_flow: Flow):
+            return builder_fn(src_flow, src_flow.flow_state, dst_flow)
+
+        CircularFlow.__input_msg_payload_builder_registry[builder_fn.__qualname__] = wrapper
+        log.debug(f"input_msg_payload_builder [{builder_fn.__qualname__}] registered")
+        return wrapper
+    
+    @staticmethod
+    def output_msg_payload_processor(processor_fn):
+        def wrapper(goal, data_dict, src_flow, dst_flow):
+            return processor_fn(dst_flow, data_dict, src_flow)
+
+        CircularFlow.__output_msg_payload_processor_registry[processor_fn.__qualname__] = wrapper
+        log.debug(f"output_msg_payload_processor [{processor_fn.__qualname__}] registered")
+        return wrapper
+    
     def __init__(
             self,
             flow_config: Dict[str, Any],
@@ -71,14 +91,26 @@ class CircularFlow(CompositeFlow):
             reset = topo_config.get("reset", False)
             input_interface = topo_config.get("input_interface", None)
             if input_interface is not None:
-                input_interface = hydra.utils.instantiate(input_interface, _recursive_=False, _convert_="partial")
+                # first search _input_msg_payload_builder_registry
+                registry_key = self.__class__.__name__ + "." + input_interface["_target_"]
+                # log.debug(f"registry_key: {registry_key}")
+                if registry_key in CircularFlow.__input_msg_payload_builder_registry:
+                    input_interface = CircularFlow.__input_msg_payload_builder_registry[registry_key]
+                else:
+                    input_interface = hydra.utils.instantiate(input_interface, _recursive_=False, _convert_="partial")
             else:
                 input_interface = flows.interfaces.KeyInterface()
                 input_interface.transformations.append(flows.data_transformations.KeyMatchInput())
 
             output_interface = topo_config.get("output_interface", None)
             if output_interface is not None:
-                output_interface = hydra.utils.instantiate(output_interface, _recursive_=False, _convert_="partial")
+                # first search _output_msg_payload_processor_registry
+                registry_key = self.__class__.__name__ + "." + output_interface["_target_"]
+                # log.debug(f"registry_key: {registry_key}")
+                if registry_key in CircularFlow.__output_msg_payload_processor_registry:
+                    output_interface = CircularFlow.__output_msg_payload_processor_registry[registry_key]
+                else:
+                    output_interface = hydra.utils.instantiate(output_interface, _recursive_=False, _convert_="partial")
 
             ret.append(TopologyNode(goal=topo_config["goal"],
                                     input_interface=input_interface,
@@ -122,13 +154,13 @@ class CircularFlow(CompositeFlow):
             for node in self.topology:
                 input_interface = node.input_interface
                 current_flow = node.flow
-                output_transformations = node.output_interface
+                output_interface = node.output_interface
 
                 output_message, output_data = self._call_flow_from_state(
                     goal=node.goal,
                     input_interface=input_interface,
                     flow=current_flow,
-                    output_interface=output_transformations)
+                    output_interface=output_interface)
 
                 self._state_update_dict(update_data=output_data)
 

@@ -20,13 +20,9 @@ class CompositeFlow(Flow, ABC):
     def __init__(
             self,
             flow_config: Dict[str, Any],
-            # input_data_transformations: List[DataTransformation],
-            # output_data_transformations: List[DataTransformation],
             subflows: List[Flow],
     ):
         super().__init__(flow_config=flow_config,
-                         # input_data_transformations=input_data_transformations,
-                         # output_data_transformations=output_data_transformations
                          )
         self.subflows = subflows
 
@@ -35,10 +31,6 @@ class CompositeFlow(Flow, ABC):
         flow_config = copy.deepcopy(config)
         return cls(subflows=cls._set_up_subflows(flow_config),
                    flow_config=flow_config,
-                   # input_data_transformations=cls._set_up_data_transformations(
-                   #     flow_config["input_data_transformations"]),
-                   # output_data_transformations=cls._set_up_data_transformations(
-                   #     flow_config["output_data_transformations"])
                    )
 
     def _call_flow_from_state(
@@ -53,10 +45,11 @@ class CompositeFlow(Flow, ABC):
         api_keys = self._get_from_state("api_keys")
         log.debug(f"_call_flow_from_state: api_keys: {api_keys}")
 
-        payload = input_interface(goal=f"[Input] {goal}",
-                                  data_dict=self.flow_state,
-                                  src_flow=self,
-                                  dst_flow=flow)
+        if input_interface is not None:
+            payload = input_interface(goal=f"[Input] {goal}",
+                                    data_dict=self.flow_state,
+                                    src_flow=self,
+                                    dst_flow=flow)
 
         input_message = self._package_input_message(
             payload=payload,
@@ -71,12 +64,12 @@ class CompositeFlow(Flow, ABC):
         self._log_message(output_message)
 
         # ~~~ Process the output ~~~
-        output_data = output_message.data["output_data"]
+        output_data = copy.deepcopy(output_message.data["output_data"])
         if output_interface is not None:
             output_data = output_interface(goal=f"[Output] {goal}",
                                            data_dict=output_data,
                                            src_flow=flow,
-                                           dst_flow=None)
+                                           dst_flow=self)
 
         return output_message, output_data
 

@@ -1,6 +1,6 @@
 import collections
 from pathlib import Path
-from typing import List
+from typing import List, Any, Tuple, Dict, Callable
 import uuid
 import time
 import os
@@ -58,6 +58,83 @@ def unflatten_dict(d, sep='.'):
         d[parts[-1]] = v
     return result_dict
 
+def nested_keys_pop(data_dict: dict, nested_key: str) -> Any:
+    """
+    Pop a nested key in a dictionary.
+
+    Args:
+        data_dict (dict): The dictionary to pop from.
+        nested_key (str): The nested key to pop, in the format "key1.key2.key3".
+
+    Returns:
+        None
+    """
+    keys = nested_key.split(".")
+
+    d = data_dict
+    for key in keys[:-1]:
+        if key not in d:
+            return
+        d = d[key]
+
+    return d.pop(keys[-1], None)
+
+
+def nested_keys_update(data_dict: dict, nested_key: str, value: Any) -> None:
+    """
+    Update the value of a nested key in a dictionary.
+
+    Args:
+        data_dict (dict): The dictionary to update.
+        nested_key (str): The nested key to update, in the format "key1.key2.key3".
+        value (Any): The new value to set for the nested key.
+
+    Returns:
+        None
+    """
+    keys = nested_key.split(".")
+
+    d = data_dict
+    for key in keys[:-1]:
+        if key not in d:
+            d[key] = dict()
+        d = d[key]
+
+    d[keys[-1]] = value
+
+def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
+    """
+    Searches for a nested key in a dictionary using a composite key string.
+    
+    Args:
+    - search_dict: dict - The dictionary to search in.
+    - nested_key: str - The composite key string to search for.
+    
+    Returns:
+    - tuple - A tuple containing the value of the nested key and a boolean indicating if the key was found.
+    """
+    def do_search(search_dict, keys):
+        if len(keys) == 1:
+            if keys[0] in search_dict:
+                return search_dict[keys[0]], True
+            else:
+                return None, False
+            
+        if keys[0] in search_dict:
+            return do_search(search_dict[keys[0]], keys[1:])
+        else:
+            return None, False
+        
+    return do_search(search_dict, nested_key.split("."))
+
+def process_dict_leafs(d: Dict, leaf_processor: Callable[[Tuple[Any, Any]], Any]):
+    if not d:
+        return
+    for k, v in d.items():
+        if isinstance(v, dict):
+            process_dict_leafs(v, leaf_processor)
+        else:
+            d[k] = leaf_processor(k, v)
 
 def read_jsonlines(path_to_file):
     with open(path_to_file, "r") as f:
