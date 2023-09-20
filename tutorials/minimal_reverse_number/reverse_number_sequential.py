@@ -21,14 +21,14 @@ if __name__ == "__main__":
     overrides_config = read_yaml_file(cfg_path)
 
     # ~~~ Instantiate the flow ~~~
-    flow = SequentialFlow.instantiate_from_default_config(overrides=overrides_config)
+    flow = SequentialFlow.instantiate_from_default_config(**overrides_config)
 
     # ~~~ Get the data ~~~
     data = {"id": 0, "number": 1234}  # This can be a list of samples
 
     # ~~~ Run inference ~~~
     _, outputs = FlowLauncher.launch(
-        flow=flow,
+        flow_with_interfaces={"flow": flow},
         data=data,
         path_to_output_file=path_to_output_file,
     )
