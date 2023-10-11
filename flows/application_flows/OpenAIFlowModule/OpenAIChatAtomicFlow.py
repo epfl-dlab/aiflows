@@ -195,6 +195,18 @@ class OpenAIChatAtomicFlow(AtomicFlow):
             )
 
         elif backend_used == 'openai':
+            # quick fix
+            # bug reason: AzureChatOpenAI will change the openai values.
+            # TODO: see if there is a prettier fix
+            import openai
+            import os
+            openai.api_type = "open_ai"
+            openai.api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
+            openai.api_version = os.environ.get(
+                "OPENAI_API_VERSION",
+                ("2023-05-15" if openai.api_type in ("azure", "azure_ad", "azuread") else None),
+            )
+            # end of fix
             backend = langchain.chat_models.ChatOpenAI(
                 model_name=self.flow_config["model_name"],
                 openai_api_key=api_key,

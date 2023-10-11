@@ -130,6 +130,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         output_interface = flow_with_interfaces["output_interface"]
         path_to_output_file = self.paths_to_output_files[_resource_id]
 
+
         for sample in batch:
             if input_interface is not None:
                 input_data_dict = input_interface(

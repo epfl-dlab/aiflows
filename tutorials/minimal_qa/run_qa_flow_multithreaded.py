@@ -33,7 +33,7 @@ if __name__ == "__main__":
 
     launcher_config = {
         "api_information": api_information,
-        "single_threaded": True,#debugging
+        "single_threaded": False,
         "fault_tolerant_mode": False,
         "n_batch_retries": 2,
         "wait_time_between_retries": 6,
