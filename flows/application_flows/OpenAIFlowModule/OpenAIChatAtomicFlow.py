@@ -171,7 +171,7 @@ class OpenAIChatAtomicFlow(AtomicFlow):
     def _call(self):
         if self.flow_config["backend_used"] == 'azure':
             from langchain.chat_models import AzureChatOpenAI
-            api_key = self._get_from_state("api_keys")["azure_openai"]
+            api_key = self._get_from_state("api_keys")["azure"]
             endpoint = self._get_from_state("endpoints")["azure"]
             backend = AzureChatOpenAI(
                 openai_api_type='azure',

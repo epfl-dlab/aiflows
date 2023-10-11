@@ -25,7 +25,7 @@ from flows.application_flows import OpenAIChatAtomicFlow
 
 if __name__ == "__main__":
     api_keys = {"openai": os.getenv("OPENAI_API_KEY")}
-    api_keys["azure_openai"] = os.getenv("AZURE_OPENAI_KEY")
+    api_keys["azure"] = os.getenv("AZURE_OPENAI_KEY")
     endpoints = {"azure": os.getenv("AZURE_OPENAI_ENDPOINT")}
 
     path_to_output_file = None

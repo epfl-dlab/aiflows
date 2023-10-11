@@ -28,10 +28,13 @@ if __name__ == "__main__":
 
     # ~~~ Launcher Configuration ~~~
     output_dir = "predictions"
-    api_keys = [os.getenv("OPENAI_API_KEY")]
+    api_keys = {"openai": os.getenv("OPENAI_API_KEY")}
+    api_keys["azure"] = os.getenv("AZURE_OPENAI_KEY")
+    endpoints = {"azure": os.getenv("AZURE_OPENAI_ENDPOINT")}
 
     launcher_config = {
         "api_keys": api_keys,
+        "endpoints": endpoints,
         "single_threaded": False,
         "fault_tolerant_mode": False,
         "n_batch_retries": 2,
@@ -52,25 +55,47 @@ if __name__ == "__main__":
         n_workers = launcher_config["n_workers_per_key"] * len(api_keys)
 
     flow_instances = []
-    for _ in range(n_workers):
-        flow_with_interfaces = {
-            "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
-            "input_interface": (
-                None
-                if getattr(cfg, "input_interface", None) is None
-                else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
-            ),
-            "output_interface": (
-                None
-                if getattr(cfg, "output_interface", None) is None
-                else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
-            ),
-        }
-        flow_instances.append(flow_with_interfaces)
+    # for _ in range(n_workers):
+    #     flow_with_interfaces = {
+    #         "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
+    #         "input_interface": (
+    #             None
+    #             if getattr(cfg, "input_interface", None) is None
+    #             else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
+    #         ),
+    #         "output_interface": (
+    #             None
+    #             if getattr(cfg, "output_interface", None) is None
+    #             else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
+    #         ),
+    #     }
+    #     flow_instances.append(flow_with_interfaces)
+    for backend_name in api_keys.keys():
+        for _ in range(launcher_config["n_workers_per_key"]):
+            flow_with_interfaces = {
+                "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial", backend_used=backend_name),
+                "input_interface": (
+                    None
+                    if getattr(cfg, "input_interface", None) is None
+                    else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
+                ),
+                "output_interface": (
+                    None
+                    if getattr(cfg, "output_interface", None) is None
+                    else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
+                ),
+            }
+            flow_instances.append(flow_with_interfaces)
+
+
+
+
 
     # ~~~ Get the data ~~~
     data = [{"id": 0, "question": "What is the capital of France?"},
-            {"id": 1, "question": "What is the capital of Germany?"}]
+            {"id": 1, "question": "What is the capital of Germany?"},
+            {"id": 2, "question": "What is the capital of Switzerland?"},
+            {"id": 3, "question": "What is the capital of The United States?"}]
 
     # ~~~ Run inference ~~~
     launcher = FlowMultiThreadedAPILauncher(**launcher_config)
