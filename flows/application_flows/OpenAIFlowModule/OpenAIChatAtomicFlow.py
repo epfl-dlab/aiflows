@@ -23,7 +23,7 @@ log = logging.get_logger(__name__)
 
 
 class OpenAIChatAtomicFlow(AtomicFlow):
-    REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters"]
+    REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters", "backend_used"]
 
     SUPPORTS_CACHING: bool = True
 
@@ -169,7 +169,26 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         self._log_message(chat_message)
 
     def _call(self):
-        api_key = self._get_from_state("api_keys")["openai"]
+        if self.flow_config["backend_used"] == 'azure':
+            from langchain.chat_models import AzureChatOpenAI
+            api_key = self._get_from_state("api_keys")["azure_openai"]
+            endpoint = self._get_from_state("endpoints")["azure"]
+            backend = AzureChatOpenAI(
+                openai_api_type='azure',
+                openai_api_key=api_key,
+                openai_api_base=endpoint,
+                openai_api_version='2023-05-15',
+                deployment_name='gpt-35-turbo',
+                **self.flow_config["generation_parameters"],
+            )
+
+        elif self.flow_config["backend_used"] == 'openai':
+            api_key = self._get_from_state("api_keys")["openai"]
+            backend = langchain.chat_models.ChatOpenAI(
+                model_name=self.flow_config["model_name"],
+                openai_api_key=api_key,
+                **self.flow_config["generation_parameters"],
+            )
 
         # import openai
         #
@@ -180,11 +199,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         #         **self.flow_config["generation_parameters"],
         #     )
         # else:
-        backend = langchain.chat_models.ChatOpenAI(
-            model_name=self.flow_config["model_name"],
-            openai_api_key=api_key,
-            **self.flow_config["generation_parameters"],
-        )
 
         messages = self.flow_state["previous_messages"]
 

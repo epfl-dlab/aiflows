@@ -25,6 +25,8 @@ from flows.application_flows import OpenAIChatAtomicFlow
 
 if __name__ == "__main__":
     api_keys = {"openai": os.getenv("OPENAI_API_KEY")}
+    api_keys["azure_openai"] = os.getenv("AZURE_OPENAI_KEY")
+    endpoints = {"azure": os.getenv("AZURE_OPENAI_ENDPOINT")}
 
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
@@ -48,6 +50,7 @@ if __name__ == "__main__":
         ),
     }
 
+
     # ~~~ Get the data ~~~
     data = {"id": 0, "question": "What is the capital of France?"}  # This can be a list of samples
 
@@ -57,6 +60,7 @@ if __name__ == "__main__":
         data=data,
         api_keys=api_keys,
         path_to_output_file=path_to_output_file,
+        endpoints = endpoints,
     )
 
     # ~~~ Print the output ~~~

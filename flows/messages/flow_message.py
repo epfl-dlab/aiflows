@@ -18,6 +18,7 @@ class InputMessage(Message):
                  created_by: str = None,
                  private_keys: List[str] = None,
                  api_keys: Dict[str, Any] = None,
+                 endpoints: Dict[str, Any] = None,
                  keys_to_ignore_for_hash: Optional[List[str]] = None):  # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
 
         created_by = src_flow if created_by is None else created_by
@@ -26,6 +27,7 @@ class InputMessage(Message):
         self.src_flow = src_flow
         self.dst_flow = dst_flow
         self.api_keys = {} if api_keys is None else api_keys
+        self.endpoints = {} if endpoints is None else endpoints
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
@@ -49,6 +51,7 @@ class InputMessage(Message):
               dst_flow: str,
               private_keys: Optional[List[str]] = None,
               api_keys: Optional[Dict[str, Any]] = None,
+              endpoints: Optional[Dict[str, Any]] = None,
               created_by: Optional[str] = None) -> 'InputMessage':
         
         if created_by is None:
@@ -60,7 +63,8 @@ class InputMessage(Message):
             dst_flow=dst_flow,
             created_by=created_by,
             private_keys=private_keys,
-            api_keys=api_keys
+            api_keys=api_keys,
+            endpoints=endpoints,
         )
 
         return input_message

@@ -403,6 +403,11 @@ class Flow(ABC):
             self._state_update_dict(
                 {"api_keys": input_message.api_keys}
             )
+        if input_message.endpoints:
+            self._state_update_dict(
+                {"endpoints": input_message.endpoints}
+            )
+
     
         # ~~~ check and log input ~~~
         self._log_message(input_message)

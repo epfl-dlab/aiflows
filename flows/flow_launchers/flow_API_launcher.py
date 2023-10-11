@@ -22,7 +22,8 @@ class FlowLauncher(ABC):
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
-               api_keys: Optional[Dict[str, str]] = None) -> Tuple[List[dict]]:
+               api_keys: Optional[Dict[str, str]] = None,
+               endpoints: Optional[Dict[str, str]] = None,) -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
@@ -48,7 +49,8 @@ class FlowLauncher(ABC):
                 data_dict=input_data_dict,
                 src_flow="Launcher",
                 dst_flow=flow.name,
-                api_keys=api_keys
+                api_keys=api_keys,
+                endpoints=endpoints
             )
 
             output_message = flow(input_message)
