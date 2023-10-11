@@ -11,6 +11,7 @@ import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from flows.messages import InputMessage
+from flows.flow_launchers.api_info import ApiInfo
 from ..interfaces.abstract import Interface
 from ..utils import logging
 
@@ -22,8 +23,8 @@ class FlowLauncher(ABC):
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
-               api_keys: Optional[Dict[str, str]] = None,
-               endpoints: Optional[Dict[str, str]] = None,) -> Tuple[List[dict]]:
+               api_information: Optional[List[ApiInfo]] = None,
+               backend_used='openai') -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
@@ -49,8 +50,8 @@ class FlowLauncher(ABC):
                 data_dict=input_data_dict,
                 src_flow="Launcher",
                 dst_flow=flow.name,
-                api_keys=api_keys,
-                endpoints=endpoints
+                api_information=api_information,
+                backend_used=backend_used,
             )
 
             output_message = flow(input_message)
@@ -154,12 +155,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                     while _attempt_idx <= self.n_batch_retries:
                         try:
                             # ToDo: Use the same format as the FlowLauncher for passing API keys
-                            api_keys = {"openai": self.api_keys[api_key_idx]}
+                            api = self.api_information[api_key_idx]
                             input_message = InputMessage.build(
                                 data_dict=input_data_dict,
                                 src_flow="Launcher",
                                 dst_flow=flow.name,
-                                api_keys=api_keys
+                                api_information=[api],
+                                backend_used=api.backend_used,
                             )
 
                             output_message = flow(input_message)
@@ -191,12 +193,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
                 else:
                     # For development and debugging purposes
-                    api_keys = {"openai": self.api_keys[api_key_idx]}
+                    api = self.api_information[api_key_idx]
                     input_message = InputMessage.build(
                         data_dict=input_data_dict,
                         src_flow="Launcher",
                         dst_flow=flow.name,
-                        api_keys=api_keys
+                        api_information=[api],
+                        backend_used=api.backend_used,
                     )
                     output_message = flow(input_message)
                     output_data = output_message.data["output_data"]

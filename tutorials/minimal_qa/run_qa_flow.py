@@ -21,12 +21,12 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 # flow_verse.sync_dependencies(dependencies)
 
 from flows.application_flows import OpenAIChatAtomicFlow
+from flows.flow_launchers.api_info import ApiInfo
 
 
 if __name__ == "__main__":
-    api_keys = {"openai": os.getenv("OPENAI_API_KEY")}
-    api_keys["azure"] = os.getenv("AZURE_OPENAI_KEY")
-    endpoints = {"azure": os.getenv("AZURE_OPENAI_ENDPOINT")}
+    api_information = [ApiInfo("openai", os.getenv("OPENAI_API_KEY")),
+                       ApiInfo("azure", os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT"))]
 
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
@@ -58,9 +58,9 @@ if __name__ == "__main__":
     _, outputs = FlowLauncher.launch(
         flow_with_interfaces=flow_with_interfaces,
         data=data,
-        api_keys=api_keys,
         path_to_output_file=path_to_output_file,
-        endpoints = endpoints,
+        api_information = api_information,
+        backend_used="openai"
     )
 
     # ~~~ Print the output ~~~

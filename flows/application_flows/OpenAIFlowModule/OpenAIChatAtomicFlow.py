@@ -6,6 +6,7 @@ import time
 
 from typing import List, Dict, Optional, Any, Tuple
 
+from flows.flow_launchers.api_info import ApiInfo
 from langchain import PromptTemplate
 import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
@@ -23,7 +24,7 @@ log = logging.get_logger(__name__)
 
 
 class OpenAIChatAtomicFlow(AtomicFlow):
-    REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters", "backend_used"]
+    REQUIRED_KEYS_CONFIG = ["model_name", "generation_parameters"]
 
     SUPPORTS_CACHING: bool = True
 
@@ -168,11 +169,22 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         )
         self._log_message(chat_message)
 
+    def _find_api_info(self, backend_used, api_information):
+        for api in api_information:
+            if api.backend_used == backend_used:
+                return api
+        return None
+
     def _call(self):
-        if self.flow_config["backend_used"] == 'azure':
+        backend_used = self._get_from_state("backend_used")
+        api_information = self._get_from_state("api_information")
+        api = self._find_api_info(backend_used, api_information)
+        assert api is not None, f"specified backend_used: {0} not found in api information".format(backend_used)
+        api_key = api.api_key
+
+        if backend_used == 'azure':
             from langchain.chat_models import AzureChatOpenAI
-            api_key = self._get_from_state("api_keys")["azure"]
-            endpoint = self._get_from_state("endpoints")["azure"]
+            endpoint = api.endpoint
             backend = AzureChatOpenAI(
                 openai_api_type='azure',
                 openai_api_key=api_key,
@@ -182,13 +194,14 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                 **self.flow_config["generation_parameters"],
             )
 
-        elif self.flow_config["backend_used"] == 'openai':
-            api_key = self._get_from_state("api_keys")["openai"]
+        elif backend_used == 'openai':
             backend = langchain.chat_models.ChatOpenAI(
                 model_name=self.flow_config["model_name"],
                 openai_api_key=api_key,
                 **self.flow_config["generation_parameters"],
             )
+        else:
+            raise ValueError(f"Unsupported backend: {backend_used}")
 
         # import openai
         #

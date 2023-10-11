@@ -77,11 +77,11 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
 
     def __init__(self, **kwargs):
-        self.api_keys = kwargs["api_keys"]
+        self.api_information = kwargs["api_information"]
         self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
         self.__waittime_per_key = kwargs.get("wait_time_per_key", 6)
         # Initialize to now - waittime_per_key to make the class know we haven't called it recently
-        self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_keys)
+        self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_information)
 
         self.debug = kwargs.get("debug", False)
         self.single_threaded = kwargs.get("single_threaded", False)
@@ -91,7 +91,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         if self.single_threaded:
             self.n_workers = 1
         else:
-            self.n_workers = self.n_workers_per_key * len(self.api_keys)
+            self.n_workers = self.n_workers_per_key * len(self.api_information)
 
         self.paths_to_output_files = []
         _resource_IDs = Queue(self.n_workers)
@@ -161,7 +161,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         else:
             log.info(
                 "Running in multi-threaded mode with {} keys and {} workers per key.".format(
-                    len(self.api_keys), self.n_workers_per_key
+                    len(self.api_information), self.n_workers_per_key
                 )
             )
 

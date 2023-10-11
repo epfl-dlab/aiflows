@@ -1,7 +1,6 @@
 # This is an abstract flow, therefore some required fields are not defined (and must be defined by the concrete flow)
 enable_cache: True
 
-backend_used: "azure"
 model_name: "gpt-4"
 generation_parameters:
   n: 1

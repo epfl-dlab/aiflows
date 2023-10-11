@@ -40,7 +40,7 @@ class Flow(ABC):
         "name": "Flow",
         "description": "A flow",
         "private_keys": ["api_keys"],
-        "keys_to_ignore_for_hash": ["api_keys", "name", "description"],
+        "keys_to_ignore_for_hash": ["api_keys", "name", "description", "api_information"],
         "clear_flow_namespace_on_run_end": True,
         "keep_raw_response": True,
         "enable_cache": False,  # whether to enable cache for this flow
@@ -399,13 +399,14 @@ class Flow(ABC):
         #     (input_message.data.keys(), self.get_input_keys())
 
         # set api_keys in flow_state
-        if input_message.api_keys:
+        # new: set api_information (api keys, endpoints) in flow_state
+        if input_message.api_information:
             self._state_update_dict(
-                {"api_keys": input_message.api_keys}
+                {"api_information": input_message.api_information}
             )
-        if input_message.endpoints:
+        if input_message.backend_used:
             self._state_update_dict(
-                {"endpoints": input_message.endpoints}
+                {"backend_used": input_message.backend_used}
             )
 
     
