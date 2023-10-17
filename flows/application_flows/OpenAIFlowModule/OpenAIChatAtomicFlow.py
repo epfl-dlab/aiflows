@@ -169,22 +169,14 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         )
         self._log_message(chat_message)
 
-    def _find_api_info(self, backend_used, api_information):
-        for api in api_information:
-            if api.backend_used == backend_used:
-                return api
-        return None
-
     def _call(self):
         backend_used = self._get_from_state("backend_used")
         api_information = self._get_from_state("api_information")
-        api = self._find_api_info(backend_used, api_information)
-        assert api is not None, f"specified backend_used: {0} not found in api information".format(backend_used)
-        api_key = api.api_key
+        api_key = api_information.api_key
 
         if backend_used == 'azure':
             from langchain.chat_models import AzureChatOpenAI
-            endpoint = api.endpoint
+            endpoint = api_information.endpoint
             backend = AzureChatOpenAI(
                 openai_api_type='azure',
                 openai_api_key=api_key,

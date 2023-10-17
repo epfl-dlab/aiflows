@@ -10,16 +10,21 @@ colorama.init()
 # ToDo: When logging the "\n" in the nested messages is not mapped to a new line which makes it hard to debug. Fix that.
 
 
+
+
 @dataclass
 class InputMessage(Message):
+    @staticmethod
+    def _api_information_sanity_check(api_information: ApiInfo):
+        assert api_information is not None, "Must provide api information!"
+        assert api_information.backend_used is not None, "Must specify backend used e.g. openai"
     def __init__(self,
                  data_dict: Dict[str, Any],
                  src_flow: str,
                  dst_flow: str,
                  created_by: str = None,
                  private_keys: List[str] = None,
-                 api_information: List[ApiInfo] = None,
-                 backend_used: str = None,
+                 api_information: ApiInfo = None,
                  keys_to_ignore_for_hash: Optional[List[str]] = None):  # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
 
         created_by = src_flow if created_by is None else created_by
@@ -27,9 +32,8 @@ class InputMessage(Message):
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow
-        self.api_information = [] if api_information is None else api_information
-        self.backend_used = backend_used
-        assert self.backend_used is not None, "Need to specify backend used e.g. openai, azure"
+        self.api_information = api_information
+        self.backend_used = api_information.backend_used
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
@@ -37,8 +41,6 @@ class InputMessage(Message):
             self.keys_to_ignore_for_hash = keys_to_ignore_for_hash
         if "api_keys" not in self.keys_to_ignore_for_hash:  # ToDo(https://github.com/epfl-dlab/flows/issues/61): It can probably be removed
             self.keys_to_ignore_for_hash.append("api_keys")
-        # ToDo: What does keys_to_ignore_for_hash do? Is it safe to warp up all api information to the class ApiInfo?
-        # Is the following 2 lines even needed? Or should I delete for above 2 lines?
         if "api_information" not in self.keys_to_ignore_for_hash:
             self.keys_to_ignore_for_hash.append("api_information")
 
@@ -56,12 +58,13 @@ class InputMessage(Message):
               src_flow: str,
               dst_flow: str,
               private_keys: Optional[List[str]] = None,
-              api_information: Optional[List[ApiInfo]] = None,
-              backend_used: str = None,
+              api_information: Optional[ApiInfo] = None,
               created_by: Optional[str] = None) -> 'InputMessage':
         
         if created_by is None:
             created_by = src_flow
+
+        InputMessage._api_information_sanity_check(api_information)
 
         input_message = InputMessage(
             data_dict=data_dict,
@@ -69,7 +72,6 @@ class InputMessage(Message):
             dst_flow=dst_flow,
             created_by=created_by,
             private_keys=private_keys,
-            backend_used=backend_used,
             api_information=api_information,
         )
 

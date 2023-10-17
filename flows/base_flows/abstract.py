@@ -404,6 +404,7 @@ class Flow(ABC):
             self._state_update_dict(
                 {"api_information": input_message.api_information}
             )
+        # TODO: remove the backend_used param, let api_information decide which backend to use
         if input_message.backend_used:
             self._state_update_dict(
                 {"backend_used": input_message.backend_used}

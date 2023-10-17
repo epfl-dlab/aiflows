@@ -17,14 +17,13 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
-
+# single-thread flow launcher
 class FlowLauncher(ABC):
     @staticmethod
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
-               api_information: Optional[List[ApiInfo]] = None,
-               backend_used='openai') -> Tuple[List[dict]]:
+               api_information: Optional[ApiInfo] = None,) -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
@@ -51,7 +50,6 @@ class FlowLauncher(ABC):
                 src_flow="Launcher",
                 dst_flow=flow.name,
                 api_information=api_information,
-                backend_used=backend_used,
             )
 
             output_message = flow(input_message)
@@ -161,8 +159,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                                 data_dict=input_data_dict,
                                 src_flow="Launcher",
                                 dst_flow=flow.name,
-                                api_information=[api],
-                                backend_used=api.backend_used,
+                                api_information=api,
                             )
 
                             output_message = flow(input_message)
@@ -199,8 +196,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                         data_dict=input_data_dict,
                         src_flow="Launcher",
                         dst_flow=flow.name,
-                        api_information=[api],
-                        backend_used=api.backend_used,
+                        api_information=api,
                     )
                     output_message = flow(input_message)
                     output_data = output_message.data["output_data"]

@@ -25,8 +25,11 @@ from flows.flow_launchers.api_info import ApiInfo
 
 
 if __name__ == "__main__":
-    api_information = [ApiInfo("openai", os.getenv("OPENAI_API_KEY")),
-                       ApiInfo("azure", os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT"))]
+    # only specify needed api information here to avoid redundant information passing
+
+    api_information = ApiInfo("openai", os.getenv("OPENAI_API_KEY"))
+    # to use Azure as backend, uncomment the following to replace the api_information variable:
+    # api_information = ApiInfo("azure"), os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT")
 
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
@@ -60,7 +63,6 @@ if __name__ == "__main__":
         data=data,
         path_to_output_file=path_to_output_file,
         api_information = api_information,
-        backend_used="openai"
     )
 
     # ~~~ Print the output ~~~
