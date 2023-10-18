@@ -205,13 +205,12 @@ class SafeChatOpenAI(BaseChatModel):
             values,
             "openai_api_key",
             "OPENAI_API_KEY",
-            default=openai.api_key
         )
         openai_organization = get_from_dict_or_env(
             values,
             "openai_organization",
             "OPENAI_ORGANIZATION",
-            default=openai.organization,
+            default="",
         )
         openai_api_base = get_from_dict_or_env(
             values,
@@ -223,27 +222,26 @@ class SafeChatOpenAI(BaseChatModel):
             values,
             "openai_proxy",
             "OPENAI_PROXY",
-            default=openai.proxy,
-        )
-        openai_api_version = get_from_dict_or_env(
-            values,
-            "openai_api_version",
-            "OPENAI_API_VERSION",
-            default=openai.api_version
+            default="",
         )
         openai_api_type = get_from_dict_or_env(
             values,
             "openai_api_type",
             "OPENAI_API_TYPE",
-            default=openai.api_type
+            default="open_ai"
+        )
+        openai_api_version = get_from_dict_or_env(
+            values,
+            "openai_api_version",
+            "OPENAI_API_VERSION",
+            default=""
         )
         values["openai_api_key"] = openai_api_key
-        values["openai_organization"] = openai_organization
-        values["openai_api_base"] = openai_api_base
-        values["openai_api_version"] = openai_api_version
+        values["openai_organization"] = openai_organization if openai_organization else None
+        values["openai_api_base"] = openai_api_base if openai_api_base else None
         values["openai_api_type"] = openai_api_type
-        values["openai_proxy"] = None if openai_proxy is None else {"http": openai_proxy, "https": openai_proxy}
-
+        values["openai_proxy"] = {"http": openai_proxy, "https": openai_proxy} if openai_proxy else None
+        values["openai_api_version"] = openai_api_version if openai_api_version else None
 
         try:
             values["client"] = openai.ChatCompletion
@@ -296,7 +294,6 @@ class SafeChatOpenAI(BaseChatModel):
     def completion_with_retry(self, **kwargs: Any) -> Any:
         """Use tenacity to retry the completion call."""
         retry_decorator = self._create_retry_decorator()
-
         @retry_decorator
         def _completion_with_retry(**kwargs: Any) -> Any:
             return self.client.create(
@@ -304,8 +301,7 @@ class SafeChatOpenAI(BaseChatModel):
                 api_base=self.openai_api_base,
                 api_type=self.openai_api_type,
                 api_version=self.openai_api_version,
-                api_proxy=self.openai_proxy,
-                api_organization=self.openai_organization,
+                organization=self.openai_organization,
                 **kwargs)
 
         return _completion_with_retry(**kwargs)

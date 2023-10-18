@@ -28,7 +28,7 @@ if __name__ == "__main__":
     # only specify needed api information here to avoid redundant information passing
 
     # to use openai backend, uncomment the following:
-    # api_information = ApiInfo("openai", os.getenv("OPENAI_API_KEY"))
+    #api_information = ApiInfo("openai", os.getenv("OPENAI_API_KEY"))
     # to use Azure as backend, uncomment the following:
     api_information = ApiInfo("azure", os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT"))
 

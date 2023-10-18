@@ -175,9 +175,19 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         api_key = api_information.api_key
 
         if backend_used == 'azure':
-            from langchain.chat_models import AzureChatOpenAI
+            # from langchain.chat_models import AzureChatOpenAI
+            # endpoint = api_information.endpoint
+            # backend = AzureChatOpenAI(
+            #     openai_api_type='azure',
+            #     openai_api_key=api_key,
+            #     openai_api_base=endpoint,
+            #     openai_api_version='2023-05-15',
+            #     deployment_name='gpt-35-turbo',
+            #     **self.flow_config["generation_parameters"],
+            # )
+            from backends.azure_openai import SafeAzureChatOpenAI
             endpoint = api_information.endpoint
-            backend = AzureChatOpenAI(
+            backend = SafeAzureChatOpenAI(
                 openai_api_type='azure',
                 openai_api_key=api_key,
                 openai_api_base=endpoint,
@@ -186,36 +196,31 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                 **self.flow_config["generation_parameters"],
             )
 
+
         elif backend_used == 'openai':
-            # quick fix
             # bug reason: AzureChatOpenAI will change the openai values.
-            # TODO: see if there is a prettier fix
-            import openai
-            import os
-            openai.api_type = "open_ai"
-            openai.api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
-            openai.api_version = os.environ.get(
-                "OPENAI_API_VERSION",
-                ("2023-05-15" if openai.api_type in ("azure", "azure_ad", "azuread") else None),
-            )
-            # end of fix
-            backend = langchain.chat_models.ChatOpenAI(
+            # import openai
+            # import os
+            # openai.api_type = "open_ai"
+            # openai.api_base = os.environ.get("OPENAI_API_BASE", "https://api.openai.com/v1")
+            # openai.api_version = os.environ.get(
+            #     "OPENAI_API_VERSION",
+            #     ("2023-05-15" if openai.api_type in ("azure", "azure_ad", "azuread") else None),
+            # )
+            # backend = langchain.chat_models.ChatOpenAI(
+            #     model_name=self.flow_config["model_name"],
+            #     openai_api_key=api_key,
+            #     **self.flow_config["generation_parameters"],
+            # )
+            from backends.openai import SafeChatOpenAI
+            backend = SafeChatOpenAI(
                 model_name=self.flow_config["model_name"],
                 openai_api_key=api_key,
+                openai_api_type="open_ai",
                 **self.flow_config["generation_parameters"],
             )
         else:
             raise ValueError(f"Unsupported backend: {backend_used}")
-
-        # import openai
-        #
-        # if openai.api_type == "azure":
-        #     backend = langchain.chat_models.ChatOpenAI(
-        #         engine=self.flow_config["model_name"],
-        #         openai_api_key=api_key,
-        #         **self.flow_config["generation_parameters"],
-        #     )
-        # else:
 
         messages = self.flow_state["previous_messages"]
 
