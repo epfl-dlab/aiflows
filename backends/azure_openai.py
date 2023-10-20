@@ -1,5 +1,4 @@
 from __future__ import annotations
-from langchain.utils import get_from_dict_or_env
 from pydantic import root_validator
 
 from backends.openai import SafeChatOpenAI
@@ -42,38 +41,44 @@ class SafeAzureChatOpenAI(SafeChatOpenAI):
                 "Could not import openai python package. "
                 "Please install it with `pip install openai`."
             )
-        openai_api_key = get_from_dict_or_env(
+        openai_api_key = super()._get_from_dict_or_env(
             values,
             "openai_api_key",
             "OPENAI_API_KEY",
+            dict_only=False,
         )
-        openai_api_base = get_from_dict_or_env(
+        openai_api_base = super()._get_from_dict_or_env(
             values,
             "openai_api_base",
             "OPENAI_API_BASE",
+            dict_only=False,
         )
-        openai_proxy = get_from_dict_or_env(
+        openai_proxy = super()._get_from_dict_or_env(
             values,
             "openai_proxy",
             "OPENAI_PROXY",
             default="",
+            dict_only=False,
         )
-        openai_organization = get_from_dict_or_env(
+        openai_organization = super()._get_from_dict_or_env(
             values,
             "openai_organization",
             "OPENAI_ORGANIZATION",
             default="",
+            dict_only=False,
         )
-        openai_api_version = get_from_dict_or_env(
+        openai_api_version = super()._get_from_dict_or_env(
             values,
             "openai_api_version",
             "OPENAI_API_VERSION",
+            dict_only=False,
         )
-        openai_api_type = get_from_dict_or_env(
+        openai_api_type = super()._get_from_dict_or_env(
             values,
             "openai_api_type",
             "OPENAI_API_TYPE",
-            default="azure"
+            default="azure",
+            dict_only=False,
         )
         values["openai_api_key"] = openai_api_key
         values["openai_api_base"] = openai_api_base

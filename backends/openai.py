@@ -15,6 +15,7 @@ from typing import (
     Union,
 )
 
+from langchain.utils import get_from_env
 from pydantic import Extra, Field, root_validator
 from tenacity import (
     before_sleep_log,
@@ -38,13 +39,11 @@ from langchain.schema import (
     HumanMessage,
     SystemMessage,
 )
-from langchain.utils import get_from_dict_or_env
 
 if TYPE_CHECKING:
     import tiktoken
 
 logger = logging.getLogger(__name__)
-
 
 def _import_tiktoken() -> Any:
     try:
@@ -162,6 +161,22 @@ class SafeChatOpenAI(BaseChatModel):
         extra = Extra.ignore
         allow_population_by_field_name = True
 
+    def _get_from_dict_or_env(
+            data: Dict[str, Any],
+            key: str,
+            env_key: str,
+            default: Optional[str] = None,
+            dict_only: bool = False,
+    ) -> str:
+        if dict_only:
+            if key in data and data[key]:
+                return data[key]
+        else:
+            if key in data and data[key]:
+                return data[key]
+            else:
+                return get_from_env(key, env_key, default=default)
+
     @root_validator(pre=True)
     def build_extra(cls, values: Dict[str, Any]) -> Dict[str, Any]:
         """Build extra kwargs from additional params that were passed in."""
@@ -201,40 +216,46 @@ class SafeChatOpenAI(BaseChatModel):
                 "Could not import openai python package. "
                 "Please install it with `pip install openai`."
             )
-        openai_api_key = get_from_dict_or_env(
+        openai_api_key = cls._get_from_dict_or_env(
             values,
             "openai_api_key",
             "OPENAI_API_KEY",
+            dict_only=False,
         )
-        openai_organization = get_from_dict_or_env(
+        openai_organization = cls._get_from_dict_or_env(
             values,
             "openai_organization",
             "OPENAI_ORGANIZATION",
             default="",
+            dict_only=False,
         )
-        openai_api_base = get_from_dict_or_env(
+        openai_api_base = cls._get_from_dict_or_env(
             values,
             "openai_api_base",
             "OPENAI_API_BASE",
             default=openai.api_base,
+            dict_only=False,
         )
-        openai_proxy = get_from_dict_or_env(
+        openai_proxy = cls._get_from_dict_or_env(
             values,
             "openai_proxy",
             "OPENAI_PROXY",
             default="",
+            dict_only=False,
         )
-        openai_api_type = get_from_dict_or_env(
+        openai_api_type = cls._get_from_dict_or_env(
             values,
             "openai_api_type",
             "OPENAI_API_TYPE",
-            default="open_ai"
+            default="open_ai",
+            dict_only = False,
         )
-        openai_api_version = get_from_dict_or_env(
+        openai_api_version = cls._get_from_dict_or_env(
             values,
             "openai_api_version",
             "OPENAI_API_VERSION",
-            default=""
+            default="",
+            dict_only=False,
         )
         values["openai_api_key"] = openai_api_key
         values["openai_organization"] = openai_organization if openai_organization else None
