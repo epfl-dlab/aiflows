@@ -6,6 +6,7 @@ from copy import deepcopy
 from typing import Any, List, Dict, Union, Optional, Tuple
 
 import hydra
+from omegaconf import DictConfig
 
 import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
@@ -103,8 +104,9 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         output_keys: List[str],
         **kwargs,
     ):
+        kwargs["api_information"] = [ApiInfo(**info) if isinstance(info, DictConfig) else info for info in
+                                     kwargs["api_information"]]
         super().__init__(**kwargs)
-
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode
         self.n_batch_retries = n_batch_retries
