@@ -13,12 +13,6 @@ class KeyInterface(ABC):
         transforms = []
         if len(transformations) > 0:
             for config in transformations:
-                # if config["_target_"].startswith("."): # ToDo: How to make it simple to use locally defined functions?
-                #     # assumption: cls is associated with relative data_transformation_configs
-                #     # for example, CF_Code and CF_Code.yaml should be in the same directory,
-                #     # and all _target_ in CF_Code.yaml should be relative
-                #     cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
-                #     config["_target_"] = cls_parent_module + config["_target_"]
                 transforms.append(hydra.utils.instantiate(config, _convert_="partial"))
 
         return transforms
@@ -58,6 +52,5 @@ class KeyInterface(ABC):
             # print(f"before transformation: {transformation}, data_dict: {data_dict}")
             data_dict = transformation(data_dict=data_dict, **kwargs)
             # print(f"after transformation: {transformation}, data_dict: {data_dict}")
-
 
         return data_dict

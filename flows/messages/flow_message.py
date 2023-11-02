@@ -7,9 +7,8 @@ from flows.messages import Message
 
 colorama.init()
 
+
 # ToDo: When logging the "\n" in the nested messages is not mapped to a new line which makes it hard to debug. Fix that.
-
-
 
 
 @dataclass
@@ -18,6 +17,7 @@ class InputMessage(Message):
     def _api_information_sanity_check(api_information: ApiInfo):
         assert api_information is not None, "Must provide api information!"
         assert api_information.backend_used is not None, "Must specify backend used e.g. openai"
+
     def __init__(self,
                  data_dict: Dict[str, Any],
                  src_flow: str,
@@ -25,7 +25,8 @@ class InputMessage(Message):
                  created_by: str = None,
                  private_keys: List[str] = None,
                  api_information: ApiInfo = None,
-                 keys_to_ignore_for_hash: Optional[List[str]] = None):  # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
+                 keys_to_ignore_for_hash: Optional[
+                     List[str]] = None):  # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
 
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
@@ -33,7 +34,6 @@ class InputMessage(Message):
         self.src_flow = src_flow
         self.dst_flow = dst_flow
         self.api_information = api_information
-        self.backend_used = api_information.backend_used
 
         # ~~~ Initialize keys to ignore for hash ~~~
         self.keys_to_ignore_for_hash = []
@@ -52,15 +52,16 @@ class InputMessage(Message):
                   f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
 
         return message
-    
+
     @staticmethod
-    def build(data_dict: Dict[str, Any],  # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
+    def build(data_dict: Dict[str, Any],
+              # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
               src_flow: str,
               dst_flow: str,
               private_keys: Optional[List[str]] = None,
               api_information: Optional[ApiInfo] = None,
               created_by: Optional[str] = None) -> 'InputMessage':
-        
+
         if created_by is None:
             created_by = src_flow
 
@@ -102,7 +103,6 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
                  role: str,
                  updated_flow: str,
                  **kwargs):
-
         super().__init__(data={}, updated_flow=updated_flow, **kwargs)
         self.data["role"] = role
         self.data["content"] = content

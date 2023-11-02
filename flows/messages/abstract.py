@@ -72,7 +72,7 @@ class Message:
 
     def __str__(self):
         d = self.__sanitized__dict__()
-        return json.dumps(d, indent=4,default=str)
+        return json.dumps(d, indent=4, default=str)
 
     def __repr__(self):
         # ToDo: Note that created_at and message_id are currently included in the __repr__.

@@ -12,6 +12,7 @@ import gzip
 from omegaconf import OmegaConf
 
 from flows import logging
+
 log = logging.get_logger(__name__)
 
 
@@ -58,6 +59,7 @@ def unflatten_dict(d, sep='.'):
         d[parts[-1]] = v
     return result_dict
 
+
 def nested_keys_pop(data_dict: dict, nested_key: str) -> Any:
     """
     Pop a nested key in a dictionary.
@@ -102,6 +104,7 @@ def nested_keys_update(data_dict: dict, nested_key: str, value: Any) -> None:
 
     d[keys[-1]] = value
 
+
 def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
     """
     Searches for a nested key in a dictionary using a composite key string.
@@ -113,24 +116,26 @@ def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
     Returns:
     - tuple - A tuple containing the value of the nested key and a boolean indicating if the key was found.
     """
+
     def do_search(search_dict, keys):
         if len(keys) == 1:
             if keys[0] in search_dict:
                 return search_dict[keys[0]], True
             else:
                 return None, False
-            
+
         if keys[0] in search_dict:
             return do_search(search_dict[keys[0]], keys[1:])
         else:
             return None, False
-        
+
     return do_search(search_dict, nested_key.split("."))
+
 
 def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tuple[Any, Any]], Any]):
     if not config:
         return
-    
+
     if isinstance(config, dict):
         for k, v in config.items():
             if not isinstance(v, dict) and not isinstance(v, list):
@@ -145,6 +150,7 @@ def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tu
                 pass
     else:
         assert False
+
 
 def read_jsonlines(path_to_file):
     with open(path_to_file, "r") as f:
@@ -255,7 +261,7 @@ def recursive_dictionary_update(d, u):
     """Performs a recursive update of the values in dictionary d with the values of dictionary u"""
     if d is None:
         d = {}
-    
+
     for k, v in u.items():
         if isinstance(v, collections.abc.Mapping):
             d[k] = recursive_dictionary_update(d.get(k, {}), v)
@@ -270,4 +276,3 @@ def read_yaml_file(path_to_file, resolve=True):
 
     cfg = OmegaConf.to_container(cfg, resolve=resolve)
     return cfg
-
