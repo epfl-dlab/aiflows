@@ -20,9 +20,11 @@ class HumanInputFlow(AtomicFlow):
     __default_flow_config = {
         "end_of_input_string": "EOI",
         "input_keys": [],
-        "description": "A flow that asks the user for input.",
+        "description": "Reads input from the user's standard input source.",
         "query_message_prompt_template": {
             "_target_": "langchain.PromptTemplate",
+            "template": "",
+            "input_variables": [],
             "partial_variables": {},
             "template_format": "jinja2"
         }
