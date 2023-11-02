@@ -6,7 +6,7 @@ from flows.base_flows import Flow
 class AtomicFlow(Flow, ABC):
     """
     AtomicFlow is the minimal execution unit in the Flow framework.
-    It is an encapsulation of a single function that takes a input message and returns an output message.
+    It is an encapsulation of a single functionality that takes an input message and returns an output message.
     """
 
     def __init__(

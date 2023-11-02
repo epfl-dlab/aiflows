@@ -42,7 +42,6 @@ class Flow(ABC):
         "private_keys": ["api_keys"],
         "keys_to_ignore_for_hash": ["api_keys", "name", "description", "api_information"],
         "clear_flow_namespace_on_run_end": True,
-        "keep_raw_response": True,
         "enable_cache": False,  # whether to enable cache for this flow
     }
 
@@ -199,7 +198,7 @@ class Flow(ABC):
         Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
         """
         if isinstance(update_data, Message):
-            update_data = update_data.data["output_data"]  # TODO(yeeef): error-prone
+            update_data = update_data.data["output_data"]
 
         if len(update_data) == 0:
             raise ValueError("The state_update_dict was called with an empty dictionary. If there is a justified "
@@ -289,7 +288,7 @@ class Flow(ABC):
             self,
             payload: Dict[str, Any],
             dst_flow: "Flow",
-            api_keys: Optional[Dict[str, str]] = None,
+            api_information: Optional[Dict[str, str]] = None,
     ):
         private_keys = dst_flow.flow_config["private_keys"]
         keys_to_ignore_for_hash = dst_flow.flow_config["keys_to_ignore_for_hash"]
@@ -308,7 +307,7 @@ class Flow(ABC):
             keys_to_ignore_for_hash=keys_to_ignore_for_hash,
             src_flow=src_flow,
             dst_flow=dst_flow,
-            api_keys=api_keys,
+            api_information=api_information,
             created_by=self.name,
         )
         return msg
@@ -325,8 +324,6 @@ class Flow(ABC):
             created_by=self.flow_config['name'],
             src_flow=self.flow_config['name'],
             dst_flow=input_message.src_flow,
-            # output_keys=self.get_output_keys(),
-            # missing_output_keys=[],
             output_data=output_data,
             raw_response=raw_response,
             input_message_id=input_message.message_id,
@@ -404,12 +401,6 @@ class Flow(ABC):
             self._state_update_dict(
                 {"api_information": input_message.api_information}
             )
-        # TODO: remove the backend_used param, let api_information decide which backend to use
-        if input_message.backend_used:
-            self._state_update_dict(
-                {"backend_used": input_message.backend_used}
-            )
-
     
         # ~~~ check and log input ~~~
         self._log_message(input_message)

@@ -1,12 +1,9 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 
 from flows.base_flows import CircularFlow, Flow
-from flows.data_transformations.abstract import DataTransformation
 from ..utils import logging
 
 log = logging.get_logger(__name__)
-
-# ToDo(https://github.com/epfl-dlab/flows/issues/63): Add support for multiple runs (c.f. generator_critic.py)
 
 
 class SequentialFlow(CircularFlow):

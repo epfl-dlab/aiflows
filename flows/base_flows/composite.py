@@ -1,11 +1,10 @@
 import copy
 from abc import ABC
-from typing import List, Tuple, Dict, Optional, Any
+from typing import List, Dict, Optional, Any
 
 import hydra
 
 from flows.base_flows import Flow
-from flows.data_transformations.abstract import DataTransformation
 
 from ..utils import logging
 
@@ -42,19 +41,19 @@ class CompositeFlow(Flow, ABC):
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
-        api_keys = self._get_from_state("api_keys")
+        api_information = self._get_from_state("api_information")
         # log.debug(f"_call_flow_from_state: api_keys: {api_keys}")
 
         if input_interface is not None:
             payload = input_interface(goal=f"[Input] {goal}",
-                                    data_dict=self.flow_state,
-                                    src_flow=self,
-                                    dst_flow=flow)
+                                      data_dict=self.flow_state,
+                                      src_flow=self,
+                                      dst_flow=flow)
 
         input_message = self._package_input_message(
             payload=payload,
             dst_flow=flow,
-            api_keys=api_keys
+            api_information=api_information
         )
 
         # ~~~ Execute the call ~~~
@@ -100,8 +99,6 @@ class CompositeFlow(Flow, ABC):
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
         kwargs["subflows"] = cls._set_up_subflows(flow_config)
-        # kwargs["input_data_transformations"] = cls._set_up_data_transformations(config["input_data_transformations"])
-        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         return cls(**kwargs)
 
