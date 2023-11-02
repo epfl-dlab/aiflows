@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Any
 
 import uuid
@@ -23,8 +24,14 @@ class ChromaDBFlow(AtomicFlow):
         return self.flow_config["output_keys"]
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        api_key = self._get_from_state("api_keys")["openai"]
-        embeddings = OpenAIEmbeddings(openai_api_key=api_key)
+
+        api_information = self._get_from_state("api_information")
+
+        if api_information.backend_used == "openai":
+            embeddings = OpenAIEmbeddings(openai_api_key=api_information.api_key)
+        else:
+            # ToDo: Add support for Azure
+            embeddings = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
         response = {}
 
         operation = input_data["operation"]
@@ -35,6 +42,9 @@ class ChromaDBFlow(AtomicFlow):
         if operation == "read":
             if not isinstance(content, str):
                 raise ValueError(f"content(query) must be a string during read, got {type(content)}: {content}")
+            if content == "":
+                response["retrieved"] = [[""]]
+                return response
             query = content
             query_result = self.collection.query(
                 query_embeddings=embeddings.embed_query(query),
@@ -44,14 +54,15 @@ class ChromaDBFlow(AtomicFlow):
             response["retrieved"] = [doc for doc in query_result["documents"]]
 
         elif operation == "write":
-            if not isinstance(content, list):
-                content = [content]
-            documents = content
-            self.collection.add(
-                ids=[str(uuid.uuid4()) for _ in range(len(documents))],
-                embeddings=embeddings.embed_documents(documents),
-                documents=documents
-            )
+            if content != "":
+                if not isinstance(content, list):
+                    content = [content]
+                documents = content
+                self.collection.add(
+                    ids=[str(uuid.uuid4()) for _ in range(len(documents))],
+                    embeddings=embeddings.embed_documents(documents),
+                    documents=documents
+                )
             response["retrieved"] = ""
 
         return response
