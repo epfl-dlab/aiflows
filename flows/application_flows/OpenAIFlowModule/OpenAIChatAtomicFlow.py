@@ -4,11 +4,9 @@ import hydra
 
 import time
 
-from typing import List, Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any
 
-from flows.flow_launchers.api_info import ApiInfo
 from langchain import PromptTemplate
-import langchain
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 
 from flows.base_flows import AtomicFlow
@@ -18,9 +16,6 @@ from flows.utils import logging
 from flows.messages.flow_message import UpdateMessage_ChatMessage
 
 log = logging.get_logger(__name__)
-
-
-# ToDo: Add support for demonstrations
 
 
 class OpenAIChatAtomicFlow(AtomicFlow):
@@ -84,7 +79,6 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         flow_config = deepcopy(config)
 
         kwargs = {"flow_config": flow_config}
-        # kwargs["output_data_transformations"] = cls._set_up_data_transformations(config["output_data_transformations"])
 
         # ~~~ Set up prompts ~~~
         kwargs.update(cls._set_up_prompts(flow_config))
@@ -169,12 +163,25 @@ class OpenAIChatAtomicFlow(AtomicFlow):
         )
         self._log_message(chat_message)
 
+    def _get_previous_messages(self):
+        all_messages = self.flow_state["previous_messages"]
+        first_k = self.flow_config["previous_messages"]["first_k"]
+        last_k = self.flow_config["previous_messages"]["last_k"]
+
+        if not first_k and not last_k:
+            return all_messages
+        elif first_k and last_k:
+            return all_messages[:first_k] + all_messages[-last_k:]
+        elif first_k:
+            return all_messages[:first_k]
+
+        return all_messages[-last_k:]
+
     def _call(self):
-        backend_used = self._get_from_state("backend_used")
         api_information = self._get_from_state("api_information")
         api_key = api_information.api_key
 
-        if backend_used == 'azure':
+        if api_information.backend_used == 'azure':
             from backends.azure_openai import SafeAzureChatOpenAI
             endpoint = api_information.endpoint
             backend = SafeAzureChatOpenAI(
@@ -182,12 +189,10 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                 openai_api_key=api_key,
                 openai_api_base=endpoint,
                 openai_api_version='2023-05-15',
-                deployment_name='gpt-35-turbo',
+                deployment_name=self.flow_config["model_name"],
                 **self.flow_config["generation_parameters"],
             )
-
-
-        elif backend_used == 'openai':
+        elif api_information.backend_used == 'openai':
             from backends.openai import SafeChatOpenAI
             backend = SafeChatOpenAI(
                 model_name=self.flow_config["model_name"],
@@ -196,9 +201,9 @@ class OpenAIChatAtomicFlow(AtomicFlow):
                 **self.flow_config["generation_parameters"],
             )
         else:
-            raise ValueError(f"Unsupported backend: {backend_used}")
+            raise ValueError(f"Unsupported backend: {api_information.backend_used}")
 
-        messages = self.flow_state["previous_messages"]
+        messages = self._get_previous_messages()
 
         _success = False
         attempts = 1

@@ -28,7 +28,10 @@ topology:
     reset_every_round: false
 
     ### Output Interface
-    output_interface: null
+    output_interface:
+      _target_: flows.interfaces.KeyInterface
+      additional_transformations:
+        - _target_: flows.data_transformations.PrintPreviousMessages
 
   - goal: "Ask the user for input"
 

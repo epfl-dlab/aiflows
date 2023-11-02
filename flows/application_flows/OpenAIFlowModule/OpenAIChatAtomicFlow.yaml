@@ -40,6 +40,10 @@ query_message_prompt_template:
   _target_: langchain.PromptTemplate
   template_format: jinja2
 
+previous_messages:
+  first_k: null  # Note that the first message is the system prompt
+  last_k: null
+
 demonstrations: null
 demonstrations_response_template: null
 
