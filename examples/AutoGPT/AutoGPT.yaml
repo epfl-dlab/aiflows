@@ -1,0 +1,40 @@
+flow:
+  _target_: aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
+  max_rounds: 30
+
+  ### Subflows specification
+  subflows_config:
+    Controller:
+      _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+      commands:
+        wiki_search:
+          description: "Performs a search on Wikipedia."
+          input_args: [ "search_term" ]
+        ddg_search:
+          description: "Query the search engine DuckDuckGo."
+          input_args: [ "query" ]
+        finish:
+          description: "Signal that the objective has been satisfied, and returns the answer to the user."
+          input_args: [ "answer" ]
+      human_message_prompt_template:
+        template: |2-
+          Here is the response to your last action:
+          {{observation}}
+          Here is the feedback from the user:
+          {{human_feedback}}
+        input_variables:
+          - "observation"
+          - "human_feedback"
+      input_interface_initialized:
+        - "observation"
+        - "human_feedback"
+
+    Executor:
+      _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
+      subflows_config:
+        wiki_search:
+          _target_: aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+        ddg_search:
+          _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+          backend:
+            _target_: langchain.tools.DuckDuckGoSearchRun
