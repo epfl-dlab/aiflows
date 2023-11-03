@@ -16,6 +16,7 @@ logging.set_verbosity_debug()
 
 dependencies = [
     {"url": "aiflows/AutoGPTFlowModule", "revision": "b52b47ef45388474f2df18f1495fed358e33a114"},
+    {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
 ]
 from flows import flow_verse
 
