@@ -1,0 +1,104 @@
+
+#  _target_: FlowsEpfl.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
+max_rounds: 30
+
+### Subflows specification
+subflows_config:
+  Controller:
+    _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+    commands:
+      wiki_search:
+        description: "Performs a search on Wikipedia."
+        input_args: [ "search_term" ]
+      ddg_search:
+        description: "Query the search engine DuckDuckGo."
+        input_args: [ "query" ]
+      finish:
+        description: "Signal that the objective has been satisfied, and returns the answer to the user."
+        input_args: [ "answer" ]
+    human_message_prompt_template:
+      template: |2-
+        Here is the response to your last action:
+        {{observation}}
+        Here is the feedback from the user:
+        {{human_feedback}}
+      input_variables:
+        - "observation"
+        - "human_feedback"
+    input_interface_initialized:
+      - "observation"
+      - "human_feedback"
+
+  Executor:
+    _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
+    subflows_config:
+      wiki_search:
+        _target_: aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+      ddg_search:
+        _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+        backend:
+          _target_: langchain.tools.DuckDuckGoSearchRun
+
+  HumanFeedback:
+    _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+    request_multi_line_input_flag: False
+    query_message_prompt_template:
+      template: |2-
+        Please provide feedback on the last step.  
+        
+        Relevant information:
+        == Goal == 
+        {{goal}}
+        
+        == Last Command ==
+        {{command}}
+        
+        == Args
+        {{command_args}}
+        
+        == Result
+        {{observation}}
+      input_variables:
+        - "goal"
+        - "command"
+        - "command_args"
+        - "observation"
+    input_interface_initialized:
+      - "goal"
+      - "command"
+      - "command_args"
+      - "observation"
+
+topology:  # The first two are the same as in the ControllerExecutorFlow
+  - goal: "Select the next action and prepare the input for the executor."
+    input_interface:
+      _target_: flows.interfaces.KeyInterface
+      additional_transformations:
+        - _target_: flows.data_transformations.KeyMatchInput
+    flow: Controller
+    output_interface:
+      _target_: ControllerExecutorFlow.detect_finish_or_continue
+    reset: false
+
+  - goal: "Execute the action specified by the Controller."
+    input_interface:
+      _target_: flows.interfaces.KeyInterface
+      keys_to_rename:
+        command: branch
+        command_args: branch_input_data
+      keys_to_select: [ "branch", "branch_input_data" ]
+    flow: Executor
+    output_interface:
+      _target_: flows.interfaces.KeyInterface
+      keys_to_rename:
+        branch_output_data: observation
+      keys_to_select: [ "observation" ]
+    reset: false
+
+  - goal: "Ask the user for feedback."
+    input_interface:
+      _target_: flows.interfaces.KeyInterface
+    flow: HumanFeedback
+    output_interface:
+      _target_: ReActWithHumanFeedback.detect_finish_in_human_input
+    reset: false
