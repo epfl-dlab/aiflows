@@ -15,13 +15,11 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 from flows.utils.general_helpers import read_yaml_file
 from flows.flow_launchers.api_info import ApiInfo
 
-# from flows import flow_verse (if the script requires a Flow from FlowVerse)
-# dependencies = [
-#     {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"},
-# ]
-# flow_verse.sync_dependencies(dependencies)
-
-from flows.application_flows import OpenAIChatAtomicFlow
+from flows import flow_verse
+dependencies = [
+    {"url": "aiflows/OpenAIChatFlowModule", "revision": "4f4d036411dcb0d83da120500c17cf96d5de556a"},
+]
+flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
     root_dir = "."

@@ -4,6 +4,7 @@ import hydra
 
 import flows
 from flows.flow_launchers import FlowLauncher
+from flows.flow_launchers.api_info import ApiInfo
 from flows.utils.general_helpers import read_yaml_file
 
 from flows import logging
@@ -14,26 +15,19 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 
 logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
-# from flows import flow_verse (if the script requires a Flow from FlowVerse)
-# dependencies = [
-#     {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"},
-# ]
-# flow_verse.sync_dependencies(dependencies)
+from flows import flow_verse
 
-from flows.application_flows import OpenAIChatAtomicFlow
-from flows.flow_launchers.api_info import ApiInfo
-
+dependencies = [
+    {"url": "aiflows/OpenAIChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
+]
+flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
-    # only specify needed api information here to avoid redundant information passing
-
-    # to use openai backend, uncomment the following:
-    #api_information = ApiInfo("openai", os.getenv("OPENAI_API_KEY"))
-    # to use Azure as backend, uncomment the following:
+    # ~~~ Set the API information ~~~
+    # OpenAI backend
+    # api_information = ApiInfo("openai", os.getenv("OPENAI_API_KEY"))
+    # Azure backend
     api_information = ApiInfo("azure", os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT"))
-
-    path_to_output_file = None
-    # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
 
     root_dir = "."
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
@@ -54,16 +48,19 @@ if __name__ == "__main__":
         ),
     }
 
-
     # ~~~ Get the data ~~~
     data = {"id": 0, "question": "What is the capital of France?"}  # This can be a list of samples
+    # data = {"id": 0, "question": "Who was the NBA champion in 2023?"}  # This can be a list of samples
 
     # ~~~ Run inference ~~~
+    path_to_output_file = None
+    # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
+
     _, outputs = FlowLauncher.launch(
         flow_with_interfaces=flow_with_interfaces,
         data=data,
         path_to_output_file=path_to_output_file,
-        api_information = api_information,
+        api_information=api_information,
     )
 
     # ~~~ Print the output ~~~
