@@ -23,9 +23,9 @@ log = logging.get_logger(__name__)
 
 class Flow(ABC):
     """
-    Abstract class for all flows.
+    Abstract class inherited by all Flows.
     """
-    # user should at least provide `REQUIRED_KEYS_CONFIG` when instantiate a flow
+    # the user should at least provide `REQUIRED_KEYS_CONFIG` when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
 
     SUPPORTS_CACHING = False
@@ -37,8 +37,6 @@ class Flow(ABC):
     # below parameters are essential for flow instantiation, but we provide value for them,
     # so user is not required to provide them in the flow config
     __default_flow_config = {
-        "name": "Flow",
-        "description": "A flow",
         "private_keys": ["api_keys"],
         "keys_to_ignore_for_hash": ["api_keys", "name", "description", "api_information"],
         "clear_flow_namespace_on_run_end": True,
