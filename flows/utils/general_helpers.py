@@ -16,7 +16,7 @@ from flows import logging
 log = logging.get_logger(__name__)
 
 
-def validate_parameters(cls, flow_config):
+def validate_flow_config(cls, flow_config):
     if cls.__name__ != "Flow":
         cls.__base__._validate_flow_config(flow_config)
 
@@ -26,13 +26,6 @@ def validate_parameters(cls, flow_config):
     for key in cls.REQUIRED_KEYS_CONFIG:
         if key not in flow_config:
             raise ValueError(f"{key} is a required parameter in the flow_config.")
-
-    # if not hasattr(cls, "REQUIRED_KEYS_CONSTRUCTOR"):
-    #     raise ValueError("REQUIRED_KEYS_CONSTRUCTOR should be defined for each Flow class.")
-    #
-    # for key in cls.REQUIRED_KEYS_CONSTRUCTOR:
-    #     if key not in kwargs:
-    #         raise ValueError(f"{key} is a required parameter in the constructor.")
 
 
 def flatten_dict(d, parent_key='', sep='.'):

@@ -18,13 +18,14 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
+
 # single-thread flow launcher
 class FlowLauncher(ABC):
     @staticmethod
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
-               api_information: Optional[ApiInfo] = None,) -> Tuple[List[dict]]:
+               api_information: Optional[ApiInfo] = None, ) -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
@@ -96,13 +97,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
     flows: List[Dict[str, Any]] = None
 
     def __init__(
-        self,
-        n_independent_samples: int,
-        fault_tolerant_mode: bool,
-        n_batch_retries: int,
-        wait_time_between_retries: int,
-        output_keys: List[str],
-        **kwargs,
+            self,
+            n_independent_samples: int,
+            fault_tolerant_mode: bool,
+            n_batch_retries: int,
+            wait_time_between_retries: int,
+            output_keys: List[str],
+            **kwargs,
     ):
         kwargs["api_information"] = [ApiInfo(**info) if isinstance(info, DictConfig) else info for info in
                                      kwargs["api_information"]]
@@ -129,7 +130,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         input_interface = flow_with_interfaces["input_interface"]
         output_interface = flow_with_interfaces["output_interface"]
         path_to_output_file = self.paths_to_output_files[_resource_id]
-
 
         for sample in batch:
             if input_interface is not None:
