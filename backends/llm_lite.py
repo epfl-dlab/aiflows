@@ -88,7 +88,7 @@ class LiteLLMBackend:
         # list in choices but index still indicates which sentence we're talking about
         response = completion(**merged_params)
         
-        if kwargs.get("stream", None):
+        if merged_params.get("stream", None):
             messages = merge_streams(response,n_chat_completion_choices=kwargs.get("n",1))
         else:
             messages = [choice["message"] for choice in response["choices"]]
