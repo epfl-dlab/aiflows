@@ -17,6 +17,7 @@ from ..utils import logging
 
 log = logging.get_logger(__name__)
 
+
 # single-thread flow launcher
 class FlowLauncher(ABC):
     @staticmethod
@@ -93,13 +94,13 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
     flows: List[Dict[str, Any]] = None
 
     def __init__(
-        self,
-        n_independent_samples: int,
-        fault_tolerant_mode: bool,
-        n_batch_retries: int,
-        wait_time_between_retries: int,
-        output_keys: List[str],
-        **kwargs,
+            self,
+            n_independent_samples: int,
+            fault_tolerant_mode: bool,
+            n_batch_retries: int,
+            wait_time_between_retries: int,
+            output_keys: List[str],
+            **kwargs,
     ):
         
         super().__init__(**kwargs)
@@ -125,7 +126,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         input_interface = flow_with_interfaces["input_interface"]
         output_interface = flow_with_interfaces["output_interface"]
         path_to_output_file = self.paths_to_output_files[_resource_id]
-
 
         for sample in batch:
             if input_interface is not None:

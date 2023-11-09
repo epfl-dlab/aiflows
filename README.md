@@ -46,6 +46,8 @@ Last but not least, if you want to prepare educational material (tutorials, vide
 
 All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
 
+# ToDo: Add information about how to use Azure backend
+
 ## Citation
 
 This repository contains the code for the models and experiments in [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf)
