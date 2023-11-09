@@ -5,7 +5,7 @@ from omegaconf import OmegaConf
 
 import flows
 from flows.flow_launchers import FlowLauncher
-from backends.api_info import ApiInfo
+from flows.backends.api_info import ApiInfo
 from flows import logging
 from flows.base_flows import AtomicFlow
 

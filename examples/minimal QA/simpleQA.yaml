@@ -20,7 +20,7 @@ flow:  # Overrides the OpenAIChatAtomicFlow config
 
   # ~~~ backend model parameters ~~
   backend:
-    _target_: backends.llm_lite.LiteLLMBackend
+    _target_: flows.backends.llm_lite.LiteLLMBackend
     api_infos: ???
     model_name: 
       openai: "gpt-3.5-turbo"

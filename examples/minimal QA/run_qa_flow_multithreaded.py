@@ -13,7 +13,7 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
 from flows.utils.general_helpers import read_yaml_file
-from backends.api_info import ApiInfo
+from flows.backends.api_info import ApiInfo
 
 from flows import flow_verse
 dependencies = [

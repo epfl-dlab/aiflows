@@ -4,7 +4,7 @@ import hydra
 
 import flows
 from flows.flow_launchers import FlowLauncher
-from backends.api_info import ApiInfo
+from flows.backends.api_info import ApiInfo
 from flows.utils.general_helpers import read_yaml_file
 
 from flows import logging
