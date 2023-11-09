@@ -16,6 +16,9 @@ flow:
         finish:
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
           input_args: [ "answer" ]
+      backend:
+        api_infos: ???
+        model_name: "gpt-3.5-turbo"
       human_message_prompt_template:
         template: |2-
           Here is the response to your last action:

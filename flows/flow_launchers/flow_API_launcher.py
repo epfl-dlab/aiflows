@@ -12,7 +12,6 @@ import flows.base_flows
 from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.base_flows import Flow
 from flows.messages import InputMessage
-from flows.flow_launchers.api_info import ApiInfo
 from ..interfaces.abstract import Interface
 from ..utils import logging
 
@@ -24,11 +23,10 @@ class FlowLauncher(ABC):
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
-               api_information: Optional[ApiInfo] = None,) -> Tuple[List[dict]]:
+               n_api_keys: Optional[int] = None,) -> Tuple[List[dict]]:
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
-
         if isinstance(data, dict):
             data = [data]
 
@@ -49,13 +47,12 @@ class FlowLauncher(ABC):
             input_message = InputMessage.build(
                 data_dict=input_data_dict,
                 src_flow="Launcher",
-                dst_flow=flow.name,
-                api_information=api_information,
+                dst_flow=flow.name
             )
 
             output_message = flow(input_message)
             output_data = output_message.data["output_data"]
-
+            
             if output_interface is not None:
                 output_data = output_interface(goal="[Output] Run Flow from the Launcher.",
                                                data_dict=output_data,
@@ -83,7 +80,7 @@ class FlowLauncher(ABC):
 
 class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
     """
-    A class for querying the OpenAI API using the LangChain library with interactive chatting capabilities.
+    A class for querying the APIs using the litellm library with interactive chatting capabilities.
 
     Attributes:
         flow: The flow (or a list of independent instances of the same flow) to run the inference with.
@@ -104,8 +101,7 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         output_keys: List[str],
         **kwargs,
     ):
-        kwargs["api_information"] = [ApiInfo(**info) if isinstance(info, DictConfig) else info for info in
-                                     kwargs["api_information"]]
+        
         super().__init__(**kwargs)
         self.n_independent_samples = n_independent_samples
         self.fault_tolerant_mode = fault_tolerant_mode
@@ -147,7 +143,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
             _error = None
             for _sample_idx in range(self.n_independent_samples):
                 log.info("Running inference for ID (sample {}): {}".format(_sample_idx, sample["id"]))
-                api_key_idx = self._choose_next_api_key()
                 _error = None
 
                 if self.fault_tolerant_mode:
@@ -156,12 +151,10 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                     while _attempt_idx <= self.n_batch_retries:
                         try:
                             # ToDo: Use the same format as the FlowLauncher for passing API keys
-                            api = self.api_information[api_key_idx]
                             input_message = InputMessage.build(
                                 data_dict=input_data_dict,
                                 src_flow="Launcher",
-                                dst_flow=flow.name,
-                                api_information=api,
+                                dst_flow=flow.name
                             )
 
                             output_message = flow(input_message)
@@ -188,17 +181,14 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
                             _attempt_idx += 1
                             time.sleep(self.wait_time_between_retries)
 
-                            api_key_idx = self._choose_next_api_key()
                             _error = str(e)
 
                 else:
                     # For development and debugging purposes
-                    api = self.api_information[api_key_idx]
                     input_message = InputMessage.build(
                         data_dict=input_data_dict,
                         src_flow="Launcher",
                         dst_flow=flow.name,
-                        api_information=api,
                     )
                     output_message = flow(input_message)
                     output_data = output_message.data["output_data"]

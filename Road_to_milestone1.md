@@ -11,7 +11,6 @@ First let's start creating setting up the Flow environment with cond:
 conda create --name flows python=3.9
 conda activate flows
 pip install -e .
-pip install -r pip_requirements.txt
 ```
 
 To be able to access the Flowvers we must do the following:
@@ -46,7 +45,8 @@ Finally, let's set our API key as an environment variable for your conda environ
     * write in your terminal:
         ```
         conda env config vars set AZURE_OPENAI_KEY=<YOUR-AZURE_OPENAI_KEY>
-        conda env config vars set AZURE_OPENAI_ENDPOINT=<YOUR-AZURE_OPENAI_ENDPOINT>
+        conda env config vars set AZURE_API_BASE=<YOUR-AZURE_API_BASE>
+        conda env config vars set AZURE_API_VERSION=<YOUR-AZURE_API_VERSION>
         ```
     * reactivate your conda environment:
         ```
@@ -204,6 +204,106 @@ cd examples/minimal\ QA
 python run_qa_flow.py
 ```
 
-#### 
+### Atomic Flows
+This section will present how to define an atomic Flow. To define an atomic flow, you need to files. A config file (in our case [reverseNumberAtomic.yaml](examples/minimal%20reverse%20number/reverseNumberAtomic.yaml)) and a python file where we'll be defining our flow (in our case [reverse_number_atomic.py](examples/minimal%20reverse%20number/reverse_number_atomic.py)). We will be defining a flow which is able to reverse a number.
+
+Let's start by defining the `ReverseNumberAtomicFlow` class. To define a minimal atomic flow, you must at least redefine the `__init__` and the `run` function of the `AtomicFlow` class. In our case, we do not need to define any new class attributes so the `__init__` function is pretty straight forward. In the `run` function however, we will be defining the "algorithm" to reverse a number as such:
+```python
+class ReverseNumberAtomicFlow(AtomicFlow):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self,
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
+
+        input_number = input_data["number"]
+        output_number = int(str(input_number)[::-1])
+        response = {"answer": output_number}
+        return response
+
+```
+
+### AtomicFlow
+The `AtomicFlow` class is a subclass of `Flow` and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
+
+One notable example is the [OpenAIChatAtomicFlow](../flows/application_flows/OpenAIFlowModule/OpenAIChatAtomicFlow.py), which is a wrapper around the OpenAI chat API.
+
+Another example is the [HumanInputFlow](../flows/application_flows/HumanInputFlowModule/HumanInputFlow.py), which takes a human input.
+
+## Writing an Atomic Flow
+
+Let's write an Atomic Flow that takes a number and returns the reverse of the number.
+
+This is how the flow_config would look like as a YAML file:
+```yaml
+name: "ReverseNumber"
+description: "A flow that takes in a number and reverses it."
+
+output_interface:  # Connector between the Flow's output and the caller
+  _target_: flows.interfaces.KeyInterface
+  keys_to_rename:
+    answer: "reversed_number" # Rename the api_output to answer
+
+keep_raw_response: False  # Set to True to keep the raw flow response in the output data
+```
+
+Let's break it down:
+- The `name` and `description` parameters are self-explanatory.
+- The `output_interface` defines the interface at the output of our flow. For example, in our case, we are renaming in the output dictionary the "answer" (see output of `run` function in the ReverseNumberAtomicFlow class here below) key to "reversed number"
+
+The Flow class would be implemented as follows:
+```python
+class ReverseNumberAtomicFlow(AtomicFlow):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def run(self,
+            input_data: Dict[str, Any]) -> Dict[str, Any]:
+
+        input_number = input_data["number"]
+        output_number = int(str(input_number)[::-1])
+        response = {"answer": output_number}
+        return response
+
+```
+ 
+and instantiate the Flow by executing:
+```python
+api_information = ApiInfo("noAPI","")
+
+root_dir = "examples/minimal reverse number"
+cfg_path = os.path.join(root_dir, "reverseNumberAtomic.yaml")
+overrides_config = read_yaml_file(cfg_path)
+
+# ~~~ Instantiate the flow ~~~
+flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
+
+```
+Note that we are not using an API here so we just provide a mock one. Finally, we can run inference with the flow laucher
+```python
+# ~~~ Get the data ~~~
+data = {"id": 0, "number": 1234}  # This can be a list of samples
+# ~~~ Run inference ~~~
+_, outputs = FlowLauncher.launch(
+    flow_with_interfaces={"flow": flow,
+                            "output_interface": hydra.utils.instantiate(overrides_config['output_interface'], _recursive_=False)},
+    data=data,
+    path_to_output_file=path_to_output_file,
+    api_information=api_information
+)
+
+# ~~~ Print the output ~~~
+flow_output_data = outputs[0]
+print(flow_output_data)
+```
+You can run this code with:
+```
+python examples/minimal\ reverse\ number/reverse_number_atomic.py 
+```
+
+You can find this example [here](https://github.com/epfl-dlab/flows/tree/main/tutorials/minimal_reverse_number). Few other notable examples are the HumanInputFlow and the the FixedReply Flow.
+
+Note that we can pass a Python dictionary as the `overrides` parameter and not rely on YAML files.
+
 
 # Notes/Questions

@@ -23,11 +23,10 @@ class BranchingFlow(CompositeFlow):
         if branch_flow is None:
             raise ValueError(f"Branching flow has no subflow with name {branch}")
 
-        api_information = self._get_from_state("api_information")
+
         input_message = self._package_input_message(
             payload=branch_input_data,
-            dst_flow=branch_flow,
-            api_information=api_information
+            dst_flow=branch_flow
         )
 
         output_message = branch_flow(input_message)

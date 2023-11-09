@@ -1,4 +1,3 @@
-import langchain
 import pytest
 from langchain.chat_models import ChatOpenAI
 

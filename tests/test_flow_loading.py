@@ -1,4 +1,3 @@
-import langchain
 
 from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, OpenAIChatAtomicFlow
 from flows.utils import instantiate_flow

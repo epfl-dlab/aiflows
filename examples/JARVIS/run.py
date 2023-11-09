@@ -14,17 +14,14 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
 logging.set_verbosity_debug()
-logging.auto_set_dir()
 
 dependencies = [
-    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "ba2c90bb9b0539af39ccad90c98a2ba1f9a22c91"},
-    {"url": "aiflows/HumanStandardInputFlowModule", "revision": "890e92da1fefbae642fd84296e31bca7f61ea710"},
-    {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
+    {"url": "aiflows/ControllerExecutorFlowModule","revision": "ba2c90bb9b0539af39ccad90c98a2ba1f9a22c91"},
+    {"url": "baldwin/PyFileInterpreterFlowModule", "revision": "FlowVerse/PyFileInterpreterFlowModule"},
 ]
 from flows import flow_verse
 
 flow_verse.sync_dependencies(dependencies)
-from ReActWithHumanFeedback import ReActWithHumanFeedback
 
 if __name__ == "__main__":
     # ~~~ Set the API information ~~~
@@ -37,10 +34,8 @@ if __name__ == "__main__":
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
-    path_to_output_file = None
-    # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
-    root_dir = "examples/ReActWithHumanFeedback"
-    cfg_path = os.path.join(root_dir, "ReActWithHumanFeedback.yaml")
+    root_dir = "examples/JARVIS"
+    cfg_path = os.path.join(root_dir, "JARVISm1.1.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
@@ -53,16 +48,15 @@ if __name__ == "__main__":
         ),
         "output_interface": (
             None
-            if cfg.get("output_interface", None) is None
+            if cfg.get( "output_interface", None) is None
             else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
         ),
     }
 
     # ~~~ Get the data ~~~
-    # This can be a list of samples
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
     # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}  # Uses duckduckgo
-    data = {"id": 0, "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?"}
+    data = {"id": 0, "goal": "Write an email from nicolas.mario.baldwin@gmail.com to nicky.tennis.baldwin@gmail.com and tell him 'hi man how is it going?'"}
     # At first, we retrieve information about Michael Jordan the basketball player
     # If we provide feedback, only in the first round, that we are not interested in the basketball player,
     #   but the statistician, and skip the feedback in the next rounds, we get the correct answer

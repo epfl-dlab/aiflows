@@ -74,7 +74,6 @@ class Flow(ABC):
         """
         if overrides is None:
             overrides = {}
-
         config = cls.get_config(**overrides)
 
         return cls.instantiate_from_config(config)
@@ -133,7 +132,6 @@ class Flow(ABC):
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
-
         # ~~~~ Apply the overrides ~~~~
         config = recursive_dictionary_update(config, overrides)
 
@@ -287,8 +285,7 @@ class Flow(ABC):
     def _package_input_message(
             self,
             payload: Dict[str, Any],
-            dst_flow: "Flow",
-            api_information: Optional[Dict[str, str]] = None,
+            dst_flow: "Flow"
     ):
         private_keys = dst_flow.flow_config["private_keys"]
         keys_to_ignore_for_hash = dst_flow.flow_config["keys_to_ignore_for_hash"]
@@ -307,7 +304,6 @@ class Flow(ABC):
             keys_to_ignore_for_hash=keys_to_ignore_for_hash,
             src_flow=src_flow,
             dst_flow=dst_flow,
-            api_information=api_information,
             created_by=self.name,
         )
         return msg
@@ -395,12 +391,8 @@ class Flow(ABC):
         # assert set(input_message.data.keys()) == set(self.get_input_keys()), \
         #     (input_message.data.keys(), self.get_input_keys())
 
-        # set api_keys in flow_state
-        # new: set api_information (api keys, endpoints) in flow_state
-        if input_message.api_information:
-            self._state_update_dict(
-                {"api_information": input_message.api_information}
-            )
+     
+       
     
         # ~~~ check and log input ~~~
         self._log_message(input_message)
