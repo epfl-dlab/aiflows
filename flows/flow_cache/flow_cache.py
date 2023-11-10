@@ -1,10 +1,8 @@
-import functools
 import os
 import hashlib
 import threading
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Any
-import copy
 from diskcache import Index
 from ..utils import logging
 
@@ -31,7 +29,7 @@ class CachingValue:
 
 @dataclass
 class CachingKey:
-    flow: str  # ToDo: This is not a string
+    flow: "Flow"
     input_data: Dict[str, Any]
     keys_to_ignore_for_hash: List[str]
 
@@ -61,21 +59,14 @@ class FlowCache:
         self.__lock = threading.Lock()
 
     def get(self, key: str) -> Optional[CachingValue]:
-        # key = key.hash_string()
-        log.debug("Getting key: %s", key)
-
         with self.__lock:
             return self._index.get(key, None)
 
     def set(self, key: str, value: CachingValue):
-        # key = key.hash_string()
-
         with self.__lock:
             self._index[key] = value
 
-    def pop(self, key: CachingKey):
-        key = _custom_hash(key.flow, key.input_data, key.keys_to_ignore_for_hash)
-
+    def pop(self, key: str):
         with self.__lock:
             return self._index.pop(key)
 

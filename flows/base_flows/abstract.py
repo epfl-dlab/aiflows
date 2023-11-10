@@ -7,7 +7,6 @@ import copy
 from abc import ABC
 from typing import List, Dict, Any, Union, Optional
 
-import hydra
 from omegaconf import OmegaConf
 from ..utils import logging
 from flows.history import FlowHistory
@@ -25,7 +24,7 @@ class Flow(ABC):
     """
     Abstract class inherited by all Flows.
     """
-    # the user should at least provide `REQUIRED_KEYS_CONFIG` when instantiating a flow
+    # The required parameters that the user must provide in the config when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
 
     SUPPORTS_CACHING = False
@@ -34,12 +33,11 @@ class Flow(ABC):
     flow_state: Dict[str, Any]
     history: FlowHistory
 
-    # below parameters are essential for flow instantiation, but we provide value for them,
-    # so user is not required to provide them in the flow config
+    # Parameters that are given default values if not provided by the user
     __default_flow_config = {
-        "private_keys": ["api_keys"],
+        "private_keys": [],  # keys that will not be logged if they appear in a message
         "keys_to_ignore_for_hash": ["api_keys", "name", "description", "api_information"],
-        "clear_flow_namespace_on_run_end": True,
+        "clear_flow_namespace_on_run_end": True,  # whether to clear the flow namespace after each run
         "enable_cache": False,  # whether to enable cache for this flow
     }
 
@@ -64,7 +62,7 @@ class Flow(ABC):
     @property
     def name(self):
         return self.flow_config["name"]
-    
+
     @classmethod
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
         """
@@ -115,17 +113,14 @@ class Flow(ABC):
             )
 
             cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
-            
-            process_config_leafs(default_config, 
-                               lambda k, v: 
-                               (cls_parent_module + v  if k == "_target_" and v.startswith(".") else v))
+
+            process_config_leafs(default_config,
+                                 lambda k, v:
+                                 (cls_parent_module + v if k == "_target_" and v.startswith(".") else v))
 
             config = recursive_dictionary_update(parent_default_config, default_config)
-
-        # TODO(yeeef): ugly fix, figure out why only this works
-        elif hasattr(cls,
-                     f"_{cls.__name__}__default_flow_config"):  # no yaml but __default_flow_config exists in class declaration
-            # log.warn(f'{cls.__name__}, {cls.__default_flow_config}, {getattr(cls, f"_{cls.__name__}__default_flow_config")}')
+        elif hasattr(cls, f"_{cls.__name__}__default_flow_config"):
+            # no yaml but __default_flow_config exists in class declaration
             config = recursive_dictionary_update(parent_default_config,
                                                  copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")))
         else:
@@ -233,15 +228,18 @@ class Flow(ABC):
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
-        # ToDo(https://github.com/epfl-dlab/flows/issues/60): Document how this and the caching works (that all args should implement __repr__, should be applied only to atomic flows etc.)
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
-        config_hashing_params = {k: v for k, v in self.flow_config.items() if k not in self.flow_config["keys_to_ignore_for_hash"]}
-        state_hashing_params = {k: v for k, v in self.flow_state.items() if k not in self.flow_config["keys_to_ignore_for_hash"]}
+        config_hashing_params = {k: v
+                                 for k, v in self.flow_config.items()
+                                 if k not in self.flow_config["keys_to_ignore_for_hash"]
+                                 }
+        state_hashing_params = {k: v
+                                for k, v in self.flow_state.items()
+                                if k not in self.flow_config["keys_to_ignore_for_hash"]}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
-    # ToDo(https://github.com/epfl-dlab/flows/issues/60): Move the repr logic here and update the hashing function to use this instead
     # def get_hash_string(self):
     #     raise NotImplementedError()
 
@@ -262,16 +260,16 @@ class Flow(ABC):
                 data[key] = self.flow_state[key]
 
             return data
-        
+
         for key in keys:
             value, found = nested_keys_search(self.flow_state, key)
 
             if found:
                 data[key] = value
             else:
-                raise KeyError(f"Key {key} not found in the flow state or the class namespace.")    
+                raise KeyError(f"Key {key} not found in the flow state or the class namespace.")
         return data
-    
+
     def _package_input_message(
             self,
             payload: Dict[str, Any],
@@ -287,7 +285,7 @@ class Flow(ABC):
 
         assert len(set(["src_flow", "dst_flow"]).intersection(set(payload.keys()))) == 0, \
             "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
-        
+
         # ~~~ Create the message ~~~
         msg = InputMessage(
             data_dict=copy.deepcopy(payload),
@@ -299,7 +297,7 @@ class Flow(ABC):
             created_by=self.name,
         )
         return msg
-    
+
     def _package_output_message(
             self,
             input_message: InputMessage,
@@ -345,8 +343,8 @@ class Flow(ABC):
 
             # Restore the history messages
             for message in cached_value.history_messages_created:
-                message_softcopy = message  # ToDo: Get a softcopy with an updated timestamp
-                self._log_message(message_softcopy)
+                message._reset_message_id()
+                self._log_message(message)
 
             log.debug(f"Retrieved from cache: {self.__class__.__name__} "
                       f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
@@ -372,9 +370,6 @@ class Flow(ABC):
 
             self.cache.set(cache_key_hash, value_to_cache)
             log.debug(f"Cached key: f{cache_key_hash}")
-            # log.debug(f"Cached: {str(value_to_cache)} \n"
-            #           f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
-            #           f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
 
         return response
 
@@ -389,7 +384,7 @@ class Flow(ABC):
             self._state_update_dict(
                 {"api_information": input_message.api_information}
             )
-    
+
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
@@ -399,22 +394,6 @@ class Flow(ABC):
         else:
             response = self.__get_from_cache(input_message.data)
 
-        # if not self.flow_config["keep_raw_response"]:
-        #     raw_response = None
-        # else:
-        #     raw_response = copy.deepcopy(response)
-
-        # ToDo: Decide whether to keep "output_parsers" on the Flow (not the interface level)
-        # response = self._apply_data_transformations(response,
-        #                                             self.output_data_transformations,
-        #                                             self.get_output_keys())
-        # response = {k: v for k, v in response.items() if k in self.get_output_keys()}
-
-        # sanity check
-        # we don't tolerate missing keys, as `get_output_keys`` should be aware of the current flow state
-        # assert set(response.keys()) == set(self.get_output_keys()), \
-        #     (response.keys(), self.get_output_keys())
-        
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
             input_message=input_message,
