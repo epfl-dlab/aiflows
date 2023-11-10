@@ -36,7 +36,9 @@ class Flow(ABC):
     # Parameters that are given default values if not provided by the user
     __default_flow_config = {
         "private_keys": [],  # keys that will not be logged if they appear in a message
-        "keys_to_ignore_for_hash": ["api_keys", "name", "description", "api_information"],
+        "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
+        "keys_to_ignore_for_hash_flow_state": ["name", "description", "api_keys", "api_information", "private_keys"],
+        "keys_to_ignore_for_hash_input_data": [],
         "clear_flow_namespace_on_run_end": True,  # whether to clear the flow namespace after each run
         "enable_cache": False,  # whether to enable cache for this flow
     }
@@ -232,11 +234,11 @@ class Flow(ABC):
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
         config_hashing_params = {k: v
                                  for k, v in self.flow_config.items()
-                                 if k not in self.flow_config["keys_to_ignore_for_hash"]
+                                 if k not in self.flow_config["keys_to_ignore_for_hash_flow_config"]
                                  }
         state_hashing_params = {k: v
                                 for k, v in self.flow_state.items()
-                                if k not in self.flow_config["keys_to_ignore_for_hash"]}
+                                if k not in self.flow_config["keys_to_ignore_for_hash_flow_state"]}
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
@@ -277,7 +279,6 @@ class Flow(ABC):
             api_information: Optional[Dict[str, str]] = None,
     ):
         private_keys = dst_flow.flow_config["private_keys"]
-        keys_to_ignore_for_hash = dst_flow.flow_config["keys_to_ignore_for_hash"]
 
         src_flow = self.flow_config["name"]
         if isinstance(dst_flow, Flow):
@@ -290,7 +291,6 @@ class Flow(ABC):
         msg = InputMessage(
             data_dict=copy.deepcopy(payload),
             private_keys=private_keys,
-            keys_to_ignore_for_hash=keys_to_ignore_for_hash,
             src_flow=src_flow,
             dst_flow=dst_flow,
             api_information=api_information,
@@ -328,7 +328,7 @@ class Flow(ABC):
                 f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
 
         # ~~~ get the hash string ~~~
-        keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash"]
+        keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash_input_data"]
         input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
         cache_key_hash = CachingKey(self, input_data_to_hash, keys_to_ignore_for_hash).hash_string()
         # ~~~ get from cache ~~~
