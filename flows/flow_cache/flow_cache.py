@@ -13,24 +13,21 @@ log = logging.get_logger(__name__)
 
 @dataclass
 class CACHING_PARAMETERS:
-    # ToDo(https://github.com/epfl-dlab/flows/issues/66): Expose these params in the launcher (and the configs when available)
-    #   The params should be updated before the library is loaded. Make sure to do this reliably.
-    #   How to do this in a clean way?
-    # ToDo: Add support for infinite cache if we intend to use it for resuming/extending runs.
-    #   Is that even a good idea?
-    #   What happens if you want to resume/extend a run that has been already resumed/extended?
     # Global parameters that can be set before starting the outer-flow
     max_cached_entries: int = 10000
     do_caching: bool = True
     cache_dir: str = None
 
+
 CACHING_PARAMETERS.do_caching = os.getenv("FLOW_DISABLE_CACHE", "false").lower() == "false"
+
 
 @dataclass
 class CachingValue:
     output_results: Dict
     full_state: Dict
     history_messages_created: List
+
 
 @dataclass
 class CachingKey:
@@ -40,6 +37,7 @@ class CachingKey:
 
     def hash_string(self) -> str:
         return _custom_hash(self.flow, self.input_data, self.keys_to_ignore_for_hash)
+
 
 def get_cache_dir() -> str:
     cache_dir = CACHING_PARAMETERS.cache_dir
@@ -60,32 +58,30 @@ def _custom_hash(*all_args):
 class FlowCache:
     def __init__(self):
         self._index = Index(get_cache_dir())
-        # TODO(yeeef): why do we need the lock? from https://grantjenks.com/docs/diskcache/tutorial.html#index, Index can be even used to do inter-process / inter-thread communication
         self.__lock = threading.Lock()
 
-    def get(self, key) -> Optional[CachingValue]:
+    def get(self, key: str) -> Optional[CachingValue]:
         # key = key.hash_string()
         log.debug("Getting key: %s", key)
 
         with self.__lock:
             return self._index.get(key, None)
-    
-    def set(self, key, value: CachingValue):
+
+    def set(self, key: str, value: CachingValue):
         # key = key.hash_string()
 
         with self.__lock:
             self._index[key] = value
 
     def pop(self, key: CachingKey):
-        # ToDo: Is this used anywhere? The previous two functions had a problem with the key, check if this is wrong too
         key = _custom_hash(key.flow, key.input_data, key.keys_to_ignore_for_hash)
 
         with self.__lock:
             return self._index.pop(key)
-    
+
     def __len__(self):
         with self.__lock:
-            return len(self._index)    
+            return len(self._index)
 
 
 def clear_cache():
