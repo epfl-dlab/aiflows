@@ -253,21 +253,13 @@ class Flow(ABC):
         return self.history.add_message(message)
 
     def _fetch_state_attributes_by_keys(self,
-                                        keys: Union[List[str], None],
-                                        allow_class_attributes: bool = False):  # TODO(yeeef): remove this parameter
+                                        keys: Union[List[str], None]):
         data = {}
 
         if keys is None:
             # Return all available data
             for key in self.flow_state:
                 data[key] = self.flow_state[key]
-
-            if allow_class_attributes:
-                for key in self.__dict__:
-                    if key in data:
-                        log.warning(f"Data key {key} present in both in the flow state and the class namespace.")
-                        continue
-                    data[key] = self.__dict__[key]
 
             return data
         
@@ -276,8 +268,6 @@ class Flow(ABC):
 
             if found:
                 data[key] = value
-            elif allow_class_attributes and key in self.__dict__:
-                data[key] = self.__dict__[key]
             else:
                 raise KeyError(f"Key {key} not found in the flow state or the class namespace.")    
         return data
