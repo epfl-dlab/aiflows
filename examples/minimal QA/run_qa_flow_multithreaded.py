@@ -13,7 +13,7 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
 from flows.utils.general_helpers import read_yaml_file
-from flows.flow_launchers.api_info import ApiInfo
+from flows.backends.api_info import ApiInfo
 
 from flows import flow_verse
 dependencies = [
@@ -22,15 +22,21 @@ dependencies = [
 flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
-    root_dir = "."
+    root_dir = "examples/minimal QA"
 
+    openai_api = ApiInfo(backend_used="openai", api_key = os.getenv("OPENAI_API_KEY"))
+    # # Azure backend
+    azure_api = ApiInfo(backend_used = "azure",
+                              api_base = os.getenv("AZURE_API_BASE"),
+                              api_key = os.getenv("AZURE_OPENAI_KEY"),
+                              api_version =  os.getenv("AZURE_API_VERSION") )
+    
     # ~~~ Launcher Configuration ~~~
     output_dir = "predictions"
-    api_information = [ApiInfo("openai", os.getenv("OPENAI_API_KEY")),
-                       ApiInfo("azure", os.getenv("AZURE_OPENAI_KEY"), os.getenv("AZURE_OPENAI_ENDPOINT"))]
+    api_information = [openai_api,azure_api]
 
     launcher_config = {
-        "api_information": api_information,
+        "n_api_keys": len(api_information),
         "single_threaded": False,
         "fault_tolerant_mode": False,
         "n_batch_retries": 2,
@@ -44,7 +50,9 @@ if __name__ == "__main__":
     # ~~~ Instantiate the Flows ~~~
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
     cfg = read_yaml_file(cfg_path)
-
+    
+    cfg["flow"]["backend"]["api_infos"] = api_information
+    
     if launcher_config["single_threaded"]:
         n_workers = 1
     else:

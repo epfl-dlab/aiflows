@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import List, Any, Dict, Optional
 import colorama
 
-from flows.flow_launchers.api_info import ApiInfo
 from flows.messages import Message
 
 colorama.init()
@@ -13,25 +12,19 @@ colorama.init()
 
 @dataclass
 class InputMessage(Message):
-    @staticmethod
-    def _api_information_sanity_check(api_information: ApiInfo):
-        assert api_information is not None, "Must provide api information!"
-        assert api_information.backend_used is not None, "Must specify backend used e.g. openai"
 
     def __init__(self,
                  data_dict: Dict[str, Any],
                  src_flow: str,
                  dst_flow: str,
                  created_by: str = None,
-                 private_keys: List[str] = None,
-                 api_information: ApiInfo = None):
+                 private_keys: List[str] = None):
 
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow
-        self.api_information = api_information
 
     def to_string(self):
         src_flow = self.src_flow
@@ -48,21 +41,17 @@ class InputMessage(Message):
               src_flow: str,
               dst_flow: str,
               private_keys: Optional[List[str]] = None,
-              api_information: Optional[ApiInfo] = None,
               created_by: Optional[str] = None) -> 'InputMessage':
 
         if created_by is None:
             created_by = src_flow
-
-        InputMessage._api_information_sanity_check(api_information)
 
         input_message = InputMessage(
             data_dict=data_dict,
             src_flow=src_flow,
             dst_flow=dst_flow,
             created_by=created_by,
-            private_keys=private_keys,
-            api_information=api_information,
+            private_keys=private_keys
         )
 
         return input_message

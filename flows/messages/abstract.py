@@ -43,10 +43,6 @@ class Message:
 
         # ~~~ Initialize private keys ~~~
         self.private_keys = [] if private_keys is None else private_keys
-        if "api_keys" not in self.private_keys:
-            self.private_keys.append("api_keys")
-        if "api_information" not in self.private_keys:
-            self.private_keys.append("api_information")
 
     def _reset_message_id(self):
         self.message_id = create_unique_id()

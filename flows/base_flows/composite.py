@@ -41,8 +41,8 @@ class CompositeFlow(Flow, ABC):
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
         # ~~~ Prepare the data for the call ~~~
-        api_information = self._get_from_state("api_information")
-        # log.debug(f"_call_flow_from_state: api_keys: {api_keys}")
+
+
 
         if input_interface is not None:
             payload = input_interface(goal=f"[Input] {goal}",
@@ -52,8 +52,7 @@ class CompositeFlow(Flow, ABC):
 
         input_message = self._package_input_message(
             payload=payload,
-            dst_flow=flow,
-            api_information=api_information
+            dst_flow=flow
         )
 
         # ~~~ Execute the call ~~~

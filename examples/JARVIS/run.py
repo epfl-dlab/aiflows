@@ -16,8 +16,8 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "aiflows/AutoGPTFlowModule", "revision": "b52b47ef45388474f2df18f1495fed358e33a114"},
-    {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
+    {"url": "aiflows/ControllerExecutorFlowModule","revision": "ba2c90bb9b0539af39ccad90c98a2ba1f9a22c91"},
+    {"url": "baldwin/PyFileInterpreterFlowModule", "revision": "FlowVerse/PyFileInterpreterFlowModule"},
 ]
 from flows import flow_verse
 
@@ -34,8 +34,8 @@ if __name__ == "__main__":
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
-    root_dir = "examples/AutoGPT"
-    cfg_path = os.path.join(root_dir, "AutoGPT.yaml")
+    root_dir = "examples/JARVIS"
+    cfg_path = os.path.join(root_dir, "JARVISm1.1.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
         "input_interface": (
             None
-            if cfg.get( "input_interface", None) is None
+            if cfg.get("input_interface", None) is None
             else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
         ),
         "output_interface": (
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     # ~~~ Get the data ~~~
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
     # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}  # Uses duckduckgo
-    data = {"id": 0, "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?"}
+    data = {"id": 0, "goal": "Write an email from nicolas.mario.baldwin@gmail.com to nicky.tennis.baldwin@gmail.com and tell him 'hi man how is it going?'"}
     # At first, we retrieve information about Michael Jordan the basketball player
     # If we provide feedback, only in the first round, that we are not interested in the basketball player,
     #   but the statistician, and skip the feedback in the next rounds, we get the correct answer

@@ -59,7 +59,7 @@ class BaseLauncher(ABC):
         general_helpers.write_outputs(path_to_output_file, batch_output, mode="a+")
 
 
-class MultiThreadedAPILauncher(BaseLauncher, ABC):
+class  MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
     A class for creating a multi-threaded model to query API that can make requests using multiple API keys.
 
@@ -74,21 +74,18 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
 
     def __init__(self, **kwargs):
-        self.api_information = kwargs["api_information"]
         self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
-        self.__waittime_per_key = kwargs.get("wait_time_per_key", 6)
-        # Initialize to now - waittime_per_key to make the class know we haven't called it recently
-        self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_information)
-
+        
         self.debug = kwargs.get("debug", False)
         self.single_threaded = kwargs.get("single_threaded", False)
         self.output_dir = kwargs.get("output_dir", None)
-
+        #you must specify how many api keys you're using otherwise it defaults to one (affects n_workers used during multithreading)
+        self.n_api_keys = kwargs.get("n_api_keys",1) 
         predictions_dir = general_helpers.get_predictions_dir_path(self.output_dir)
         if self.single_threaded:
             self.n_workers = 1
         else:
-            self.n_workers = self.n_workers_per_key * len(self.api_information)
+            self.n_workers = self.n_workers_per_key * self.n_api_keys
 
         self.paths_to_output_files = []
         _resource_IDs = Queue(self.n_workers)
@@ -100,32 +97,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         self._resource_IDs = _resource_IDs
         self.existing_predictions_file = os.path.join(predictions_dir, "predictions_existing.jsonl")
 
-    def _choose_next_api_key(self) -> int:
-        """
-        It chooses the next API key to use, by:
-        - finding the one that has been used the least recently
-        - check whether we need to wait for using it or not
-        - if we don't need to wait, we use this key
-        - if we need to wait, we wait the appropriate amount of time and retry to find a key
-
-        Why retry instead of using the key we were waiting for after waiting?
-        Because another thread might have taken this key and another one might have become available in the meantime.
-
-        Returns:
-            api_key_index, the index of the key to using next
-        """
-        # ToDo: I think that @Maxime mentioned that Graham Neubig had some code for doing this more efficiently?
-        # ToDo: If so we should use his approach instead, otherwise remove the ToDo
-        api_key_idx = self.__last_call_per_key.index(min(self.__last_call_per_key))
-        last_call_on_key = time.time() - self.__last_call_per_key[api_key_idx]
-        good_to_go = last_call_on_key > self.__waittime_per_key
-
-        if not good_to_go:
-            time.sleep(self.__waittime_per_key - last_call_on_key)
-            return self._choose_next_api_key()
-
-        self.__last_call_per_key[api_key_idx] = time.time()
-        return api_key_idx
+    
 
     def predict_dataloader(self,
                            dataloader: Iterable[dict],
@@ -158,7 +130,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         else:
             log.info(
                 "Running in multi-threaded mode with {} keys and {} workers per key.".format(
-                    len(self.api_information), self.n_workers_per_key
+                    self.n_api_keys, self.n_workers_per_key
                 )
             )
 
