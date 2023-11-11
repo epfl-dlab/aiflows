@@ -18,7 +18,7 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 from flows import flow_verse
 
 dependencies = [
-    {"url": "aiflows/OpenAIChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
+    {"url": "aiflows/OpenAIChatFlowModule", "revision": "eeec09b71e967ce426553e2300c5689f6ea6a662"},
 ]
 flow_verse.sync_dependencies(dependencies)
 
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
-    root_dir = "examples/minimal QA"
+    root_dir = "."
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
     cfg = read_yaml_file(cfg_path)
     
