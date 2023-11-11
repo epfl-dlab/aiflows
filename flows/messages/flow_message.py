@@ -18,20 +18,13 @@ class InputMessage(Message):
                  src_flow: str,
                  dst_flow: str,
                  created_by: str = None,
-                 private_keys: List[str] = None,
-                 keys_to_ignore_for_hash: Optional[
-                     List[str]] = None):  # TODO(yeeef): remove keys_to_ignore_for_hash from InputMessage
+                 private_keys: List[str] = None):
 
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
 
         self.src_flow = src_flow
         self.dst_flow = dst_flow
-
-        # ~~~ Initialize keys to ignore for hash ~~~
-        self.keys_to_ignore_for_hash = []
-        if keys_to_ignore_for_hash:
-            self.keys_to_ignore_for_hash = keys_to_ignore_for_hash
 
     def to_string(self):
         src_flow = self.src_flow

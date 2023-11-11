@@ -142,8 +142,7 @@ class CircularFlow(CompositeFlow):
         return output
 
     def _get_output_from_state(self):
-        outputs = self._fetch_state_attributes_by_keys(keys=self.get_interface_description()["output"],
-                                                       allow_class_attributes=False)
+        outputs = self._fetch_state_attributes_by_keys(keys=self.get_interface_description()["output"])
         return outputs
 
     @classmethod
