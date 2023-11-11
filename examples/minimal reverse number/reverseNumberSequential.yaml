@@ -12,16 +12,14 @@ keep_raw_response: False  # Set to True to keep the raw flow response in the out
 subflows_config:
   first_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
-    overrides:
-      name: "ReverseNumberFirst"
-      description: "A flow that takes in a number and reverses it."
-      keep_raw_response: False
+    name: "ReverseNumberFirst"
+    description: "A flow that takes in a number and reverses it."
+    keep_raw_response: False
   second_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
-    overrides:
-      name: "ReverseNumberSecond"
-      description: "A flow that takes in a number and reverses it."
-      keep_raw_response: False
+    name: "ReverseNumberSecond"
+    description: "A flow that takes in a number and reverses it."
+    keep_raw_response: False
 
 topology:
   - goal: reverse the input number
