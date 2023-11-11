@@ -1,5 +1,5 @@
 flow:
-  _target_: aiflows.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
+  _target_: baldwin.JarvisFlowModule.JarvisFlow.instantiate_from_default_config
   max_rounds: 30
   python_file_path: examples/JARVIS/library.py #Relative path from where you're running 
   ### Subflows specification
@@ -19,17 +19,23 @@ flow:
 
       input_interface_initialized:
         - "observation"
+        - "observation_type"
 
       human_message_prompt_template:
         _target_: flows.prompt_template.JinjaPrompt
         template: |2-
           Here is the response to your last action:
           {{observation}}
+          The response was by the {{observation_type}}
         input_variables:
           - "observation"
+          - "observation_type"
 
       backend:
         api_infos: ???
+        model_name:
+          openai: gpt-4
+          azure: azure/gpt-4
       output_interface:
         - 'thought'
         - 'reasoning'
@@ -48,6 +54,8 @@ flow:
           Your decisions must always be made independently without seeking user assistance.
           Play to your strengths as an LLM and pursue simple strategies with no legal complications.
           If you have completed all your tasks, make sure to use the "finish" command.
+          Always Ask the user's feedback before running code
+          You must really take in consideration what the user give you as feedback.
 
           Constraints:
           1. ~4000 word limit for short term memory. Your short term memory is short, so immediately save important information to files
@@ -71,6 +79,7 @@ flow:
           2. Constructively self-criticize your big-picture behavior constantly.
           3. Reflect on past decisions and strategies to refine your approach.
           4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.
+          5. Always Take into account the feedback you get
           You should absolutely only respond in JSON format as described below
           Response Format:
           {
@@ -94,6 +103,35 @@ flow:
           _target_: baldwin.PyFileInterpreterFlowModule.PyFileInterpreterAtomicFlow.instantiate_from_default_config
           path_to_py_file: ${flow.python_file_path}
 
+    HumanFeedback:
+        _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+        request_multi_line_input_flag: False
+        query_message_prompt_template:
+          template: |2-
+            Please provide feedback on the last step. To quit type: "q".
+            
+            Relevant information:
+            == Goal == 
+            {{goal}}
+            
+            == Last Command ==
+            {{command}}
+            
+            == Args
+            {{command_args}}
+            
+            == Plan
+            {{plan}}
+          input_variables:
+            - "goal"
+            - "command"
+            - "command_args"
+            - "plan"
+        input_interface_initialized:
+          - "goal"
+          - "command"
+          - "command_args"
+          - "plan"
 
   topology:
     - goal: "Select the next action and prepare the input for the executor."
@@ -106,17 +144,48 @@ flow:
         _target_: ControllerExecutorFlow.detect_finish_or_continue
       reset: false
 
+    - goal: "Ask the user for feedback."
+      input_interface:
+        _target_: flows.interfaces.KeyInterface
+      flow: HumanFeedback
+      output_interface:
+        _target_: JarvisFlow.detect_finish_in_human_input
+        keys_to_select: ["observation","observation_type"]
+      reset: false
+
+    - goal: "Take in careful consideration the user's feedback. Then, select the next action and prepare the input for the executor."
+      input_interface:
+        _target_: flows.interfaces.KeyInterface
+        keys_to_rename:
+          human_input: "observation"
+        additional_transformations:
+          - _target_: flows.data_transformations.KeySet
+            key2value:
+              observation_type: "human"
+          - _target_: flows.data_transformations.KeyMatchInput
+      flow: Controller
+      output_interface:
+        _target_: ControllerExecutorFlow.detect_finish_or_continue
+      reset: false
+
     - goal: "Execute the action specified by the Controller."
       input_interface:
         _target_: flows.interfaces.KeyInterface
         keys_to_rename:
           command: branch
           command_args: branch_input_data
-        keys_to_select: ["branch", "branch_input_data"]
+        keys_to_select: ["branch", "branch_input_data"]  
       flow: Executor
       output_interface:
         _target_: flows.interfaces.KeyInterface
-        keys_to_rename:
-          branch_output_data: observation
-        keys_to_select: ["observation"]
+        keys_to_set:
+            observation_type: "Python Interpreter"
+        additional_transformations: 
+          - _target_: flows.data_transformations.KeyRename
+            old_key2new_key:
+              branch_output_data: observation
+          - _target_: flows.data_transformations.KeySelect
+            keys_to_select: ["observation","observation_type"]
       reset: false
+
+    

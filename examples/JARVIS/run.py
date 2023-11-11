@@ -16,11 +16,11 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "aiflows/ControllerExecutorFlowModule","revision": "ba2c90bb9b0539af39ccad90c98a2ba1f9a22c91"},
     {"url": "baldwin/PyFileInterpreterFlowModule", "revision": "FlowVerse/PyFileInterpreterFlowModule"},
+    {"url": "baldwin/JarvisFlowModule", "revision": "FlowVerse/JarvisFlowModule"},
+    {"url": "aiflows/HumanStandardInputFlowModule","revision": "a690582584ff5345fe768e41558959a7e99bbeee"},
 ]
 from flows import flow_verse
-
 flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
     root_dir = "examples/JARVIS"
-    cfg_path = os.path.join(root_dir, "JARVISm1.1.yaml")
+    cfg_path = os.path.join(root_dir, "JARVISm1.2.yaml")#os.path.join(root_dir, "JARVISm1.1.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
