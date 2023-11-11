@@ -6,7 +6,6 @@ import flows
 from flows.flow_launchers import FlowLauncher
 from flows.backends.api_info import ApiInfo
 from flows.utils.general_helpers import read_yaml_file
-
 from flows import logging
 from flows.flow_cache import CACHING_PARAMETERS, clear_cache
 
@@ -17,7 +16,7 @@ logging.set_verbosity_debug()
 logging.auto_set_dir()
 
 dependencies = [
-    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "ba2c90bb9b0539af39ccad90c98a2ba1f9a22c91"},
+    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "d9cded2385fc4e00d17a04aed3f9a804aaf0a987"},
     {"url": "aiflows/HumanStandardInputFlowModule", "revision": "890e92da1fefbae642fd84296e31bca7f61ea710"},
     {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
 ]
@@ -42,10 +41,12 @@ if __name__ == "__main__":
     root_dir = "examples/ReActWithHumanFeedback"
     cfg_path = os.path.join(root_dir, "ReActWithHumanFeedback.yaml")
     cfg = read_yaml_file(cfg_path)
-    cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
+    cfg["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
+    flow = ReActWithHumanFeedback.instantiate_from_default_config(**cfg)
+    
     # ~~~ Instantiate the Flow ~~~
     flow_with_interfaces = {
-        "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
+        "flow": flow,
         "input_interface": (
             None
             if cfg.get("input_interface", None) is None

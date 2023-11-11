@@ -16,7 +16,7 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "aiflows/AutoGPTFlowModule", "revision": "b52b47ef45388474f2df18f1495fed358e33a114"},
+    {"url": "aiflows/AutoGPTFlowModule", "revision": "4098b35fcbc95cfa6b067175bb383b0db796edb8"},
     {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
 ]
 from flows import flow_verse
@@ -38,6 +38,7 @@ if __name__ == "__main__":
     cfg_path = os.path.join(root_dir, "AutoGPT.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
+    cfg["flow"]["subflows_config"]["Memory"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
     flow_with_interfaces = {
         "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),

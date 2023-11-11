@@ -1,4 +1,4 @@
-from litellm import completion
+from litellm import completion, embedding
 from typing import Any, List, Dict, Union, Optional, Tuple
 import time
 from flows.backends.api_info import ApiInfo
@@ -21,6 +21,9 @@ def merge_delta_to_stream(merged_stream,delta):
                 merged_stream[delta_key] = delta_value
     return merged_stream
 
+
+    
+
 def merge_streams(streamed_response,n_chat_completion_choices):
         merged_streams = [{} for i in range(n_chat_completion_choices)]
         for chunk in streamed_response:
@@ -33,16 +36,19 @@ def merge_streams(streamed_response,n_chat_completion_choices):
 
 class LiteLLMBackend:
     def __init__(self,api_infos,model_name,**kwargs):
-
+        # models
+        # api_keys
         self.model_name = model_name
         self.params = kwargs
         self.__waittime_per_key = self.params.pop("wait_time_per_key") if "wait_time_per_key" in self.params else self.params.get("wait_time_per_key", 6)
+        self.embeddings_call = self.params.pop("embeddings_call") if "embeddings_call" in self.params else self.params.get("embeddings_call", False)
 
         api_infos = api_infos if isinstance(api_infos,list) else [api_infos]
         api_infos = [ info if isinstance(info,ApiInfo) else ApiInfo(**info) for info in api_infos]
         LiteLLMBackend._api_information_sanity_check(api_infos)
         self.api_infos = api_infos
         
+
         
         # Initialize to now - waittime_per_key to make the class know we haven't called it recently
         self.__last_call_per_key = [time.time() - self.__waittime_per_key] * len(self.api_infos)
@@ -50,7 +56,7 @@ class LiteLLMBackend:
     @staticmethod
     def _api_information_sanity_check(api_information: List[ApiInfo]):
         assert api_information is not None, "Must provide api information!"
-       
+              
     def _choose_next_api_key(self) -> int:
         """
         It chooses the next API key to use, by:
@@ -84,12 +90,15 @@ class LiteLLMBackend:
         #IF n > 1 for streams, the index determines which sentence it's completing
         #           for standard messae, 
         # list in choices but index still indicates which sentence we're talking about
-        response = completion(**merged_params)
-        
-        if merged_params.get("stream", None):
-            messages = merge_streams(response,n_chat_completion_choices=kwargs.get("n",1))
+        if self.embeddings_call:
+            response = embedding(**merged_params)
+            messages = response.data
         else:
-            messages = [choice["message"] for choice in response["choices"]]
+            response = completion(**merged_params)
+            if merged_params.get("stream", None):
+                messages = merge_streams(response,n_chat_completion_choices=kwargs.get("n",1))
+            else:
+                messages = [choice["message"] for choice in response["choices"]]
         return messages
     
     def _get_model_and_api_dict(self,api_key_info):
@@ -111,6 +120,10 @@ class LiteLLMBackend:
         litellm_api_info = {"model": model_name, "api_base": api_base, "api_version": api_version , "api_key": api_key }
         
         return litellm_api_info
+    
+    def get_key(self):
+        api_key_idx = self._choose_next_api_key()
+        return self.api_infos[api_key_idx]
             
     def __call__(self,**kwargs):
         api_key_idx = self._choose_next_api_key()

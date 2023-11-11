@@ -1,7 +1,7 @@
 flow:
   _target_: aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
   max_rounds: 30
-
+  
   ### Subflows specification
   subflows_config:
     Controller:
@@ -41,3 +41,8 @@ flow:
           _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
           backend:
             _target_: langchain.tools.DuckDuckGoSearchRun
+
+    Memory:
+      backend:
+        model_name: text-embedding-ada-002
+        api_infos: ???
