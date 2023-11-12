@@ -56,7 +56,11 @@ if __name__ == "__main__":
     # ~~~ Get the data ~~~
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
     # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}  # Uses duckduckgo
-    data = {"id": 0, "goal": "Write an email from nicolas.mario.baldwin@gmail.com to nicky.tennis.baldwin@gmail.com and tell him 'hi man how is it going?'"}
+    data = {"id": 0,
+            "goal": "Write an email from nicolas.mario.baldwin@gmail.com to martin.josifoski1996@gmail.com. \
+            Inform him that this message was sent by JARVIS and that JARVIS can now send pdfs of stock prices. \
+            subject of the email is 'Jarvis is getting smarter'. \
+            Also, send him a plot of the apple apple stock from may 2020 till june 2021 "}
     # At first, we retrieve information about Michael Jordan the basketball player
     # If we provide feedback, only in the first round, that we are not interested in the basketball player,
     #   but the statistician, and skip the feedback in the next rounds, we get the correct answer

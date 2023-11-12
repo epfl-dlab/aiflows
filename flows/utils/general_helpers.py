@@ -4,13 +4,13 @@ from typing import List, Any, Tuple, Dict, Callable, Union
 import uuid
 import time
 import os
-
+import ast
 import json
 import jsonlines
 import gzip
-
+import importlib
 from omegaconf import OmegaConf
-
+from litellm.utils import function_to_dict
 from flows import logging
 
 log = logging.get_logger(__name__)
@@ -268,3 +268,36 @@ def read_yaml_file(path_to_file, resolve=True):
 
     cfg = OmegaConf.to_container(cfg, resolve=resolve)
     return cfg
+
+
+def python_file_path_to_module_path(file_path):
+    return file_path.replace("/",".").replace(".py","")
+
+def python_module_path_to_file_path(module_path):
+    return module_path.replace(".","/") + ".py"
+
+def extract_top_level_function_names(python_file_path):
+    """Extracts the top level function names from a python file (ignores nested)"""
+    function_names = []
+    with open(python_file_path, 'r') as file:
+        file_content = file.read()
+        tree = ast.parse(file_content)
+    
+    functions = filter(lambda node: isinstance(node, ast.FunctionDef),ast.iter_child_nodes(tree))
+    function_names = list(map(lambda node: node.name,functions))
+
+    return function_names
+
+def get_function_meta_data(function):
+    return function_to_dict(function)
+
+def get_function_from_name(function_name,module):
+    return getattr(module,function_name)
+
+def get_pyfile_functions_metadata_from_file(python_file_path):
+    function_names = extract_top_level_function_names(python_file_path)
+    module_path = python_file_path_to_module_path(python_file_path)
+    module = importlib.import_module(module_path)
+    functions = [get_function_from_name(function_name,module) for function_name in function_names]
+    return [get_function_meta_data(function) for function in functions]
+    

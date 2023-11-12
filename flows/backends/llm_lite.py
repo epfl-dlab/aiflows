@@ -7,7 +7,9 @@ from flows.backends.api_info import ApiInfo
 
 
 def merge_delta_to_stream(merged_stream,delta):
-    for delta_key, delta_value in delta.items():
+    #Can sometimes be the Delta class of litellm
+    delta_dict = delta.__dict__ if not isinstance(delta,dict) else delta
+    for delta_key, delta_value in delta_dict.items():
         if isinstance(delta_value, dict):
             if delta_key in merged_stream:
                 merge_delta_to_stream(merged_stream[delta_key], delta_value)
@@ -22,17 +24,15 @@ def merge_delta_to_stream(merged_stream,delta):
     return merged_stream
 
 
-    
-
 def merge_streams(streamed_response,n_chat_completion_choices):
-        merged_streams = [{} for i in range(n_chat_completion_choices)]
-        for chunk in streamed_response:
-            if "choices" not in chunk or len(chunk["choices"]) == 0:
-                continue
-            #must be added for case where n > 1 (argument in completion function)
-            for choice in chunk["choices"]:
-                merged_streams[int(choice["index"])] = merge_delta_to_stream(merged_streams[int(choice["index"])],choice["delta"])
-        return merged_streams
+    merged_streams = [{} for i in range(n_chat_completion_choices)]
+    for chunk in streamed_response:
+        if "choices" not in chunk or len(chunk["choices"]) == 0:
+            continue
+        #must be added for case where n > 1 (argument in completion function)
+        for choice in chunk["choices"]:
+            merged_streams[int(choice["index"])] = merge_delta_to_stream(merged_streams[int(choice["index"])],choice["delta"])
+    return merged_streams
 
 class LiteLLMBackend:
     def __init__(self,api_infos,model_name,**kwargs):
