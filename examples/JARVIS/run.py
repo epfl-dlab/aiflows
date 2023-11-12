@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
     root_dir = "examples/JARVIS"
-    cfg_path = os.path.join(root_dir, "JARVISm1.2.yaml")#os.path.join(root_dir, "JARVISm1.1.yaml")
+    cfg_path = os.path.join(root_dir, "JARVISm1.3.yaml")#os.path.join(root_dir, "JARVISm1.1.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
@@ -57,10 +57,10 @@ if __name__ == "__main__":
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
     # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}  # Uses duckduckgo
     data = {"id": 0,
-            "goal": "Write an email from nicolas.mario.baldwin@gmail.com to martin.josifoski1996@gmail.com. \
-            Inform him that this message was sent by JARVIS and that JARVIS can now send pdfs of stock prices. \
+            "goal": "Write an email from nicolas.mario.baldwin@gmail.com to nicky.tennis.baldwin@gmail.com. \
+            Introduce yourself as JARVIS, and descibe in a few senteces who you are (Jarvis from iron man). Inform him that you can now send can now send pdfs of stock prices. \
             subject of the email is 'Jarvis is getting smarter'. \
-            Also, send him a plot of the apple apple stock from may 2020 till june 2021 "}
+            Also, send him a plot of the microsoft stock from may 2020 till june 2021 "}
     # At first, we retrieve information about Michael Jordan the basketball player
     # If we provide feedback, only in the first round, that we are not interested in the basketball player,
     #   but the statistician, and skip the feedback in the next rounds, we get the correct answer
