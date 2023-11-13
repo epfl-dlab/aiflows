@@ -16,7 +16,7 @@ flow:  # Overrides the OpenAIChatAtomicFlow config
   # ~~~ Input interface specification ~~~
   input_interface_non_initialized:
     - "question"
-    - "images"
+    - "data"
 
   # ~~~ backend model parameters ~~
   backend:
