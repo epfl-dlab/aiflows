@@ -12,6 +12,7 @@ import importlib
 from omegaconf import OmegaConf
 from litellm.utils import function_to_dict
 from flows import logging
+import base64
 
 log = logging.get_logger(__name__)
 
@@ -300,4 +301,10 @@ def get_pyfile_functions_metadata_from_file(python_file_path):
     module = importlib.import_module(module_path)
     functions = [get_function_from_name(function_name,module) for function_name in function_names]
     return [get_function_meta_data(function) for function in functions]
+
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
     
+def encode_from_buffer(buffer):
+    return base64.b64encode(buffer).decode("utf-8")
