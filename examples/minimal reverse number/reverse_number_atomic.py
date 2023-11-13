@@ -37,7 +37,7 @@ if __name__ == "__main__":
     overrides_config = read_yaml_file(cfg_path)
 
     # ~~~ Instantiate the flow ~~~
-    flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
+    flow = ReverseNumberAtomicFlow.instantiate_from_default_config(**overrides_config)
 
     # ~~~ Get the data ~~~
     data = {"id": 0, "number": 1234}  # This can be a list of samples
