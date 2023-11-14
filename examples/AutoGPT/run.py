@@ -16,13 +16,13 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "aiflows/AutoGPTFlowModule", "revision": "98d0633615f560234cccddf141e1908994f75676"},
+    {"url": "aiflows/AutoGPTFlowModule", "revision": "101593529740d060144efbe62bf32fdd6b94cbe1"},
     {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
 ]
 from flows import flow_verse
 
 flow_verse.sync_dependencies(dependencies)
-
+breakpoint()
 if __name__ == "__main__":
     # ~~~ Set the API information ~~~
     # OpenAI backend

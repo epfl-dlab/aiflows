@@ -17,7 +17,7 @@ logging.set_verbosity_debug()
 
 dependencies = [
     {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
-    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "67f65d607df0f9e78db666c75c2129c1a708abd0"},
+    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "263bf393e165f42d3bc9792976b37c4cf221dd81"},
 ]
 from flows import flow_verse
 

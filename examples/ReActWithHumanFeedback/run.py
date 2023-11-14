@@ -16,7 +16,7 @@ logging.set_verbosity_debug()
 logging.auto_set_dir()
 
 dependencies = [
-    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "67f65d607df0f9e78db666c75c2129c1a708abd0"},
+    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "263bf393e165f42d3bc9792976b37c4cf221dd81"},
     {"url": "aiflows/HumanStandardInputFlowModule", "revision": "890e92da1fefbae642fd84296e31bca7f61ea710"},
     {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
 ]
