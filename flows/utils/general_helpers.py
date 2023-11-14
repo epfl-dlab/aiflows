@@ -262,6 +262,27 @@ def recursive_dictionary_update(d, u):
             d[k] = v
     return d
 
+def log_suggest_help():
+    red = "\033[31m"
+    reset = "\x1b[0m"
+    green = "\033[32m"
+    bold = '\033[1m'
+    github_issues_link = "https://github.com/epfl-dlab/aiflows/issues \n\n"
+    message = " \n\nFor feedback or to get help:  "
+    log.info(bold + red + message + reset + bold + green + github_issues_link)
+
+def exception_handler(e):
+    log_suggest_help()
+    log.exception(e)
+    exit()
+    
+def try_except_decorator(f):
+    def wrapper(*args, **kw):
+        try:
+            return f(*args, **kw)
+        except Exception as e:
+            exception_handler(e)
+    return wrapper
 
 def read_yaml_file(path_to_file, resolve=True):
     with open(path_to_file, "r") as f:

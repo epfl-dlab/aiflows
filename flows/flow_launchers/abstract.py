@@ -10,7 +10,7 @@ from flows.utils import general_helpers
 from typing import Any, List, Dict, Optional, Iterable
 
 from ..utils import logging
-
+from ..utils.general_helpers import try_except_decorator
 log = logging.get_logger(__name__)
 
 
@@ -98,7 +98,7 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
         self.existing_predictions_file = os.path.join(predictions_dir, "predictions_existing.jsonl")
 
     
-
+    @try_except_decorator
     def predict_dataloader(self,
                            dataloader: Iterable[dict],
                            flows_with_interfaces: List[Dict[str, Any]],
