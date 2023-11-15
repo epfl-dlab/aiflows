@@ -14,7 +14,7 @@ flow:  # Overrides the OpenAIChatAtomicFlow config
     demonstration_flow:
       data: null
       params:
-        data_dir: examples/minimal QA/data
+        data_dir: examples/minimal QA/
         demonstrations_id: my_sir_demo
       query_prompt_template:
         template: |2-
