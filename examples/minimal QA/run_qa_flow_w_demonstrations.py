@@ -17,9 +17,11 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
 from flows import flow_verse
 
+
 dependencies = [
-    {"url": "aiflows/OpenAIChatFlowModule", "revision": "d69ba2125de99d2edb631dd51d22225ed9e3446c"},
+    {"url": "aiflows/ChatWithDemonstrationsFlowModule", "revision": "82b93745bc76b04139f2af39d011feb04a6613ec"}
 ]
+
 flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
@@ -36,11 +38,11 @@ if __name__ == "__main__":
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
-    root_dir = "."
-    cfg_path = os.path.join(root_dir, "simpleQA.yaml")
+    root_dir = "examples/minimal QA"
+    cfg_path = os.path.join(root_dir, "simpleQA_w_demonstrations.yaml")
     cfg = read_yaml_file(cfg_path)
-    
-    cfg["flow"]["backend"]["api_infos"] = api_information
+
+    cfg["flow"]["subflows_config"]["chat_flow"]["backend"]["api_infos"] = api_information
     
     # ~~~ Instantiate the Flow ~~~
     flow_with_interfaces = {
@@ -57,9 +59,8 @@ if __name__ == "__main__":
         ),
     }
     # ~~~ Get the data ~~~
-    data = {"id": 0, "question": "Generate a short random sentence"}  # This can be a list of samples
+    data = {"id": 0, "question": "What's the capital of France?"}  # This can be a list of samples
     # data = {"id": 0, "question": "Who was the NBA champion in 2023?"}  # This can be a list of samples
-
     # ~~~ Run inference ~~~
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
