@@ -11,11 +11,26 @@ colorama.init()
 
 
 class PrintPreviousMessages(DataTransformation):
+    """This class prints the previous messages of the current flow.
+    
+    :param last_message_only: Whether to print only the last message or all previous messages
+    :type last_message_only: bool, optional
+    """
     def __init__(self, last_message_only=False):
         super().__init__()
         self.last_message_only = last_message_only
 
     def __call__(self, data_dict: Dict[str, Any], src_flow, **kwargs) -> Dict[str, Any]:
+        """Applies the transformation to the given data dictionary. It prints the previous messages of the current flow.
+        
+        :param data_dict: The data dictionary to apply the transformation to
+        :type data_dict: Dict[str, Any]
+        :param src_flow: The source flow from which the messages should be printed
+        :type src_flow: flows.flow.Flow
+        :param \**kwargs: Arbitrary keyword arguments
+        :return: The transformed data dictionary
+        :rtype: Dict[str, Any]
+        """
         previous_messages = src_flow.flow_state["previous_messages"]
         system_type = src_flow.flow_config["system_name"]
         human_type = src_flow.flow_config["user_name"]

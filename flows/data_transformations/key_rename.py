@@ -7,6 +7,13 @@ log = get_logger(__name__)
 
 
 class KeyRename(DataTransformation):
+    """ This class renames a list of keys from the data dictionary.
+    
+    :param old_key2new_key: A dictionary mapping old keys to new keys
+    :type old_key2new_key: Dict[str, str]
+    :param nested_keys: Whether to use nested keys
+    :type nested_keys: bool, optional
+    """
     def __init__(self,
                  old_key2new_key: Dict[str, str],
                  nested_keys: bool = True):
@@ -15,6 +22,15 @@ class KeyRename(DataTransformation):
         self.nested_keys = nested_keys
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        """
+        Applies the transformation to the given data dictionary. It renames a list of keys from the data dictionary.
+        
+        :param data_dict: The data dictionary to apply the transformation to
+        :type data_dict: Dict[str, Any]
+        :param \**kwargs: Arbitrary keyword arguments
+        :return: The transformed data dictionary
+        :rtype: Dict[str, Any]
+        """
         if self.nested_keys:
             for old_key, new_key in self.old_key2new_key.items():
                 value, found = nested_keys_search(data_dict, old_key)
