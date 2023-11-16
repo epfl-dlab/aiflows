@@ -20,11 +20,13 @@ def print_config_tree(
     save_to_file: bool = False,
 ) -> None:
     """Prints content of DictConfig using Rich library and its tree structure.
-    Args:
-        cfg (DictConfig): Configuration composed by Hydra.
-        print_order (Sequence[str], optional): Determines in what order config components are printed.
-        resolve (bool, optional): Whether to resolve reference fields of DictConfig.
-        save_to_file (bool, optional): Whether to export config to the hydra output folder.
+    
+    :param cfg: Configuration composed by Hydra.
+    :type cfg: DictConfig
+    :param print_order: Determines in what order config components are printed, defaults to []
+    :type print_order: Sequence[str], optional
+    :param resolve: Whether to resolve reference fields of DictConfig, defaults to False
+    :type resolve: bool, optional
     """
 
     style = "dim"
