@@ -9,14 +9,6 @@ class FlowHistory:
 
     Attributes:
         messages (List[Messages]): A list of the messages comprising the history of a flow.
-
-    Methods:
-        add_message: Adds a message to the history.
-        to_string: Returns a string representation of the history.
-        to_list: Returns a list representation of the history.
-        to_dict: Returns a dict representation of the history.
-        __len__: Returns the number of messages in the history.
-        __str__: Returns a string representation of the history.
     """
 
     def __init__(self):
@@ -25,9 +17,9 @@ class FlowHistory:
     def add_message(self, message: Message) -> None:
         """
         Adds a message to the history.
-
-        Args:
-            message (Message): The message to add.
+        
+        :param message: The message to add.
+        :type message: Message
         """
         self.messages.append(deepcopy(message))
 
@@ -35,11 +27,10 @@ class FlowHistory:
         """
         Returns a list representation of the last n messages in the history.
 
-        Args:
-            n (int): The number of messages to return.
-
-        Returns:
-            list: The list representation of the last n messages in the history.
+        :param n: The number of messages to return.
+        :type n: int
+        :return: The list representation of the last n messages in the history.
+        :rtype: List[Message]
         """
         return [m for m in self.messages[-n:]]
 
@@ -47,8 +38,8 @@ class FlowHistory:
         """
         Returns a string representation of the history.
 
-        Returns:
-            str: The string representation of the history.
+        :return: The string representation of the history.
+        :rtype: str
         """
         text = "\n".join([message.to_string() for message in self.messages])
         return text
@@ -57,8 +48,8 @@ class FlowHistory:
         """
         Returns a list representation of the history.
 
-        Returns:
-            list: The list representation of the history.
+        :return: The list representation of the history.
+        :rtype: List[Dict]
         """
         return [m.to_dict() for m in self.messages]
 
@@ -66,9 +57,19 @@ class FlowHistory:
     #     return {"history": [m.to_dict() for m in self.messages]}
 
     def __len__(self):
+        """ Returns the length of the message history.
+        
+        :return: The length of the history.
+        :rtype: int
+        """
         return len(self.messages)
 
     def __str__(self):
+        """ Returns a string representation of the history.
+        
+        :return: The string representation of the history.
+        :rtype: str
+        """
         return self.to_string()
 
     # def __repr__(self):
