@@ -23,6 +23,9 @@ log = logging.get_logger(__name__)
 class Flow(ABC):
     """
     Abstract class inherited by all Flows.
+    
+    :param flow_config: The configuration of the flow
+    :type flow_config: Dict[str, Any]
     """
     # The required parameters that the user must provide in the config when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
@@ -63,12 +66,22 @@ class Flow(ABC):
 
     @property
     def name(self):
+        """ Returns the name of the flow
+        
+        :return: The name of the flow
+        :rtype: str
+        """
         return self.flow_config["name"]
 
     @classmethod
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
         """
         This method is called by the FlowLauncher to build the flow.
+        
+        :param overrides: The parameters to override in the default config
+        :type overrides: Dict[str, Any], optional
+        :return: The instantiated flow
+        :rtype: flows.flow.Flow
         """
         if overrides is None:
             overrides = {}
@@ -78,6 +91,12 @@ class Flow(ABC):
 
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
+        """ Validates the flow config to ensure that it contains all the required keys.
+        
+        :param flow_config: The flow config to validate
+        :type flow_config: Dict[str, Any]
+        :raises ValueError: If the flow config does not contain all the required keys
+        """
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
 
@@ -89,8 +108,12 @@ class Flow(ABC):
     def get_config(cls, **overrides):
         """
         Returns the default config for the flow, with the overrides applied.
-
         The default implementation construct the default config by recursively merging the configs of the base classes.
+        
+        :param overrides: The parameters to override in the default config
+        :type overrides: Dict[str, Any], optional
+        :return: The default config with the overrides applied
+        :rtype: Dict[str, Any]
         """
         if cls == Flow:
             return copy.deepcopy(cls.__default_flow_config)
@@ -135,15 +158,30 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_from_config(cls, config):
+        """ Instantiates the flow from the given config.
+        
+        :param config: The config to instantiate the flow from
+        :type config: Dict[str, Any]
+        :return: The instantiated flow
+        :rtype: flows.flow.Flow
+        """
         kwargs = {"flow_config": copy.deepcopy(config)}
         return cls(**kwargs)
 
     @classmethod
     def instantiate_with_overrides(cls, overrides):
+        """ Instantiates the flow with the given overrides.
+        
+        :param overrides: The parameters to override in the default config
+        :type overrides: Dict[str, Any], optional
+        :return: The instantiated flow
+        """
         config = cls.get_config(**overrides)
         return cls.instantiate_from_config(config)
 
     def set_up_flow_state(self):
+        """ Sets up the flow state. This method is called when the flow is instantiated, and when the flow is reset.
+        """
         self.flow_state = {}
         self.history = FlowHistory()
 
@@ -184,11 +222,23 @@ class Flow(ABC):
             self._log_message(message)
 
     def _get_from_state(self, key: str, default: Any = None):
+        """ Returns the value of the given key in the flow state. If the key does not exist, return the default value.
+        
+        :param key: The key to retrieve the value for
+        :type key: str
+        :param default: The default value to return if the key does not exist
+        :type default: Any, optional
+        :return: The value of the given key in the flow state
+        :rtype: Any
+        """
         return self.flow_state.get(key, default)
 
     def _state_update_dict(self, update_data: Union[Dict[str, Any], Message]):
         """
         Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
+        
+        :param update_data: The data dictionary to update the flow state with
+        :type update_data: Union[Dict[str, Any], Message]
         """
         if isinstance(update_data, Message):
             update_data = update_data.data["output_data"]
@@ -244,14 +294,29 @@ class Flow(ABC):
     #     raise NotImplementedError()
 
     def get_interface_description(self):
+        """ Returns the input and output interface description of the flow."""
         return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
 
     def _log_message(self, message: Message):
+        """ Logs the given message to the history of the flow.
+        
+        :param message: The message to log
+        :type message: Message
+        :return: The message that was logged
+        :rtype: Message
+        """
         log.debug(message.to_string())
         return self.history.add_message(message)
 
     def _fetch_state_attributes_by_keys(self,
                                         keys: Union[List[str], None]):
+        """ Returns the values of the given keys in the flow state.
+        
+        :param keys: The keys to retrieve the values for
+        :type keys: Union[List[str], None]
+        :return: The values of the given keys in the flow state
+        :rtype: Dict[str, Any]
+        """
         data = {}
 
         if keys is None:
@@ -275,6 +340,15 @@ class Flow(ABC):
             payload: Dict[str, Any],
             dst_flow: "Flow"
     ):
+        """ Packages the given payload into an InputMessage.
+        
+        :param payload: The payload to package
+        :type payload: Dict[str, Any]
+        :param dst_flow: The destination flow
+        :type dst_flow: Flow
+        :return: The packaged input message
+        :rtype: InputMessage
+        """
         private_keys = dst_flow.flow_config["private_keys"]
 
         src_flow = self.flow_config["name"]
@@ -300,6 +374,17 @@ class Flow(ABC):
             response: Dict[str, Any],
             raw_response: Dict[str, Any]
     ):
+        """ Packages the given response into an OutputMessage.
+        
+        :param input_message: The input message that was used to generate the response
+        :type input_message: InputMessage
+        :param response: The response to package
+        :type response: Dict[str, Any]
+        :param raw_response: The raw response to package
+        :type raw_response: Dict[str, Any]
+        :return: The packaged output message
+        :rtype: OutputMessage
+        """
         output_data = copy.deepcopy(response)
 
         return OutputMessage(
@@ -314,9 +399,23 @@ class Flow(ABC):
 
     def run(self,
             input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """ Runs the flow on the given input data. (Not implemented in the base class)
+        
+        :param input_data: The input data to run the flow on
+        :type input_data: Dict[str, Any]
+        :return: The response of the flow
+        :rtype: Dict[str, Any]
+        """
         raise NotImplementedError
 
     def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """ Gets the response from the cache if it exists. If it does not exist, runs the flow and caches the response.
+        
+        :param input_data: The input data to run the flow on
+        :type input_data: Dict[str, Any]
+        :return: The response of the flow
+        :rtype: Dict[str, Any]
+        """
         assert self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching
 
         if not self.SUPPORTS_CACHING:
@@ -370,6 +469,13 @@ class Flow(ABC):
         return response
 
     def __call__(self, input_message: InputMessage):
+        """ Calls the flow on the given input message.
+        
+        :param input_message: The input message to run the flow on
+        :type input_message: InputMessage
+        :return: The output message of the flow
+        :rtype: OutputMessage
+        """
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
