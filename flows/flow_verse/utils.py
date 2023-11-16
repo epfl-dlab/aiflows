@@ -25,4 +25,11 @@ def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     return os.path.join(cache_root, relative_path)
 
 def is_local_revision(revision: str):
+    """ Returns True if the revision is a local revision, False otherwise.
+    
+    :param revision: The revision to check
+    :type revision: str
+    :return: True if the revision is a local revision, False otherwise
+    :rtype: bool
+    """
     return os.path.exists(revision)
