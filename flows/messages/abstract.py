@@ -11,6 +11,15 @@ colorama.init()
 
 @dataclass
 class Message:
+    """ This class represents a message that is passed between nodes in a flow.
+    
+    :param data: The data content of the message
+    :type data: Dict[str, Any]
+    :param created_by: The name of the flow that created the message
+    :type created_by: str
+    :param private_keys: A list of private keys that should not be serialized or logged
+    :type private_keys: List[str], optional
+    """
     # ~~~ Message unique identification ~~~
     message_id: str
     created_at: str
@@ -45,6 +54,7 @@ class Message:
         self.private_keys = [] if private_keys is None else private_keys
 
     def _reset_message_id(self):
+        """ Resets the message's unique identification (message_id,created_at)""" 
         self.message_id = create_unique_id()
         self.created_at = get_current_datetime_ns()
 
@@ -64,6 +74,7 @@ class Message:
         return __sanitized__dict__
 
     def to_dict(self):
+        """ Returns a dictionary representation of the message that can be serialized to JSON"""
         d = self.__sanitized__dict__()
         return d
 
@@ -72,6 +83,7 @@ class Message:
         raise NotImplementedError()
 
     def __str__(self):
+        """ Returns a string representation of the message that can be logged to the console"""
         d = self.__sanitized__dict__()
         return json.dumps(d, indent=4, default=str)
     
