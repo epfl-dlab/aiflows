@@ -39,7 +39,7 @@ class FlowLauncher(ABC):
         :type n_api_keys: Optional[int], optional
         :return: A tuple containing the full outputs and the human readable outputs.
         :rtype: Tuple[List[dict]]
-        """"
+        """
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)

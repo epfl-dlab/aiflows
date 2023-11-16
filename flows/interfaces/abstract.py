@@ -8,7 +8,7 @@ class Interface(ABC):
         pass
 
     def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-         """
+        """
         This method should be implemented by subclasses to perform a specific operation 
         using the provided goal, source flow, destination flow, and data dictionary.
 
