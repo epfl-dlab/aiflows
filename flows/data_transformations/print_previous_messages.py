@@ -21,7 +21,7 @@ class PrintPreviousMessages(DataTransformation):
         self.last_message_only = last_message_only
 
     def __call__(self, data_dict: Dict[str, Any], src_flow, **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary. It prints the previous messages of the current flow.
+        r"""Applies the transformation to the given data dictionary. It prints the previous messages of the current flow.
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

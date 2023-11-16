@@ -53,7 +53,7 @@ class Obj2Json(DataTransformation):
         self.input_key = input_key
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary. It converts a Python object to a JSON string.
+        r"""Applies the transformation to the given data dictionary. It converts a Python object to a JSON string.
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

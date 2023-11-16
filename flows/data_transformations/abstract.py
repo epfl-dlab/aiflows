@@ -13,7 +13,7 @@ class DataTransformation(ABC):
         self.output_key = output_key
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary
+        r"""Applies the transformation to the given data dictionary
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

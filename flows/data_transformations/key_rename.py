@@ -22,7 +22,7 @@ class KeyRename(DataTransformation):
         self.nested_keys = nested_keys
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """
+        r"""
         Applies the transformation to the given data dictionary. It renames a list of keys from the data dictionary.
         
         :param data_dict: The data dictionary to apply the transformation to

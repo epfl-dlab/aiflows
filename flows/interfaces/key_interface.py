@@ -65,7 +65,7 @@ class KeyInterface(ABC):
             self.transformations.append(KeyDelete(keys_to_delete))
 
     def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the all transformations to the given data dictionary.
+        r"""Applies the all transformations to the given data dictionary.
         
         :param goal: The goal of the flow
         :type goal: str

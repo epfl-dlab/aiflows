@@ -26,7 +26,7 @@ class EndOfInteraction(DataTransformation):
         self.end_of_interaction_string = end_of_interaction_string
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary. It detects if the end of interaction string is in the input string.
+        r"""Applies the transformation to the given data dictionary. It detects if the end of interaction string is in the input string.
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

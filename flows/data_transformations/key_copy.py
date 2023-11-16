@@ -21,7 +21,7 @@ class KeyCopy(DataTransformation):
         self.flatten_data_dict = flatten_data_dict
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary. It copies the value of a key to a new key. It can be used to rename a key.
+        r"""Applies the transformation to the given data dictionary. It copies the value of a key to a new key. It can be used to rename a key.
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

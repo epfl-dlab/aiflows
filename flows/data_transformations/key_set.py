@@ -22,7 +22,7 @@ class KeySet(DataTransformation):
         self.key2value = key2value
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
-        """Applies the transformation to the given data dictionary. It sets a list of keys to a given value in the data dictionary.
+        r"""Applies the transformation to the given data dictionary. It sets a list of keys to a given value in the data dictionary.
         
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]

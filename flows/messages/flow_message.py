@@ -91,12 +91,11 @@ class InputMessage(Message):
 
 @dataclass
 class UpdateMessage_Generic(Message):
-    """ Updates the message of a flow.
+    r""" Updates the message of a flow.
     
     :param updated_flow: The name of the flow that should be updated
     :type updated_flow: str
     :param \**kwargs: arguments that are passed to the Message constructor
-    :type \**kwargs: Dict[str, Any]
     """
     def __init__(self,
                  updated_flow: str,
@@ -120,7 +119,7 @@ class UpdateMessage_Generic(Message):
 
 @dataclass
 class UpdateMessage_ChatMessage(UpdateMessage_Generic):
-    """ Updates the chat message of a flow.
+    r""" Updates the chat message of a flow.
     
     :param content: The content of the chat message
     :type content: str
@@ -129,7 +128,6 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
     :param updated_flow: The name of the flow that should be updated
     :type updated_flow: str
     :param \**kwargs: arguments that are passed to the UpdateMessage_Generic constructor
-    :type \**kwargs: Dict[str, Any]
     """
     def __init__(self,
                  content: str,
@@ -213,7 +211,7 @@ class UpdateMessage_FullReset(Message):
 
 @dataclass
 class OutputMessage(Message):
-    """ This class represents an output message that is passed from one flow to another.
+    r""" This class represents an output message that is passed from one flow to another.
     
     :param src_flow: The name of the flow that created the message
     :type src_flow: str
@@ -230,7 +228,6 @@ class OutputMessage(Message):
     :param created_by: The name of the flow that created the message
     :type created_by: str
     :param \**kwargs: arguments that are passed to the Message constructor
-    :type \**kwargs: Dict[str, Any]
     """
     def __init__(self,
                  src_flow: str,
