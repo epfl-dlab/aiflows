@@ -15,12 +15,28 @@ log = logging.get_logger(__name__)
 
 
 class BaseLauncher(ABC):
+    """ A base class for creating a model launcher.
+    """
     def predict(self, batch: Iterable[Dict]) -> List[Dict]:
+        """ Runs inference for the data provided in the batch. It returns a list of dictionaries containing the predictions. (Not Implemented for BaseLauncher)
+        
+        :param batch: An iterable of dictionaries containing the data for each sample to run inference on.
+        :type batch: Iterable[Dict]
+        :return: A list of dictionaries containing the predictions.
+        :rtype: List[Dict]
+        """
         raise NotImplementedError("Not implemented")
 
     def predict_dataloader(self,
                            dataloader: Iterable,
                            path_to_cache: Optional[str] = None):
+        """ Runs inference for the data provided in the dataloader. (Not Implemented for BaseLauncher)
+        
+        :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
+        :type dataloader: Iterable
+        :param path_to_cache: A path to a cache file containing existing predictions to use as a starting point.
+        :type path_to_cache: Optional[str], optional
+        """
         raise NotImplementedError("Not implemented")
 
     @classmethod
@@ -28,15 +44,14 @@ class BaseLauncher(ABC):
                               batch: List[Dict],
                               keys_to_write) -> List[Dict]:
         """
-        It takes a batch of predictions and returns a dictionary containing the outputs to write to file.
+        Class method that takes a batch of predictions and returns a dictionary containing the outputs to write to file.
 
-        Args:
-            batch: A list of dictionaries containing the predictions.
-            keys_to_write: A list of keys to write to file.
-
-
-        Returns:
-            A dictionary to be written to file.
+        :param batch: A list of dictionaries containing the predictions.
+        :type batch: List[Dict]
+        :param keys_to_write: A list of keys to write to file.
+        :type keys_to_write: List[str]
+        :return: A dictionary to be written to file.
+        :rtype: List[Dict]
         """
         to_write_all = []
         for sample in batch:
@@ -55,6 +70,15 @@ class BaseLauncher(ABC):
                            path_to_output_file: str,
                            keys_to_write: List[str],
                            ):
+        """ Class method that writes the output of a batch to a file.
+        
+        :param batch: A list of dictionaries containing the predictions.
+        :type batch: List[Dict]
+        :param path_to_output_file: The path to the output file.
+        :type path_to_output_file: str
+        :param keys_to_write: A list of keys to write to file.
+        :type keys_to_write: List[str]
+        """
         batch_output = cls._get_outputs_to_write(batch, keys_to_write)
         general_helpers.write_outputs(path_to_output_file, batch_output, mode="a+")
 
@@ -63,14 +87,18 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
     A class for creating a multi-threaded model to query API that can make requests using multiple API keys.
 
-    Attributes:
-        debug: A boolean indicating whether to print debug information (if true, it will not run the multithreading).
-        output_dir: The directory to write the output files to.
-
-        api_keys [List(str)]: A list of API keys to use for making requests.
-        n_workers_per_key (int): The number of workers to use per API key.
-        wait_time_per_key (int): The number of seconds to wait before making another request with the same API key.
-        single_threaded : A boolean indicating whether to run the multithreading or not.
+    :param debug: A boolean indicating whether to print debug information (if true, it will not run the multithreading).
+    :type debug: bool, optional
+    :param output_dir: The directory to write the output files to.
+    :type output_dir: str, optional
+    :param api_keys: A list of API keys to use for making requests.
+    :type api_keys: List[str]
+    :param n_workers_per_key: The number of workers to use per API key.
+    :type n_workers_per_key: int, optional
+    :param wait_time_per_key: The number of seconds to wait before making another request with the same API key.
+    :type wait_time_per_key: int, optional
+    :param single_threaded: A boolean indicating whether to run the multithreading or not.
+    :type single_threaded: bool, optional
     """
 
     def __init__(self, **kwargs):
@@ -107,9 +135,8 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
 
-        Args:
-            dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
-            path_to_cache: : A list of existing predictions to use as a starting point.
+        :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
+        :param path_to_cache: : A list of existing predictions to use as a starting point.
         """
         self._load_cache(path_to_cache)
         self.flows = flows_with_interfaces

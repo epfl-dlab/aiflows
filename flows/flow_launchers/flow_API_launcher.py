@@ -19,12 +19,27 @@ log = logging.get_logger(__name__)
 
 # single-thread flow launcher
 class FlowLauncher(ABC):
+    """ A base class for creating a flow launcher.
+    """
     @staticmethod
     @try_except_decorator
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None,
                n_api_keys: Optional[int] = None,) -> Tuple[List[dict]]:
+        """ Static method that takes a flow and runs inference on the given data.
+        
+        :param flow_with_interfaces: A dictionary containing the flow to run inference with and the input and output interfaces to use.
+        :type flow_with_interfaces: Dict[str, Any]
+        :param data: The data to run inference on.
+        :type data: Union[Dict, List[Dict]]
+        :param path_to_output_file: A path to a file to write the outputs to.
+        :type path_to_output_file: Optional[str], optional
+        :param n_api_keys: The number of API keys to use.
+        :type n_api_keys: Optional[int], optional
+        :return: A tuple containing the full outputs and the human readable outputs.
+        :rtype: Tuple[List[dict]]
+        """"
         flow = flow_with_interfaces["flow"]
         input_interface = flow_with_interfaces.get("input_interface", None)
         output_interface = flow_with_interfaces.get("output_interface", None)
@@ -83,12 +98,16 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
     """
     A class for querying the APIs using the litellm library with interactive chatting capabilities.
 
-    Attributes:
-        flow: The flow (or a list of independent instances of the same flow) to run the inference with.
-        n_independent_samples: the number of times to independently repeat the same inference for a given sample
-        fault_tolerant_mode: whether to crash if an error occurs during the inference for a given sample
-        n_batch_retries: the number of times to retry the batch if an error occurs
-        wait_time_between_retries: the number of seconds to wait before retrying the batch
+    :param flows: The flow (or a list of independent instances of the same flow) to run the inference with.
+    :type flows: List[Dict[str, Any]]
+    :param n_independent_samples: the number of times to independently repeat the same inference for a given sample
+    :type n_independent_samples: int
+    :param fault_tolerant_mode: whether to crash if an error occurs during the inference for a given sample
+    :type fault_tolerant_mode: bool
+    :param n_batch_retries: the number of times to retry the batch if an error occurs
+    :type n_batch_retries: int
+    :param wait_time_between_retries: the number of seconds to wait before retrying the batch
+    :type wait_time_between_retries: int
     """
 
     flows: List[Dict[str, Any]] = None
@@ -112,11 +131,23 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
     def _load_cache(self, path_to_cache):
+        """ Loads the cache from a file. (Not implemented yet)
+        
+        :param path_to_cache: The path to the cache file.
+        :type path_to_cache: str
+        """
         # ToDo: implement cache loading
         # ToDo: Add tests to verify that the resuming option works both in single_threaded and multi_threaded mode
         pass
 
     def predict(self, batch: List[dict]) -> List[dict]:
+        """ Runs inference for the given batch.
+        
+        :param batch: The batch to run inference for.
+        :type batch: List[dict]
+        :return: The batch with the inference outputs added to it.
+        :rtype: List[dict]
+        """
         # ToDo: pass the cache in the expected way to the flow
 
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
