@@ -22,7 +22,6 @@ dependencies = [
 from flows import flow_verse
 
 flow_verse.sync_dependencies(dependencies)
-breakpoint()
 if __name__ == "__main__":
     # ~~~ Set the API information ~~~
     # OpenAI backend
