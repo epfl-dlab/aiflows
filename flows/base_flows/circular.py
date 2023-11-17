@@ -12,6 +12,19 @@ log = logging.get_logger(__name__)
 
 
 class TopologyNode:
+    """ This class represents a node in the topology of a flows.
+    
+    :param goal: The goal of the node
+    :type goal: str
+    :param input_interface: The input interface of the node's flow
+    :type input_interface: flows.interfaces.InputInterface
+    :param flow: The flow of the node
+    :type flow: flows.base_flows.Flow
+    :param output_interface: The output interface of the node's flow
+    :type output_interface: List[flows.data_transformations.DataTransformation]
+    :param reset: Whether to reset the node's flow
+    :type reset: bool
+    """
     def __init__(self,
                  goal,
                  input_interface,
@@ -26,6 +39,24 @@ class TopologyNode:
 
 
 class CircularFlow(CompositeFlow):
+    """ This class represents a circular flow. It is a composite flow that runs its subflows in a circular fashion.
+        Example in an Illustration:
+               
+                            subflow_1 -----> subflow_2 -----> subflow_3
+                                ^                               |
+                                |                               |
+                                |                               v
+                            subflow_k <----    ....    <-----subflow_4
+                            
+        :param flow_config: The flow configuration dictionary. It must usually should contain the following keys:
+                            - 'max_rounds' (int): The maximum number of rounds to run the circular flow
+                            - 'early_exit_key' (str): The key in the flow state that indicates the end of the interaction
+                            - 'topology' (list[Dict[str, Any]]): The topology of the circular flow (the dictionary describes the topology of one node, see TopologyNode for details)
+                            - The keys required by CompositeFlow (subflows_config)
+        :type flow_config: Dict[str, Any]
+        :param subflows: The subflows of the circular flow
+        :type subflows: List[flows.base_flows.Flow]           
+    """
     REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key", "topology"]
 
     __default_flow_config = {
@@ -39,6 +70,13 @@ class CircularFlow(CompositeFlow):
 
     @staticmethod
     def input_msg_payload_builder(builder_fn):
+        """ This decorator registers a function as an input message payload builder.
+        
+        :param builder_fn: The function to register
+        :type builder_fn: Callable
+        :return: The wrapped function
+        :rtype: Callable
+        """
         def wrapper(goal, data_dict, src_flow: Flow, dst_flow: Flow):
             return builder_fn(src_flow, data_dict, dst_flow)
 
@@ -48,6 +86,13 @@ class CircularFlow(CompositeFlow):
 
     @staticmethod
     def output_msg_payload_processor(processor_fn):
+        """ This decorator registers a function as an output message payload processor.
+        
+        :param processor_fn: The function to register
+        :type processor_fn: Callable
+        :return: The wrapped function
+        :rtype: Callable
+        """
         def wrapper(goal, data_dict, src_flow, dst_flow):
             return processor_fn(dst_flow, data_dict, src_flow)
 
@@ -67,6 +112,11 @@ class CircularFlow(CompositeFlow):
         self.topology = self.__set_up_topology()
 
     def _early_exit(self):
+        """ Checks whether the early exit condition is met.
+        
+        :return: Whether the early exit condition is met
+        :rtype: bool
+        """
         early_exit_key = self.flow_config.get("early_exit_key", None)
         if early_exit_key:
             if early_exit_key in self.flow_state:
@@ -77,6 +127,11 @@ class CircularFlow(CompositeFlow):
         return False
 
     def __set_up_topology(self) -> List[TopologyNode]:
+        """ Sets up the topology of the circular flow.
+        
+        :return: The topology of the circular flow
+        :rtype: List[TopologyNode]
+        """
         topology = self.flow_config.get("topology", [])
         ret = []
         if len(topology) == 0:
@@ -128,6 +183,13 @@ class CircularFlow(CompositeFlow):
         return ret
 
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """ Runs the circular flow. It runs its subflows in a circular fashion (following the topology).
+        
+        :param input_data: The input data dictionary
+        :type input_data: Dict[str, Any]
+        :return: The output data dictionary
+        :rtype: Dict[str, Any]
+        """
         # ~~~ sets the input_data in the flow_state dict ~~~
         self._state_update_dict(update_data=input_data)
 
@@ -142,18 +204,32 @@ class CircularFlow(CompositeFlow):
         return output
 
     def _get_output_from_state(self):
+        """ Returns the output from the flow state.
+        
+        :return: The output from the flow state
+        :rtype: Dict[str, Any]
+        """
         outputs = self._fetch_state_attributes_by_keys(keys=self.get_interface_description()["output"])
         return outputs
 
     @classmethod
     def type(cls):
+        """ Returns the type of the flow as a string."""
         return "circular"
 
     def _on_reach_max_rounds(self):
+        """ Called when the maximum number of rounds is reached"""
         log.info(f"[{self.flow_config['name']}] Max rounds reached. Returning output, answer might be incomplete.")
         return
 
     def _sequential_run(self, max_rounds: Union[int, None]):
+        """ Runs the circular flow in a sequential fashion. It runs its subflows in a circular fashion (following the topology).
+            It stops when the maximum number of rounds is reached or the early exit condition is met.
+            
+            :param max_rounds: The maximum number of rounds to run the circular flow
+            :type max_rounds: Union[int, None]
+            :return: The output data dictionary
+        """
         curr_round = 0
         while max_rounds is None or curr_round < max_rounds:
             curr_round += 1

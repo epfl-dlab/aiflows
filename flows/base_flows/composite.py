@@ -12,6 +12,17 @@ log = logging.get_logger(__name__)
 
 
 class CompositeFlow(Flow, ABC):
+    """ This class implements a composite flow. It is a flow that consists of multiple sub-flows.
+        It is the a parent class for BranchingFlow, SequentialFlow and CircularFlow. Note that the run method of a CompositeFlow is not implemented.
+        
+        :param flow_config: The configuration of the flow. It must usually contain the following keys:
+                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+                                                                 This is necessary when instantiating the flow from a config file.
+                            - The parameters required by the constructor of the parent class Flow
+        :type flow_config: Dict[str, Any]
+        :param subflows: A list of subflows. This is necessary when instantiating the flow programmatically.
+        :type subflows: List[Flow]
+        """
     REQUIRED_KEYS_CONFIG = ["subflows_config"]
 
     subflows: Dict[str, Flow]
@@ -27,6 +38,16 @@ class CompositeFlow(Flow, ABC):
 
     @classmethod
     def instantiate_from_config(cls, config):
+        """ Instantiates the flow from a config file.
+        
+        :param config: The configuration of the flow. It must usually contain the following keys:
+                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+                                                                 This is necessary when instantiating the flow from a config file.
+                            - The parameters required by the constructor of the parent class Flow
+        :type config: Dict[str, Any]
+        :return: The instantiated flow
+        :rtype: CompositeFlow
+        """
         flow_config = copy.deepcopy(config)
         return cls(subflows=cls._set_up_subflows(flow_config),
                    flow_config=flow_config,
@@ -39,7 +60,19 @@ class CompositeFlow(Flow, ABC):
             flow,
             output_interface,
     ):
-        """A helper function that calls a given flow by extracting the input data from the state of the current flow."""
+        """A helper function that calls a given flow by extracting the input data from the state of the current flow.
+        
+        :param goal: The goal of the flow's call
+        :type goal: str
+        :param input_interface: The input interface of the flow
+        :type input_interface: Callable
+        :param flow: The flow to call
+        :type flow: Flow
+        :param output_interface: The output interface of the flow
+        :type output_interface: Callable
+        :return: The output message and the output data
+        :rtype: Tuple[OutputMessage, Dict[str, Any]]
+        """
         # ~~~ Prepare the data for the call ~~~
 
 
@@ -72,11 +105,26 @@ class CompositeFlow(Flow, ABC):
         return output_message, output_data
 
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
-        """Returns the sub-flow with the given name"""
+        """Returns the sub-flow with the given name
+        
+        :param subflow_name: The name of the sub-flow
+        :type subflow_name: str
+        :return: The sub-flow with the given name
+        :rtype: Optional[Flow]
+        """
         return self.subflows.get(subflow_name, None)
 
     @classmethod
     def _set_up_subflows(cls, config):
+        """ Instantiates the subflows from their configurations.
+        
+        :param config: The configuration of the flow. It must usually contain the following keys:
+                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+                                                                 This is necessary when instantiating the flow from a config file.
+        :type config: Dict[str, Any]
+        :return: A dictionary of subflows. The keys are the names of the subflows and the values are the subflows.
+        :rtype: Dict[str, Flow]
+        """
         subflows = dict()
         subflows_config = config["subflows_config"]
 
@@ -94,6 +142,13 @@ class CompositeFlow(Flow, ABC):
 
     @classmethod
     def instantiate_from_config(cls, config):
+        """ Instantiates the flow from a config file.
+        
+        :param config: The configuration of the flow. It must usually contain the following keys:
+                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+                                                                 This is necessary when instantiating the flow from a config file.
+                            - The parameters required by the constructor of the parent class Flow
+        """
         flow_config = copy.deepcopy(config)
 
         kwargs = {"flow_config": copy.deepcopy(flow_config)}
@@ -102,7 +157,13 @@ class CompositeFlow(Flow, ABC):
         return cls(**kwargs)
 
     def _to_string(self, indent_level=0):
-        """Generates a string representation of the flow"""
+        """Generates a string representation of the flow 
+        
+        :param indent_level: The indentation level of the string representation, defaults to 0
+        :type indent_level: int, optional
+        :return: The string representation of the flow
+        :rtype: str
+        """
         indent = "\t" * indent_level
         name = self.flow_config.get("name", "unnamed")
         description = self.flow_config.get("description", "no description")
@@ -126,4 +187,5 @@ class CompositeFlow(Flow, ABC):
 
     @classmethod
     def type(cls):
+        """ Returns the type of the flow as a string."""
         return "CompositeFlow"
