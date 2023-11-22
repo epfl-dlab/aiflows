@@ -303,6 +303,7 @@ def write_outputs(path_to_output_file, summary, mode):
     :param mode: The mode to use
     :type mode: str
     """
+
     def to_dict_serializer(obj):
         """JSON serialized for object that have the to_dict method implemented"""
         if hasattr(obj, "to_dict"):
@@ -366,11 +367,12 @@ def recursive_dictionary_update(d, u):
     if d is None:
         d = {}
     for k, v in u.items():
-        if isinstance(v, collections.abc.Mapping) and isinstance(d.get(k, {}),  collections.abc.Mapping):
+        if isinstance(v, collections.abc.Mapping) and isinstance(d.get(k, {}), collections.abc.Mapping):
             d[k] = recursive_dictionary_update(d.get(k, {}), v)
         else:
             d[k] = v
     return d
+
 
 def log_suggest_help():
     """ Logs a message suggesting to get help or provide feedback on github.
@@ -384,6 +386,7 @@ def log_suggest_help():
     message = " \n\nFor feedback or to get help:  "
     log.info(bold + red + message + reset + bold + green + github_issues_link)
 
+
 def exception_handler(e):
     """ Handles an exception.
     
@@ -393,15 +396,19 @@ def exception_handler(e):
     log_suggest_help()
     log.exception(e)
     exit()
-    
+
+
 def try_except_decorator(f):
     """ A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github."""
+
     def wrapper(*args, **kw):
         try:
             return f(*args, **kw)
         except Exception as e:
             exception_handler(e)
+
     return wrapper
+
 
 def read_yaml_file(path_to_file, resolve=True):
     """ Reads a yaml file.
@@ -428,7 +435,8 @@ def python_file_path_to_module_path(file_path):
     :return: The python module path
     :rtype: str
     """
-    return file_path.replace("/",".").replace(".py","")
+    return file_path.replace("/", ".").replace(".py", "")
+
 
 def python_module_path_to_file_path(module_path):
     """Converts a python module path to a python file path
@@ -438,7 +446,8 @@ def python_module_path_to_file_path(module_path):
     :return: The python file path
     :rtype: str
     """
-    return module_path.replace(".","/") + ".py"
+    return module_path.replace(".", "/") + ".py"
+
 
 def extract_top_level_function_names(python_file_path):
     """Extracts the top level function names from a python file (ignores nested)
@@ -452,33 +461,38 @@ def extract_top_level_function_names(python_file_path):
     with open(python_file_path, 'r') as file:
         file_content = file.read()
         tree = ast.parse(file_content)
-    
-    functions = filter(lambda node: isinstance(node, ast.FunctionDef),ast.iter_child_nodes(tree))
-    function_names = list(map(lambda node: node.name,functions))
+
+    functions = filter(lambda node: isinstance(node, ast.FunctionDef), ast.iter_child_nodes(tree))
+    function_names = list(map(lambda node: node.name, functions))
 
     return function_names
+
 
 def get_function_meta_data(function):
     """ Returns the meta data of a function. (docstring)"""
     return function_to_dict(function)
 
-def get_function_from_name(function_name,module):
+
+def get_function_from_name(function_name, module):
     """ Returns a function from a module given its name."""
-    return getattr(module,function_name)
+    return getattr(module, function_name)
+
 
 def get_pyfile_functions_metadata_from_file(python_file_path):
     """ Returns the meta data of all the functions in a python file (docstring)"""
     function_names = extract_top_level_function_names(python_file_path)
     module_path = python_file_path_to_module_path(python_file_path)
     module = importlib.import_module(module_path)
-    functions = [get_function_from_name(function_name,module) for function_name in function_names]
+    functions = [get_function_from_name(function_name, module) for function_name in function_names]
     return [get_function_meta_data(function) for function in functions]
+
 
 def encode_image(image_path):
     """ Encodes an image to base64."""
     with open(image_path, "rb") as image_file:
         return base64.b64encode(image_file.read()).decode('utf-8')
-    
+
+
 def encode_from_buffer(buffer):
     """ Encodes a buffer (typically an image from a video) to base64."""
     return base64.b64encode(buffer).decode("utf-8")

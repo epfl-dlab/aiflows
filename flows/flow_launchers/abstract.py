@@ -5,7 +5,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from abc import ABC
 
-
 from flows.utils import general_helpers
 from typing import Any, List, Dict, Optional, Iterable
 
@@ -83,7 +82,7 @@ class BaseLauncher(ABC):
         general_helpers.write_outputs(path_to_output_file, batch_output, mode="a+")
 
 
-class  MultiThreadedAPILauncher(BaseLauncher, ABC):
+class MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
     A class for creating a multi-threaded model to query API that can make requests using multiple API keys.
 
@@ -103,12 +102,12 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
 
     def __init__(self, **kwargs):
         self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
-        
+
         self.debug = kwargs.get("debug", False)
         self.single_threaded = kwargs.get("single_threaded", False)
         self.output_dir = kwargs.get("output_dir", None)
-        #you must specify how many api keys you're using otherwise it defaults to one (affects n_workers used during multithreading)
-        self.n_api_keys = kwargs.get("n_api_keys",1) 
+        # you must specify how many api keys you're using otherwise it defaults to one (affects n_workers used during multithreading)
+        self.n_api_keys = kwargs.get("n_api_keys", 1)
         predictions_dir = general_helpers.get_predictions_dir_path(self.output_dir)
         if self.single_threaded:
             self.n_workers = 1
@@ -129,16 +128,14 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
     @try_except_decorator
     def predict_dataloader(self,
                            dataloader: Iterable[dict],
-                           flows_with_interfaces: List[Dict[str, Any]],
-                           path_to_cache: Optional[str] = None) -> None:
+                           flows_with_interfaces: List[Dict[str, Any]]) -> None:
         """
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
 
         :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
-        :param path_to_cache: : A list of existing predictions to use as a starting point.
+        :param flows_with_interfaces(List[Dict]): A list of dictionaries containing a flow instance, and an input and output interface.
         """
-        self._load_cache(path_to_cache)
         self.flows = flows_with_interfaces
 
         num_datapoints = len(dataloader)
@@ -178,9 +175,6 @@ class  MultiThreadedAPILauncher(BaseLauncher, ABC):
                             num_failures += 1
                     except Exception as e:
                         log.exception("")  # logs the exception
-
-                        # The goal is to exit the program and not let the thread "handle" an unexpected exception
-                        # ToDo: sys.exit(1) vs. os._exit(1): Which one to use? os._exit(1) surely does the job
                         os._exit(1)
 
         if num_failures > 0:

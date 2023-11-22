@@ -25,8 +25,7 @@ class FlowLauncher(ABC):
     @try_except_decorator
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
-               path_to_output_file: Optional[str] = None,
-               n_api_keys: Optional[int] = None,) -> Tuple[List[dict]]:
+               path_to_output_file: Optional[str] = None) -> Tuple[List[dict]]:
         """ Static method that takes a flow and runs inference on the given data.
         
         :param flow_with_interfaces: A dictionary containing the flow to run inference with and the input and output interfaces to use.
@@ -35,9 +34,7 @@ class FlowLauncher(ABC):
         :type data: Union[Dict, List[Dict]]
         :param path_to_output_file: A path to a file to write the outputs to.
         :type path_to_output_file: Optional[str], optional
-        :param n_api_keys: The number of API keys to use.
-        :type n_api_keys: Optional[int], optional
-        :return: A tuple containing the full outputs and the human readable outputs.
+        :return: A tuple containing the full outputs and the human-readable outputs.
         :rtype: Tuple[List[dict]]
         """
         flow = flow_with_interfaces["flow"]
@@ -130,16 +127,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         self.output_keys = output_keys
         assert self.n_independent_samples > 0, "The number of independent samples must be greater than 0."
 
-    def _load_cache(self, path_to_cache):
-        """ Loads the cache from a file. (Not implemented yet)
-        
-        :param path_to_cache: The path to the cache file.
-        :type path_to_cache: str
-        """
-        # ToDo: implement cache loading
-        # ToDo: Add tests to verify that the resuming option works both in single_threaded and multi_threaded mode
-        pass
-
     def predict(self, batch: List[dict]) -> List[dict]:
         """ Runs inference for the given batch.
         
@@ -148,8 +135,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
         :return: The batch with the inference outputs added to it.
         :rtype: List[dict]
         """
-        # ToDo: pass the cache in the expected way to the flow
-
         assert len(batch) == 1, "The Flow API model does not support batch sizes greater than 1."
         _resource_id = self._resource_IDs.get()  # The ID of the resources to be used by the thread for this sample
         flow_with_interfaces = self.flows[_resource_id]
@@ -181,7 +166,6 @@ class FlowMultiThreadedAPILauncher(MultiThreadedAPILauncher):
 
                     while _attempt_idx <= self.n_batch_retries:
                         try:
-                            # ToDo: Use the same format as the FlowLauncher for passing API keys
                             input_message = InputMessage.build(
                                 data_dict=input_data_dict,
                                 src_flow="Launcher",
