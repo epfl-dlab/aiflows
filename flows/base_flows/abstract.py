@@ -16,7 +16,7 @@ from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
 from flows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs
 from flows.utils.rich_utils import print_config_tree
 from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
-
+from ..utils.general_helpers import try_except_decorator
 log = logging.get_logger(__name__)
 
 
@@ -468,6 +468,7 @@ class Flow(ABC):
 
         return response
 
+    @try_except_decorator
     def __call__(self, input_message: InputMessage):
         """ Calls the flow on the given input message.
         

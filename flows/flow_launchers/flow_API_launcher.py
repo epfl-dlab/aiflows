@@ -12,7 +12,6 @@ from flows.flow_launchers import MultiThreadedAPILauncher
 from flows.messages import InputMessage
 from ..interfaces.abstract import Interface
 from ..utils import logging
-from ..utils.general_helpers import try_except_decorator
 
 log = logging.get_logger(__name__)
 
@@ -22,7 +21,6 @@ class FlowLauncher(ABC):
     """ A base class for creating a flow launcher.
     """
     @staticmethod
-    @try_except_decorator
     def launch(flow_with_interfaces: Dict[str, Any],
                data: Union[Dict, List[Dict]],
                path_to_output_file: Optional[str] = None) -> Tuple[List[dict]]:

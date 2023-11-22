@@ -395,8 +395,7 @@ def exception_handler(e):
     """
     log_suggest_help()
     log.exception(e)
-    exit()
-
+    raise e
 
 def try_except_decorator(f):
     """ A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github."""
