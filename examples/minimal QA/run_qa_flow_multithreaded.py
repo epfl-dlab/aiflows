@@ -5,7 +5,7 @@ import hydra.utils
 from flows import logging
 from flows.datasets import OutputsDataset
 from flows.flow_cache import CACHING_PARAMETERS, clear_cache
-from flows.flow_launchers import FlowMultiThreadedAPILauncher
+from flows.flow_launchers import FlowLauncher
 
 CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
@@ -36,15 +36,13 @@ if __name__ == "__main__":
     api_information = [openai_api,azure_api]
 
     launcher_config = {
-        "n_api_keys": len(api_information),
         "single_threaded": False,
         "fault_tolerant_mode": False,
         "n_batch_retries": 2,
         "wait_time_between_retries": 6,
-        "n_workers_per_key": 2,
+        "n_workers": 2,
         "debug": False,
         "n_independent_samples": 1,
-        "output_keys": None
     }
 
     # ~~~ Instantiate the Flows ~~~
@@ -56,7 +54,7 @@ if __name__ == "__main__":
     if launcher_config["single_threaded"]:
         n_workers = 1
     else:
-        n_workers = launcher_config["n_workers_per_key"] * len(api_information)
+        n_workers = launcher_config["n_workers"]
 
     flow_instances = []
     for _ in range(n_workers):
@@ -82,7 +80,7 @@ if __name__ == "__main__":
             {"id": 3, "question": "What is the capital of The United States?"}]
 
     # ~~~ Run inference ~~~
-    launcher = FlowMultiThreadedAPILauncher(**launcher_config)
+    launcher = FlowLauncher(**launcher_config)
     launcher.predict_dataloader(data, flows_with_interfaces=flow_instances)
 
     # ~~~ Print the output ~~~

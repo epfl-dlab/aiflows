@@ -90,10 +90,8 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
     :type debug: bool, optional
     :param output_dir: The directory to write the output files to.
     :type output_dir: str, optional
-    :param api_keys: A list of API keys to use for making requests.
-    :type api_keys: List[str]
-    :param n_workers_per_key: The number of workers to use per API key.
-    :type n_workers_per_key: int, optional
+    :param n_workers: The number of workers to use in the multithreading.
+    :type n_workers: int, optional
     :param wait_time_per_key: The number of seconds to wait before making another request with the same API key.
     :type wait_time_per_key: int, optional
     :param single_threaded: A boolean indicating whether to run the multithreading or not.
@@ -101,19 +99,16 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
     """
 
     def __init__(self, **kwargs):
-        self.n_workers_per_key = kwargs.get("n_workers_per_key", 1)
+        self.n_workers = kwargs.get("n_workers", 1)
 
         self.debug = kwargs.get("debug", False)
         self.single_threaded = kwargs.get("single_threaded", False)
         self.output_dir = kwargs.get("output_dir", None)
         # you must specify how many api keys you're using otherwise it defaults to one (affects n_workers used during multithreading)
-        self.n_api_keys = kwargs.get("n_api_keys", 1)
         predictions_dir = general_helpers.get_predictions_dir_path(self.output_dir)
         if self.single_threaded:
             self.n_workers = 1
-        else:
-            self.n_workers = self.n_workers_per_key * self.n_api_keys
-
+       
         self.paths_to_output_files = []
         _resource_IDs = Queue(self.n_workers)
         for i in range(self.n_workers):
@@ -153,8 +148,8 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                 log.info("~~~~~~~~~~~~ Progress: {}/{} batches finished ~~~~~~~~~~~~~".format(c, num_datapoints))
         else:
             log.info(
-                "Running in multi-threaded mode with {} keys and {} workers per key.".format(
-                    self.n_api_keys, self.n_workers_per_key
+                "Running in multi-threaded mode with {} workers.".format(
+                    self.n_workers
                 )
             )
 
