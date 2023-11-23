@@ -10,7 +10,7 @@ import jsonlines
 import gzip
 import importlib
 from omegaconf import OmegaConf
-from litellm.utils import function_to_dict
+#from litellm.utils import function_to_dict
 from flows import logging
 import base64
 
@@ -467,9 +467,9 @@ def extract_top_level_function_names(python_file_path):
     return function_names
 
 
-def get_function_meta_data(function):
-    """ Returns the meta data of a function. (docstring)"""
-    return function_to_dict(function)
+# def get_function_meta_data(function):
+#     """ Returns the meta data of a function. (docstring)"""
+#     return function_to_dict(function)
 
 
 def get_function_from_name(function_name, module):
@@ -477,13 +477,13 @@ def get_function_from_name(function_name, module):
     return getattr(module, function_name)
 
 
-def get_pyfile_functions_metadata_from_file(python_file_path):
-    """ Returns the meta data of all the functions in a python file (docstring)"""
-    function_names = extract_top_level_function_names(python_file_path)
-    module_path = python_file_path_to_module_path(python_file_path)
-    module = importlib.import_module(module_path)
-    functions = [get_function_from_name(function_name, module) for function_name in function_names]
-    return [get_function_meta_data(function) for function in functions]
+# def get_pyfile_functions_metadata_from_file(python_file_path):
+#     """ Returns the meta data of all the functions in a python file (docstring)"""
+#     function_names = extract_top_level_function_names(python_file_path)
+#     module_path = python_file_path_to_module_path(python_file_path)
+#     module = importlib.import_module(module_path)
+#     functions = [get_function_from_name(function_name, module) for function_name in function_names]
+#     return [get_function_meta_data(function) for function in functions]
 
 
 def encode_image(image_path):
