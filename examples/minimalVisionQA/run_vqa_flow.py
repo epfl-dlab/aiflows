@@ -18,7 +18,7 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 from flows import flow_verse
 
 dependencies = [
-    {"url": "aiflows/VisionFlowModule", "revision": "FlowVerse/VisionFlowModule"},
+    {"url": "aiflows/VisionFlowModule", "revision": "56001148dad7d430b64ed073b22a7d97499d076c"},
 ]
 flow_verse.sync_dependencies(dependencies)
 

@@ -6,7 +6,7 @@ Atomic Flow
 
 The ``AtomicFlow`` class is a subclass of ``Flow``, and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
 
-One notable example is the `OpenAIChatAtomicFlow <https://huggingface.co/martinjosifoski/OpenAIChatAtomicFlow/discussions>`__, which is a wrapper around the OpenAI chat API.
+One notable example is the `ChatAtomicFlow <https://huggingface.co/martinjosifoski/ChatAtomicFlow/discussions>`__, which is a wrapper around the OpenAI chat API.
 
 Another example is the `CodeTestingAtomicFlow <https://huggingface.co/martinjosifoski/CC_flows/blob/main/CodeTesting.py>`__, which takes code and tests (or generates the tests) and returns the execution results.
 

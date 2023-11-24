@@ -8,8 +8,8 @@ output_interface:  # Connector between the Flow's output and the caller
   keys_to_rename:
     api_output: answer  # Rename the api_output to answer
 
-flow:  # Overrides the OpenAIChatAtomicFlow config
-  _target_: aiflows.OpenAIChatFlowModule.OpenAIChatAtomicFlow.instantiate_from_default_config
+flow:  # Overrides the ChatAtomicFlow config
+  _target_: aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
 
   name: "SimpleQA_Flow"
   description: "A flow that answers questions."

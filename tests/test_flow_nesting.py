@@ -1,5 +1,5 @@
 
-from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, OpenAIChatAtomicFlow
+from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, ChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
@@ -27,7 +27,7 @@ def test_loading_nested_flow() -> None:
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": [],
@@ -39,7 +39,7 @@ def test_loading_nested_flow() -> None:
         "query_message_prompt_template": query_prompt,
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     crit_flow_dict = {
         "_target_": "flows.base_flows.FixedReplyFlow",
@@ -94,7 +94,7 @@ def test_loading_nested_flow() -> None:
     assert first_flow.n_rounds == 2
 
     gen_flow = first_flow.flows["generator_flow"]
-    assert isinstance(gen_flow, OpenAIChatAtomicFlow)
+    assert isinstance(gen_flow, ChatAtomicFlow)
     assert gen_flow.generation_parameters["temperature"] == 0.7
     assert gen_flow.system_message_prompt_template.template == "You are a helpful assistant"
 

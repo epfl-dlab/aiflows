@@ -8,7 +8,7 @@ output_interface:  # Connector between the Flow's output and the caller
   keys_to_rename:
     api_output: answer  # Rename the api_output to answer
 
-flow:  # Overrides the OpenAIChatAtomicFlow config
+flow:  # Overrides the ChatAtomicFlow config
   _target_: aiflows.VisionFlowModule.VisionAtomicFlow.instantiate_from_default_config
   name: "VisionQA_Flow"
   description: "A flow that answers questions on images."

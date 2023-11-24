@@ -18,7 +18,7 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 from flows import flow_verse
 
 dependencies = [
-    {"url": "aiflows/OpenAIChatFlowModule", "revision": "d69ba2125de99d2edb631dd51d22225ed9e3446c"},
+    {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},
 ]
 flow_verse.sync_dependencies(dependencies)
 

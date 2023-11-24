@@ -61,7 +61,7 @@ Flow State
 ``flow_state`` is a dictionary containing all the information that affects the Flow's computation.
 Flows are, generally, stateful operators. The ``flow_state`` stores the intermediate results of the current execution and any information that can affect future computations resulting from prior runs. This object is handy for coordinating computation spanning multiple rounds or involving numerous flows. 
 
-A standard example of a stateful Flow is ``OpenAIChatAtomicFlow,`` which has the ``previous_messages`` as part of its ``flow_state.`` 
+A standard example of a stateful Flow is ``ChatAtomicFlow,`` which has the ``previous_messages`` as part of its ``flow_state.`` 
 
 The ``flow_state`` is initialized by the ``set_up_flow_state`` method of the ``Flow`` class. The ``flow_state`` can be reset by calling the ``reset`` method of the ``Flow`` class. By default, the ``reset`` method is called by the ``FlowLauncher`` class at the end of the execution for each data sample to ensure a clean state before running the next one. Some use cases might require a ``reset`` even within a single run.
 

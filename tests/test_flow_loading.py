@@ -1,5 +1,5 @@
 
-from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, OpenAIChatAtomicFlow
+from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, ChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
 from hydra.errors import InstantiationException
@@ -47,7 +47,7 @@ def test_openai_atomic_loading() -> None:
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -59,7 +59,7 @@ def test_openai_atomic_loading() -> None:
         "query_message_prompt_template": query_prompt
     }
 
-    flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    flow = ChatAtomicFlow(**gen_flow_dict)
 
     assert flow.name == "gen_flow"
     assert flow.verbose  # test that defaults are set

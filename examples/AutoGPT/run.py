@@ -16,8 +16,8 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "aiflows/AutoGPTFlowModule", "revision": "101593529740d060144efbe62bf32fdd6b94cbe1"},
-    {"url": "aiflows/LCToolFlowModule", "revision": "46dd24ecc3dc4f4f0191e57c202cc7d20e8e7782"},
+    {"url": "aiflows/AutoGPTFlowModule", "revision": "f56bea985728b3b12d1042873abadfa9ebd4b4f6"},
+    {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
 ]
 from flows import flow_verse
 

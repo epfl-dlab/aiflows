@@ -1,6 +1,6 @@
 
 
-flow:  # Overrides the OpenAIChatAtomicFlow config
+flow:  # Overrides the ChatAtomicFlow config
   _target_: aiflows.ChatWithDemonstrationsFlowModule.ChatWithDemonstrationsFlow.instantiate_from_default_config
   name: "SimpleQA_Flow_with_Demonstrations"
   description: "A sequential flow that answers questions with demonstrations"

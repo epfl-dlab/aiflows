@@ -69,11 +69,11 @@ The first example we're going to be looking at is the [minimal QA](examples/mini
 As we can see from the following lines in [run_qa_flow.py](examples/minimal%20QA/run_qa_flow.py):
 ```python
 dependencies = [
-    {"url": "aiflows/OpenAIChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
+    {"url": "aiflows/ChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
 ]
 ```
 
-This flow is built on the the `OpenAiChatFlowModule` flow hosted on the [FlowVerse](https://huggingface.co/aiflows). If you click [here](https://huggingface.co/aiflows/OpenAIChatFlowModule) you can see the `OpenAiChatFlowModule`. The `revision` key in the `dependencies` dictonary (from code here above) indicates the commit hash from which we will pulling from (to see the various commit hashes of  `OpenAiChatFlowModule` click [here](https://huggingface.co/aiflows/OpenAIChatFlowModule/commits/main)). 
+This flow is built on the the `ChatFlowModule` flow hosted on the [FlowVerse](https://huggingface.co/aiflows). If you click [here](https://huggingface.co/aiflows/ChatFlowModule) you can see the `ChatFlowModule`. The `revision` key in the `dependencies` dictonary (from code here above) indicates the commit hash from which we will pulling from (to see the various commit hashes of  `ChatFlowModule` click [here](https://huggingface.co/aiflows/ChatFlowModule/commits/main)). 
 
 The configuration of our flow is defined in [simpleQA.yaml](examples/minimal%20QA/run_qa_flow.py). The first line of the config file are the following:
 ```ruby
@@ -89,8 +89,8 @@ output_interface:  # Connector between the Flow's output and the caller
 ```
 As specified in the comments, the `input_interface` and `output_interface` contain the parameters necessary to configure the input and output interfaces of the flow (if you're unfamiliar with hydra and config files, make sure to go through the basic concepts by visiting the [hydra](https://hydra.cc/) homepage). The rest of the config configures the rest of the flow:
 ```ruby
-flow:  # Overrides the OpenAIChatAtomicFlow config
-  _target_: aiflows.OpenAIChatFlowModule.OpenAIChatAtomicFlow.instantiate_from_default_config
+flow:  # Overrides the ChatAtomicFlow config
+  _target_: aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
 
   name: "SimpleQA_Flow"
   description: "A flow that answers questions."
@@ -132,7 +132,7 @@ flow:  # Overrides the OpenAIChatAtomicFlow config
     template_format: jinja2
 ```
 Some interesting fields are:
-* **`_target_: aiflows.OpenAIChatFlowModule.OpenAIChatAtomicFlow.instantiate_from_default_config`**: which specifies that we will be instantiatin the `OpenAIChatFlowModule` from a default configuration that we are specifying here
+* **`_target_: aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config`**: which specifies that we will be instantiatin the `ChatFlowModule` from a default configuration that we are specifying here
 * **`input_interface_non_initialized:`**: Which indicates the various keys that will be included in our input
 * **`model: "gpt-3.5-turbo"`**: Indicating we'll be using the "gpt-3.5-turbo" model from openAI as our LLM
 * **`system_message_prompt_template:`**: Indicating the system prompt we will be feeding to the openAI model
@@ -226,7 +226,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
 ### AtomicFlow
 The `AtomicFlow` class is a subclass of `Flow` and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
 
-One notable example is the [OpenAIChatAtomicFlow](../flows/application_flows/OpenAIFlowModule/OpenAIChatAtomicFlow.py), which is a wrapper around the OpenAI chat API.
+One notable example is the [ChatAtomicFlow](../flows/application_flows/OpenAIFlowModule/ChatAtomicFlow.py), which is a wrapper around the OpenAI chat API.
 
 Another example is the [HumanInputFlow](../flows/application_flows/HumanInputFlowModule/HumanInputFlow.py), which takes a human input.
 

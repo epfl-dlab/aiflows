@@ -28,19 +28,19 @@ To start, create a local directory where you'll develop your flow module:
     create mode 100644 EconomicExpertBot.py
     create mode 100644 __init__.py
 
-Next, we could either develop from scratch as in :ref:`write_atomic` or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on `saibo/OpenAIChatFlows <https://huggingface.co/saibo/OpenAIChatFlows>`__ thanks to the modularity of Flows:
+Next, we could either develop from scratch as in :ref:`write_atomic` or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on `saibo/ChatFlows <https://huggingface.co/saibo/ChatFlows>`__ thanks to the modularity of Flows:
 
 .. code-block:: python
     
     dependencies = [
-    {"url": "saibo/OpenAIChatFlows", "revision": "main"},
+    {"url": "saibo/ChatFlows", "revision": "main"},
     ]
     from flows import flow_verse
     flow_verse.sync_dependencies(dependencies) 
 
-    from flow_modules.saibo.OpenAIChatFlows import OpenAIChatGPT4
+    from flow_modules.saibo.ChatFlows import ChatGPT4
 
-    class EconomicExpertBot(OpenAIChatGPT4):
+    class EconomicExpertBot(ChatGPT4):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -66,7 +66,7 @@ We recommend to associate your flow with a default yaml file as the default conf
     input_variables: []
     template_format: jinja2
 
-This explicitly informs potential users about the ``input_keys`` and ``output_keys``, which can be seen as the interface of our Flow. Since we're inheriting from ``saibo/OpenAIChatFlows.OpenAIChatGPT4``, we also inherit the `default config <https://huggingface.co/saibo/OpenAIChatFlows/blob/main/OpenAIChatGPT4.yaml>`__ from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
+This explicitly informs potential users about the ``input_keys`` and ``output_keys``, which can be seen as the interface of our Flow. Since we're inheriting from ``saibo/ChatFlows.ChatGPT4``, we also inherit the `default config <https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.yaml>`__ from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
 
 Note that a flow module should ideally be a self-contained python module. Therefore, it's best to use relative import inside your code such that other users can use your flow instantly.
 

@@ -1,7 +1,7 @@
 import pytest
 from langchain.chat_models import ChatOpenAI
 
-from flows.base_flows import OpenAIChatAtomicFlow, Flow
+from flows.base_flows import ChatAtomicFlow, Flow
 from flows.messages import TaskMessage
 from flows.messages.chat_message import ChatMessage
 from tests.mocks import MockChatOpenAI, MockBrokenChatOpenAI, MockAnnotator
@@ -10,16 +10,16 @@ import time
 
 def test_missing_keys():
     with pytest.raises(KeyError):
-        OpenAIChatAtomicFlow()
+        ChatAtomicFlow()
 
     with pytest.raises(KeyError):
-        OpenAIChatAtomicFlow(model_name="gpt-model")
+        ChatAtomicFlow(model_name="gpt-model")
 
     with pytest.raises(KeyError):
-        OpenAIChatAtomicFlow(model_name="gpt-model", generation_parameters={})
+        ChatAtomicFlow(model_name="gpt-model", generation_parameters={})
 
     with pytest.raises(KeyError):
-        OpenAIChatAtomicFlow(model_name="gpt-model", generation_parameters={}, system_message_prompt_template={})
+        ChatAtomicFlow(model_name="gpt-model", generation_parameters={}, system_message_prompt_template={})
 
 
 def test_success(monkeypatch):
@@ -47,7 +47,7 @@ def test_success(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": expected_in,
@@ -61,8 +61,8 @@ def test_success(monkeypatch):
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
-    openai_flow = OpenAIChatAtomicFlow.instantiate(gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow.instantiate(gen_flow_dict)
     assert openai_flow.input_keys_given_state() == expected_in
 
     answer_annotator = openai_flow._get_annotator_with_key("answer")
@@ -98,7 +98,7 @@ def test_state_update():
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": expected_in,
@@ -112,7 +112,7 @@ def test_state_update():
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
     assert len(openai_flow.flow_state["history"]) == 0
     openai_flow._update_state({"answer": "foo"}, [])
     assert len(openai_flow.flow_state["history"]) == 1
@@ -176,7 +176,7 @@ def test_failure(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -189,7 +189,7 @@ def test_failure(monkeypatch):
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
@@ -226,7 +226,7 @@ def test_conv_init(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -239,7 +239,7 @@ def test_conv_init(monkeypatch):
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
@@ -279,7 +279,7 @@ def test_inspect_conversation(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -292,7 +292,7 @@ def test_inspect_conversation(monkeypatch):
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
@@ -341,7 +341,7 @@ def test_add_demonstration(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -355,7 +355,7 @@ def test_add_demonstration(monkeypatch):
         "demonstrations": [{"query": "What is your answer?", "answer": "answer"}]
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
@@ -391,7 +391,7 @@ def test_response_annotator_wrong_key(monkeypatch):
     }
 
     gen_flow_dict = {
-        "_target_": "flows.base_flows.OpenAIChatAtomicFlow",
+        "_target_": "flows.base_flows.ChatAtomicFlow",
         "name": "gen_flow",
         "description": "gen_desc",
         "input_keys": ["input_0", "input_1"],
@@ -405,7 +405,7 @@ def test_response_annotator_wrong_key(monkeypatch):
 
     }
 
-    openai_flow = OpenAIChatAtomicFlow(**gen_flow_dict)
+    openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     answer_annotator = openai_flow._get_annotator_with_key("answer")
     assert answer_annotator is None
