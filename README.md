@@ -1,8 +1,6 @@
-
-
 <p align="center">
       <br/>
-            <img src="assets/flows_logo.png" alt="image" width="150" height="auto">
+            <img src="assets/flows_logo_round.png" alt="image" width="250" height="auto">
       <br/>
       <p align="center" style="font-size: 32px; font-weight: bold;">Flows: Building Blocks of Reasoning and Collaborating AI</<p>
 <p>
