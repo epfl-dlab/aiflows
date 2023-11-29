@@ -1,6 +1,27 @@
-[![arXiv](https://img.shields.io/badge/arXiv-2308.01285-b31b1b.svg)](https://arxiv.org/abs/2308.01285)
 
-# Flows: Building Blocks of Reasoning and Collaborating AI
+
+<p align="center">
+      <br/>
+            <img src="assets/flows_logo.png" alt="image" width="150" height="auto">
+      <br/>
+      <p style="text-align: center; display: block; font-size: 32px; font-weight: bold;">Flows: Building Blocks of Reasoning and Collaborating AI</<p>
+<p>
+
+<p align="center">
+    <a href="https://epfl-dlab.github.io/flows">
+    <img alt="Website" src="https://img.shields.io/badge/website-online-green">
+    </a>
+    <a href="https://discord.gg/NJuDxSafCY">
+    <img alt="Static Badge" src="https://img.shields.io/badge/Discord-gray?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FNJuDxSafCY">
+    </a>
+    <a href="https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html">
+    <img alt="Documentation" src="https://img.shields.io/badge/docs-online-green">
+    </a>
+    <a href="https://www.python.org/downloads/release/python-3100/"><img alt="PyPi version" src="https://img.shields.io/badge/python-3.10-blue.svg"></a>
+    <a href="https://arxiv.org/abs/2308.01285">
+    <img alt="Documentation" src="https://img.shields.io/badge/arXiv-2308.01285-b31b1b.svg">
+    </a>
+</p>
 
 ## Introduction
 
