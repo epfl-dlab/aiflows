@@ -4,7 +4,7 @@
 ## Creating, Testing, and Publishing Your Own Flow Module
 
 In this tutorial, we will guide you on *Creating, Testing, and Publishing* your own flow module.
- 
+
 ### Creating Your Own Flow Module
 
 To start, create a local directory where you'll develop your flow module:
@@ -13,11 +13,11 @@ To start, create a local directory where you'll develop your flow module:
 (flows) ➜  dev-tutorial mkdir PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
 (flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
 (flows) ➜  dev_UsefulChatBots touch __init__.py
-(flows) ➜  dev_UsefulChatBots touch .gitignore 
+(flows) ➜  dev_UsefulChatBots touch .gitignore
 (flows) ➜  dev_UsefulChatBots touch EconomicExpertBot.py
-(flows) ➜  dev_UsefulChatBots git init     
+(flows) ➜  dev_UsefulChatBots git init
 (flows) ➜  dev_UsefulChatBots git:(main) ✗ git add .
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"                        
+(flows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"
 [main (root-commit) e592fd1] initial commit
 3 files changed, 0 insertions(+), 0 deletions(-)
 create mode 100644 .gitignore
@@ -25,18 +25,18 @@ create mode 100644 EconomicExpertBot.py
 create mode 100644 __init__.py
 ```
 
-Next, we could either develop from scratch as in [Tutorial for AtomicFlow](https://hackmd.io/9NxZV0xhRN-UEdjZ8Vu9Lw) or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on [saibo/OpenAIChatFlows](https://huggingface.co/saibo/OpenAIChatFlows) thanks to the modularity of Flows:
+Next, we could either develop from scratch as in [Tutorial for AtomicFlow](https://hackmd.io/9NxZV0xhRN-UEdjZ8Vu9Lw) or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) thanks to the modularity of Flows:
 
 ```python
 dependencies = [
-   {"url": "saibo/OpenAIChatFlows", "revision": "main"},
+   {"url": "saibo/ChatFlows", "revision": "main"},
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
-from flow_modules.saibo.OpenAIChatFlows import OpenAIChatGPT4
+from flow_modules.saibo.ChatFlows import ChatGPT4
 
-class EconomicExpertBot(OpenAIChatGPT4):
+class EconomicExpertBot(ChatGPT4):
    def __init__(self, **kwargs):
 	   super().__init__(**kwargs)
 ```
@@ -47,7 +47,7 @@ name: "EconomicExpertBot"
 verbose: False
 description: "A chatbot which answers questions about the economy."
 
-input_interface: 
+input_interface:
  - "query"
 
 output_interface:
@@ -62,7 +62,7 @@ system_message_prompt_template:
  template_format: jinja2
 ```
 
-This explicitly informs potential users about the `input_interface` and `output_interface`, which can be seen as the interface of our Flow. Since we're inheriting from `saibo/OpenAIChatFlows.OpenAIChatGPT4`, we also inherit the [default config](https://huggingface.co/saibo/OpenAIChatFlows/blob/main/OpenAIChatGPT4.yaml) from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
+This explicitly informs potential users about the `input_interface` and `output_interface`, which can be seen as the interface of our Flow. Since we're inheriting from `saibo/ChatFlows.ChatGPT4`, we also inherit the [default config](https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.yaml) from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
 
 Note that a flow module should ideally be a self-contained python module. Therefore, it's best to use relative import inside your code such that other users can use your flow instantly.
 
@@ -75,7 +75,7 @@ dependencies = [
     {"url": "yeeef/UsefulChatBots", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"},
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
 import os
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
     ]
     print(f"inputs: {inputs}")
 
-    # init a minimal flow_launcher without specifying the output_keys, then 
+    # init a minimal flow_launcher without specifying the output_keys, then
     # the full output_keys will be given
     outputs = FlowLauncher.launch(
         flow_with_interfaces={"flow": bot},
@@ -111,7 +111,7 @@ We also specify the namespace of our flow module: `yeeef/UsefulChatBots`. yeeef 
 Then let’s execute the code and test our new flow:
 
 ```
-(flows) ➜  dev-tutorial python ask_economic_expert_bot.py 
+(flows) ➜  dev-tutorial python ask_economic_expert_bot.py
 inputs: [{'id': 0, 'query': 'What is CPI? What is the current CPI in the US?'}]
 [2023-07-05 17:05:35,530][flows.base_flows.abstract][WARNING] - The raw response was not logged.
 [{'id': 0, 'inference_outputs': [OutputMessage(message_id='d95683d6-9507-4a90-b290-6a43e609c904', created_at='2023-07-05 09:05:35.530972000', created_by='EconomicExpertBot', message_type='OutputMessage', data={'output_keys': ['response'], 'output_data': {'response': 'CPI, or the Consumer Price Index, is a measure that examines the weighted average of prices of a basket of consumer goods and services, such as transportation, food, and medical care. It is calculated by taking price changes for each item in the predetermined basket of goods and averaging them. Changes in the CPI are used to assess price changes associated with the cost of living.'}, 'missing_output_keys': []}, private_keys=['api_keys'])], 'error': None}]
@@ -130,12 +130,12 @@ Then, you can either upload the files manually through the Hugging Face webpage 
 
 ```shell
 (flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots 
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main   
+(flows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots
+(flows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main
 (flows) ➜  dev_UsefulChatBots git:(main) ✗ git push --set-upstream origin main
 ```
 
-Congratulations! You now have your remote module online, available for everyone to use! 
+Congratulations! You now have your remote module online, available for everyone to use!
 
 
 ![](https://hackmd.io/_uploads/HJ4LNafF3.png)
@@ -144,29 +144,29 @@ Congratulations! You now have your remote module online, available for everyone 
 
 In this tutorial, we continue to use the `trivial_sync_demo.py` script. As the dependencies are synced to your root directory, you can instantly modify the synced flow module according to your needs. Once you've made enough changes and feel ready to make a Pull Request (PR), you simply need to push your changes to the Hugging Face repository and create the PR.
 
-For instance, let's say we want to update the dependency of [saibo/OpenAIChatFlows](https://huggingface.co/saibo/OpenAIChatFlows) to the latest version of [martinjosifoski/OpenAIChatAtomicFlow](https://huggingface.co/martinjosifoski/OpenAIChatAtomicFlow/tree/main):
+For instance, let's say we want to update the dependency of [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) to the latest version of [martinjosifoski/ChatAtomicFlow](https://huggingface.co/martinjosifoski/ChatAtomicFlow/tree/main):
 
 ```python
 dependencies = [
-    {"url": "martinjosifoski/OpenAIChatAtomicFlow", "revision": "main"} # cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a -> main
+    {"url": "martinjosifoski/ChatAtomicFlow", "revision": "main"} # cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a -> main
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
-from flow_modules.martinjosifoski.OpenAIChatAtomicFlow import OpenAIChatAtomicFlow
+from flow_modules.martinjosifoski.ChatAtomicFlow import ChatAtomicFlow
 
-class OpenAIChatGPT4(OpenAIChatAtomicFlow):
+class ChatGPT4(ChatAtomicFlow):
     def __init__(self, **kwargs):
 ```
 
 Firstly, navigate to the synced folder, initialize a git repository, and commit your changes:
 
 ```
-(flows) ➜  dev-tutorial cd flow_modules/saibo/OpenAIChatFlows   
-(flows) ➜  OpenAIChatFlows git init               
-Initialized empty Git repository in /Users/yeeef/Desktop/dlab-ra/dev-tutorial/flow_modules/saibo/OpenAIChatFlows/.git/
-(flows) ➜  OpenAIChatFlows git:(main) ✗ git add .
-(flows) ➜  OpenAIChatFlows git:(main) ✗ git commit -m "Change the dependency revision to main"
+(flows) ➜  dev-tutorial cd flow_modules/saibo/ChatFlows
+(flows) ➜  ChatFlows git init
+Initialized empty Git repository in /Users/yeeef/Desktop/dlab-ra/dev-tutorial/flow_modules/saibo/ChatFlows/.git/
+(flows) ➜  ChatFlows git:(main) ✗ git add .
+(flows) ➜  ChatFlows git:(main) ✗ git commit -m "Change the dependency revision to main"
 [main d7465df] Change the dependency revision to main
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
@@ -184,11 +184,11 @@ Enter a brief description for your PR branch and click on `Create PR branch`.
 Once your PR branch has been created (for instance, `pr/2`), you'll need to push your changes to this branch:
 
 ```
-(flows) ➜  OpenAIChatFlows git:(main) git checkout -b pr/2                                  
+(flows) ➜  ChatFlows git:(main) git checkout -b pr/2
 Switched to a new branch 'pr/2'
-(flows) ➜  OpenAIChatFlows git:(pr/2) git remote add origin https://huggingface.co/saibo/OpenAIChatFlows
-(flows) ➜  OpenAIChatFlows git:(pr/2) git pull -r origin pr/2
-(flows) ➜  OpenAIChatFlows git:(pr/2) git push origin pr/2:pr/2
+(flows) ➜  ChatFlows git:(pr/2) git remote add origin https://huggingface.co/saibo/ChatFlows
+(flows) ➜  ChatFlows git:(pr/2) git pull -r origin pr/2
+(flows) ➜  ChatFlows git:(pr/2) git push origin pr/2:pr/2
 Enumerating objects: 11, done.
 Counting objects: 100% (11/11), done.
 Delta compression using up to 10 threads
@@ -197,7 +197,7 @@ Writing objects: 100% (8/8), 952 bytes | 952.00 KiB/s, done.
 Total 8 (delta 5), reused 0 (delta 0), pack-reused
 
  0
-To https://huggingface.co/saibo/OpenAIChatFlows
+To https://huggingface.co/saibo/ChatFlows
    1849a87..1818057  pr/2 -> refs/pr/2
 ```
 
@@ -207,33 +207,32 @@ Finally, review your PR changes on the Hugging Face PR page and click the `Publi
 
 ## Develop Over an Existing Flow and Publish it Under Your Namespace
 
-As a Flow developer, you can easily develop based on any synced flow modules. However, instead of making a PR to the original repository, you may wish to publish it under your own namespace. This can be the case if you've made substantial changes that the original author might not prefer. 
+As a Flow developer, you can easily develop based on any synced flow modules. However, instead of making a PR to the original repository, you may wish to publish it under your own namespace. This can be the case if you've made substantial changes that the original author might not prefer.
 
-Let’s get back to our `trivial_sync_demo`, where we leverage `saibo/OpenAIChatFlows`. We have made some changes to it and want to publish it on our own as `yeeef/MyOpenAIChatFlows`. To do this, we recommend following steps:
+Let’s get back to our `trivial_sync_demo`, where we leverage `saibo/ChatFlows`. We have made some changes to it and want to publish it on our own as `yeeef/MyChatFlows`. To do this, we recommend following steps:
 
 **Step 1**: Manually copy the modified flow module out of the `flow_modules` directory:
 
 ```shell
-(flows) ➜  dev-tutorial cp -r ./flow_modules/saibo/OpenAIChatFlows PATH_TO_LOCAL_DEV_DIRECTORY/MyOpenAIChatFlows
+(flows) ➜  dev-tutorial cp -r ./flow_modules/saibo/ChatFlows PATH_TO_LOCAL_DEV_DIRECTORY/MyChatFlows
 ```
 
 **Step 2**: Next, we can treat it as a local file directory and sync it with a local revision:
 
 ```python
 dependencies = [
-    {"url": "saibo/OpenAIChatFlows", "revision": "main"},
-    {"url": "yeeef/MyOpenAIChatFlows", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/MyOpenAIChatFlows"},
+    {"url": "saibo/ChatFlows", "revision": "main"},
+    {"url": "yeeef/MyChatFlows", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/MyChatFlows"},
 
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
-from flow_modules.saibo.OpenAIChatFlows import OpenAIChatGPT4
-from flow_modules.yeeef.MyOpenAIChatFlows import MyOpenAIChatGPT4
+from flow_modules.saibo.ChatFlows import ChatGPT4
+from flow_modules.yeeef.MyChatFlows import MyChatGPT4
 
 if __name__ == "__main__":
 	print("it is a trivial sync demo")
 ```
 
 **Step 3**: Finally, follow the procedure outlined in [this](###Creating,-Testing,-and-Publishing-Your-Own-Flow-Module) section, and you are good to go!
-

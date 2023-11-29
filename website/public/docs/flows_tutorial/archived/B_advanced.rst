@@ -13,7 +13,7 @@ You should also have seen how to use the messaging system:
  * Use ``__call__`` to consume a ``TaskMessage`` and return an ``OutputMessage``: ``output = flow(task_message)``
  * Use ``_update_state`` to modify the ``flow_state`` and log a ``StateUpdateMessage``
 
-With this tutorial you're diving deeper: We create a ``Flow`` that downloads recent papers from arxiv.org and uses a ``OpenAIChatAtomicFlow`` to summarize them.
+With this tutorial you're diving deeper: We create a ``Flow`` that downloads recent papers from arxiv.org and uses a ``ChatAtomicFlow`` to summarize them.
 You'll also see our caching mechanism and how to interface with human input.
 
 -----------------------------------------
@@ -186,9 +186,9 @@ Introducing a LLM to summarize the papers
 ------------------------------------------------------------------------------------------------------------------
 
 The ``SequentialFlow`` is a convenient way to chain up multiple ``Flow`` instances.
-Another ready-to-use building block is the ``OpenAIChatAtomicFlow``.
+Another ready-to-use building block is the ``ChatAtomicFlow``.
 It integrates the OpenAI API, as well as ``LangChain`` prompts, to interface with an LLM.
-If your prompt templates take input variables, the ``OpenAIChatAtomicFlow`` will automatically populate them with values from its ``flow_state``.
+If your prompt templates take input variables, the ``ChatAtomicFlow`` will automatically populate them with values from its ``flow_state``.
 The cooperation between ``LangChain``, ``OpenAI`` and our ``Flow`` instances is absolutely seamless. ::
 
     sys_prompt={
@@ -213,7 +213,7 @@ The cooperation between ``LangChain``, ``OpenAI`` and our ``Flow`` instances is 
         "template_format":"jinja2"
     }
 
-    summarizer_flow = OpenAIChatAtomicFlow(
+    summarizer_flow = ChatAtomicFlow(
         name="SummarizeArxiv",
         description="summarizes several arxiv paper",
         model_name="gpt-3.5-turbo",
@@ -259,7 +259,7 @@ Thanks to the built-in caching mechanism, when you run the code twice, you'll se
 
  | Retrieved from cache: ArxivAPIAtomicFlow -- run(input_data.keys()=['query', 'max_results'], expected_outputs=['arxiv_outputs'])
  | Retrieved from cache: ArxivDocumentTransform -- run(input_data.keys()=['arxiv_outputs'], expected_outputs=['paper_descriptions'])
- | Retrieved from cache: OpenAIChatAtomicFlow -- run(input_data.keys()=['field', 'paper_descriptions'], expected_outputs=['summary'])
+ | Retrieved from cache: ChatAtomicFlow -- run(input_data.keys()=['field', 'paper_descriptions'], expected_outputs=['summary'])
 
 ------------------------------------------------------------------------------------------------------------------
 Adding a human in the loop
@@ -282,4 +282,3 @@ We can add human input by implementing a new ``HumanInputAtomicFlow`` ::
 
 You can run the whole code (and maybe discover some useful recent publications) with this `code <https://github.com/epfl-dlab/flows/tree/main/tutorials/arxive_flows/d_qa_flow.py/>`_.
 It takes some time to download the arxiv papers for the first time, but thanks to the caching, this is only done once.
-

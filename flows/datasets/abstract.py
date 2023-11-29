@@ -1,4 +1,4 @@
-import numpy as np
+import random
 
 
 class AbstractDataset:
@@ -11,7 +11,7 @@ class AbstractDataset:
     def __init__(self, params):
         super().__init__()
         self.params = params
-        self.random_state = np.random.RandomState(self.params.get("seed", 123))
+        self.random_state = random.Random(self.params.get("seed", 123))
 
     def __len__(self):
         raise NotImplementedError()

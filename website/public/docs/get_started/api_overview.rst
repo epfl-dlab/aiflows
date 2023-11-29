@@ -22,7 +22,7 @@ Core Methods
 * ``set_up_flow_state(self)``: A method that sets up the initial ``flow_state`` attribute for a Flow. This method is called by the ``__init__`` method and/or the reset function to ``factory reset`` the Flow. Subclasses of ``Flow`` often override this function to achieve a specific behavior.
 * ``get_input_keys(data: Optional[Dict[str, Any])``: A function that ``input_keys`` that should be part of the (following) input message given the Flow's state and the input data. While, usually, Flows would have a simple interface, this method can be used to achieve an arbitrarily dynamic behavior.
 * ``get_output_keys(data: Optional[Dict[str, Any])``: Similar to input keys, this method defines the output keys given the ``flow_state`` and the input data.
-* ``package_output_message(self, input_message: InputMessage, response: Any) -> OutputMessage``: A method that packages the flow response into an ``OutputMessage`` object based on the "task_definition" specified in the ``InputMessage.`` 
+* ``package_output_message(self, input_message: InputMessage, response: Any) -> OutputMessage``: A method that packages the flow response into an ``OutputMessage`` object based on the "task_definition" specified in the ``InputMessage.``
 * ``reset(self, full_reset: bool, recursive: bool)``: A method that clears only the Flows namespace (if ``full_reset`` is false) --- this is done at the end of every call by default (a behavior that can be overridden) --- or the ``flow_state`` as well (if ``full_reset`` is true).
 
 FlowLauncher
@@ -59,9 +59,9 @@ Flow State
 ==========
 
 ``flow_state`` is a dictionary containing all the information that affects the Flow's computation.
-Flows are, generally, stateful operators. The ``flow_state`` stores the intermediate results of the current execution and any information that can affect future computations resulting from prior runs. This object is handy for coordinating computation spanning multiple rounds or involving numerous flows. 
+Flows are, generally, stateful operators. The ``flow_state`` stores the intermediate results of the current execution and any information that can affect future computations resulting from prior runs. This object is handy for coordinating computation spanning multiple rounds or involving numerous flows.
 
-A standard example of a stateful Flow is ``OpenAIChatAtomicFlow,`` which has the ``previous_messages`` as part of its ``flow_state.`` 
+A standard example of a stateful Flow is ``ChatAtomicFlow,`` which has the ``previous_messages`` as part of its ``flow_state.``
 
 The ``flow_state`` is initialized by the ``set_up_flow_state`` method of the ``Flow`` class. The ``flow_state`` can be reset by calling the ``reset`` method of the ``Flow`` class. By default, the ``reset`` method is called by the ``FlowLauncher`` class at the end of the execution for each data sample to ensure a clean state before running the next one. Some use cases might require a ``reset`` even within a single run.
 

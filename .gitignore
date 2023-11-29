@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+FlowVerse
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -166,3 +167,4 @@ data
 
 # VS Code
 .vscode/
+*predictions*

@@ -1,21 +1,21 @@
 # Composite Flow
 
-The `CompositeFlow` class is a subclass of the `Flow` that orchestrates the collaboration between multiple atomic and/or composite subflows. 
+The `CompositeFlow` class is a subclass of the `Flow` that orchestrates the collaboration between multiple atomic and/or composite subflows.
 
 The'CompositeFlow' class contains one key attribute in addition to the ones in the `AtomicFlow`:
 - `subflows`: A dictionary that stores the subflows of the Flow.
 
 Methods
 - `_call_flow_from_state(self, flow_to_call: Flow)`: A helper method that prepares the InputMessages, calls a specific sub-flow, and handles the OutputMessage.
-- `_set_up_subflows(cls, config)`: A class method that sets up the sub-flows of the `CompositeFlow.` It can be overridden if the initialization requires it. 
+- `_set_up_subflows(cls, config)`: A class method that sets up the sub-flows of the `CompositeFlow.` It can be overridden if the initialization requires it.
 - `run(self, input_data: Dict[str, Any]) -> Dict[str, Any]`: The main method that executes the logic of the Flow.
 
-Like the `AtomicFlow,` the `CompositeFlow` class is abstract and does not implement the `run` method. 
+Like the `AtomicFlow,` the `CompositeFlow` class is abstract and does not implement the `run` method.
 Subclasses of `CompositeFlow` should implement the `run` method to define the collaboration pattern of the sub-flows.
 We currently provide two general patterns (to be extended): `sequential` and `generator-critic.`
 
 - `Sequential`: The list of subflows is executed sequentially.
-- `GeneratorCritic`: The generator and the critic are called alternatingly for a specific number of rounds. 
+- `GeneratorCritic`: The generator and the critic are called alternatingly for a specific number of rounds.
 
 ## Writing a Composite Flow
 
@@ -51,7 +51,7 @@ subflows_config:
       description: "A flow that takes in a number and reverses it."
 ```
 
-At this stage, we have defined the interface and the subflows of our `CompositeFlow.` 
+At this stage, we have defined the interface and the subflows of our `CompositeFlow.`
 We now need to define the logic of the flow, i.e., how the subflows will be executed, i.e. the topology of the flow.
 To do this, we need to define the `topology` attribute of the flow.
 A single element of the topology is a dictionary that contains the following keys:

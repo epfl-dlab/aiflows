@@ -11,7 +11,7 @@ The ``CompositeFlow`` class is a subclass of the ``Flow`` that orchestrates the 
 Methods
 
 * ``_call_flow_from_state(self, flow_to_call: Flow)``: A helper method that prepares the ``InputMessages``, calls a specific subflow, and handles the ``OutputMessage``.
-* ``_set_up_subflows(cls, config)``: A class method that sets up the subflows of the `CompositeFlow.` It can be overridden if the initialization requires it. 
+* ``_set_up_subflows(cls, config)``: A class method that sets up the subflows of the `CompositeFlow.` It can be overridden if the initialization requires it.
 * ``run(self, input_data: Dict[str, Any]) -> Dict[str, Any]``: The main method that executes the logic of the Flow.
 
 Like the ``AtomicFlow``, the ``CompositeFlow`` class is abstract and does not implement the ``run`` method. Subclasses of ``CompositeFlow`` should implement the ``run`` method to define the collaboration pattern of the subflows.
@@ -19,7 +19,7 @@ Like the ``AtomicFlow``, the ``CompositeFlow`` class is abstract and does not im
 We currently provide two general patterns (to be extended): ``sequential`` and ``generator-critic``.
 
 * ``Sequential``: The list of subflows is executed sequentially.
-* ``GeneratorCritic``: The generator and the critic are called alternatingly for a specific number of rounds. 
+* ``GeneratorCritic``: The generator and the critic are called alternatingly for a specific number of rounds.
 
 
 Write a Composite Flow

@@ -114,4 +114,3 @@ This will reset both instance attributes and ``flow_state``. Then it calls ``ini
 
     judge.reset()
     print(f"After resetting, the judge has seen a total of {judge.flow_state['n_rounds_played']} rounds") # prints 0
-

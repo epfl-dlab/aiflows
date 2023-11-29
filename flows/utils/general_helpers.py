@@ -4,18 +4,29 @@ from typing import List, Any, Tuple, Dict, Callable, Union
 import uuid
 import time
 import os
-
+import ast
 import json
 import jsonlines
 import gzip
-
+import importlib
 from omegaconf import OmegaConf
 
+# from litellm.utils import function_to_dict
 from flows import logging
+import base64
+
 log = logging.get_logger(__name__)
 
 
-def validate_parameters(cls, flow_config):
+def validate_flow_config(cls, flow_config):
+    """Validates the flow config.
+
+    :param cls: The class to validate the flow config for
+    :type cls: class
+    :param flow_config: The flow config to validate
+    :type flow_config: Dict[str, Any]
+    :raises ValueError: If the flow config is invalid
+    """
     if cls.__name__ != "Flow":
         cls.__base__._validate_flow_config(flow_config)
 
@@ -26,15 +37,19 @@ def validate_parameters(cls, flow_config):
         if key not in flow_config:
             raise ValueError(f"{key} is a required parameter in the flow_config.")
 
-    # if not hasattr(cls, "REQUIRED_KEYS_CONSTRUCTOR"):
-    #     raise ValueError("REQUIRED_KEYS_CONSTRUCTOR should be defined for each Flow class.")
-    #
-    # for key in cls.REQUIRED_KEYS_CONSTRUCTOR:
-    #     if key not in kwargs:
-    #         raise ValueError(f"{key} is a required parameter in the constructor.")
 
+def flatten_dict(d, parent_key="", sep="."):
+    """Flattens a dictionary.
 
-def flatten_dict(d, parent_key='', sep='.'):
+    :param d: The dictionary to flatten
+    :type d: Dict[str, Any]
+    :param parent_key: The parent key to use, defaults to ''
+    :type parent_key: str, optional
+    :param sep: The separator to use, defaults to '.'
+    :type sep: str, optional
+    :return: The flattened dictionary
+    :rtype: Dict[str, Any]
+    """
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -46,7 +61,16 @@ def flatten_dict(d, parent_key='', sep='.'):
 
 
 # Function to unflatten dictionary
-def unflatten_dict(d, sep='.'):
+def unflatten_dict(d, sep="."):
+    """Unflattens a dictionary.
+
+    :param d: The dictionary to unflatten
+    :type d: Dict[str, Any]
+    :param sep: The separator to use, defaults to '.'
+    :type sep: str, optional
+    :return: The unflattened dictionary
+    :rtype: Dict[str, Any]
+    """
     result_dict = dict()
     for k, v in d.items():
         parts = k.split(sep)
@@ -58,16 +82,17 @@ def unflatten_dict(d, sep='.'):
         d[parts[-1]] = v
     return result_dict
 
+
 def nested_keys_pop(data_dict: dict, nested_key: str) -> Any:
     """
     Pop a nested key in a dictionary.
 
-    Args:
-        data_dict (dict): The dictionary to pop from.
-        nested_key (str): The nested key to pop, in the format "key1.key2.key3".
-
-    Returns:
-        None
+    :param data_dict: The dictionary to pop from.
+    :type data_dict: dict
+    :param nested_key: The nested key to pop, in the format "key1.key2.key3".
+    :type nested_key: str
+    :return: The value of the popped key.
+    :rtype: Any
     """
     keys = nested_key.split(".")
 
@@ -84,13 +109,12 @@ def nested_keys_update(data_dict: dict, nested_key: str, value: Any) -> None:
     """
     Update the value of a nested key in a dictionary.
 
-    Args:
-        data_dict (dict): The dictionary to update.
-        nested_key (str): The nested key to update, in the format "key1.key2.key3".
-        value (Any): The new value to set for the nested key.
-
-    Returns:
-        None
+    :param data_dict: The dictionary to update.
+    :type data_dict: dict
+    :param nested_key: The nested key to update, in the format "key1.key2.key3".
+    :type nested_key: str
+    :param value: The new value to set for the nested key.
+    :type value: Any
     """
     keys = nested_key.split(".")
 
@@ -102,35 +126,45 @@ def nested_keys_update(data_dict: dict, nested_key: str, value: Any) -> None:
 
     d[keys[-1]] = value
 
+
 def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
     """
     Searches for a nested key in a dictionary using a composite key string.
-    
-    Args:
-    - search_dict: dict - The dictionary to search in.
-    - nested_key: str - The composite key string to search for.
-    
-    Returns:
-    - tuple - A tuple containing the value of the nested key and a boolean indicating if the key was found.
+
+    :param search_dict: The dictionary to search in.
+    :type search_dict: dict
+    :param nested_key: The composite key string to search for.
+    :type nested_key: str
+    :return: A tuple containing the value of the nested key and a boolean indicating if the key was found.
+    :rtype: Tuple[Any, bool]
     """
+
     def do_search(search_dict, keys):
         if len(keys) == 1:
             if keys[0] in search_dict:
                 return search_dict[keys[0]], True
             else:
                 return None, False
-            
+
         if keys[0] in search_dict:
             return do_search(search_dict[keys[0]], keys[1:])
         else:
             return None, False
-        
+
     return do_search(search_dict, nested_key.split("."))
 
+
 def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tuple[Any, Any]], Any]):
+    """Processes the leafs of a config dictionary or list.
+
+    :param config: The config to process
+    :type config: Union[Dict, List]
+    :param leaf_processor: The leaf processor to use
+    :type leaf_processor: Callable[[Tuple[Any, Any]], Any]
+    """
     if not config:
         return
-    
+
     if isinstance(config, dict):
         for k, v in config.items():
             if not isinstance(v, dict) and not isinstance(v, list):
@@ -146,30 +180,70 @@ def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tu
     else:
         assert False
 
+
 def read_jsonlines(path_to_file):
+    """Reads a jsonlines file and returns a list of dictionaries.
+
+    :param path_to_file: The path to the jsonlines file
+    :type path_to_file: str
+    :return: A list of dictionaries
+    :rtype: List[Dict[str, Any]]
+    """
     with open(path_to_file, "r") as f:
         json_reader = jsonlines.Reader(f)
         return list(json_reader)
 
 
 def write_jsonlines(path_to_file, data, mode="w"):
+    """Writes a list of dictionaries to a jsonlines file.
+
+    :param path_to_file: The path to the jsonlines file
+    :type path_to_file: str
+    :param data: The data to write
+    :type data: List[Dict[str, Any]]
+    :param mode: The mode to use, defaults to "w"
+    :type mode: str, optional
+    """
     with jsonlines.open(path_to_file, mode) as writer:
         writer.write_all(data)
 
 
 def write_gzipped_jsonlines(path_to_file, data, mode="w"):
+    """Writes a list of dictionaries to a gzipped jsonlines file.
+
+    :param path_to_file: The path to the gzipped jsonlines file
+    :type path_to_file: str
+    :param data: The data to write
+    :type data: List[Dict[str, Any]]
+    :param mode: The mode to use, defaults to "w"
+    :type mode: str, optional
+    """
     with gzip.open(path_to_file, mode) as fp:
         json_writer = jsonlines.Writer(fp)
         json_writer.write_all(data)
 
 
 def read_gzipped_jsonlines(path_to_file):
+    """Reads a gzipped jsonlines file and returns a list of dictionaries.
+
+    :param path_to_file: The path to the gzipped jsonlines file
+    :type path_to_file: str
+    :return: A list of dictionaries
+    :rtype: List[Dict[str, Any]]
+    """
     with gzip.open(path_to_file, "r") as fp:
         json_reader = jsonlines.Reader(fp)
         return list(json_reader)
 
 
 def create_unique_id(existing_ids: List[str] = None):
+    """creates a unique id
+
+    :param existing_ids: A list of existing ids to check against, defaults to None
+    :type existing_ids: List[str], optional
+    :return: A unique id
+    :rtype: str
+    """
     if existing_ids is None:
         existing_ids = set()
 
@@ -180,6 +254,11 @@ def create_unique_id(existing_ids: List[str] = None):
 
 
 def get_current_datetime_ns():
+    """Returns the current datetime in nanoseconds.
+
+    :return: The current datetime in nanoseconds
+    :rtype: int
+    """
     time_of_creation_ns = time.time_ns()
 
     # Convert nanoseconds to seconds and store as a time.struct_time object
@@ -195,6 +274,15 @@ def get_current_datetime_ns():
 
 
 def get_predictions_dir_path(output_dir, create_if_not_exists=True):
+    """Returns the path to the predictions folder.
+
+    :param output_dir: The output directory
+    :type output_dir: str
+    :param create_if_not_exists: Whether to create the folder if it does not exist, defaults to True
+    :type create_if_not_exists: bool, optional
+    :return: The path to the predictions folder
+    :rtype: str
+    """
     if output_dir is not None:
         predictions_folder = os.path.join(output_dir, "predictions")
     else:
@@ -207,6 +295,16 @@ def get_predictions_dir_path(output_dir, create_if_not_exists=True):
 
 
 def write_outputs(path_to_output_file, summary, mode):
+    """Writes the summary to a jsonlines file.
+
+    :param path_to_output_file: The path to the output file
+    :type path_to_output_file: str
+    :param summary: The summary to write
+    :type summary: List[Dict[str, Any]]
+    :param mode: The mode to use
+    :type mode: str
+    """
+
     def to_dict_serializer(obj):
         """JSON serialized for object that have the to_dict method implemented"""
         if hasattr(obj, "to_dict"):
@@ -225,6 +323,13 @@ def write_outputs(path_to_output_file, summary, mode):
 
 
 def read_outputs(outputs_dir):
+    """Reads the outputs from a jsonlines file.
+
+    :param outputs_dir: The directory containing the output files
+    :type outputs_dir: str
+    :return: The outputs
+    :rtype: List[Dict[str, Any]]
+    """
     items_dict = dict()
 
     for filename in os.listdir(outputs_dir):
@@ -252,22 +357,141 @@ def read_outputs(outputs_dir):
 
 
 def recursive_dictionary_update(d, u):
-    """Performs a recursive update of the values in dictionary d with the values of dictionary u"""
+    """Performs a recursive update of the values in dictionary d with the values of dictionary u
+
+    :param d: The dictionary to update
+    :type d: Dict[str, Any]
+    :param u: The dictionary to update with
+    :type u: Dict[str, Any]
+    :return: The updated dictionary
+    """
     if d is None:
         d = {}
-    
     for k, v in u.items():
-        if isinstance(v, collections.abc.Mapping):
+        if isinstance(v, collections.abc.Mapping) and isinstance(d.get(k, {}), collections.abc.Mapping):
             d[k] = recursive_dictionary_update(d.get(k, {}), v)
         else:
             d[k] = v
     return d
 
 
+def log_suggest_help():
+    """Logs a message suggesting to get help or provide feedback on github."""
+    red = "\033[31m"
+    reset = "\x1b[0m"
+    green = "\033[32m"
+    bold = "\033[1m"
+    github_issues_link = "https://github.com/epfl-dlab/aiflows/issues \n\n"
+    message = " \n\nFor feedback or to get help:  "
+    log.info(bold + red + message + reset + bold + green + github_issues_link)
+
+
+def exception_handler(e):
+    """Handles an exception.
+
+    :param e: The exception to handle
+    :type e: Exception
+    """
+    log_suggest_help()
+    log.exception(e)
+    raise e
+
+
+def try_except_decorator(f):
+    """A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github."""
+
+    def wrapper(*args, **kw):
+        try:
+            return f(*args, **kw)
+        except Exception as e:
+            exception_handler(e)
+
+    return wrapper
+
+
 def read_yaml_file(path_to_file, resolve=True):
+    """Reads a yaml file.
+
+    :param path_to_file: The path to the yaml file
+    :type path_to_file: str
+    :param resolve: Whether to resolve the config, defaults to True
+    :type resolve: bool, optional
+    :return: The config
+    :rtype: Dict[str, Any]
+    """
     with open(path_to_file, "r") as f:
         cfg = OmegaConf.load(f)
 
     cfg = OmegaConf.to_container(cfg, resolve=resolve)
     return cfg
 
+
+def python_file_path_to_module_path(file_path):
+    """Converts a python file path to a python module path
+
+    :param file_path: The python file path
+    :type file_path: str
+    :return: The python module path
+    :rtype: str
+    """
+    return file_path.replace("/", ".").replace(".py", "")
+
+
+def python_module_path_to_file_path(module_path):
+    """Converts a python module path to a python file path
+
+    :param module_path: The python module path
+    :type module_path: str
+    :return: The python file path
+    :rtype: str
+    """
+    return module_path.replace(".", "/") + ".py"
+
+
+def extract_top_level_function_names(python_file_path):
+    """Extracts the top level function names from a python file (ignores nested)
+
+    :param python_file_path: The path to the python file
+    :type python_file_path: str
+    :return: A list of function names
+    :rtype: List[str]
+    """
+    function_names = []
+    with open(python_file_path, "r") as file:
+        file_content = file.read()
+        tree = ast.parse(file_content)
+
+    functions = filter(lambda node: isinstance(node, ast.FunctionDef), ast.iter_child_nodes(tree))
+    function_names = list(map(lambda node: node.name, functions))
+
+    return function_names
+
+
+# def get_function_meta_data(function):
+#     """ Returns the meta data of a function. (docstring)"""
+#     return function_to_dict(function)
+
+
+def get_function_from_name(function_name, module):
+    """Returns a function from a module given its name."""
+    return getattr(module, function_name)
+
+
+# def get_pyfile_functions_metadata_from_file(python_file_path):
+#     """ Returns the meta data of all the functions in a python file (docstring)"""
+#     function_names = extract_top_level_function_names(python_file_path)
+#     module_path = python_file_path_to_module_path(python_file_path)
+#     module = importlib.import_module(module_path)
+#     functions = [get_function_from_name(function_name, module) for function_name in function_names]
+#     return [get_function_meta_data(function) for function in functions]
+
+
+def encode_image(image_path):
+    """Encodes an image to base64."""
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode("utf-8")
+
+
+def encode_from_buffer(buffer):
+    """Encodes a buffer (typically an image from a video) to base64."""
+    return base64.b64encode(buffer).decode("utf-8")

@@ -17,30 +17,30 @@ To start, create a local directory where you'll develop your flow module:
     (flows) ➜  dev-tutorial mkdir PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
     (flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
     (flows) ➜  dev_UsefulChatBots touch __init__.py
-    (flows) ➜  dev_UsefulChatBots touch .gitignore 
+    (flows) ➜  dev_UsefulChatBots touch .gitignore
     (flows) ➜  dev_UsefulChatBots touch EconomicExpertBot.py
-    (flows) ➜  dev_UsefulChatBots git init     
+    (flows) ➜  dev_UsefulChatBots git init
     (flows) ➜  dev_UsefulChatBots git:(main) ✗ git add .
-    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"                        
+    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"
     [main (root-commit) e592fd1] initial commit
     3 files changed, 0 insertions(+), 0 deletions(-)
     create mode 100644 .gitignore
     create mode 100644 EconomicExpertBot.py
     create mode 100644 __init__.py
 
-Next, we could either develop from scratch as in :ref:`write_atomic` or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on `saibo/OpenAIChatFlows <https://huggingface.co/saibo/OpenAIChatFlows>`__ thanks to the modularity of Flows:
+Next, we could either develop from scratch as in :ref:`write_atomic` or we could leverage an existing flow module and build upon it. In this tutorial, we'll develop our chatbot based on `saibo/ChatFlows <https://huggingface.co/saibo/ChatFlows>`__ thanks to the modularity of Flows:
 
 .. code-block:: python
-    
+
     dependencies = [
-    {"url": "saibo/OpenAIChatFlows", "revision": "main"},
+    {"url": "saibo/ChatFlows", "revision": "main"},
     ]
     from flows import flow_verse
-    flow_verse.sync_dependencies(dependencies) 
+    flow_verse.sync_dependencies(dependencies)
 
-    from flow_modules.saibo.OpenAIChatFlows import OpenAIChatGPT4
+    from flow_modules.saibo.ChatFlows import ChatGPT4
 
-    class EconomicExpertBot(OpenAIChatGPT4):
+    class EconomicExpertBot(ChatGPT4):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -52,7 +52,7 @@ We recommend to associate your flow with a default yaml file as the default conf
   verbose: False
   description: "A chatbot which answers questions about the economy."
 
-  input_keys: 
+  input_keys:
     - "query"
 
   output_keys:
@@ -66,7 +66,7 @@ We recommend to associate your flow with a default yaml file as the default conf
     input_variables: []
     template_format: jinja2
 
-This explicitly informs potential users about the ``input_keys`` and ``output_keys``, which can be seen as the interface of our Flow. Since we're inheriting from ``saibo/OpenAIChatFlows.OpenAIChatGPT4``, we also inherit the `default config <https://huggingface.co/saibo/OpenAIChatFlows/blob/main/OpenAIChatGPT4.yaml>`__ from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
+This explicitly informs potential users about the ``input_keys`` and ``output_keys``, which can be seen as the interface of our Flow. Since we're inheriting from ``saibo/ChatFlows.ChatGPT4``, we also inherit the `default config <https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.yaml>`__ from it. Therefore, our default config can be succinct and only needs to tweak some essential parameters.
 
 Note that a flow module should ideally be a self-contained python module. Therefore, it's best to use relative import inside your code such that other users can use your flow instantly.
 
@@ -82,7 +82,7 @@ So far so good, we have created our own flow. Let's now try to test it:
         {"url": "yeeef/UsefulChatBots", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"},
     ]
     from flows import flow_verse
-    flow_verse.sync_dependencies(dependencies) 
+    flow_verse.sync_dependencies(dependencies)
 
     import os
 
@@ -101,7 +101,7 @@ So far so good, we have created our own flow. Let's now try to test it:
         ]
         print(f"inputs: {inputs}")
 
-        # init a minimal flow_launcher without specifying the output_keys, then 
+        # init a minimal flow_launcher without specifying the output_keys, then
         # the full output_keys will be given
         outputs = FlowLauncher.launch(
             flow=bot,
@@ -118,7 +118,7 @@ Then let's execute the code and test our new flow:
 
 .. code-block:: shell
 
-    (flows) ➜  dev-tutorial python ask_economic_expert_bot.py 
+    (flows) ➜  dev-tutorial python ask_economic_expert_bot.py
     inputs: [{'id': 0, 'query': 'What is CPI? What is the current CPI in the US?'}]
     [2023-07-05 17:05:35,530][flows.base_flows.abstract][WARNING] - The raw response was not logged.
     [{'id': 0, 'inference_outputs': [OutputMessage(message_id='d95683d6-9507-4a90-b290-6a43e609c904', created_at='2023-07-05 09:05:35.530972000', created_by='EconomicExpertBot', message_type='OutputMessage', data={'output_keys': ['response'], 'output_data': {'response': 'CPI, or the Consumer Price Index, is a measure that examines the weighted average of prices of a basket of consumer goods and services, such as transportation, food, and medical care. It is calculated by taking price changes for each item in the predetermined basket of goods and averaging them. Changes in the CPI are used to assess price changes associated with the cost of living.'}, 'missing_output_keys': []}, private_keys=['api_keys'])], 'error': None}]
@@ -139,10 +139,10 @@ Then, you can either upload the files manually through the Hugging Face webpage 
 .. code-block:: shell
 
     (flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
-    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots 
-    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main   
+    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots
+    (flows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main
     (flows) ➜  dev_UsefulChatBots git:(main) ✗ git push --set-upstream origin main
 
-Congratulations! You now have your remote module online, available for everyone to use! 
+Congratulations! You now have your remote module online, available for everyone to use!
 
 .. image:: ../images/publish_flow_2.png

@@ -53,4 +53,3 @@ Stay tuned
 
 We're actively using the visualization tool in our research and can highly recommend it.
 Several improvements to the tool are on the way. So stay tuned!
-

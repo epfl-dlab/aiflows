@@ -3,7 +3,7 @@
 ## Flow
 
 The `Flow` class is an abstract class (ABC) that is the basis for all flows.
-It defines the shared structure and behavior, such as managing the configuration, state, history, and, crucially, the standardized interface. 
+It defines the shared structure and behavior, such as managing the configuration, state, history, and, crucially, the standardized interface.
 
 The `Flow` class contains the following key attributes and methods:
 
@@ -16,8 +16,8 @@ The `Flow` class contains the following key attributes and methods:
 - `instantiate_from_config(cls, flow_config: Dict[str, Any]) -> Flow`: A class method that instantiates a flow from a configuration dictionary. This method is the recommended way of instantiating a flow.
 - `__call__(self, input_message: InputMessage) -> OutputMessage`: The method that executes the logic of the Flow. This method is the entry point for the Flow when passing an input message (i.e., for communication between Flows). Note that the recommended entry point for starting a flow run with a data dictionary is the `FlowLauncher` class.
 - `set_up_flow_state(self)`: A method that sets up the initial `flow_state` attribute for a Flow. This method is called by the `__init__` method and/or the reset function to `factory reset` the Flow. Subclasses of `Flow` often override this function to achieve a specific behavior.
-- `get_interface_description(self)`: The interface contains two keys: `input` and `output`. Each key contains a list of dictionaries, each of which describes a list of strings that are the names of the variables in the input and output data dictionaries. 
-- `package_output_message(self, input_message: InputMessage, response: Any) -> OutputMessage`: A method that packages the flow response into an `OutputMessage` object based on the "task_definition" specified in the `InputMessage.` 
+- `get_interface_description(self)`: The interface contains two keys: `input` and `output`. Each key contains a list of dictionaries, each of which describes a list of strings that are the names of the variables in the input and output data dictionaries.
+- `package_output_message(self, input_message: InputMessage, response: Any) -> OutputMessage`: A method that packages the flow response into an `OutputMessage` object based on the "task_definition" specified in the `InputMessage.`
 - `reset(self, full_reset: bool, recursive: bool)`: A method that clears only the Flows namespace (if `full_reset` is false) -- this is done at the end of every call by default (a behavior that can be overridden) -- or the `flow_state` as well (if `full_reset` is true).
 
 
@@ -50,9 +50,9 @@ Note that this is the simple launcher. The same [file](https://github.com/epfl-d
 ### Flow State
 
 `flow_state` is a dictionary containing all the information that affects the Flow's computation.
-Flows are, generally, stateful operators. The `flow_state` stores the intermediate results of the current execution and any information that can affect future computations resulting from prior runs. 
-This object is handy for coordinating computation spanning multiple rounds or involving numerous flows. 
-A standard example of a stateful Flow is `OpenAIChatAtomicFlow,` which has the `previous_messages` as part of its `flow_state.` 
+Flows are, generally, stateful operators. The `flow_state` stores the intermediate results of the current execution and any information that can affect future computations resulting from prior runs.
+This object is handy for coordinating computation spanning multiple rounds or involving numerous flows.
+A standard example of a stateful Flow is `ChatAtomicFlow,` which has the `previous_messages` as part of its `flow_state.`
 
 The `flow_state` is initialized by the `set_up_flow_state` method of the `Flow` class.
 The `flow_state` can be reset by calling the `reset` method of the `Flow` class. By default, the `reset` method is called by the `FlowLauncher` class at the end of the execution for each data sample to ensure a clean state before running the next one. Some use cases might require a `reset` even within a single run.

@@ -1,6 +1,27 @@
-[![arXiv](https://img.shields.io/badge/arXiv-2308.01285-b31b1b.svg)](https://arxiv.org/abs/2308.01285)
 
-# Flows: Building Blocks of Reasoning and Collaborating AI
+
+<p align="center">
+      <br/>
+            <img src="assets/flows_logo.png" alt="image" width="150" height="auto">
+      <br/>
+      <p style="text-align: center; display: block; font-size: 32px; font-weight: bold;">Flows: Building Blocks of Reasoning and Collaborating AI</<p>
+<p>
+
+<p align="center">
+    <a href="https://epfl-dlab.github.io/flows">
+    <img alt="Website" src="https://img.shields.io/badge/website-online-green">
+    </a>
+    <a href="https://discord.gg/NJuDxSafCY">
+    <img alt="Static Badge" src="https://img.shields.io/badge/Discord-gray?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FNJuDxSafCY">
+    </a>
+    <a href="https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html">
+    <img alt="Documentation" src="https://img.shields.io/badge/docs-online-green">
+    </a>
+    <a href="https://www.python.org/downloads/release/python-3100/"><img alt="PyPi version" src="https://img.shields.io/badge/python-3.10-blue.svg"></a>
+    <a href="https://arxiv.org/abs/2308.01285">
+    <img alt="Documentation" src="https://img.shields.io/badge/arXiv-2308.01285-b31b1b.svg">
+    </a>
+</p>
 
 ## Introduction
 
@@ -33,7 +54,7 @@ pip install -e .
 
 ## Running the experiments in the paper
 
-The flows for reproducing the results in [paper](https://arxiv.org/pdf/2308.01285.pdf) are available in [CCFlows](https://huggingface.co/aiflows/CCFlows). 
+The flows for reproducing the results in [paper](https://arxiv.org/pdf/2308.01285.pdf) are available in [CCFlows](https://huggingface.co/aiflows/CCFlows).
 
 ## Contributing
 
@@ -46,13 +67,15 @@ Last but not least, if you want to prepare educational material (tutorials, vide
 
 All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
 
+# ToDo: Add information about how to use Azure backend
+
 ## Citation
 
 This repository contains the code for the models and experiments in [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf)
 
 ```
 @misc{josifoski2023flows,
-      title={Flows: Building Blocks of Reasoning and Collaborating AI}, 
+      title={Flows: Building Blocks of Reasoning and Collaborating AI},
       author={Martin Josifoski and Lars Klein and Maxime Peyrard and Yifei Li and Saibo Geng and Julian Paul Schnitzler and Yuxing Yao and Jiheng Wei and Debjit Paul and Robert West},
       year={2023},
       eprint={2308.01285},
