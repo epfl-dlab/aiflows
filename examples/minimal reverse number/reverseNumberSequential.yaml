@@ -7,7 +7,7 @@ input_interface:
 output_interface:
   - "output_number"
 
-keep_raw_response: False  # Set to True to keep the raw flow response in the output data
+keep_raw_response: False # Set to True to keep the raw flow response in the output data
 
 subflows_config:
   first_reverse_flow:

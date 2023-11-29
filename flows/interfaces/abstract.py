@@ -3,13 +3,14 @@ from typing import Dict, Any
 
 
 class Interface(ABC):
-    """ This class is the base class for all interfaces."""
+    """This class is the base class for all interfaces."""
+
     def __init__(self):
         pass
 
     def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """
-        This method should be implemented by subclasses to perform a specific operation 
+        This method should be implemented by subclasses to perform a specific operation
         using the provided goal, source flow, destination flow, and data dictionary.
 
         :param goal: The goal of the operation.

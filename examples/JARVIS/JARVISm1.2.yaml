@@ -1,7 +1,7 @@
 flow:
   _target_: baldwin.JarvisFlowModule.JarvisFlow.instantiate_from_default_config
   max_rounds: 30
-  python_file_path: examples/JARVIS/library.py #Relative path from where you're running 
+  python_file_path: examples/JARVIS/library.py #Relative path from where you're running
   ### Subflows specification
   subflows_config:
     Controller:
@@ -11,11 +11,10 @@ flow:
       commands:
         run_python_code:
           description: "Call a python function which is written in a py file whose contents are in the Python File section"
-          input_args: [ "called_function","kwargs" ]
+          input_args: ["called_function", "kwargs"]
         finish:
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
-          input_args: [ "answer" ]
-
+          input_args: ["answer"]
 
       input_interface_initialized:
         - "observation"
@@ -28,7 +27,7 @@ flow:
           {{observation}}
           The response was by:
            {{observation_type}}
-          If the response was given by the human and he approved it, make sure you rerun the you command you just suggested 
+          If the response was given by the human and he approved it, make sure you rerun the you command you just suggested
         input_variables:
           - "observation"
           - "observation_type"
@@ -39,24 +38,24 @@ flow:
           openai: gpt-4
           azure: azure/gpt-4
       output_interface:
-        - 'thought'
-        - 'reasoning'
-        - 'plan'
-        - 'criticism'
-        - 'speak'
-        - 'command'
-        - 'command_args'
+        - "thought"
+        - "reasoning"
+        - "plan"
+        - "criticism"
+        - "speak"
+        - "command"
+        - "command_args"
 
       #######################################################
       # ToDo: Some parts of the prompt don't make sense -- update them
       system_message_prompt_template:
         template: |2-
-          You are a smart AI assistant specialized in programming. 
-          
+          You are a smart AI assistant specialized in programming.
+
           You must work with the user to come up with a proper plan to execute.
           Play to your strengths as an LLM and pursue simple strategies with no legal complications.
           If you have completed all your tasks, make sure to use the "finish" command.
-          The user will always give you feedback before you get to run code. 
+          The user will always give you feedback before you get to run code.
           If the user approves, you must rerun the command you just suggested
           You must really take in consideration what the user give you as feedback.
 
@@ -82,7 +81,7 @@ flow:
           2. Constructively self-criticize your big-picture behavior constantly.
           3. Reflect on past decisions and strategies to refine your approach.
           4. Every command has a cost, so be smart and efficient. Aim to complete tasks in the least number of steps.
-          5. Always Take into account the feedback you get. 
+          5. Always Take into account the feedback you get.
           6. If the user approves, you must rerun the command you just suggested
           You should absolutely only respond in JSON format as described below
           Response Format:
@@ -98,7 +97,11 @@ flow:
               }
           }
           Ensure your responses can be parsed by Python json.loads
-        input_variables: ["commands", "${flow.subflows_config.Controller.sys_prompt_pyfile_input_variable_name}" ]
+        input_variables:
+          [
+            "commands",
+            "${flow.subflows_config.Controller.sys_prompt_pyfile_input_variable_name}",
+          ]
 
     Executor:
       _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
@@ -108,34 +111,34 @@ flow:
           path_to_py_file: ${flow.python_file_path}
 
     HumanFeedback:
-        _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
-        request_multi_line_input_flag: False
-        query_message_prompt_template:
-          template: |2-
+      _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+      request_multi_line_input_flag: False
+      query_message_prompt_template:
+        template: |2-
             Please provide feedback on the last step. To quit type: "q".
-            
+
             Relevant information:
-            == Goal == 
+            == Goal ==
             {{goal}}
-            
+
             == Command ==
             {{command}}
-            
+
             == Args
             {{command_args}}
-            
+
             == Plan
             {{plan}}
-          input_variables:
-            - "goal"
-            - "command"
-            - "command_args"
-            - "plan"
-        input_interface_initialized:
+        input_variables:
           - "goal"
           - "command"
           - "command_args"
           - "plan"
+      input_interface_initialized:
+        - "goal"
+        - "command"
+        - "command_args"
+        - "plan"
 
   topology:
     - goal: "Select the next action and prepare the input for the executor."
@@ -154,7 +157,7 @@ flow:
       flow: HumanFeedback
       output_interface:
         _target_: JarvisFlow.detect_finish_in_human_input
-        keys_to_select: ["observation","observation_type"]
+        keys_to_select: ["observation", "observation_type"]
       reset: false
 
     - goal: "Take in careful consideration the user's feedback. Then, select the next action and prepare the input for the executor."
@@ -178,18 +181,16 @@ flow:
         keys_to_rename:
           command: branch
           command_args: branch_input_data
-        keys_to_select: ["branch", "branch_input_data"]  
+        keys_to_select: ["branch", "branch_input_data"]
       flow: Executor
       output_interface:
         _target_: flows.interfaces.KeyInterface
         keys_to_set:
-            observation_type: "Python Interpreter"
-        additional_transformations: 
+          observation_type: "Python Interpreter"
+        additional_transformations:
           - _target_: flows.data_transformations.KeyRename
             old_key2new_key:
               branch_output_data: observation
           - _target_: flows.data_transformations.KeySelect
-            keys_to_select: ["observation","observation_type"]
+            keys_to_select: ["observation", "observation_type"]
       reset: false
-
-    

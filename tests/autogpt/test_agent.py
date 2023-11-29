@@ -3,9 +3,10 @@ from flows.utils import logging
 logging.set_verbosity_debug()
 
 dependencies = [
-    {"url": "FlowsEpfl/AutoGPTFlowModule", "revision": "/Users/saibo/Development/Flow_dev/AutoGPTFlowModule"},
+    {"url": "FlowsEpfl/AutoGPTFlowModule", "revision": "main"},
 ]
 from flows import flow_verse
+
 flow_verse.sync_dependencies(dependencies)
 
 import os
@@ -21,12 +22,14 @@ if __name__ == "__main__":
 
     input_data = [
         {
-        "id": 0,
-        "goal": "Find the answer of the question: How many people live in canada as of 2023?, save it in a text file.",
+            "id": 0,
+            "goal": "Find the answer of the question: How many people live in canada as of 2023?, save it in a text file.",
+        }
+    ]
 
-    }]
-
-    full_outputs, human_readable_outputs = FlowLauncher.launch(flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")})
+    full_outputs, human_readable_outputs = FlowLauncher.launch(
+        flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")}
+    )
 
     print(human_readable_outputs)
     print(f'previous message: {len(curr_flow.flow_state["previous_messages"])}')
@@ -42,7 +45,7 @@ if __name__ == "__main__":
     # full_outputs, human_readable_outputs = FlowLauncher.launch(flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")})
 
     """
-    Needs to 
+    Needs to
     class FlowLauncher(ABC):
     @staticmethod
     def launch(flow: Flow,
@@ -52,6 +55,3 @@ if __name__ == "__main__":
     """
     print(human_readable_outputs)
     print(f'previous message: {len(curr_flow.flow_state["previous_messages"])}')
-
-
-

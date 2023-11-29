@@ -14,7 +14,7 @@ For instance, let's say we want to update the dependency of `saibo/ChatFlows <ht
         {"url": "martinjosifoski/ChatAtomicFlow", "revision": "main"} # cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a -> main
     ]
     from flows import flow_verse
-    flow_verse.sync_dependencies(dependencies) 
+    flow_verse.sync_dependencies(dependencies)
 
     from flow_modules.martinjosifoski.ChatAtomicFlow import ChatAtomicFlow
 
@@ -25,8 +25,8 @@ Firstly, navigate to the synced folder, initialize a git repository, and commit 
 
 .. code-block:: shell
 
-    (flows) ➜  dev-tutorial cd flow_modules/saibo/ChatFlows   
-    (flows) ➜  ChatFlows git init               
+    (flows) ➜  dev-tutorial cd flow_modules/saibo/ChatFlows
+    (flows) ➜  ChatFlows git init
     Initialized empty Git repository in /Users/yeeef/Desktop/dlab-ra/dev-tutorial/flow_modules/saibo/ChatFlows/.git/
     (flows) ➜  ChatFlows git:(main) ✗ git add .
     (flows) ➜  ChatFlows git:(main) ✗ git commit -m "Change the dependency revision to main"
@@ -45,7 +45,7 @@ Once your PR branch has been created (for instance, ``pr/2``), you'll need to pu
 
 .. code-block:: shell
 
-    (flows) ➜  ChatFlows git:(main) git checkout -b pr/2                                  
+    (flows) ➜  ChatFlows git:(main) git checkout -b pr/2
     Switched to a new branch 'pr/2'
     (flows) ➜  ChatFlows git:(pr/2) git remote add origin https://huggingface.co/saibo/ChatFlows
     (flows) ➜  ChatFlows git:(pr/2) git pull -r origin pr/2
@@ -69,7 +69,7 @@ Finally, review your PR changes on the Hugging Face PR page and click the ``Publ
 Develop over an existing module and publish it under your namespace
 ===================================================================
 
-As a Flow developer, you can easily develop based on any synced flow modules. However, instead of making a PR to the original repository, you may wish to publish it under your own namespace. This can be the case if you've made substantial changes that the original author might not prefer. 
+As a Flow developer, you can easily develop based on any synced flow modules. However, instead of making a PR to the original repository, you may wish to publish it under your own namespace. This can be the case if you've made substantial changes that the original author might not prefer.
 
 Let's get back to our ``trivial_sync_demo``, where we leverage ``saibo/ChatFlows``. We have made some changes to it and want to publish it on our own as ``yeeef/MyChatFlows``. To do this, we recommend following steps:
 
@@ -89,7 +89,7 @@ Let's get back to our ``trivial_sync_demo``, where we leverage ``saibo/ChatFlows
 
     ]
     from flows import flow_verse
-    flow_verse.sync_dependencies(dependencies) 
+    flow_verse.sync_dependencies(dependencies)
 
     from flow_modules.saibo.ChatFlows import ChatGPT4
     from flow_modules.yeeef.MyChatFlows import MyChatGPT4

@@ -26,15 +26,15 @@ class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
     """
 
     def __init__(
-            self,
-            flow: Union[Flow, List[Flow]],
-            n_independent_samples: int,
-            fault_tolerant_mode: bool,
-            n_batch_retries: int,
-            wait_time_between_retries: int,
-            output_keys: List[str],
-            collator: Collator = None,
-            **kwargs,
+        self,
+        flow: Union[Flow, List[Flow]],
+        n_independent_samples: int,
+        fault_tolerant_mode: bool,
+        n_batch_retries: int,
+        wait_time_between_retries: int,
+        output_keys: List[str],
+        collator: Collator = None,
+        **kwargs,
     ):
         super().__init__(**kwargs)
 
@@ -42,7 +42,7 @@ class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
             self.collator = NoCollationCollator()
 
         if isinstance(flow, Flow):
-            flow = [flow]*self.n_workers
+            flow = [flow] * self.n_workers
 
         self.flows = flow
         self.n_independent_samples = n_independent_samples
@@ -75,10 +75,12 @@ class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
                     while attempts <= self.n_batch_retries:
                         try:
                             sample["api_key"] = self.api_keys[api_key_idx]
-                            task_message = flow.package_task_message(recipient_flow=flow,
-                                                                     task_name="run_task",
-                                                                     task_data=sample,
-                                                                     output_keys=self.output_keys)
+                            task_message = flow.package_task_message(
+                                recipient_flow=flow,
+                                task_name="run_task",
+                                task_data=sample,
+                                output_keys=self.output_keys,
+                            )
 
                             output_message = flow(task_message)
 
@@ -101,10 +103,9 @@ class FlowMultiThearedAPILauncher(MultiThreadedAPILauncher):
                 else:
                     # For debugging purposes
                     sample["api_key"] = self.api_keys[api_key_idx]
-                    task_message = flow.package_task_message(recipient_flow=flow,
-                                                             task_name="run_task",
-                                                             task_data=sample,
-                                                             output_keys=self.output_keys)
+                    task_message = flow.package_task_message(
+                        recipient_flow=flow, task_name="run_task", task_data=sample, output_keys=self.output_keys
+                    )
 
                     output_message = flow(task_message)
 

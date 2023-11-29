@@ -1,10 +1,10 @@
 # Flow Module Management
 
-Flow is a sharing-oriented platform, empowering users to contribute their personal Flows, called **flow modules**, to Hugging Face. 
+Flow is a sharing-oriented platform, empowering users to contribute their personal Flows, called **flow modules**, to Hugging Face.
 
 ## Flow Modules
 
-- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) is a flow module. 
+- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) is a flow module.
 - A module may include multiple Flow classes and potentially a default configuration YAML file. In the [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) module, you can find [ChatGPT4.py](https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.py).
 - Each Flow class can depend on other remote, publicly available modules. For example, [ChatGPT4.py](https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.py) depends on [martinjosifoski/ChatAtomicFlow](https://huggingface.co/martinjosifoski/ChatAtomicFlow/tree/main).
 
@@ -17,7 +17,7 @@ dependencies = [
     {"url": "saibo/ChatFlows", "revision": "main"},
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.saibo.ChatFlows import ChatGPT4
 
@@ -72,7 +72,7 @@ dependencies = [
     {"url": "martinjosifoski/ChatAtomicFlow", "revision": "cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a"}
 ]
 from flows import flow_verse
-flow_verse.sync_dependencies(dependencies) 
+flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.martinjosifoski.ChatAtomicFlow import ChatAtomicFlow
 

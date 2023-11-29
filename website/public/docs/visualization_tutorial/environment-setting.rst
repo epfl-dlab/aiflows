@@ -41,7 +41,7 @@ You can also set up the tool without using **Docker**
 - For backend:
 
     1. Change the working directory to ``/history_visualization/backend``
-    
+
     2. Install the dependencies for backend
 
     .. code-block:: shell
@@ -66,8 +66,8 @@ You can also set up the tool without using **Docker**
 
     .. code-block:: shell
 
-        npm install -d 
-    
+        npm install -d
+
     4. Run the backend sever at `localhost:3000 <http://localhost:3000/>`_
 
     .. code-block:: shell

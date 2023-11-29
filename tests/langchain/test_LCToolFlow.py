@@ -1,8 +1,6 @@
 from flows.application_flows.LCToolFlowModule.LCToolFlow import LCToolFlow
 
 
-
-
 if __name__ == "__main__":
     from flows.flow_launchers import FlowLauncher
 

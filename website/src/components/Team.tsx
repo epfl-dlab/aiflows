@@ -7,7 +7,7 @@ export const Team = (props:any) => {
         <div className="col-md-8 col-md-offset-2 section-title">
           <h2>Meet the Team</h2>
           <p>
-            The team is formed by Postdoc, Phd students and master student from dlab of EPFL 
+            The team is formed by Postdoc, Phd students and master student from dlab of EPFL
           </p>
         </div>
         <div id="row">

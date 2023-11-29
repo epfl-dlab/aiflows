@@ -40,10 +40,9 @@ class OutputsDataset(AbstractDataset):
     def get_output_data(sample_data, idx=None):
         if idx is None:
             output_data = []
-            for inference_output in sample_data['inference_outputs']:
-                output_data.append(inference_output["data"]['output_data'])
+            for inference_output in sample_data["inference_outputs"]:
+                output_data.append(inference_output["data"]["output_data"])
         else:
-            output_data = sample_data['inference_outputs'][idx]["data"]['output_data']
+            output_data = sample_data["inference_outputs"][idx]["data"]["output_data"]
 
         return output_data
-

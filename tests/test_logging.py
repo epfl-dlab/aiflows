@@ -5,9 +5,10 @@ import unittest
 
 from ..flows.utils import logging
 
-log = logging.get_logger() # get the root logger of library
-class LoggingModuleTests(unittest.TestCase):
+log = logging.get_logger()  # get the root logger of library
 
+
+class LoggingModuleTests(unittest.TestCase):
     def test_change_log_level(self) -> None:
         logging.set_verbosity_debug()
         log = logging.get_logger()

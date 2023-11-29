@@ -19,8 +19,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-    def run(self,
-            input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
 
         input_number = input_data["number"]
         output_number = int(str(input_number)[::-1])
@@ -31,7 +30,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
 if __name__ == "__main__":
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # ToDo(https://github.com/epfl-dlab/flows/issues/65): Uncomment this line to save the output to a file
-    
+
     root_dir = "."
     cfg_path = os.path.join(root_dir, "reverseNumberAtomic.yaml")
     overrides_config = read_yaml_file(cfg_path)
@@ -44,9 +43,7 @@ if __name__ == "__main__":
 
     # ~~~ Run inference ~~~
     _, outputs = FlowLauncher.launch(
-        flow_with_interfaces={"flow": flow},
-        data=data,
-        path_to_output_file=path_to_output_file
+        flow_with_interfaces={"flow": flow}, data=data, path_to_output_file=path_to_output_file
     )
 
     # ~~~ Print the output ~~~

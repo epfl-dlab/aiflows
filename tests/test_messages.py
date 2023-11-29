@@ -3,10 +3,7 @@ from flows.messages import TaskMessage, StateUpdateMessage, OutputMessage, Messa
 
 def test_flow_message_init():
     sample_flow_message = StateUpdateMessage(
-        message_creator="test-creator",
-        flow_runner="runner",
-        flow_run_id="123",
-        data="Sample content"
+        message_creator="test-creator", flow_runner="runner", flow_run_id="123", data="Sample content"
     )
     assert isinstance(sample_flow_message, StateUpdateMessage)
     assert sample_flow_message.message_creator == "test-creator"
@@ -18,10 +15,7 @@ def test_flow_message_init():
 
 def test_flow_update_message_init():
     sample_flow_update_message = StateUpdateMessage(
-        message_creator="test-creator",
-        flow_runner="runner",
-        flow_run_id="123",
-        data="Sample content"
+        message_creator="test-creator", flow_runner="runner", flow_run_id="123", data="Sample content"
     )
     assert isinstance(sample_flow_update_message, StateUpdateMessage)
     assert sample_flow_update_message.message_creator == "test-creator"
@@ -38,7 +32,7 @@ def test_task_message_init():
         flow_run_id="123",
         output_keys=["exp"],
         data="Sample content",
-        target_flow_run_id="target"
+        target_flow_run_id="target",
     )
     assert isinstance(sample_input_flow_message, TaskMessage)
     assert sample_input_flow_message.message_creator == "test-creator"
@@ -69,14 +63,13 @@ def test_output_message_init():
     assert not sample_output_message.error_message
 
     from flows.history import FlowHistory
+
     assert isinstance(sample_output_message.history, FlowHistory)
 
 
 def test_init_with_empty_fields():
     sample_flow_message = StateUpdateMessage(
-        message_creator="test-creator",
-        flow_runner="runner",
-        data="Sample content"
+        message_creator="test-creator", flow_runner="runner", data="Sample content"
     )
     assert sample_flow_message.parent_message_ids == []
     assert type(sample_flow_message.message_id) == str
@@ -87,11 +80,7 @@ def test_uuid():
     message_ids, flow_run_ids = [], []
     n_mess = 20
     for _ in range(n_mess):
-        sample_flow_message = Message(
-            message_creator="test-creator",
-            flow_runner="runner",
-            data="Sample content"
-        )
+        sample_flow_message = Message(message_creator="test-creator", flow_runner="runner", data="Sample content")
         message_ids.append(sample_flow_message.message_id)
         flow_run_ids.append(sample_flow_message.flow_run_id)
 
@@ -101,17 +90,21 @@ def test_uuid():
 
 def test_to_string():
     sample_flow_message = StateUpdateMessage(
-        message_creator="test-creator",
-        flow_runner="runner",
-        flow_run_id="123",
-        data="Sample content"
+        message_creator="test-creator", flow_runner="runner", flow_run_id="123", data="Sample content"
     )
 
     expected_output_role = f"[{sample_flow_message.message_id} -- 123] test-creator (runner)"
     expected_output_content = "Sample content"
-    expected_output_content_dict_keys = ["data", "created_at", "flow_run_id", "flow_runner",
-                                         "message_creator", "message_id",
-                                         "message_type", "parent_message_ids"]
+    expected_output_content_dict_keys = [
+        "data",
+        "created_at",
+        "flow_run_id",
+        "flow_runner",
+        "message_creator",
+        "message_id",
+        "message_type",
+        "parent_message_ids",
+    ]
 
     assert expected_output_role in sample_flow_message.to_string()
     assert expected_output_content in sample_flow_message.to_string()
@@ -125,6 +118,7 @@ def test_to_dict():
     parsed_outputs = {"out-1": 45, "out-2": False}
 
     from flows.history import FlowHistory
+
     history = FlowHistory()
     message1 = Message(message_creator="user1", data="Hello", flow_runner="0")
     message2 = StateUpdateMessage(message_creator="user2", data="Hi", flow_runner="0")
@@ -140,14 +134,22 @@ def test_to_dict():
         flow_run_id="123",
         data=parsed_outputs,
         valid_parsing=True,
-        history=history
+        history=history,
     )
 
     out_dict = sample_output_message.to_dict()
 
-    expected_keys = ["data", "created_at", "flow_run_id", "flow_runner",
-                     "message_creator", "message_id",
-                     "message_type", "parent_message_ids", "history"]
+    expected_keys = [
+        "data",
+        "created_at",
+        "flow_run_id",
+        "flow_runner",
+        "message_creator",
+        "message_id",
+        "message_type",
+        "parent_message_ids",
+        "history",
+    ]
 
     for k in expected_keys:
         assert k in out_dict
@@ -161,10 +163,7 @@ def test_deepcopy_content():
     dict_content = {"data": 3, "bool_key": True}
 
     sample_flow_message = Message(
-        message_creator="test-creator",
-        flow_runner="runner",
-        flow_run_id="123",
-        data=dict_content
+        message_creator="test-creator", flow_runner="runner", flow_run_id="123", data=dict_content
     )
 
     dict_content["data"] = 4
@@ -177,10 +176,7 @@ def test_deepcopy_content():
 def test_soft_copy():
     dict_content = {"data": 3, "bool_key": True}
     sample_flow_message = Message(
-        message_creator="test-creator",
-        flow_runner="runner",
-        flow_run_id="123",
-        data=dict_content
+        message_creator="test-creator", flow_runner="runner", flow_run_id="123", data=dict_content
     )
 
     dict_content["data"] = 4

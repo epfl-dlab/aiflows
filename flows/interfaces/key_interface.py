@@ -8,8 +8,8 @@ from flows.data_transformations import KeySelect, KeyRename, KeyCopy, KeySet, Ke
 
 
 class KeyInterface(ABC):
-    """ This class is the base class for all key interfaces. It applies a list of transformations to a data dictionary.
-    
+    """This class is the base class for all key interfaces. It applies a list of transformations to a data dictionary.
+
     :param keys_to_rename: A dictionary mapping old keys to new keys (used to instantiate the transformation defined in the KeyRename class)
     :type keys_to_rename: Dict[str, str], optional
     :param keys_to_copy: A dictionary mapping old keys to new keys (used to instantiate the transformation defined in the KeyCopy class)
@@ -23,10 +23,11 @@ class KeyInterface(ABC):
     :param keys_to_delete: A list of keys to delete (used to instantiate the transformation defined in the KeyDelete class)
     :type keys_to_delete: List[str], optional
     """
+
     @staticmethod
     def _set_up_transformations(transformations: List):
         """Static method that instantiates a list of transformations with the hydra framework.
-        
+
         :param transformations: A list of transformations to instantiate (defined by a hydra configuration)
         :type transformations: List
         :return: A list of instantiated transformations
@@ -39,14 +40,15 @@ class KeyInterface(ABC):
 
         return transforms
 
-    def __init__(self,
-                 keys_to_rename: Dict[str, str] = {},
-                 keys_to_copy: Dict[str, str] = {},
-                 keys_to_set: Dict[str, Any] = {},
-                 additional_transformations: List = [],
-                 keys_to_select: List[str] = [],
-                 keys_to_delete: List[str] = [],
-                 ):
+    def __init__(
+        self,
+        keys_to_rename: Dict[str, str] = {},
+        keys_to_copy: Dict[str, str] = {},
+        keys_to_set: Dict[str, Any] = {},
+        additional_transformations: List = [],
+        keys_to_select: List[str] = [],
+        keys_to_delete: List[str] = [],
+    ):
         self.transformations = []
 
         if keys_to_rename:
@@ -66,7 +68,7 @@ class KeyInterface(ABC):
 
     def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         r"""Applies the all transformations to the given data dictionary.
-        
+
         :param goal: The goal of the flow
         :type goal: str
         :param src_flow: The source flow

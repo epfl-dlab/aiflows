@@ -10,7 +10,8 @@ import jsonlines
 import gzip
 import importlib
 from omegaconf import OmegaConf
-#from litellm.utils import function_to_dict
+
+# from litellm.utils import function_to_dict
 from flows import logging
 import base64
 
@@ -18,8 +19,8 @@ log = logging.get_logger(__name__)
 
 
 def validate_flow_config(cls, flow_config):
-    """ Validates the flow config.
-    
+    """Validates the flow config.
+
     :param cls: The class to validate the flow config for
     :type cls: class
     :param flow_config: The flow config to validate
@@ -37,9 +38,9 @@ def validate_flow_config(cls, flow_config):
             raise ValueError(f"{key} is a required parameter in the flow_config.")
 
 
-def flatten_dict(d, parent_key='', sep='.'):
-    """ Flattens a dictionary.
-    
+def flatten_dict(d, parent_key="", sep="."):
+    """Flattens a dictionary.
+
     :param d: The dictionary to flatten
     :type d: Dict[str, Any]
     :param parent_key: The parent key to use, defaults to ''
@@ -60,9 +61,9 @@ def flatten_dict(d, parent_key='', sep='.'):
 
 
 # Function to unflatten dictionary
-def unflatten_dict(d, sep='.'):
-    """ Unflattens a dictionary.
-    
+def unflatten_dict(d, sep="."):
+    """Unflattens a dictionary.
+
     :param d: The dictionary to unflatten
     :type d: Dict[str, Any]
     :param sep: The separator to use, defaults to '.'
@@ -129,7 +130,7 @@ def nested_keys_update(data_dict: dict, nested_key: str, value: Any) -> None:
 def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
     """
     Searches for a nested key in a dictionary using a composite key string.
-    
+
     :param search_dict: The dictionary to search in.
     :type search_dict: dict
     :param nested_key: The composite key string to search for.
@@ -154,8 +155,8 @@ def nested_keys_search(search_dict, nested_key) -> Tuple[Any, bool]:
 
 
 def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tuple[Any, Any]], Any]):
-    """ Processes the leafs of a config dictionary or list.
-    
+    """Processes the leafs of a config dictionary or list.
+
     :param config: The config to process
     :type config: Union[Dict, List]
     :param leaf_processor: The leaf processor to use
@@ -181,8 +182,8 @@ def process_config_leafs(config: Union[Dict, List], leaf_processor: Callable[[Tu
 
 
 def read_jsonlines(path_to_file):
-    """ Reads a jsonlines file and returns a list of dictionaries.
-    
+    """Reads a jsonlines file and returns a list of dictionaries.
+
     :param path_to_file: The path to the jsonlines file
     :type path_to_file: str
     :return: A list of dictionaries
@@ -194,8 +195,8 @@ def read_jsonlines(path_to_file):
 
 
 def write_jsonlines(path_to_file, data, mode="w"):
-    """ Writes a list of dictionaries to a jsonlines file.
-    
+    """Writes a list of dictionaries to a jsonlines file.
+
     :param path_to_file: The path to the jsonlines file
     :type path_to_file: str
     :param data: The data to write
@@ -208,8 +209,8 @@ def write_jsonlines(path_to_file, data, mode="w"):
 
 
 def write_gzipped_jsonlines(path_to_file, data, mode="w"):
-    """ Writes a list of dictionaries to a gzipped jsonlines file.
-    
+    """Writes a list of dictionaries to a gzipped jsonlines file.
+
     :param path_to_file: The path to the gzipped jsonlines file
     :type path_to_file: str
     :param data: The data to write
@@ -223,8 +224,8 @@ def write_gzipped_jsonlines(path_to_file, data, mode="w"):
 
 
 def read_gzipped_jsonlines(path_to_file):
-    """ Reads a gzipped jsonlines file and returns a list of dictionaries.
-    
+    """Reads a gzipped jsonlines file and returns a list of dictionaries.
+
     :param path_to_file: The path to the gzipped jsonlines file
     :type path_to_file: str
     :return: A list of dictionaries
@@ -236,8 +237,8 @@ def read_gzipped_jsonlines(path_to_file):
 
 
 def create_unique_id(existing_ids: List[str] = None):
-    """ creates a unique id
-    
+    """creates a unique id
+
     :param existing_ids: A list of existing ids to check against, defaults to None
     :type existing_ids: List[str], optional
     :return: A unique id
@@ -253,8 +254,8 @@ def create_unique_id(existing_ids: List[str] = None):
 
 
 def get_current_datetime_ns():
-    """ Returns the current datetime in nanoseconds.
-    
+    """Returns the current datetime in nanoseconds.
+
     :return: The current datetime in nanoseconds
     :rtype: int
     """
@@ -273,8 +274,8 @@ def get_current_datetime_ns():
 
 
 def get_predictions_dir_path(output_dir, create_if_not_exists=True):
-    """ Returns the path to the predictions folder.
-    
+    """Returns the path to the predictions folder.
+
     :param output_dir: The output directory
     :type output_dir: str
     :param create_if_not_exists: Whether to create the folder if it does not exist, defaults to True
@@ -294,8 +295,8 @@ def get_predictions_dir_path(output_dir, create_if_not_exists=True):
 
 
 def write_outputs(path_to_output_file, summary, mode):
-    """ Writes the summary to a jsonlines file.
-    
+    """Writes the summary to a jsonlines file.
+
     :param path_to_output_file: The path to the output file
     :type path_to_output_file: str
     :param summary: The summary to write
@@ -322,8 +323,8 @@ def write_outputs(path_to_output_file, summary, mode):
 
 
 def read_outputs(outputs_dir):
-    """ Reads the outputs from a jsonlines file.
-    
+    """Reads the outputs from a jsonlines file.
+
     :param outputs_dir: The directory containing the output files
     :type outputs_dir: str
     :return: The outputs
@@ -357,7 +358,7 @@ def read_outputs(outputs_dir):
 
 def recursive_dictionary_update(d, u):
     """Performs a recursive update of the values in dictionary d with the values of dictionary u
-    
+
     :param d: The dictionary to update
     :type d: Dict[str, Any]
     :param u: The dictionary to update with
@@ -375,21 +376,19 @@ def recursive_dictionary_update(d, u):
 
 
 def log_suggest_help():
-    """ Logs a message suggesting to get help or provide feedback on github.
-    
-    """
+    """Logs a message suggesting to get help or provide feedback on github."""
     red = "\033[31m"
     reset = "\x1b[0m"
     green = "\033[32m"
-    bold = '\033[1m'
+    bold = "\033[1m"
     github_issues_link = "https://github.com/epfl-dlab/aiflows/issues \n\n"
     message = " \n\nFor feedback or to get help:  "
     log.info(bold + red + message + reset + bold + green + github_issues_link)
 
 
 def exception_handler(e):
-    """ Handles an exception.
-    
+    """Handles an exception.
+
     :param e: The exception to handle
     :type e: Exception
     """
@@ -397,8 +396,9 @@ def exception_handler(e):
     log.exception(e)
     raise e
 
+
 def try_except_decorator(f):
-    """ A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github."""
+    """A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github."""
 
     def wrapper(*args, **kw):
         try:
@@ -410,8 +410,8 @@ def try_except_decorator(f):
 
 
 def read_yaml_file(path_to_file, resolve=True):
-    """ Reads a yaml file.
-    
+    """Reads a yaml file.
+
     :param path_to_file: The path to the yaml file
     :type path_to_file: str
     :param resolve: Whether to resolve the config, defaults to True
@@ -428,7 +428,7 @@ def read_yaml_file(path_to_file, resolve=True):
 
 def python_file_path_to_module_path(file_path):
     """Converts a python file path to a python module path
-    
+
     :param file_path: The python file path
     :type file_path: str
     :return: The python module path
@@ -439,7 +439,7 @@ def python_file_path_to_module_path(file_path):
 
 def python_module_path_to_file_path(module_path):
     """Converts a python module path to a python file path
-    
+
     :param module_path: The python module path
     :type module_path: str
     :return: The python file path
@@ -450,14 +450,14 @@ def python_module_path_to_file_path(module_path):
 
 def extract_top_level_function_names(python_file_path):
     """Extracts the top level function names from a python file (ignores nested)
-    
+
     :param python_file_path: The path to the python file
     :type python_file_path: str
     :return: A list of function names
     :rtype: List[str]
     """
     function_names = []
-    with open(python_file_path, 'r') as file:
+    with open(python_file_path, "r") as file:
         file_content = file.read()
         tree = ast.parse(file_content)
 
@@ -473,7 +473,7 @@ def extract_top_level_function_names(python_file_path):
 
 
 def get_function_from_name(function_name, module):
-    """ Returns a function from a module given its name."""
+    """Returns a function from a module given its name."""
     return getattr(module, function_name)
 
 
@@ -487,11 +487,11 @@ def get_function_from_name(function_name, module):
 
 
 def encode_image(image_path):
-    """ Encodes an image to base64."""
+    """Encodes an image to base64."""
     with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode('utf-8')
+        return base64.b64encode(image_file.read()).decode("utf-8")
 
 
 def encode_from_buffer(buffer):
-    """ Encodes a buffer (typically an image from a video) to base64."""
+    """Encodes a buffer (typically an image from a video) to base64."""
     return base64.b64encode(buffer).decode("utf-8")

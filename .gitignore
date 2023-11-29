@@ -167,3 +167,4 @@ data
 
 # VS Code
 .vscode/
+*predictions*

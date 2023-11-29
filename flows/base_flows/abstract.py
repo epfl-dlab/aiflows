@@ -10,23 +10,30 @@ from typing import List, Dict, Any, Union, Optional
 from omegaconf import OmegaConf
 from ..utils import logging
 from flows.history import FlowHistory
-from flows.messages import Message, InputMessage, UpdateMessage_Generic, \
-    UpdateMessage_NamespaceReset, UpdateMessage_FullReset, \
-    OutputMessage
+from flows.messages import (
+    Message,
+    InputMessage,
+    UpdateMessage_Generic,
+    UpdateMessage_NamespaceReset,
+    UpdateMessage_FullReset,
+    OutputMessage,
+)
 from flows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs
 from flows.utils.rich_utils import print_config_tree
 from flows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from ..utils.general_helpers import try_except_decorator
+
 log = logging.get_logger(__name__)
 
 
 class Flow(ABC):
     """
     Abstract class inherited by all Flows.
-    
+
     :param flow_config: The configuration of the flow
     :type flow_config: Dict[str, Any]
     """
+
     # The required parameters that the user must provide in the config when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
 
@@ -47,8 +54,8 @@ class Flow(ABC):
     }
 
     def __init__(
-            self,
-            flow_config: Dict[str, Any],
+        self,
+        flow_config: Dict[str, Any],
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
@@ -61,13 +68,14 @@ class Flow(ABC):
 
         if log.getEffectiveLevel() == logging.DEBUG:
             log.debug(
-                f"Flow {self.flow_config.get('name', 'unknown_name')} instantiated with the following parameters:")
+                f"Flow {self.flow_config.get('name', 'unknown_name')} instantiated with the following parameters:"
+            )
             print_config_tree(self.flow_config)
 
     @property
     def name(self):
-        """ Returns the name of the flow
-        
+        """Returns the name of the flow
+
         :return: The name of the flow
         :rtype: str
         """
@@ -77,7 +85,7 @@ class Flow(ABC):
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
         """
         This method is called by the FlowLauncher to build the flow.
-        
+
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
         :return: The instantiated flow
@@ -91,8 +99,8 @@ class Flow(ABC):
 
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
-        """ Validates the flow config to ensure that it contains all the required keys.
-        
+        """Validates the flow config to ensure that it contains all the required keys.
+
         :param flow_config: The flow config to validate
         :type flow_config: Dict[str, Any]
         :raises ValueError: If the flow config does not contain all the required keys
@@ -109,7 +117,7 @@ class Flow(ABC):
         """
         Returns the default config for the flow, with the overrides applied.
         The default implementation construct the default config by recursively merging the configs of the base classes.
-        
+
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
         :return: The default config with the overrides applied
@@ -131,22 +139,20 @@ class Flow(ABC):
 
         path_to_config = os.path.join(path_to_flow_directory, f"{class_name}.yaml")
         if os.path.exists(path_to_config):
-            default_config = OmegaConf.to_container(
-                OmegaConf.load(path_to_config),
-                resolve=True
-            )
+            default_config = OmegaConf.to_container(OmegaConf.load(path_to_config), resolve=True)
 
             cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
 
-            process_config_leafs(default_config,
-                                 lambda k, v:
-                                 (cls_parent_module + v if k == "_target_" and v.startswith(".") else v))
+            process_config_leafs(
+                default_config, lambda k, v: (cls_parent_module + v if k == "_target_" and v.startswith(".") else v)
+            )
 
             config = recursive_dictionary_update(parent_default_config, default_config)
         elif hasattr(cls, f"_{cls.__name__}__default_flow_config"):
             # no yaml but __default_flow_config exists in class declaration
-            config = recursive_dictionary_update(parent_default_config,
-                                                 copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")))
+            config = recursive_dictionary_update(
+                parent_default_config, copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config"))
+            )
         else:
             config = parent_default_config
             log.debug(f"Flow config not found at {path_to_config}.")
@@ -158,8 +164,8 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_from_config(cls, config):
-        """ Instantiates the flow from the given config.
-        
+        """Instantiates the flow from the given config.
+
         :param config: The config to instantiate the flow from
         :type config: Dict[str, Any]
         :return: The instantiated flow
@@ -170,8 +176,8 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_with_overrides(cls, overrides):
-        """ Instantiates the flow with the given overrides.
-        
+        """Instantiates the flow with the given overrides.
+
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
         :return: The instantiated flow
@@ -180,15 +186,11 @@ class Flow(ABC):
         return cls.instantiate_from_config(config)
 
     def set_up_flow_state(self):
-        """ Sets up the flow state. This method is called when the flow is instantiated, and when the flow is reset.
-        """
+        """Sets up the flow state. This method is called when the flow is instantiated, and when the flow is reset."""
         self.flow_state = {}
         self.history = FlowHistory()
 
-    def reset(self,
-              full_reset: bool,
-              recursive: bool,
-              src_flow: Optional[Union["Flow", str]] = "Launcher"):
+    def reset(self, full_reset: bool, recursive: bool, src_flow: Optional[Union["Flow", str]] = "Launcher"):
         """
         Reset the flow state and history. If recursive is True, reset all subflows as well.
 
@@ -207,23 +209,19 @@ class Flow(ABC):
 
         if full_reset:
             message = UpdateMessage_FullReset(
-                created_by=src_flow,
-                updated_flow=self.flow_config["name"],
-                keys_deleted_from_namespace=[]
+                created_by=src_flow, updated_flow=self.flow_config["name"], keys_deleted_from_namespace=[]
             )
             self._log_message(message)
             self.set_up_flow_state()  # resets the flow state
         else:
             message = UpdateMessage_NamespaceReset(
-                created_by=src_flow,
-                updated_flow=self.flow_config["name"],
-                keys_deleted_from_namespace=[]
+                created_by=src_flow, updated_flow=self.flow_config["name"], keys_deleted_from_namespace=[]
             )
             self._log_message(message)
 
     def _get_from_state(self, key: str, default: Any = None):
-        """ Returns the value of the given key in the flow state. If the key does not exist, return the default value.
-        
+        """Returns the value of the given key in the flow state. If the key does not exist, return the default value.
+
         :param key: The key to retrieve the value for
         :type key: str
         :param default: The default value to return if the key does not exist
@@ -236,7 +234,7 @@ class Flow(ABC):
     def _state_update_dict(self, update_data: Union[Dict[str, Any], Message]):
         """
         Updates the flow state with the key-value pairs in a data dictionary (or message.data if a message is passed).
-        
+
         :param update_data: The data dictionary to update the flow state with
         :type update_data: Union[Dict[str, Any], Message]
         """
@@ -244,8 +242,10 @@ class Flow(ABC):
             update_data = update_data.data["output_data"]
 
         if len(update_data) == 0:
-            raise ValueError("The state_update_dict was called with an empty dictionary. If there is a justified "
-                             "reason to allow this, please replace the ValueError with a log.warning, and make a PR")
+            raise ValueError(
+                "The state_update_dict was called with an empty dictionary. If there is a justified "
+                "reason to allow this, please replace the ValueError with a log.warning, and make a PR"
+            )
 
         updates = {}
         for key, value in update_data.items():
@@ -258,7 +258,7 @@ class Flow(ABC):
 
         if len(updates) != 0:
             state_update_message = UpdateMessage_Generic(
-                created_by=self.flow_config['name'],
+                created_by=self.flow_config["name"],
                 updated_flow=self.flow_config["name"],
                 data=updates,
             )
@@ -280,13 +280,14 @@ class Flow(ABC):
         """Generates the string that will be used by the hashing function"""
         # ~~~ This is the string that will be used by the hashing ~~~
         # ~~~ It keeps the config (self.flow_config) and the state (flow_state) ignoring some predefined keys ~~~
-        config_hashing_params = {k: v
-                                 for k, v in self.flow_config.items()
-                                 if k not in self.flow_config["keys_to_ignore_for_hash_flow_config"]
-                                 }
-        state_hashing_params = {k: v
-                                for k, v in self.flow_state.items()
-                                if k not in self.flow_config["keys_to_ignore_for_hash_flow_state"]}
+        config_hashing_params = {
+            k: v
+            for k, v in self.flow_config.items()
+            if k not in self.flow_config["keys_to_ignore_for_hash_flow_config"]
+        }
+        state_hashing_params = {
+            k: v for k, v in self.flow_state.items() if k not in self.flow_config["keys_to_ignore_for_hash_flow_state"]
+        }
         hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
         return repr(hash_dict)
 
@@ -294,12 +295,12 @@ class Flow(ABC):
     #     raise NotImplementedError()
 
     def get_interface_description(self):
-        """ Returns the input and output interface description of the flow."""
+        """Returns the input and output interface description of the flow."""
         return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
 
     def _log_message(self, message: Message):
-        """ Logs the given message to the history of the flow.
-        
+        """Logs the given message to the history of the flow.
+
         :param message: The message to log
         :type message: Message
         :return: The message that was logged
@@ -308,10 +309,9 @@ class Flow(ABC):
         log.debug(message.to_string())
         return self.history.add_message(message)
 
-    def _fetch_state_attributes_by_keys(self,
-                                        keys: Union[List[str], None]):
-        """ Returns the values of the given keys in the flow state.
-        
+    def _fetch_state_attributes_by_keys(self, keys: Union[List[str], None]):
+        """Returns the values of the given keys in the flow state.
+
         :param keys: The keys to retrieve the values for
         :type keys: Union[List[str], None]
         :return: The values of the given keys in the flow state
@@ -335,13 +335,9 @@ class Flow(ABC):
                 raise KeyError(f"Key {key} not found in the flow state or the class namespace.")
         return data
 
-    def _package_input_message(
-            self,
-            payload: Dict[str, Any],
-            dst_flow: "Flow"
-    ):
-        """ Packages the given payload into an InputMessage.
-        
+    def _package_input_message(self, payload: Dict[str, Any], dst_flow: "Flow"):
+        """Packages the given payload into an InputMessage.
+
         :param payload: The payload to package
         :type payload: Dict[str, Any]
         :param dst_flow: The destination flow
@@ -355,8 +351,9 @@ class Flow(ABC):
         if isinstance(dst_flow, Flow):
             dst_flow = dst_flow.flow_config["name"]
 
-        assert len(set(["src_flow", "dst_flow"]).intersection(set(payload.keys()))) == 0, \
-            "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
+        assert (
+            len(set(["src_flow", "dst_flow"]).intersection(set(payload.keys()))) == 0
+        ), "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
         # ~~~ Create the message ~~~
         msg = InputMessage(
@@ -369,13 +366,10 @@ class Flow(ABC):
         return msg
 
     def _package_output_message(
-            self,
-            input_message: InputMessage,
-            response: Dict[str, Any],
-            raw_response: Dict[str, Any]
+        self, input_message: InputMessage, response: Dict[str, Any], raw_response: Dict[str, Any]
     ):
-        """ Packages the given response into an OutputMessage.
-        
+        """Packages the given response into an OutputMessage.
+
         :param input_message: The input message that was used to generate the response
         :type input_message: InputMessage
         :param response: The response to package
@@ -388,8 +382,8 @@ class Flow(ABC):
         output_data = copy.deepcopy(response)
 
         return OutputMessage(
-            created_by=self.flow_config['name'],
-            src_flow=self.flow_config['name'],
+            created_by=self.flow_config["name"],
+            src_flow=self.flow_config["name"],
             dst_flow=input_message.src_flow,
             output_data=output_data,
             raw_response=raw_response,
@@ -397,10 +391,9 @@ class Flow(ABC):
             history=self.history,
         )
 
-    def run(self,
-            input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """ Runs the flow on the given input data. (Not implemented in the base class)
-        
+    def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Runs the flow on the given input data. (Not implemented in the base class)
+
         :param input_data: The input data to run the flow on
         :type input_data: Dict[str, Any]
         :return: The response of the flow
@@ -409,8 +402,8 @@ class Flow(ABC):
         raise NotImplementedError
 
     def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        """ Gets the response from the cache if it exists. If it does not exist, runs the flow and caches the response.
-        
+        """Gets the response from the cache if it exists. If it does not exist, runs the flow and caches the response.
+
         :param input_data: The input data to run the flow on
         :type input_data: Dict[str, Any]
         :return: The response of the flow
@@ -420,7 +413,8 @@ class Flow(ABC):
 
         if not self.SUPPORTS_CACHING:
             raise Exception(
-                f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True")
+                f"Flow {self.flow_config['name']} does not support caching, but flow_config['enable_cache'] is True"
+            )
 
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash_input_data"]
@@ -441,9 +435,11 @@ class Flow(ABC):
                 message._reset_message_id()
                 self._log_message(message)
 
-            log.debug(f"Retrieved from cache: {self.__class__.__name__} "
-                      f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
-                      f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})")
+            log.debug(
+                f"Retrieved from cache: {self.__class__.__name__} "
+                f"-- (input_data.keys()={list(input_data_to_hash.keys())}, "
+                f"keys_to_ignore_for_hash={keys_to_ignore_for_hash})"
+            )
             log.debug(f"Retrieved from cache: {str(cached_value)}")
 
         else:
@@ -458,9 +454,7 @@ class Flow(ABC):
             new_history_messages = self.history.get_last_n_messages(num_created_messages)
 
             value_to_cache = CachingValue(
-                output_results=response,
-                full_state=self.__getstate__(),
-                history_messages_created=new_history_messages
+                output_results=response, full_state=self.__getstate__(), history_messages_created=new_history_messages
             )
 
             self.cache.set(cache_key_hash, value_to_cache)
@@ -470,8 +464,8 @@ class Flow(ABC):
 
     @try_except_decorator
     def __call__(self, input_message: InputMessage):
-        """ Calls the flow on the given input message.
-        
+        """Calls the flow on the given input message.
+
         :param input_message: The input message to run the flow on
         :type input_message: InputMessage
         :return: The output message of the flow
@@ -499,7 +493,7 @@ class Flow(ABC):
 
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
-        if self.flow_config['clear_flow_namespace_on_run_end']:
+        if self.flow_config["clear_flow_namespace_on_run_end"]:
             self.reset(full_reset=False, recursive=False, src_flow=self)
 
     def __str__(self):

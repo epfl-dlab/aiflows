@@ -22,10 +22,10 @@ Furthermore, Auto-GPT is equipped with a highly versatile tool called the `LCToo
 ```python
 def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
     response = {}
-    
+
     operation = input_data["operation"]
     assert operation in ["write", "read"], f"Operation '{operation}' not supported"
-    
+
     content = input_data["content"]
     if operation == "read":
         assert isinstance(content, str), f"Content must be a string, got {type(content)}"

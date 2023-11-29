@@ -1,15 +1,13 @@
-
-
-flow:  # Overrides the ChatAtomicFlow config
+flow: # Overrides the ChatAtomicFlow config
   _target_: aiflows.ChatWithDemonstrationsFlowModule.ChatWithDemonstrationsFlow.instantiate_from_default_config
   name: "SimpleQA_Flow_with_Demonstrations"
   description: "A sequential flow that answers questions with demonstrations"
-  
-  input_interface:  # Connector between the "input data" and the Flow
+
+  input_interface: # Connector between the "input data" and the Flow
     - "questions"
-  output_interface:  # Connector between the Flow's output and the caller
+  output_interface: # Connector between the Flow's output and the caller
     - "answer"
-  
+
   subflows_config:
     demonstration_flow:
       data: null
@@ -37,10 +35,10 @@ flow:  # Overrides the ChatAtomicFlow config
       backend:
         _target_: flows.backends.llm_lite.LiteLLMBackend
         api_infos: ???
-        model_name: 
+        model_name:
           openai: "gpt-3.5-turbo"
           azure: "azure/gpt-4"
-    
+
         # ~~~ generation_parameters ~~
         n: 1
         max_tokens: 3000
@@ -60,7 +58,6 @@ flow:  # Overrides the ChatAtomicFlow config
           You are a helpful chatbot that truthfully answers questions. Answer in a similar way to your previous replies.
         input_variables: []
         partial_variables: {}
- 
 
       init_human_message_prompt_template:
         _target_: flows.prompt_template.JinjaPrompt

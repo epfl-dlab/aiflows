@@ -3,7 +3,7 @@ This file goes through some of the examples in this repository. The goal is to w
 
 This tutorial is organized as such:
 1. [Section 1](##-Getting-started-with-Flows-and-the-Flowverse) Getting started with Flows and the FlowVerse
-2. [Section 2](##Exploring-and-understanding-the-Flows-examples): Exploring and understanding the Flows [examples](examples/) 
+2. [Section 2](##Exploring-and-understanding-the-Flows-examples): Exploring and understanding the Flows [examples](examples/)
 
 ## Getting started with Flows and the Flowverse
 First let's start creating setting up the Flow environment with cond:
@@ -73,7 +73,7 @@ dependencies = [
 ]
 ```
 
-This flow is built on the the `ChatFlowModule` flow hosted on the [FlowVerse](https://huggingface.co/aiflows). If you click [here](https://huggingface.co/aiflows/ChatFlowModule) you can see the `ChatFlowModule`. The `revision` key in the `dependencies` dictonary (from code here above) indicates the commit hash from which we will pulling from (to see the various commit hashes of  `ChatFlowModule` click [here](https://huggingface.co/aiflows/ChatFlowModule/commits/main)). 
+This flow is built on the the `ChatFlowModule` flow hosted on the [FlowVerse](https://huggingface.co/aiflows). If you click [here](https://huggingface.co/aiflows/ChatFlowModule) you can see the `ChatFlowModule`. The `revision` key in the `dependencies` dictonary (from code here above) indicates the commit hash from which we will pulling from (to see the various commit hashes of  `ChatFlowModule` click [here](https://huggingface.co/aiflows/ChatFlowModule/commits/main)).
 
 The configuration of our flow is defined in [simpleQA.yaml](examples/minimal%20QA/run_qa_flow.py). The first line of the config file are the following:
 ```ruby
@@ -224,7 +224,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
 ```
 
 ### AtomicFlow
-The `AtomicFlow` class is a subclass of `Flow` and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
+The `AtomicFlow` class is a subclass of `Flow` and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!).
 
 One notable example is the [ChatAtomicFlow](../flows/application_flows/OpenAIFlowModule/ChatAtomicFlow.py), which is a wrapper around the OpenAI chat API.
 
@@ -266,7 +266,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
         return response
 
 ```
- 
+
 and instantiate the Flow by executing:
 ```python
 api_information = ApiInfo("noAPI","")
@@ -298,7 +298,7 @@ print(flow_output_data)
 ```
 You can run this code with:
 ```
-python examples/minimal\ reverse\ number/reverse_number_atomic.py 
+python examples/minimal\ reverse\ number/reverse_number_atomic.py
 ```
 
 You can find this example [here](https://github.com/epfl-dlab/flows/tree/main/tutorials/minimal_reverse_number). Few other notable examples are the HumanInputFlow and the the FixedReply Flow.

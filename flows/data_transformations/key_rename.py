@@ -3,20 +3,20 @@ from typing import Dict, Any
 from flows.data_transformations.abstract import DataTransformation
 from flows.utils.general_helpers import nested_keys_search, nested_keys_update, nested_keys_pop
 from flows.utils.logging import get_logger
+
 log = get_logger(__name__)
 
 
 class KeyRename(DataTransformation):
-    """ This class renames a list of keys from the data dictionary.
-    
+    """This class renames a list of keys from the data dictionary.
+
     :param old_key2new_key: A dictionary mapping old keys to new keys
     :type old_key2new_key: Dict[str, str]
     :param nested_keys: Whether to use nested keys
     :type nested_keys: bool, optional
     """
-    def __init__(self,
-                 old_key2new_key: Dict[str, str],
-                 nested_keys: bool = True):
+
+    def __init__(self, old_key2new_key: Dict[str, str], nested_keys: bool = True):
         super().__init__()
         self.old_key2new_key = old_key2new_key
         self.nested_keys = nested_keys
@@ -24,7 +24,7 @@ class KeyRename(DataTransformation):
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         r"""
         Applies the transformation to the given data dictionary. It renames a list of keys from the data dictionary.
-        
+
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]
         :param \**kwargs: Arbitrary keyword arguments
@@ -41,6 +41,6 @@ class KeyRename(DataTransformation):
         else:
             for old_key, new_key in self.old_key2new_key.items():
                 if old_key in data_dict:
-                    data_dict[new_key] = data_dict.pop(old_key) 
+                    data_dict[new_key] = data_dict.pop(old_key)
 
         return data_dict

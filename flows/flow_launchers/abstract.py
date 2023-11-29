@@ -14,11 +14,11 @@ log = logging.get_logger(__name__)
 
 
 class BaseLauncher(ABC):
-    """ A base class for creating a model launcher.
-    """
+    """A base class for creating a model launcher."""
+
     def predict(self, batch: Iterable[Dict]) -> List[Dict]:
-        """ Runs inference for the data provided in the batch. It returns a list of dictionaries containing the predictions. (Not Implemented for BaseLauncher)
-        
+        """Runs inference for the data provided in the batch. It returns a list of dictionaries containing the predictions. (Not Implemented for BaseLauncher)
+
         :param batch: An iterable of dictionaries containing the data for each sample to run inference on.
         :type batch: Iterable[Dict]
         :return: A list of dictionaries containing the predictions.
@@ -26,11 +26,9 @@ class BaseLauncher(ABC):
         """
         raise NotImplementedError("Not implemented")
 
-    def predict_dataloader(self,
-                           dataloader: Iterable,
-                           path_to_cache: Optional[str] = None):
-        """ Runs inference for the data provided in the dataloader. (Not Implemented for BaseLauncher)
-        
+    def predict_dataloader(self, dataloader: Iterable, path_to_cache: Optional[str] = None):
+        """Runs inference for the data provided in the dataloader. (Not Implemented for BaseLauncher)
+
         :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
         :type dataloader: Iterable
         :param path_to_cache: A path to a cache file containing existing predictions to use as a starting point.
@@ -39,9 +37,7 @@ class BaseLauncher(ABC):
         raise NotImplementedError("Not implemented")
 
     @classmethod
-    def _get_outputs_to_write(cls,
-                              batch: List[Dict],
-                              keys_to_write) -> List[Dict]:
+    def _get_outputs_to_write(cls, batch: List[Dict], keys_to_write) -> List[Dict]:
         """
         Class method that takes a batch of predictions and returns a dictionary containing the outputs to write to file.
 
@@ -64,13 +60,14 @@ class BaseLauncher(ABC):
         return to_write_all
 
     @classmethod
-    def write_batch_output(cls,
-                           batch: List[Dict],
-                           path_to_output_file: str,
-                           keys_to_write: List[str],
-                           ):
-        """ Class method that writes the output of a batch to a file.
-        
+    def write_batch_output(
+        cls,
+        batch: List[Dict],
+        path_to_output_file: str,
+        keys_to_write: List[str],
+    ):
+        """Class method that writes the output of a batch to a file.
+
         :param batch: A list of dictionaries containing the predictions.
         :type batch: List[Dict]
         :param path_to_output_file: The path to the output file.
@@ -108,7 +105,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         predictions_dir = general_helpers.get_predictions_dir_path(self.output_dir)
         if self.single_threaded:
             self.n_workers = 1
-       
+
         self.paths_to_output_files = []
         _resource_IDs = Queue(self.n_workers)
         for i in range(self.n_workers):
@@ -119,11 +116,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         self._resource_IDs = _resource_IDs
         self.existing_predictions_file = os.path.join(predictions_dir, "predictions_existing.jsonl")
 
-    
-    
-    def predict_dataloader(self,
-                           dataloader: Iterable[dict],
-                           flows_with_interfaces: List[Dict[str, Any]]) -> None:
+    def predict_dataloader(self, dataloader: Iterable[dict], flows_with_interfaces: List[Dict[str, Any]]) -> None:
         """
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
@@ -147,11 +140,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                 c += 1
                 log.info("~~~~~~~~~~~~ Progress: {}/{} batches finished ~~~~~~~~~~~~~".format(c, num_datapoints))
         else:
-            log.info(
-                "Running in multi-threaded mode with {} workers.".format(
-                    self.n_workers
-                )
-            )
+            log.info("Running in multi-threaded mode with {} workers.".format(self.n_workers))
 
             c = 0
 

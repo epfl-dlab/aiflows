@@ -1,4 +1,3 @@
-
 from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, ChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
@@ -11,20 +10,12 @@ def test_loading_nested_flow() -> None:
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -46,7 +37,7 @@ def test_loading_nested_flow() -> None:
         "name": "dummy_crit_name_fr",
         "description": "dummy_crit_desc_fr",
         "fixed_reply": "DUMMY CRITIC",
-        "output_keys": ["query"]
+        "output_keys": ["query"],
     }
 
     critic_flow = FixedReplyFlow(**crit_flow_dict)
@@ -59,7 +50,7 @@ def test_loading_nested_flow() -> None:
         "output_keys": ["gen_crit_out"],
         "flows": {"generator_flow": openai_flow, "critic_flow": critic_flow},
         "n_rounds": 2,
-        "eoi_key": "eoi_key"
+        "eoi_key": "eoi_key",
     }
 
     gen_critic_flow = GeneratorCriticFlow(**first_flow_dict)
@@ -69,7 +60,7 @@ def test_loading_nested_flow() -> None:
         "name": "dummy_name_fr",
         "description": "dummy_desc_fr",
         "fixed_reply": "dummy_fixed_reply",
-        "output_keys": ["output_key"]
+        "output_keys": ["output_key"],
     }
 
     second_flow = FixedReplyFlow(**second_flow_dict)
@@ -80,7 +71,7 @@ def test_loading_nested_flow() -> None:
         "description": "dummy_desc",
         "input_keys": ["input_0", "input_1"],
         "output_keys": ["output_key"],
-        "flows": [gen_critic_flow, second_flow]
+        "flows": [gen_critic_flow, second_flow],
     }
 
     nested_flow = SequentialFlow(**sequential_flow_config)

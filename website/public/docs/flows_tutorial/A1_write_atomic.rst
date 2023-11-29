@@ -4,7 +4,7 @@
 Atomic Flow
 ===========
 
-The ``AtomicFlow`` class is a subclass of ``Flow``, and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!). 
+The ``AtomicFlow`` class is a subclass of ``Flow``, and corresponds to an Input/Output interface around a tool (note that LMs are also tools in the Flows framework!).
 
 One notable example is the `ChatAtomicFlow <https://huggingface.co/martinjosifoski/ChatAtomicFlow/discussions>`__, which is a wrapper around the OpenAI chat API.
 
@@ -39,10 +39,10 @@ This is how the flow_config would look like as a YAML file:
 Let's break it down:
 
 * The ``name`` and ``description`` parameters are self-explanatory.
-* The ``verbose`` parameter controls the verbosity of the logs for the Flow. 
+* The ``verbose`` parameter controls the verbosity of the logs for the Flow.
 * According to the default implementation, the ``input_keys`` and ``output_keys`` parameters specify the required items in the ``input_data`` and the ``output_data``. They define the interface of the Flow.
 * The ``clear_flow_namespace_on_run_end`` parameter controls whether the Flow namespace will be reset after the execution of the Flow. In our case, it doesn't matter because we don't have any stateful variables in the flow namespace. This parameter can be excluded and, by default, is set to true.
-* Before any DataTranformations are applied, the Flow output is returned  ``keep_raw_response`` parameter 
+* Before any DataTranformations are applied, the Flow output is returned  ``keep_raw_response`` parameter
 
 The Flow class would be implemented as follows:
 

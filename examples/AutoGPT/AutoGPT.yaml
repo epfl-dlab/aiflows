@@ -1,7 +1,7 @@
 flow:
   _target_: aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
   max_rounds: 30
-  
+
   ### Subflows specification
   subflows_config:
     Controller:
@@ -9,13 +9,13 @@ flow:
       commands:
         wiki_search:
           description: "Performs a search on Wikipedia."
-          input_args: [ "search_term" ]
+          input_args: ["search_term"]
         ddg_search:
           description: "Query the search engine DuckDuckGo."
-          input_args: [ "query" ]
+          input_args: ["query"]
         finish:
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
-          input_args: [ "answer" ]
+          input_args: ["answer"]
       backend:
         api_infos: ???
         model_name: "gpt-3.5-turbo"

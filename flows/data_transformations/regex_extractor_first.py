@@ -10,8 +10,8 @@ log = logging.get_logger(__name__)
 
 
 class RegexFirstOccurrenceExtractor(DataTransformation):
-    """ This class extracts the first occurrence of a regex from a given input key and saves it to the output key.
-    
+    """This class extracts the first occurrence of a regex from a given input key and saves it to the output key.
+
     :param regex: The regex to search for
     :type regex: str
     :param output_key: The output key to save the transformed data to
@@ -27,15 +27,17 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
     :param match_group: The match group to return
     :type match_group: int, optional
     """
-    def __init__(self,
-                 regex: str,
-                 output_key: str,
-                 assert_unique: bool,
-                 strip: bool,
-                 input_key: str,
-                 regex_fallback: str = None,
-                 match_group: int = 0
-                 ):
+
+    def __init__(
+        self,
+        regex: str,
+        output_key: str,
+        assert_unique: bool,
+        strip: bool,
+        input_key: str,
+        regex_fallback: str = None,
+        match_group: int = 0,
+    ):
         super().__init__(output_key=output_key)
         self.input_key = input_key
         self.regex = regex
@@ -46,13 +48,13 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         """Applies the transformation to the given data dictionary. It extracts the first occurrence of a regex from a given input key and saves it to the output key.
-        
+
         :param data_dict: The data dictionary to apply the transformation to
         :type data_dict: Dict[str, Any]
         :return: The transformed data dictionary
         :rtype: Dict[str, Any]
         """
-        
+
         txt = self._search(data_dict[self.input_key], self.regex)
 
         if txt is None and self.regex_fallback:
@@ -73,7 +75,7 @@ class RegexFirstOccurrenceExtractor(DataTransformation):
 
     def _search(self, message, regex):
         """Searches for a regex in a message and returns the first match.
-        
+
         :param message: The message to search in
         :type message: str
         :param regex: The regex to search for

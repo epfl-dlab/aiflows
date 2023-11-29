@@ -56,7 +56,7 @@ from omegaconf import OmegaConf
 
 
 def _init_logger_from_cfg():
-    """ Initialize the logger from the config file"""
+    """Initialize the logger from the config file"""
     root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     logger_cfg_path = os.path.join(root_dir, "configs/python_logger.yaml")
     with open(logger_cfg_path, "r") as f:
@@ -77,15 +77,13 @@ def _get_default_logging_level():
             return log_levels[env_level_str]
         else:
             logging.getLogger().warning(
-                f"Unknown option FLOWS_VERBOSITY={env_level_str}, "
-                f"has to be one of: {', '.join(log_levels.keys())}"
+                f"Unknown option FLOWS_VERBOSITY={env_level_str}, " f"has to be one of: {', '.join(log_levels.keys())}"
             )
     return _default_log_level
 
 
 def _get_library_name() -> str:
-    """Return the name of the library.
-    """
+    """Return the name of the library."""
     return __name__.split(".")[0]
 
 
@@ -127,7 +125,7 @@ def _reset_library_root_logger() -> None:
 
 
 def get_log_levels_dict():
-    """ Return a dictionary of all available log levels."""
+    """Return a dictionary of all available log levels."""
     return log_levels
 
 
@@ -135,7 +133,7 @@ def get_logger(name: Optional[str] = None) -> logging.Logger:
     """
     Return a logger with the specified name.
     This function is not supposed to be directly accessed unless you are writing a custom flows module.
-    
+
     :param name: The name of the logger to return
     :type name: str, optional
     :return: The logger
@@ -154,10 +152,10 @@ def get_verbosity() -> int:
 
     :return: The logging level
     :rtype: int
-    
+
     .. note::
         Flows has following logging levels:
-        
+
         - 50: `flows.logging.CRITICAL` or `flows.logging.FATAL`
         - 40: `flows.logging.ERROR`
         - 30: `flows.logging.WARNING` or `flows.logging.WARN`
@@ -268,7 +266,7 @@ def enable_explicit_format() -> None:
 
     All handlers currently bound to the root logger are affected by this method.
     """
-    
+
     handlers = _get_library_root_logger().handlers
 
     for handler in handlers:
@@ -291,7 +289,7 @@ def warning_advice(self, *args, **kwargs):
     r"""
     This method is identical to `logger.warning()`, but if env var FLOWS_NO_ADVISORY_WARNINGS=1 is set, this
     warning will not be printed
-    
+
     :param self: The logger object
     :param \*args: The arguments to pass to the warning method
     :param \**kwargs: The keyword arguments to pass to the warning method
@@ -309,7 +307,7 @@ logging.Logger.warning_advice = warning_advice
 def warning_once(self, *args, **kwargs):
     """
     This method is identical to `logger.warning()`, but will emit the warning with the same message only once
-    
+
     .. note::
         The cache is for the function arguments, so 2 different callers using the same arguments will hit the cache.
         The assumption here is that all warning messages are unique across the code. If they aren't then need to switch to
@@ -329,35 +327,34 @@ logging.Logger.warning_once = warning_once
 
 
 def _get_time_str():
-    """ Return formatted time string (format: '%Y-%m-%d_%H-%M-%S')
-    
+    """Return formatted time string (format: '%Y-%m-%d_%H-%M-%S')
+
     :return: The formatted time string
     :rtype: str
     """
-    return datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 
 def _set_file(path):
-    """ Add a file handler to the global logger.
-    
+    """Add a file handler to the global logger.
+
     :param path: The path to the file
     :type path: str
     """
     global _FILE_HANDLER
     _logger = _get_library_root_logger()
     if os.path.isfile(path):
-        backup_name = path + '.' + _get_time_str()
+        backup_name = path + "." + _get_time_str()
         shutil.move(path, backup_name)
         _logger.info("Existing log file '{}' backuped to '{}'".format(path, backup_name))  # noqa: F821
-    file_hdl = logging.FileHandler(
-        filename=path, encoding='utf-8', mode='w')
+    file_hdl = logging.FileHandler(filename=path, encoding="utf-8", mode="w")
     formatter = _logger.handlers[0].formatter
 
     file_hdl.setFormatter(formatter)
 
     _FILE_HANDLER = file_hdl
     _logger.addHandler(file_hdl)
-    _logger.info("Argv: " + ' '.join(sys.argv))
+    _logger.info("Argv: " + " ".join(sys.argv))
 
 
 def set_dir(dirname, action=None):
@@ -395,43 +392,49 @@ def set_dir(dirname, action=None):
 
     def dir_nonempty(dirname):
         # If directory exists and nonempty (ignore hidden files), prompt for action
-        return os.path.isdir(dirname) and len([x for x in os.listdir(dirname) if x[0] != '.'])
+        return os.path.isdir(dirname) and len([x for x in os.listdir(dirname) if x[0] != "."])
 
     if dir_nonempty(dirname):
         if not action:
-            _logger.warning("""\
-Log directory {} exists! Use 'd' to delete it. """.format(dirname))
-            _logger.warning("""\
+            _logger.warning(
+                """\
+Log directory {} exists! Use 'd' to delete it. """.format(
+                    dirname
+                )
+            )
+            _logger.warning(
+                """\
 If you're resuming from a previous run, you can choose to keep it.
-Press any other key to exit. """)
+Press any other key to exit. """
+            )
         while not action:
             action = input("Select Action: k (keep) / d (delete) / q (quit):").lower().strip()
         act = action
-        if act == 'b':
+        if act == "b":
             backup_name = dirname + _get_time_str()
             shutil.move(dirname, backup_name)
             _logger.info("Directory '{}' backuped to '{}'".format(dirname, backup_name))  # noqa: F821
-        elif act == 'd':
+        elif act == "d":
             shutil.rmtree(dirname, ignore_errors=True)
             if dir_nonempty(dirname):
                 shutil.rmtree(dirname, ignore_errors=False)
-        elif act == 'n':
+        elif act == "n":
             dirname = dirname + _get_time_str()
             _logger.info("Use a new log directory {}".format(dirname))  # noqa: F821
-        elif act == 'k':
+        elif act == "k":
             pass
         else:
             raise OSError("Directory {} exits!".format(dirname))
     LOG_DIR = dirname
 
     def mkdir_p(dirname):
-        """ Make a dir recursively, but do nothing if the dir exists
-        
+        """Make a dir recursively, but do nothing if the dir exists
+
         :param dirname: The directory name
         :type dirname: str
         """
         assert dirname is not None
-        if dirname == '' or os.path.isdir(dirname):
+        if dirname == "" or os.path.isdir(dirname):
             return
         try:
             os.makedirs(dirname)
@@ -440,14 +443,14 @@ Press any other key to exit. """)
                 raise e
 
     mkdir_p(dirname)
-    _set_file(os.path.join(dirname, 'log.log'))
+    _set_file(os.path.join(dirname, "log.log"))
 
 
 def auto_set_dir(action=None, name=None):
     """
     Use :func:`logger.set_logger_dir` to set log directory to
     "./.flows/logs/{scriptname}:{name}". "scriptname" is the name of the main python file currently running
-    
+
     :param action: an action of ["k","d","q"] to be performed when the directory exists.
         When the directory exists, Will ask user by default.
             "d": delete the directory. Note that the deletion may fail when
@@ -459,7 +462,7 @@ def auto_set_dir(action=None, name=None):
             old states for you. It simply does nothing.
     :type action: str, optional
     :param name: The name of the directory
-    :type name: str, optional    
+    :type name: str, optional
     """
     # Get the directory of the current module
     current_module_file = inspect.getfile(inspect.currentframe())
@@ -468,7 +471,7 @@ def auto_set_dir(action=None, name=None):
     timestamp = _get_time_str()
     auto_dirname = os.path.join(flow_root_dir, "logs", f"{timestamp}")
     if name:
-        auto_dirname += '_%s' % name if os.name == 'nt' else ':%s' % name
+        auto_dirname += "_%s" % name if os.name == "nt" else ":%s" % name
     set_dir(auto_dirname, action=action)
 
 

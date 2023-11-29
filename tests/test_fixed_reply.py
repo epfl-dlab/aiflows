@@ -10,12 +10,7 @@ def test_basic_instantiating() -> None:
         FixedReplyFlow(name="name", description="description")
 
     flow = FixedReplyFlow(
-        name="name",
-        description="description",
-        input_keys=[],
-        verbose=False,
-        dry_run=True,
-        fixed_reply="reply"
+        name="name", description="description", input_keys=[], verbose=False, dry_run=True, fixed_reply="reply"
     )
 
     assert not flow.verbose
@@ -42,20 +37,10 @@ def test_basic_instantiating() -> None:
 
 def test_basic_call() -> None:
     flow = FixedReplyFlow(
-        name="name",
-        description="description",
-        input_keys=[],
-        verbose=False,
-        dry_run=False,
-        fixed_reply="reply"
+        name="name", description="description", input_keys=[], verbose=False, dry_run=False, fixed_reply="reply"
     )
 
-    tm = flow.package_task_message(
-        recipient_flow=flow,
-        task_name="",
-        task_data={},
-        output_keys=["query_mod"]
-    )
+    tm = flow.package_task_message(recipient_flow=flow, task_name="", task_data={}, output_keys=["query_mod"])
 
     answer = flow(tm)
     assert "query" not in answer.data

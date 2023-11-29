@@ -6,6 +6,7 @@ dependencies = [
     {"url": "FlowsEpfl/ReActFlowModule", "revision": "/Users/saibo/Development/Flow_dev/ReActFlowModule"},
 ]
 from flows import flow_verse
+
 flow_verse.sync_dependencies(dependencies)
 
 import os
@@ -22,12 +23,14 @@ if __name__ == "__main__":
 
     input_data = [
         {
-        "id": 0,
-        "question": "What is the birth date of the first president of the United States?",
+            "id": 0,
+            "question": "What is the birth date of the first president of the United States?",
+        }
+    ]
 
-    }]
-
-    full_outputs, human_readable_outputs = FlowLauncher.launch(flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")})
+    full_outputs, human_readable_outputs = FlowLauncher.launch(
+        flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")}
+    )
 
     print(human_readable_outputs)
     print(f'previous message: {len(curr_flow.flow_state["previous_messages"])}')
@@ -43,7 +46,7 @@ if __name__ == "__main__":
     # full_outputs, human_readable_outputs = FlowLauncher.launch(flow=curr_flow, data=input_data, api_keys={"openai": os.getenv("OPENAI_API_KEY")})
 
     """
-    Needs to 
+    Needs to
     class FlowLauncher(ABC):
     @staticmethod
     def launch(flow: Flow,

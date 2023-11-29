@@ -17,7 +17,7 @@ class FlowHistory:
     def add_message(self, message: Message) -> None:
         """
         Adds a message to the history.
-        
+
         :param message: The message to add.
         :type message: Message
         """
@@ -57,16 +57,16 @@ class FlowHistory:
     #     return {"history": [m.to_dict() for m in self.messages]}
 
     def __len__(self):
-        """ Returns the length of the message history.
-        
+        """Returns the length of the message history.
+
         :return: The length of the history.
         :rtype: int
         """
         return len(self.messages)
 
     def __str__(self):
-        """ Returns a string representation of the history.
-        
+        """Returns a string representation of the history.
+
         :return: The string representation of the history.
         :rtype: str
         """

@@ -7,6 +7,7 @@ dependencies = [
     {"url": "FlowsEpfl/ReActFlowModule", "revision": "/Users/saibo/Development/Flow_dev/ReActFlowModule"},
 ]
 from flows import flow_verse
+
 flow_verse.sync_dependencies(dependencies)
 
 import os
@@ -18,7 +19,9 @@ from flows.data_transformations import KeyRename
 
 if __name__ == "__main__":
     openai_key = os.environ.get("OPENAI_API_KEY")
-    react_flow = CircularFlow.instantiate_from_default_config(overrides={"output_keys": ["answer","_status"], "run_output_keys": ["observation","_status"]})
+    react_flow = CircularFlow.instantiate_from_default_config(
+        overrides={"output_keys": ["answer", "_status"], "run_output_keys": ["observation", "_status"]}
+    )
 
     agent_flow = AgentAtomicFlow.instantiate_from_default_config(overrides={"verbose": False, "api_key": openai_key})
     action_flow = ActionFlow.instantiate_from_default_config()
@@ -32,28 +35,31 @@ if __name__ == "__main__":
 
     print(react_flow)
 
-
     input_data = {
-            "id": 0,
-            "question": "What is the birth date of the first president of the United States ?",
-        }
-        #     {
-        #     "id": 1,
-        #         "question": "What is the father's birth date of the first president of the United States ?",
-        # },
-        #
-        # {"id": 2,
-        #  "question": "What is the PhD theis title of the first female  president of EPFL in Switzerland ?",
-        #
-        #  },
+        "id": 0,
+        "question": "What is the birth date of the first president of the United States ?",
+    }
+    #     {
+    #     "id": 1,
+    #         "question": "What is the father's birth date of the first president of the United States ?",
+    # },
+    #
+    # {"id": 2,
+    #  "question": "What is the PhD theis title of the first female  president of EPFL in Switzerland ?",
+    #
+    #  },
     # ]
     # print(react_flow)
 
     input_message = react_flow.package_input_message(input_data, api_keys={"openai": openai_key})
     # sys.exit()
     output_message = react_flow(input_message)
-    assert output_message.get_output_data()["answer"] == "February 22, 1732", f"output_message.get_output_data()['answer'] = {output_message.get_output_data()['answer']}"
-    assert output_message.get_output_data()["_status"] == "finished", f"output_message.get_output_data()['_status'] = {output_message.get_output_data()['_status']}"
+    assert (
+        output_message.get_output_data()["answer"] == "February 22, 1732"
+    ), f"output_message.get_output_data()['answer'] = {output_message.get_output_data()['answer']}"
+    assert (
+        output_message.get_output_data()["_status"] == "finished"
+    ), f"output_message.get_output_data()['_status'] = {output_message.get_output_data()['_status']}"
 
     # input_data = {
     #         "id": 1,
@@ -79,4 +85,3 @@ if __name__ == "__main__":
     # output_message = react_flow(input_message)
     #
     # assert output_message.get_output_data()["_status"] == "unfinished"
-

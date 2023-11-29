@@ -12,8 +12,8 @@ colorama.init()
 
 @dataclass
 class InputMessage(Message):
-    """ This class represents an input message that is passed from one flow to another.
-    
+    """This class represents an input message that is passed from one flow to another.
+
     :param data_dict: The data content of the message
     :type data_dict: Dict[str, Any]
     :param src_flow: The name of the flow that created the message
@@ -25,12 +25,15 @@ class InputMessage(Message):
     :param private_keys: A list of private keys that should not be serialized or logged
     :type private_keys: List[str], optional
     """
-    def __init__(self,
-                 data_dict: Dict[str, Any],
-                 src_flow: str,
-                 dst_flow: str,
-                 created_by: str = None,
-                 private_keys: List[str] = None):
+
+    def __init__(
+        self,
+        data_dict: Dict[str, Any],
+        src_flow: str,
+        dst_flow: str,
+        created_by: str = None,
+        private_keys: List[str] = None,
+    ):
 
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
@@ -39,7 +42,7 @@ class InputMessage(Message):
         self.dst_flow = dst_flow
 
     def to_string(self):
-        """ Returns a string representation of the message.
+        """Returns a string representation of the message.
 
         :return: The string representation of the message.
         :rtype: str
@@ -47,20 +50,24 @@ class InputMessage(Message):
         src_flow = self.src_flow
         dst_flow = self.dst_flow
 
-        message = f"\n{colorama.Fore.GREEN} ~~~ InputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{colorama.Fore.GREEN} ~~~ InputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
     @staticmethod
-    def build(data_dict: Dict[str, Any],
-              # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
-              src_flow: str,
-              dst_flow: str,
-              private_keys: Optional[List[str]] = None,
-              created_by: Optional[str] = None) -> 'InputMessage':
-        """ Static method that builds an InputMessage object.
-        
+    def build(
+        data_dict: Dict[str, Any],
+        # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
+        src_flow: str,
+        dst_flow: str,
+        private_keys: Optional[List[str]] = None,
+        created_by: Optional[str] = None,
+    ) -> "InputMessage":
+        """Static method that builds an InputMessage object.
+
         :param data_dict: The data content of the message
         :type data_dict: Dict[str, Any]
         :param src_flow: The name of the flow that created the message
@@ -79,11 +86,7 @@ class InputMessage(Message):
             created_by = src_flow
 
         input_message = InputMessage(
-            data_dict=data_dict,
-            src_flow=src_flow,
-            dst_flow=dst_flow,
-            created_by=created_by,
-            private_keys=private_keys
+            data_dict=data_dict, src_flow=src_flow, dst_flow=dst_flow, created_by=created_by, private_keys=private_keys
         )
 
         return input_message
@@ -91,36 +94,37 @@ class InputMessage(Message):
 
 @dataclass
 class UpdateMessage_Generic(Message):
-    r""" Updates the message of a flow.
-    
+    r"""Updates the message of a flow.
+
     :param updated_flow: The name of the flow that should be updated
     :type updated_flow: str
     :param \**kwargs: arguments that are passed to the Message constructor
     """
-    def __init__(self,
-                 updated_flow: str,
-                 **kwargs):
+
+    def __init__(self, updated_flow: str, **kwargs):
         super().__init__(**kwargs)
         self.updated_flow = updated_flow
 
     def to_string(self):
-        """ Returns a string representation of the message.
-        
+        """Returns a string representation of the message.
+
         :return: The string representation of the message.
         :rtype: str
         """
         updated_flow = self.updated_flow
 
-        message = f"\n{colorama.Fore.MAGENTA} ~~~ UpdateMessage ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{colorama.Fore.MAGENTA} ~~~ UpdateMessage ({self.__class__.__name__}): `{updated_flow}` ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
 
 @dataclass
 class UpdateMessage_ChatMessage(UpdateMessage_Generic):
-    r""" Updates the chat message of a flow.
-    
+    r"""Updates the chat message of a flow.
+
     :param content: The content of the chat message
     :type content: str
     :param role: The role of the chat message (typically "user", "assistant", "system", "human" ...)
@@ -129,18 +133,15 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
     :type updated_flow: str
     :param \**kwargs: arguments that are passed to the UpdateMessage_Generic constructor
     """
-    def __init__(self,
-                 content: str,
-                 role: str,
-                 updated_flow: str,
-                 **kwargs):
+
+    def __init__(self, content: str, role: str, updated_flow: str, **kwargs):
         super().__init__(data={}, updated_flow=updated_flow, **kwargs)
         self.data["role"] = role
         self.data["content"] = content
 
     def to_string(self):
-        """ Returns a string representation of the message.
-        
+        """Returns a string representation of the message.
+
         :return: The string representation of the message.
         :rtype: str
         """
@@ -148,71 +149,73 @@ class UpdateMessage_ChatMessage(UpdateMessage_Generic):
         role = self.data["role"]
         color = colorama.Fore.RED if role == "assistant" else colorama.Fore.YELLOW
 
-        message = f"\n{color} ~~~ UpdateMessage ({self.__class__.__name__}): " \
-                  f"`{updated_flow}` (role: {role}) ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{color} ~~~ UpdateMessage ({self.__class__.__name__}): "
+            f"`{updated_flow}` (role: {role}) ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
 
 @dataclass
 class UpdateMessage_NamespaceReset(Message):
-    """ Resets the namespace of a flow's message."""
-    def __init__(self,
-                 updated_flow: str,
-                 created_by: str,
-                 keys_deleted_from_namespace: List[str]):
+    """Resets the namespace of a flow's message."""
+
+    def __init__(self, updated_flow: str, created_by: str, keys_deleted_from_namespace: List[str]):
         super().__init__(created_by=created_by, data={})
         self.updated_flow = updated_flow
         self.data["keys_deleted_from_namespace"] = keys_deleted_from_namespace
 
     def to_string(self):
-        """ Returns a string representation of the message.
-        
+        """Returns a string representation of the message.
+
         :return: The string representation of the message.
         :rtype: str
         """
         updated_flow = self.updated_flow
 
-        message = f"\n{colorama.Fore.CYAN} ~~~ ResetMessageNamespaceOnly ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{colorama.Fore.CYAN} ~~~ ResetMessageNamespaceOnly ({self.__class__.__name__}): `{updated_flow}` ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
 
 @dataclass
 class UpdateMessage_FullReset(Message):
-    """ Resets the full message of a flow.
-    
+    """Resets the full message of a flow.
+
     :param updated_flow: The name of the flow that should be updated
-    
+
     """
-    def __init__(self,
-                 updated_flow: str,
-                 created_by: str,
-                 keys_deleted_from_namespace: List[str]):
+
+    def __init__(self, updated_flow: str, created_by: str, keys_deleted_from_namespace: List[str]):
         super().__init__(created_by=created_by, data={})
         self.updated_flow = updated_flow
         self.data["keys_deleted_from_namespace"] = keys_deleted_from_namespace
 
     def to_string(self):
-        """ Returns a string representation of the message.
+        """Returns a string representation of the message.
 
         :return: The string representation of the message.
         :rtype: str
         """
         updated_flow = self.updated_flow
 
-        message = f"\n{colorama.Fore.CYAN} ~~~ ResetMessageFull ({self.__class__.__name__}): `{updated_flow}` ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{colorama.Fore.CYAN} ~~~ ResetMessageFull ({self.__class__.__name__}): `{updated_flow}` ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
 
 @dataclass
 class OutputMessage(Message):
-    r""" This class represents an output message that is passed from one flow to another.
-    
+    r"""This class represents an output message that is passed from one flow to another.
+
     :param src_flow: The name of the flow that created the message
     :type src_flow: str
     :param dst_flow: The name of the flow that should receive the message
@@ -229,17 +232,20 @@ class OutputMessage(Message):
     :type created_by: str
     :param \**kwargs: arguments that are passed to the Message constructor
     """
-    def __init__(self,
-                 src_flow: str,
-                 dst_flow: str,
-                 # output_keys: List[str],
-                 output_data: Dict[str, Any],
-                 raw_response: Optional[Dict[str, Any]],
-                 # missing_output_keys: List[str],
-                 input_message_id: str,
-                 history: 'FlowHistory',
-                 created_by: str,
-                 **kwargs):
+
+    def __init__(
+        self,
+        src_flow: str,
+        dst_flow: str,
+        # output_keys: List[str],
+        output_data: Dict[str, Any],
+        raw_response: Optional[Dict[str, Any]],
+        # missing_output_keys: List[str],
+        input_message_id: str,
+        history: "FlowHistory",
+        created_by: str,
+        **kwargs,
+    ):
         super().__init__(data={}, created_by=created_by, **kwargs)
 
         self.src_flow = src_flow
@@ -254,22 +260,24 @@ class OutputMessage(Message):
         self.history = history.to_list()
 
     def to_string(self):
-        """ Returns a string representation of the message.
-        
+        """Returns a string representation of the message.
+
         :return: The string representation of the message.
         :rtype: str
         """
         src_flow = self.src_flow
         dst_flow = self.dst_flow
 
-        message = f"\n{colorama.Fore.BLUE} ~~~ OutputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n" \
-                  f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        message = (
+            f"\n{colorama.Fore.BLUE} ~~~ OutputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n"
+            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
+        )
 
         return message
 
     def get_output_data(self):
-        """ Returns the output data of the message.
-        
+        """Returns the output data of the message.
+
         :return: The output data of the message.
         :rtype: Dict[str, Any]
         """

@@ -5,7 +5,6 @@ from flows.base_flows import AtomicFlow, GeneratorCriticFlow, FixedReplyFlow
 
 def atomic_flow_builder():
     class MyFlow(AtomicFlow):
-
         def input_keys_given_state(self):
             if self.is_conv_init():
                 return ["query"]
@@ -31,12 +30,7 @@ def atomic_flow_builder():
             self.flow_state["prev_answer"] = answer
             return {self.output_keys[0]: answer}
 
-    return MyFlow(
-        name="my-flow",
-        description="flow-sum",
-        output_keys=["sum"],
-        input_keys=["v0", "v1"]
-    )
+    return MyFlow(name="my-flow", description="flow-sum", output_keys=["sum"], input_keys=["v0", "v1"])
 
 
 def test_basic_instantiating() -> None:
@@ -48,12 +42,7 @@ def test_basic_instantiating() -> None:
 
     flow_a = atomic_flow_builder()
     flow_b = FixedReplyFlow(
-        name="name",
-        description="description",
-        input_keys=[],
-        verbose=False,
-        dry_run=False,
-        fixed_reply="reply"
+        name="name", description="description", input_keys=[], verbose=False, dry_run=False, fixed_reply="reply"
     )
 
     with pytest.raises(Exception):
@@ -63,7 +52,7 @@ def test_basic_instantiating() -> None:
             input_keys=["v0", "v1"],
             verbose=False,
             dry_run=False,
-            flows={"gen": flow_a, "critic": flow_b}
+            flows={"gen": flow_a, "critic": flow_b},
         )
 
     with pytest.raises(Exception):
@@ -73,7 +62,7 @@ def test_basic_instantiating() -> None:
             input_keys=["v0", "v1"],
             verbose=False,
             dry_run=False,
-            flows={"generator": flow_a, "cri": flow_b}
+            flows={"generator": flow_a, "cri": flow_b},
         )
 
     flow = GeneratorCriticFlow(
@@ -82,7 +71,7 @@ def test_basic_instantiating() -> None:
         input_keys=["v0", "v1"],
         verbose=False,
         dry_run=False,
-        flows={"generator": flow_a, "critic": flow_b}
+        flows={"generator": flow_a, "critic": flow_b},
     )
 
     assert not flow.verbose
@@ -96,11 +85,7 @@ def test_basic_call():
     flow_a = atomic_flow_builder()
 
     flow_b = FixedReplyFlow(
-        name="name",
-        description="description",
-        input_keys=[],
-        output_keys=["query"],
-        fixed_reply=10
+        name="name", description="description", input_keys=[], output_keys=["query"], fixed_reply=10
     )
 
     gen_crit_flow = GeneratorCriticFlow(
@@ -112,15 +97,12 @@ def test_basic_call():
         max_rounds=3,
         eoi_key=None,
         max_round=2,
-        flows={"generator": flow_a, "critic": flow_b}
+        flows={"generator": flow_a, "critic": flow_b},
     )
 
     data = {"v0": 12, "v1": 23}
     task_message = gen_crit_flow.package_task_message(
-        recipient_flow=gen_crit_flow,
-        task_name="task",
-        task_data=data,
-        output_keys=["sum"]
+        recipient_flow=gen_crit_flow, task_name="task", task_data=data, output_keys=["sum"]
     )
 
     answer = gen_crit_flow(task_message)

@@ -1,4 +1,3 @@
-
 from flows.base_flows import SequentialFlow, GeneratorCriticFlow, FixedReplyFlow, ChatAtomicFlow
 from flows.utils import instantiate_flow
 from omegaconf import OmegaConf
@@ -13,12 +12,14 @@ def test_empty_loading() -> None:
 
 
 def test_example_loading() -> None:
-    cfg = OmegaConf.create({
-        "_target_": "flows.base_flows.FixedReplyFlow",
-        "name": "dummy_name",
-        "description": "dummy_desc",
-        "fixed_reply": "dummy_fixed_reply"
-    })
+    cfg = OmegaConf.create(
+        {
+            "_target_": "flows.base_flows.FixedReplyFlow",
+            "name": "dummy_name",
+            "description": "dummy_desc",
+            "fixed_reply": "dummy_fixed_reply",
+        }
+    )
 
     flow = instantiate_flow(cfg)
     assert flow.name == "dummy_name"
@@ -31,20 +32,12 @@ def test_openai_atomic_loading() -> None:
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -56,7 +49,7 @@ def test_openai_atomic_loading() -> None:
         "generation_parameters": {"temperature": 0.7},
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
-        "query_message_prompt_template": query_prompt
+        "query_message_prompt_template": query_prompt,
     }
 
     flow = ChatAtomicFlow(**gen_flow_dict)
@@ -66,13 +59,14 @@ def test_openai_atomic_loading() -> None:
 
 
 def test_loading_wrong_inputs() -> None:
-    cfg = OmegaConf.create({
-        "_target_": "flows.base_flows.FixedReplyFlow",
-        "name": "dummy_name",
-        "description": "dummy_desc",
-        "fixed_reply": "dummy_fixed_reply",
-        "faulty_param": True
-    })
+    cfg = OmegaConf.create(
+        {
+            "_target_": "flows.base_flows.FixedReplyFlow",
+            "name": "dummy_name",
+            "description": "dummy_desc",
+            "fixed_reply": "dummy_fixed_reply",
+            "faulty_param": True,
+        }
+    )
 
     instantiate_flow(cfg)
-

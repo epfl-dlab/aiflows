@@ -58,9 +58,16 @@ def test_to_list() -> None:
 
     dd = history.to_list()
 
-    expected_keys = ["message_id", "created_at", "message_type",
-                     "parent_message_ids", "flow_run_id",
-                     "message_creator", "data", "flow_runner"]
+    expected_keys = [
+        "message_id",
+        "created_at",
+        "message_type",
+        "parent_message_ids",
+        "flow_run_id",
+        "message_creator",
+        "data",
+        "flow_runner",
+    ]
 
     for exp_k in expected_keys:
         assert exp_k in dd[0]

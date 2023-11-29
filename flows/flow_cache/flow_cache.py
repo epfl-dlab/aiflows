@@ -12,7 +12,7 @@ log = logging.get_logger(__name__)
 @dataclass
 class CACHING_PARAMETERS:
     """This class contains the global caching parameters.
-    
+
     :param max_cached_entries: The maximum number of cached entries
     :type max_cached_entries: int, optional
     :param do_caching: Whether to do caching
@@ -20,6 +20,7 @@ class CACHING_PARAMETERS:
     :param cache_dir: The cache directory
     :type cache_dir: str, optional
     """
+
     # Global parameters that can be set before starting the outer-flow
     max_cached_entries: int = 10000
     do_caching: bool = True
@@ -32,7 +33,7 @@ CACHING_PARAMETERS.do_caching = os.getenv("FLOW_DISABLE_CACHE", "false").lower()
 @dataclass
 class CachingValue:
     """This class contains the cached value.
-    
+
     :param output_results: The output results
     :type output_results: Dict
     :param full_state: The full state
@@ -40,6 +41,7 @@ class CachingValue:
     :param history_messages_created: The history messages created
     :type history_messages_created: List
     """
+
     output_results: Dict
     full_state: Dict
     history_messages_created: List
@@ -48,7 +50,7 @@ class CachingValue:
 @dataclass
 class CachingKey:
     """This class contains the caching key.
-    
+
     :param flow: The flow
     :type flow: Flow
     :param input_data: The input data
@@ -56,6 +58,7 @@ class CachingKey:
     :param keys_to_ignore_for_hash: The keys to ignore for the hash
     :type keys_to_ignore_for_hash: List
     """
+
     flow: "Flow"
     input_data: Dict[str, Any]
     keys_to_ignore_for_hash: List[str]
@@ -66,7 +69,7 @@ class CachingKey:
 
 def get_cache_dir() -> str:
     """Returns the cache directory.
-    
+
     :return: The cache directory
     :rtype: str
     """
@@ -75,12 +78,12 @@ def get_cache_dir() -> str:
         return os.path.join(cache_dir)
 
     current_dir = os.getcwd()
-    return os.path.abspath(os.path.join(current_dir, '.flow_cache'))
+    return os.path.abspath(os.path.join(current_dir, ".flow_cache"))
 
 
 def _custom_hash(*all_args):
     """Returns a custom hash for the given arguments.
-    
+
     :param \*all_args: The arguments
     :type \*all_args: Any
     :return: The custom hash
@@ -94,19 +97,20 @@ def _custom_hash(*all_args):
 
 class FlowCache:
     """This class is the flow cache.
-    
+
     :param index: The index
     :type index: Index
     :param \__lock: The lock
     :type \__lock: threading.Lock
     """
+
     def __init__(self):
         self._index = Index(get_cache_dir())
         self.__lock = threading.Lock()
 
     def get(self, key: str) -> Optional[CachingValue]:
         """Returns the cached value for the given key.
-        
+
         :param key: The key
         :type key: str
         :return: The cached value
@@ -117,7 +121,7 @@ class FlowCache:
 
     def set(self, key: str, value: CachingValue):
         """Sets the cached value for the given key.
-        
+
         :param key: The key
         :type key: str
         :param value: The cached value
@@ -128,7 +132,7 @@ class FlowCache:
 
     def pop(self, key: str):
         """Pops the cached value for the given key.
-        
+
         :param key: The key
         :type key: str
         """

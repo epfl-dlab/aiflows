@@ -17,7 +17,7 @@ from flows.utils.general_helpers import read_yaml_file
 if __name__ == "__main__":
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # ToDo(https://github.com/epfl-dlab/flows/issues/65): Uncomment this line to save the output to a file
-    
+
     root_dir = "."
     cfg_path = os.path.join(root_dir, "reverseNumberSequential.yaml")
     overrides_config = read_yaml_file(cfg_path)
@@ -30,9 +30,7 @@ if __name__ == "__main__":
 
     # ~~~ Run inference ~~~
     _, outputs = FlowLauncher.launch(
-        flow_with_interfaces={"flow": flow},
-        data=data,
-        path_to_output_file=path_to_output_file
+        flow_with_interfaces={"flow": flow}, data=data, path_to_output_file=path_to_output_file
     )
 
     # ~~~ Print the output ~~~

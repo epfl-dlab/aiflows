@@ -66,4 +66,3 @@ For now, let's see how you can use the convenience methods to run your new ``Roc
     # as a response to a task, a flow will send an OutputMessage
     # it contains metadata about the task execution, as well as results
     print(output.data['choice'])
-

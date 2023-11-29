@@ -1,7 +1,7 @@
 flow:
   _target_: aiflows.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
   max_rounds: 30
-  python_file_path: examples/JARVIS/library.py #Relative path from where you're running 
+  python_file_path: examples/JARVIS/library.py #Relative path from where you're running
   ### Subflows specification
   subflows_config:
     Controller:
@@ -11,11 +11,10 @@ flow:
       commands:
         run_python_code:
           description: "Call a python function which is written in a py file whose contents are in the Python File section"
-          input_args: [ "called_function","kwargs" ]
+          input_args: ["called_function", "kwargs"]
         finish:
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
-          input_args: [ "answer" ]
-
+          input_args: ["answer"]
 
       input_interface_initialized:
         - "observation"
@@ -31,20 +30,20 @@ flow:
       backend:
         api_infos: ???
       output_interface:
-        - 'thought'
-        - 'reasoning'
-        - 'plan'
-        - 'criticism'
-        - 'speak'
-        - 'command'
-        - 'command_args'
+        - "thought"
+        - "reasoning"
+        - "plan"
+        - "criticism"
+        - "speak"
+        - "command"
+        - "command_args"
 
       #######################################################
       # ToDo: Some parts of the prompt don't make sense -- update them
       system_message_prompt_template:
         template: |2-
-          You are a smart AI assistant. 
-          
+          You are a smart AI assistant.
+
           Your decisions must always be made independently without seeking user assistance.
           Play to your strengths as an LLM and pursue simple strategies with no legal complications.
           If you have completed all your tasks, make sure to use the "finish" command.
@@ -85,7 +84,11 @@ flow:
               }
           }
           Ensure your responses can be parsed by Python json.loads
-        input_variables: ["commands", "${flow.subflows_config.Controller.sys_prompt_pyfile_input_variable_name}" ]
+        input_variables:
+          [
+            "commands",
+            "${flow.subflows_config.Controller.sys_prompt_pyfile_input_variable_name}",
+          ]
 
     Executor:
       _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
@@ -93,7 +96,6 @@ flow:
         run_python_code:
           _target_: baldwin.PyFileInterpreterFlowModule.PyFileInterpreterAtomicFlow.instantiate_from_default_config
           path_to_py_file: ${flow.python_file_path}
-
 
   topology:
     - goal: "Select the next action and prepare the input for the executor."

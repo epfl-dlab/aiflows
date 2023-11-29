@@ -10,6 +10,7 @@ import pandas as pd
 import litellm
 import ast
 
+
 def send_email_gmail(email_address, source_address, message, subject, attachment_path=None):
     """Send an email via Gmail's SMTP server with an optional attachment.
 
@@ -40,26 +41,26 @@ def send_email_gmail(email_address, source_address, message, subject, attachment
     """
     # Create a message object
     msg = MIMEMultipart()
-    msg['From'] = source_address
-    msg['To'] = email_address
-    msg['Subject'] = subject
+    msg["From"] = source_address
+    msg["To"] = email_address
+    msg["Subject"] = subject
 
     password = os.getenv("GMAIL_PASSWORD")
 
     # Attach the message to the email
-    msg.attach(MIMEText(message, 'plain'))
+    msg.attach(MIMEText(message, "plain"))
 
     if attachment_path:
         # Attach the attachment file, if provided
-        attachment = open(attachment_path, 'rb')
-        part = MIMEBase('application', 'octet-stream')
+        attachment = open(attachment_path, "rb")
+        part = MIMEBase("application", "octet-stream")
         part.set_payload((attachment).read())
         encoders.encode_base64(part)
-        part.add_header('Content-Disposition', "attachment; filename= " + os.path.basename(attachment_path))
+        part.add_header("Content-Disposition", "attachment; filename= " + os.path.basename(attachment_path))
         msg.attach(part)
 
     # Establish a connection with Gmail's SMTP server
-    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server = smtplib.SMTP("smtp.gmail.com", 587)
     server.starttls()  # Use TLS encryption
 
     # Log in to your Gmail account
@@ -70,7 +71,8 @@ def send_email_gmail(email_address, source_address, message, subject, attachment
 
     # Close the connection
     server.quit()
-    
+
+
 def plot_stock_prices_to_pdf(data_file, symbol, output_file):
     """Load stock price data from a CSV file, plot it, and save the plot as a PDF.
 
@@ -94,25 +96,25 @@ def plot_stock_prices_to_pdf(data_file, symbol, output_file):
     the closing prices, and saves the plot to a PDF file. The data is expected to be
     in a CSV format with a date index and a 'Close' column representing closing prices.
     """
-   
+
     # Load the stock price data from the CSV file
     data = pd.read_csv(data_file, index_col=0, parse_dates=True)
-    
+
     if not data.empty:
         # Plot the closing prices
         plt.figure(figsize=(12, 6))
-        plt.plot(data.index, data['Close'], label=f'{symbol} Closing Price', color='b')
-        plt.title(f'{symbol} Closing Prices')
-        plt.xlabel('Date')
-        plt.ylabel('Price')
+        plt.plot(data.index, data["Close"], label=f"{symbol} Closing Price", color="b")
+        plt.title(f"{symbol} Closing Prices")
+        plt.xlabel("Date")
+        plt.ylabel("Price")
         plt.legend()
         plt.grid(True)
-        
+
         # Save the plot to a PDF file
-        plt.savefig(output_file, format='pdf')
+        plt.savefig(output_file, format="pdf")
         print(f"Plot saved to {output_file}")
-    
-    
+
+
 def download_and_save_stock_prices(symbol, start_date, end_date, output_file):
     """Download historical stock prices and save them to a CSV file.
 
@@ -141,10 +143,10 @@ def download_and_save_stock_prices(symbol, start_date, end_date, output_file):
     try:
         # Create a Yahoo Finance ticker object for the given symbol
         ticker = yf.Ticker(symbol)
-        
+
         # Download historical stock price data for the specified date range
         data = ticker.history(start=start_date, end=end_date)
-        
+
         if data is not None and not data.empty:
             # Save the data to a CSV file
             data.to_csv(output_file)

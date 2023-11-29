@@ -6,6 +6,7 @@ dependencies = [
     {"url": "FlowsEpfl/ReActFlowModule", "revision": "/Users/saibo/Development/Flow_dev/ReActFlowModule"},
 ]
 from flows import flow_verse
+
 flow_verse.sync_dependencies(dependencies)
 
 import os
@@ -23,7 +24,6 @@ if __name__ == "__main__":
             "id": 2,
             "command": "finish",
             "argument1": "George Washington ",
-
         }
     ]
 

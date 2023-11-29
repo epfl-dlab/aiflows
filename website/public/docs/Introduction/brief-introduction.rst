@@ -2,11 +2,11 @@
 General Idea
 =====================================
 
-Recent advancements in AI have produced highly capable and controllable agents. This creates unprecedented opportunities for structured reasoning,collaborations among multiple agents, and interactions between agents and tools. 
+Recent advancements in AI have produced highly capable and controllable agents. This creates unprecedented opportunities for structured reasoning,collaborations among multiple agents, and interactions between agents and tools.
 
-To fully realize this potential, it is essential to develop principled ways of thinking about structured interactions involving reasoning agents.This paper makes such systematic thinking possible by introducing the conceptual framework of flows. 
+To fully realize this potential, it is essential to develop principled ways of thinking about structured interactions involving reasoning agents.This paper makes such systematic thinking possible by introducing the conceptual framework of flows.
 
-This paper introduces the conceptual framework of Flows: a systematic approach to modeling such complex interactions. Flows are modular building blocks that can be combined and composed into interactions of arbitrary complexity in an open-ended way. 
+This paper introduces the conceptual framework of Flows: a systematic approach to modeling such complex interactions. Flows are modular building blocks that can be combined and composed into interactions of arbitrary complexity in an open-ended way.
 
 For example, prompting schemes, agent--agent, agent--tools, and even agent--human interactions are special instances of flows that can be composed into more complex flows.
 

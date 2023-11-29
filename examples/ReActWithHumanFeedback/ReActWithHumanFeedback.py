@@ -12,7 +12,7 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
             return {
                 "EARLY_EXIT": True,
                 "answer": "The user has chosen to exit before a final answer was generated.",
-                "status": "unfinished"
+                "status": "unfinished",
             }
 
         return {"human_feedback": human_feedback}

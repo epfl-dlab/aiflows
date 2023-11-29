@@ -23,7 +23,7 @@ def test_basic_instantiating_cf() -> None:
             description="Testing Codeforces Code",
             verbose=False,
             dry_run=True,
-            flow_type="debug-atomic-flow"
+            flow_type="debug-atomic-flow",
         )
 
     flow = CodeTestingAtomicFlowCodeforces(
@@ -32,7 +32,7 @@ def test_basic_instantiating_cf() -> None:
         debugging_setup=debugging_setup,
         verbose=False,
         dry_run=True,
-        flow_type="debug-atomic-flow"
+        flow_type="debug-atomic-flow",
     )
 
     assert not flow.verbose
@@ -48,7 +48,7 @@ def test_instantiating_extra_params() -> None:
         verbose=False,
         dry_run=True,
         flow_type="debug-atomic-flow",
-        new_arg="new_arg_val"
+        new_arg="new_arg_val",
     )
 
     assert flow.new_arg == "new_arg_val"
@@ -69,20 +69,12 @@ def test_cf_tool_basic():
         debugging_setup=debugging_setup,
         verbose=False,
         dry_run=True,
-        flow_type="debug-atomic-flow"
+        flow_type="debug-atomic-flow",
     )
 
-    input_data = {
-        "code": "n=int(input())\nprint(n)",
-        "public_tests_individual_io": [[["1"], "1"]]
-    }
+    input_data = {"code": "n=int(input())\nprint(n)", "public_tests_individual_io": [[["1"], "1"]]}
 
-    task_message = flow.package_task_message(
-        recipient_flow=flow,
-        task_name="",
-        task_data=input_data,
-        output_keys=[]
-    )
+    task_message = flow.package_task_message(recipient_flow=flow, task_name="", task_data=input_data, output_keys=[])
 
     answer = flow(task_message)
     assert answer.data["all_tests_passed"]
@@ -90,6 +82,7 @@ def test_cf_tool_basic():
     assert answer.data["compilation_status"]
     assert answer.data["public_tests_results"][0]["status"]
     assert not answer.data["timeout_error"]
+
 
 # if __name__ == "__main__":
 #     test_basic_instantiating_cf()

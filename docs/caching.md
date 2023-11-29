@@ -11,7 +11,7 @@ from flows.caching import flow_run_cache
 class MyFlow(Flow):
     # Flow implementation goes here
     SUPPORTS_CACHING=True
-    
+
     @flow_run_cache()
     def run(self,
             input_data: Dict[str, Any],

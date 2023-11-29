@@ -25,8 +25,7 @@ flow_verse.sync_dependencies(dependencies)
 if __name__ == "__main__":
     # ~~~ Set the API information ~~~
     # OpenAI backend
-    api_information = [ApiInfo(backend_used="openai",
-                              api_key = os.getenv("OPENAI_API_KEY"))]
+    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
     # Azure backend
     # api_information = ApiInfo(backend_used = "azure",
     #                           api_base = os.getenv("AZURE_API_BASE"),
@@ -40,23 +39,26 @@ if __name__ == "__main__":
     cfg["flow"]["subflows_config"]["Memory"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~
     flow_with_interfaces = {
-        "flow": hydra.utils.instantiate(cfg['flow'], _recursive_=False, _convert_="partial"),
+        "flow": hydra.utils.instantiate(cfg["flow"], _recursive_=False, _convert_="partial"),
         "input_interface": (
             None
-            if cfg.get( "input_interface", None) is None
-            else hydra.utils.instantiate(cfg['input_interface'], _recursive_=False)
+            if cfg.get("input_interface", None) is None
+            else hydra.utils.instantiate(cfg["input_interface"], _recursive_=False)
         ),
         "output_interface": (
             None
-            if cfg.get( "output_interface", None) is None
-            else hydra.utils.instantiate(cfg['output_interface'], _recursive_=False)
+            if cfg.get("output_interface", None) is None
+            else hydra.utils.instantiate(cfg["output_interface"], _recursive_=False)
         ),
     }
 
     # ~~~ Get the data ~~~
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
     # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}  # Uses duckduckgo
-    data = {"id": 0, "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?"}
+    data = {
+        "id": 0,
+        "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?",
+    }
     # At first, we retrieve information about Michael Jordan the basketball player
     # If we provide feedback, only in the first round, that we are not interested in the basketball player,
     #   but the statistician, and skip the feedback in the next rounds, we get the correct answer

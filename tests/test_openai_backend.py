@@ -31,20 +31,12 @@ def test_success(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -57,8 +49,7 @@ def test_success(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}}
-
+        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}},
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
@@ -70,8 +61,9 @@ def test_success(monkeypatch):
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"},
-                                                    expected_out)
+    task_message = openai_flow.package_task_message(
+        openai_flow, "test", {"question": "What is your answer?"}, expected_out
+    )
     output = openai_flow(task_message)
     assert "answer" in output.data
 
@@ -82,20 +74,12 @@ def test_state_update():
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -108,8 +92,7 @@ def test_state_update():
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}}
-
+        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "answer"}},
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
@@ -160,20 +143,12 @@ def test_failure(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -186,15 +161,15 @@ def test_failure(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"question": "What is your answer?"},
-                                                    expected_out)
+    task_message = openai_flow.package_task_message(
+        openai_flow, "test", {"question": "What is your answer?"}, expected_out
+    )
 
     # the following call raises an exception
     # expect it with pytest
@@ -210,20 +185,16 @@ def test_conv_init(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
     hum_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "Please respond nicely  {query}",
-        "input_variables": ["query"]
+        "input_variables": ["query"],
     }
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -236,15 +207,15 @@ def test_conv_init(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"query": "What is your answer?"},
-                                                    expected_out)
+    task_message = openai_flow.package_task_message(
+        openai_flow, "test", {"query": "What is your answer?"}, expected_out
+    )
 
     _ = openai_flow(task_message)
 
@@ -263,20 +234,16 @@ def test_inspect_conversation(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
     hum_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "Please respond nicely  {query}",
-        "input_variables": ["query"]
+        "input_variables": ["query"],
     }
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -289,15 +256,15 @@ def test_inspect_conversation(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"query": "What is your answer?"},
-                                                    expected_out)
+    task_message = openai_flow.package_task_message(
+        openai_flow, "test", {"query": "What is your answer?"}, expected_out
+    )
 
     _ = openai_flow(task_message)
 
@@ -319,25 +286,25 @@ def test_add_demonstration(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
     hum_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "Please respond nicely  {query}",
-        "input_variables": ["query"]
+        "input_variables": ["query"],
     }
 
     query_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "Bam, code {query}",
-        "input_variables": ["query"]
+        "input_variables": ["query"],
     }
 
     demonstration_template = {
         "_target_": "langchain.PromptTemplate",
         "template": "Bam, code {answer}",
-        "input_variables": ["answer"]
+        "input_variables": ["answer"],
     }
 
     gen_flow_dict = {
@@ -352,15 +319,16 @@ def test_add_demonstration(monkeypatch):
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
         "demonstrations_response_template": demonstration_template,
-        "demonstrations": [{"query": "What is your answer?", "answer": "answer"}]
+        "demonstrations": [{"query": "What is your answer?", "answer": "answer"}],
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)
 
     openai_flow.set_api_key("foo")
 
-    task_message = openai_flow.package_task_message(openai_flow, "test", {"query": "What is your answer?"},
-                                                    expected_out)
+    task_message = openai_flow.package_task_message(
+        openai_flow, "test", {"query": "What is your answer?"}, expected_out
+    )
 
     output = openai_flow(task_message)
     print(output)
@@ -375,20 +343,12 @@ def test_response_annotator_wrong_key(monkeypatch):
     sys_prompt = {
         "_target_": "langchain.PromptTemplate",
         "template": "You are a helpful assistant",
-        "input_variables": []
+        "input_variables": [],
     }
 
-    hum_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Please respond nicely",
-        "input_variables": []
-    }
+    hum_prompt = {"_target_": "langchain.PromptTemplate", "template": "Please respond nicely", "input_variables": []}
 
-    query_prompt = {
-        "_target_": "langchain.PromptTemplate",
-        "template": "Bam, code",
-        "input_variables": []
-    }
+    query_prompt = {"_target_": "langchain.PromptTemplate", "template": "Bam, code", "input_variables": []}
 
     gen_flow_dict = {
         "_target_": "flows.base_flows.ChatAtomicFlow",
@@ -401,8 +361,7 @@ def test_response_annotator_wrong_key(monkeypatch):
         "system_message_prompt_template": sys_prompt,
         "human_message_prompt_template": hum_prompt,
         "query_message_prompt_template": query_prompt,
-        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "wrong key"}}
-
+        "response_annotators": {"answer": {"_target_": "tests.mocks.MockAnnotator", "key": "wrong key"}},
     }
 
     openai_flow = ChatAtomicFlow(**gen_flow_dict)

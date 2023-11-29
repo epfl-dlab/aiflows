@@ -9,17 +9,17 @@ flow:
       commands:
         wiki_search:
           description: "Performs a search on Wikipedia."
-          input_args: [ "search_term" ]
+          input_args: ["search_term"]
         ddg_search:
           description: "Query the search engine DuckDuckGo."
-          input_args: [ "query" ]
+          input_args: ["query"]
         finish:
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
-          input_args: [ "answer" ]
+          input_args: ["answer"]
       backend:
         _target_: flows.backends.llm_lite.LiteLLMBackend
         api_infos: ???
-        model_name: 
+        model_name:
           openai: "gpt-3.5-turbo"
           azure: "azure/gpt-4"
 

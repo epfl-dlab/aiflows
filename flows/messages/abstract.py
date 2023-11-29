@@ -11,8 +11,8 @@ colorama.init()
 
 @dataclass
 class Message:
-    """ This class represents a message that is passed between nodes in a flow.
-    
+    """This class represents a message that is passed between nodes in a flow.
+
     :param data: The data content of the message
     :type data: Dict[str, Any]
     :param created_by: The name of the flow that created the message
@@ -20,6 +20,7 @@ class Message:
     :param private_keys: A list of private keys that should not be serialized or logged
     :type private_keys: List[str], optional
     """
+
     # ~~~ Message unique identification ~~~
     message_id: str
     created_at: str
@@ -34,10 +35,7 @@ class Message:
     # ~~~ Private keys that should not be serialized or logged ~~~
     private_keys: List[str]
 
-    def __init__(self, 
-                 data: Dict[str, Any], 
-                 created_by: str,
-                 private_keys: List[str] = None):
+    def __init__(self, data: Dict[str, Any], created_by: str, private_keys: List[str] = None):
 
         # ~~~ Initialize message identifiers ~~~
         self.message_id = create_unique_id()
@@ -54,7 +52,7 @@ class Message:
         self.private_keys = [] if private_keys is None else private_keys
 
     def _reset_message_id(self):
-        """ Resets the message's unique identification (message_id,created_at)""" 
+        """Resets the message's unique identification (message_id,created_at)"""
         self.message_id = create_unique_id()
         self.created_at = get_current_datetime_ns()
 
@@ -74,7 +72,7 @@ class Message:
         return __sanitized__dict__
 
     def to_dict(self):
-        """ Returns a dictionary representation of the message that can be serialized to JSON"""
+        """Returns a dictionary representation of the message that can be serialized to JSON"""
         d = self.__sanitized__dict__()
         return d
 
@@ -83,7 +81,6 @@ class Message:
         raise NotImplementedError()
 
     def __str__(self):
-        """ Returns a string representation of the message that can be logged to the console"""
+        """Returns a string representation of the message that can be logged to the console"""
         d = self.__sanitized__dict__()
         return json.dumps(d, indent=4, default=str)
-    

@@ -10,7 +10,7 @@ from flows.utils.caching_utils import flow_run_cache
 
 SLEEP_TIME = 0.1
 
-TMP_CACHE_DIR = os.path.abspath(os.path.join(os.getcwd(), '.tmp_flow_cache'))
+TMP_CACHE_DIR = os.path.abspath(os.path.join(os.getcwd(), ".tmp_flow_cache"))
 caching_utils.CACHING_PARAMETERS.cache_dir = TMP_CACHE_DIR
 
 
@@ -38,10 +38,7 @@ def prepare_flows_for_testing():
 
     data = {"v0": 12, "v1": 23}
     task_message = my_flow.package_task_message(
-        recipient_flow=my_flow,
-        task_name="task",
-        task_data=data,
-        output_keys=["sum"]
+        recipient_flow=my_flow, task_name="task", task_data=data, output_keys=["sum"]
     )
 
     return my_flow, task_message
@@ -124,10 +121,7 @@ def test_task_message_modification_caching() -> None:
     assert runtime > SLEEP_TIME
 
     new_task_message_same_data = my_flow.package_task_message(
-        recipient_flow=my_flow,
-        task_name="new-task",
-        task_data=data,
-        output_keys=["sum"]
+        recipient_flow=my_flow, task_name="new-task", task_data=data, output_keys=["sum"]
     )
 
     answer, runtime = _time_run(my_flow, new_task_message_same_data)
@@ -138,10 +132,7 @@ def test_task_message_modification_caching() -> None:
     new_data["v0"] = 15
 
     different_task = my_flow.package_task_message(
-        recipient_flow=my_flow,
-        task_name="task",
-        task_data=new_data,
-        output_keys=["sum"]
+        recipient_flow=my_flow, task_name="task", task_data=new_data, output_keys=["sum"]
     )
 
     answer, runtime = _time_run(my_flow, different_task)
@@ -182,6 +173,3 @@ def test_thread_safe():
         thread.join()
 
     assert set(results) == set(results_cached)
-
-
-

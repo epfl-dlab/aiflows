@@ -1,4 +1,3 @@
-
 from typing import Dict, Any
 
 import copy
@@ -6,10 +5,19 @@ import yaml
 
 
 class FlowConfig:
-    def __init__(self, name: str, description: str = None, input_keys: list = None, output_keys: list = None,
-                 input_data_transformations: list = None, output_data_transformations: list = None,
-                 enable_cache: bool = False, keys_to_ignore_for_hash: list = None, private_keys: list = None,
-                 keep_raw_response: bool = False):
+    def __init__(
+        self,
+        name: str,
+        description: str = None,
+        input_keys: list = None,
+        output_keys: list = None,
+        input_data_transformations: list = None,
+        output_data_transformations: list = None,
+        enable_cache: bool = False,
+        keys_to_ignore_for_hash: list = None,
+        private_keys: list = None,
+        keep_raw_response: bool = False,
+    ):
         self.name = name
         self.description = description
         self.input_keys = input_keys
@@ -34,7 +42,7 @@ class FlowConfig:
             "input_data_transformations": self.input_data_transformations,
             "output_data_transformations": self.output_data_transformations,
             "enable_cache": self.enable_cache,
-            "keep_raw_response": self.keep_raw_response
+            "keep_raw_response": self.keep_raw_response,
         }
 
     @classmethod
@@ -57,9 +65,8 @@ class FlowConfig:
 
         # merge the two configs
         self_dict = copy.deepcopy(self).to_dict()
-        merged_dict= self_dict.update(other_config)
+        merged_dict = self_dict.update(other_config)
         return FlowConfig.from_dict(merged_dict)
-
 
 
 class CompositeFlowConfig(FlowConfig):
@@ -72,10 +79,7 @@ class CompositeFlowConfig(FlowConfig):
         self.subflows_configs = config["subflows_configs"]
 
     def to_dict(self):
-        return {
-            **super().to_dict(),
-            "subflows_configs": self.subflows_configs
-        }
+        return {**super().to_dict(), "subflows_configs": self.subflows_configs}
 
 
 class CircularFlowConfig(CompositeFlowConfig):
@@ -96,5 +100,5 @@ class CircularFlowConfig(CompositeFlowConfig):
             **super().to_dict(),
             "max_rounds": self.max_rounds,
             "reset_every_round": self.reset_every_round,
-            "early_exit_key": self.early_exit_key
+            "early_exit_key": self.early_exit_key,
         }

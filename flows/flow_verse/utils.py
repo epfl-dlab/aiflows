@@ -1,6 +1,7 @@
 import os
 import re
 
+
 def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     """
     Builds the path to the cache directory for a given Hugging Face model.
@@ -17,16 +18,13 @@ def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     :rtype: str
     """
     username, modelname = repo_id.split("/")
-    relative_path = os.path.join(
-        f"models--{username}--{modelname}",
-        "snapshots",
-        commit_hash
-    )
+    relative_path = os.path.join(f"models--{username}--{modelname}", "snapshots", commit_hash)
     return os.path.join(cache_root, relative_path)
 
+
 def is_local_revision(revision: str):
-    """ Returns True if the revision is a local revision, False otherwise.
-    
+    """Returns True if the revision is a local revision, False otherwise.
+
     :param revision: The revision to check
     :type revision: str
     :return: True if the revision is a local revision, False otherwise
