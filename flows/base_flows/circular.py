@@ -52,8 +52,12 @@ class CircularFlow(CompositeFlow):
                         - 'topology' (list[Dict[str, Any]]): The topology of the circular flow (the dictionary describes the topology of one node, see TopologyNode for details)
                         - The keys required by CompositeFlow (subflows_config)
     :type flow_config: Dict[str, Any]
-    :param subflows: The subflows of the circular flow
-    :type subflows: List[flows.base_flows.Flow]
+    :param subflows: A list of subflows. This is necessary when instantiating the flow programmatically.
+    :type subflows: List[flows.base_flows.Flow]   
+    :param max_rounds: The maximum number of rounds to run the circular flow
+    :type max_rounds: int
+    :topology: The topology of the circular flow
+    :type topology: List[TopologyNode]   
     """
 
     REQUIRED_KEYS_CONFIG = ["max_rounds", "early_exit_key", "topology"]
