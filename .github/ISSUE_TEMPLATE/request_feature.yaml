@@ -18,8 +18,8 @@ body:
       placeholder: |
         Please describe the motivation or the concrete use case for this feature.
         Is this related to a problem you are having? please describe it here.
-      validations:
-        required: false
+    validations:
+      required: false
   - type: textarea
     attributes:
       label: Expected behavior (optional)

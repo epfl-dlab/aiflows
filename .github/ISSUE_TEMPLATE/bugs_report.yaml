@@ -14,11 +14,11 @@ body:
       placeholder: |
         Description of the bug
        
-       Steps to reproduce bug
-       
-       Expected behavior and actual behavior
+        Steps to reproduce bug
+        
+        Expected behavior and actual behavior
 
-       Extra information (library version, etc.)
+        Extra information (library version, etc.)
 
     validations:
       required: true
