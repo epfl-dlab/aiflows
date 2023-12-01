@@ -1,39 +1,30 @@
 name: Report a bug
-description: File a bug report
+description: Report a bug in the aiflows library
 labels: ["needs triage", "bug"]
 body:
-  - type: markdown
-    attributes:
-      value: >
-        Thanks for taking the time to fill out this bug report!
-
   - type: textarea
     attributes:
-      label: Bug Description
-      description: Describe the bug you're seeing. A clear and concise description of what the bug is.
+      label: Bug description
+      description: Describe the bug you found.
       placeholder: |
-        Description of the bug
-       
-        Steps to reproduce bug
-        
-        Expected behavior and actual behavior
-
-        Extra information (library version, etc.)
-
+        Give a clear and concise description of the bug.
+        What was the expected behavior? What actually happened?
     validations:
       required: true
 
   - type: markdown
     attributes:
-      value: "Optional information, please fill out if you can as it will help us fix the bug faster."
+      value: "The following information is optional but can help us debug the problem faster."
 
   - type: textarea
     attributes:
-      label: Describe how to reproduce the bug (optional)
-      description: Please provide a minimal code example that reproduces the bug.
+      label: Reproducing the bug (optional)
+      description: >
+        Provide a minimal code example that reproduces the problem.
+        You can use the following template to get started.
       placeholder: |
         ```python
-         Minimal code example
+        # Sample code to reproduce the problem
         ```
       render: python
     validations:
@@ -41,20 +32,21 @@ body:
 
   - type: textarea
     attributes:
-      label: Logs and error messages (optional)
-      description: Please provide any logs or error messages you are seeing.
-      placeholder: "Copy and paste logs"
+      label: Error messages and logs (optional)
+      description: >
+        Provide any error messages and/or logs
+      placeholder: "Copy the complete error messages and logs and traceback here."
       value: |
         ```
-         Error messages and logs here please
+        # Error messages and logs here please
         ```
     validations:
       required: false
 
   - type: textarea
     attributes:
-      label: Extra information (optional)
-      description: Any other information you think might be helpful.
-      paceholder: "extra information here"
+      label: Aditional information (optional)
+      description: Add any other information about the problem here.
     validations:
       required: false
+
