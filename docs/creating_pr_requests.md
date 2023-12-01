@@ -7,19 +7,19 @@
 **Before creating a new issue:** check if the problem you've encountered already exists. If it does, consider commenting on the existing issue to provide additional details or express your interest in working on it.
 
 **Community Discussion on Discord:**
-Additionally, for more immediate interaction and collaboration, you can discuss the issue on the project's Discord channel. Join the [💻│developers](https://discord.com/channels/1178627039289430106/1179410771617267793) or [🐛│debugging](https://discord.com/channels/1178627039289430106/1179405493358313482) channels to connect with the community, seek advice, and coordinate efforts. Engaging with the community on Discord can provide valuable insights and assistance throughout the issue resolution process.
+Additionally, for more immediate interaction and collaboration, you can discuss the issue on the project's [Discord channel](https://discord.gg/yFZkpD2HAh). Join the 💻│developers or 🐛│debugging channels to connect with the community, seek advice, and coordinate efforts. Engaging with the community on Discord can provide valuable insights and assistance throughout the issue resolution process.
 
 ### 1.2. Creating a New Issue
-If the issue doesn't exist, create a new one. Include a clear and concise title, detailed description of the problem, and steps to reproduce it. Use the provided issue template.
+If the issue doesn't exist, create a new one. Include a clear and concise title, detailed description of the problem, and steps to reproduce it. Utilize the "Report a Bug" template for bug reports and the "Feature Request" template for suggesting new features.
 
 ## Step 2: Getting Started with a Pull Request (PR)
 
 ### 2.0. Inform the Community
 
-Comment on the issue you're working on, informing others that you're actively working on a solution. Provide progress updates if needed. Also, you can also inform the community on our Discord [🔨│community-projects](https://discord.com/channels/1178627039289430106/1179414571774128210) forum that you're working on it. Engage with the community, share your ideas, and seek for feedback on your pull request. This open communication is crucial not only for collaboration but also to inform others that you're actively working on the issue. This helps prevent duplicate work and ensures that community members are aware of ongoing efforts, fostering a collaborative and efficient development environment. 
+Comment on the issue you're working on, informing others that you're actively working on a solution. Provide progress updates if needed. Also, you can also inform the community on our [Discord](https://discord.gg/yFZkpD2HAh) 🔨│community-projects forum that you're working on it. Engage with the community, share your ideas, and seek for feedback on your pull request. This open communication is crucial not only for collaboration but also to inform others that you're actively working on the issue. This helps prevent duplicate work and ensures that community members are aware of ongoing efforts, fostering a collaborative and efficient development environment. 
 
 ### 2.1. Fork the Repository
-On the "flows" GitHub page, click "Fork" to create a copy of the repository under your GitHub account.
+On the "aiflows" GitHub page, click "Fork" to create a copy of the repository under your GitHub account.
 
 ### 2.2. Clone Your Fork
 Clone the forked repository to your local machine using the following command:
@@ -38,7 +38,7 @@ git checkout -b fix-branch
 
 ## Step 3: Coding and Making a Pull Request
 
-### 3.1 Make Changes
+### 3.1 Make Changes & And adhere to aiFlow's coding practices
 
 Implement your fix or feature. Follow best practices, and consider the project's coding standards. TODO:SEE HERREE REFFFFFEEERRRENCCCEEE
 
@@ -71,5 +71,9 @@ Reviewers may suggest changes to your code. Be open to feedback and make necessa
 ### 4.2. Coding Style
 
 Ensure your code aligns with the project's coding style. If unsure, refer to the project's documentation or ask for clarification.
+
+____
+
+Thank you for considering contributing to the aiFlows library! Your dedication and effort are immensely appreciated. Contributors like you make a significant impact, and we want to express our gratitude. Remember, your name will proudly appear on our contributors' wall, showcasing your valuable contributions to the aiFlows project. Happy coding! 🚀🌟
 
 
