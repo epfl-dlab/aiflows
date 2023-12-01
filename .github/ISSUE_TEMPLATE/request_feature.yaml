@@ -1,0 +1,32 @@
+name: Feature request
+description: Propose a feature for this project
+labels: ["needs triage", "feature"]
+body:
+  - type: textarea
+    attributes:
+      label: Description of feature
+      description: A clear and concise description of the feature proposal
+      placeholder: |
+        Please describe the feature you are proposing.
+        Is this related a feature request from another issue? please link to it here.
+  - type: textarea
+    attributes:
+      label: Motivation
+      description:  A clear and concise description of the motivation for the feature proposal.
+      placeholder: |
+        Please describe the motivation or the concrete use case for this feature.
+        Is this related to a problem you are having? please describe it here.
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: A clear and concise description of the expected behavior.
+      placeholder: |
+        Please describe the expected behavior of the feature you are proposing (input, output, etc.)
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional Information
+      description: Add any other aditional information about the feature request here.
+    validations:
+      required: false

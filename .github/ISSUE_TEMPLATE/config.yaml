@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://discord.gg/yFZkpD2HAh
+    about: Ask questions to our Discord community.
+  - name: Documentation
+    website: https://epfl-dlab.github.io/FLOWS-landingpage/
+    about: Check out our documentation
