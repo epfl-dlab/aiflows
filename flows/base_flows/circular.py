@@ -38,13 +38,6 @@ class TopologyNode:
 
 class CircularFlow(CompositeFlow):
     """This class represents a circular flow. It is a composite flow that runs its subflows in a circular fashion.
-    Example in an Illustration:
-
-                        subflow_1 -----> subflow_2 -----> subflow_3
-                            ^                               |
-                            |                               |
-                            |                               v
-                        subflow_k <----    ....    <-----subflow_4
 
     :param flow_config: The flow configuration dictionary. It must usually should contain the following keys:
                         - 'max_rounds' (int): The maximum number of rounds to run the circular flow

@@ -18,9 +18,9 @@ log = logging.get_logger(__name__)
 
 class FlowLauncher(MultiThreadedAPILauncher):
     """Flow Launcher class for running inference on a flow. One can run the inference with the flow launcher in multiple ways:
-        - Using the `launch` class method: This method takes a flow and runs inference on the given data (no multithreading) and no need to instantiate the class.
-        - Using the `predict_dataloader` method: This method runs inference on the given dataloader (Requires instatiating the class).
-        The `predict_dataloader`method can run inference in both single-threaded and multi-threaded modes (see the `MultiThreadedAPILauncher` class for more details).
+    - Using the `launch` class method: This method takes a flow and runs inference on the given data (no multithreading) and no need to instantiate the class.
+    - Using the `predict_dataloader` method: This method runs inference on the given dataloader (Requires instatiating the class).
+    The `predict_dataloader`method can run inference in both single-threaded and multi-threaded modes (see the `MultiThreadedAPILauncher` class for more details).
 
     :param n_independent_samples: the number of times to independently repeat the same inference for a given sample
     :type n_independent_samples: int

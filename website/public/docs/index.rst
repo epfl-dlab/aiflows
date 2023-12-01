@@ -20,7 +20,7 @@ These patterns are composable, allowing you to build complex flows of execution.
 
 
 Why should I care?
-=============
+===================
 
 While LLMs are powerful enough to solve many problems, they are not a silver bullet.
 Collaboration between...
@@ -55,14 +55,14 @@ and finally upload it to the Flow-verse to share it with the community.
 
 
 Documentation
-===========
+===============
 
 To get an overview of the project, check out the following sections:
 
 .. toctree::
     :titlesonly:
 
-    get_started/api_overview.rst
+    get_started/index
 
 
 For a more in-depth look at the codebase, check out the following sections:

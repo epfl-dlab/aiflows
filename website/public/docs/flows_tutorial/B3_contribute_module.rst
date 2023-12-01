@@ -97,4 +97,4 @@ Let's get back to our ``trivial_sync_demo``, where we leverage ``saibo/ChatFlows
     if __name__ == "__main__":
         print("it is a trivial sync demo")
 
-**Step 3**: Finally, follow the procedure outlined in :ref:`publishing_module` section, and you are good to go!
+**Step 3**: Finally, follow the procedure outlined in :ref:`publish_module` section, and you are good to go!

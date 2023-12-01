@@ -363,26 +363,29 @@ def set_dir(dirname, action=None):
     :param dirname: log directory
     :type dirname: str
     :param action: an action of ["k","d","q"] to be performed when the directory exists.
+    When the directory exists, Will ask user by default.
+    - "d": delete the directory. Note that the deletion may fail when
+    the directory is used by tensorboard.
+    - "k": keep the directory. This is useful when you resume from a
+    previous training and want the directory to look as if the
+    training was not interrupted.
+    Note that this option does not load old models or any other
+    old states for you. It simply does nothing.
+   
+    :param dirname: log directory
+    :type dirname: str
+    :param action: an action of ["k","d","q"] to be performed when the directory exists.
         When the directory exists, Will ask user by default.
-            "d": delete the directory. Note that the deletion may fail when
-            the directory is used by tensorboard.
-            "k": keep the directory. This is useful when you resume from a
-            previous training and want the directory to look as if the
-            training was not interrupted.
-            Note that this option does not load old models or any other
-            old states for you. It simply does nothing.
-    Args:
-        dirname(str): log directory
-        action(str): an action of ["k","d","q"] to be performed
-            when the directory exists. Will ask user by default.
-                "d": delete the directory. Note that the deletion may fail when
-                the directory is used by tensorboard.
-                "k": keep the directory. This is useful when you resume from a
-                previous training and want the directory to look as if the
-                training was not interrupted.
-                Note that this option does not load old models or any other
-                old states for you. It simply does nothing.
+        - "d": delete the directory. Note that the deletion may fail when
+        the directory is used by tensorboard.
+        - "k": keep the directory. This is useful when you resume from a
+        previous training and want the directory to look as if the
+        training was not interrupted.
+        Note that this option does not load old models or any other
+        old states for you. It simply does nothing.
+    :type action: str, optional
     """
+
     global LOG_DIR, _FILE_HANDLER, _logger
     if _FILE_HANDLER:
         # unload and close the old file handler, so that we may safely delete the logger directory
@@ -453,13 +456,13 @@ def auto_set_dir(action=None, name=None):
 
     :param action: an action of ["k","d","q"] to be performed when the directory exists.
         When the directory exists, Will ask user by default.
-            "d": delete the directory. Note that the deletion may fail when
-            the directory is used by tensorboard.
-            "k": keep the directory. This is useful when you resume from a
-            previous training and want the directory to look as if the
-            training was not interrupted.
-            Note that this option does not load old models or any other
-            old states for you. It simply does nothing.
+        -"d": delete the directory. Note that the deletion may fail when
+        the directory is used by tensorboard.
+        -"k": keep the directory. This is useful when you resume from a
+        previous training and want the directory to look as if the
+        training was not interrupted.
+        Note that this option does not load old models or any other
+        old states for you. It simply does nothing.
     :type action: str, optional
     :param name: The name of the directory
     :type name: str, optional

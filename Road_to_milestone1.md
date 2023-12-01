@@ -8,7 +8,7 @@ This tutorial is organized as such:
 ## Getting started with Flows and the Flowverse
 First let's start creating setting up the Flow environment with cond:
 ```
-conda create --name flows python=3.9
+conda create --name flows python=3.10
 conda activate flows
 pip install -e .
 ```

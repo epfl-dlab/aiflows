@@ -16,9 +16,9 @@ class CompositeFlow(Flow, ABC):
     It is the a parent class for BranchingFlow, SequentialFlow and CircularFlow. Note that the run method of a CompositeFlow is not implemented.
 
     :param flow_config: The configuration of the flow. It must usually contain the following keys:
-                        - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
-                                                             This is necessary when instantiating the flow from a config file.
-                        - The parameters required by the constructor of the parent class Flow
+        - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+        This is necessary when instantiating the flow from a config file.
+        - The parameters required by the constructor of the parent class Flow
     :type flow_config: Dict[str, Any]
     :param subflows: A list of subflows. This is necessary when instantiating the flow programmatically.
     :type subflows: List[Flow]
@@ -43,9 +43,9 @@ class CompositeFlow(Flow, ABC):
         """Instantiates the flow from a config file.
 
         :param config: The configuration of the flow. It must usually contain the following keys:
-                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
-                                                                 This is necessary when instantiating the flow from a config file.
-                            - The parameters required by the constructor of the parent class Flow
+            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+                                                    This is necessary when instantiating the flow from a config file.
+            - The parameters required by the constructor of the parent class Flow
         :type config: Dict[str, Any]
         :return: The instantiated flow
         :rtype: CompositeFlow
@@ -111,8 +111,8 @@ class CompositeFlow(Flow, ABC):
         """Instantiates the subflows from their configurations.
 
         :param config: The configuration of the flow. It must usually contain the following keys:
-                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
-                                                                 This is necessary when instantiating the flow from a config file.
+            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+            This is necessary when instantiating the flow from a config file.
         :type config: Dict[str, Any]
         :return: A dictionary of subflows. The keys are the names of the subflows and the values are the subflows.
         :rtype: Dict[str, Flow]
@@ -137,9 +137,9 @@ class CompositeFlow(Flow, ABC):
         """Instantiates the flow from a config file.
 
         :param config: The configuration of the flow. It must usually contain the following keys:
-                            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
-                                                                 This is necessary when instantiating the flow from a config file.
-                            - The parameters required by the constructor of the parent class Flow
+            - "subflows_config" (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
+            This is necessary when instantiating the flow from a config file.
+            - The parameters required by the constructor of the parent class Flow
         """
         flow_config = copy.deepcopy(config)
 
