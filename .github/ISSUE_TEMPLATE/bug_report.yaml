@@ -4,10 +4,10 @@ labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
-      value:  >
+      value: >
         Thanks for taking the time to fill out this bug report!
+
   - type: textarea
-    id: bug-description
     attributes:
       label: Bug Description
       description: Describe the bug you're seeing. A clear and concise description of what the bug is.
@@ -19,14 +19,16 @@ body:
        Expected behavior and actual behavior
 
        Extra information (library version, etc.)
+
     validations:
       required: true
+
   - type: markdown
       attributes:
-        value:  >
+        value: >
           Optional information, please fill out if you can as it will help us fix the bug faster.
+
   - type: textarea
-    id: bug-reproduce
     attributes:
       label: Describe how to reproduce the bug
       description: |
@@ -35,10 +37,9 @@ body:
         ```python
         # Minimal code example
         ```
-      validations:
-        required: false
+    validations:
+      required: false
   - type: textarea
-    id: logs
     attributes:
       label: Logs and error messages
       description: |
@@ -47,13 +48,12 @@ body:
         ```
         # logs and error, messages, full traceback
         ```
-      validations:
-        required: false
+    validations:
+      required: false
   - type: textarea
-    id: extra-info
     attributes:
       label: Extra information
       description: Any other information you think might be helpful.
       paceholder: extra information here
-      validations:
-        required: false
+    validations:
+      required: false
