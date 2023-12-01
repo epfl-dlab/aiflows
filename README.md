@@ -9,7 +9,7 @@
     <a href="https://epfl-dlab.github.io/flows">
     <img alt="Website" src="https://img.shields.io/badge/website-online-green">
     </a>
-    <a href="https://discord.gg/NJuDxSafCY">
+    <a href="https://discord.gg/yFZkpD2HAh">
     <img alt="Static Badge" src="https://img.shields.io/badge/Discord-gray?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FNJuDxSafCY">
     </a>
     <a href="https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html">
