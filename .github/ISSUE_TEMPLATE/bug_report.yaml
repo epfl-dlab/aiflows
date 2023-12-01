@@ -1,11 +1,10 @@
 name: Bug Report
 description: File a bug report
-title: "[Bug]: "
 labels: ["bug", "triage"]
 body:
   - type: markdown
     attributes:
-      value: |
+      value:  >
         Thanks for taking the time to fill out this bug report!
   - type: textarea
     id: bug-description
@@ -24,7 +23,7 @@ body:
       required: true
   - type: markdown
       attributes:
-        value: |
+        value:  >
           Optional information, please fill out if you can as it will help us fix the bug faster.
   - type: textarea
     id: bug-reproduce

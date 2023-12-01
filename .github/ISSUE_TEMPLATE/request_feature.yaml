@@ -9,6 +9,8 @@ body:
       placeholder: |
         Please describe the feature you are proposing.
         Is this related a feature request from another issue? please link to it here.
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Motivation
