@@ -13,14 +13,16 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Motivation
+      label: Motivation (optional)
       description:  A clear and concise description of the motivation for the feature proposal.
       placeholder: |
         Please describe the motivation or the concrete use case for this feature.
         Is this related to a problem you are having? please describe it here.
+      validations:
+        required: false
   - type: textarea
     attributes:
-      label: Expected behavior
+      label: Expected behavior (optional)
       description: A clear and concise description of the expected behavior.
       placeholder: |
         Please describe the expected behavior of the feature you are proposing (input, output, etc.)
@@ -28,7 +30,7 @@ body:
       required: false
   - type: textarea
     attributes:
-      label: Additional Information
+      label: Additional Information (optional)
       description: Add any other aditional information about the feature request here.
     validations:
       required: false

@@ -1,6 +1,6 @@
-name: Bug Report
+name: Report a bug
 description: File a bug report
-labels: ["bug", "triage"]
+labels: ["needs triage", "bug"]
 body:
   - type: markdown
     attributes:
@@ -12,7 +12,7 @@ body:
       label: Bug Description
       description: Describe the bug you're seeing. A clear and concise description of what the bug is.
       placeholder: |
-       Description of the bug
+        Description of the bug
        
        Steps to reproduce bug
        
@@ -24,36 +24,39 @@ body:
       required: true
 
   - type: markdown
-      attributes:
-        value: >
-          Optional information, please fill out if you can as it will help us fix the bug faster.
+    attributes:
+      value: "Optional information, please fill out if you can as it will help us fix the bug faster."
 
   - type: textarea
     attributes:
-      label: Describe how to reproduce the bug
-      description: |
+      label: Describe how to reproduce the bug (optional)
+      description: >
         Please provide a minimal code example that reproduces the bug.
       placeholder: |
         ```python
         # Minimal code example
         ```
+      render: python
     validations:
       required: false
+
   - type: textarea
     attributes:
-      label: Logs and error messages
-      description: |
+      label: Logs and error messages (optional)
+      description: >
         Please provide any logs or error messages you are seeing.
-      placeholder: |
+      placeholder: "Copy and paste logs"
+      value: |
         ```
-        # logs and error, messages, full traceback
+        # Error messages and logs here please
         ```
     validations:
       required: false
+
   - type: textarea
     attributes:
-      label: Extra information
+      label: Extra information (optional)
       description: Any other information you think might be helpful.
-      paceholder: extra information here
+      paceholder: "extra information here"
     validations:
       required: false
