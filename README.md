@@ -39,31 +39,31 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p>
 
 ## Why should I use aiFlows?
-AI is set to revolutionarize the way we work. Our mission is to support AI researchers, and to allow them to seemlessly share advancements with practitioners. This will establish a feedback loop, guiding progress towards beneficial directions while ensuring that everyone can freely acess and benefit from the next-generation AI tools.
+AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
-<u>As a researcher you will benefit from the:</u>
+<u>As a researcher, you will benefit from the:</u>
 - ability to design, implement, and study arbitrarily complex interactions
 - complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
-- ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse, and systematically study them across different settings (the infrastrcture in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
-- ability to readily make your work accessible with practitioners and other researchers, and access their feedback.
+- ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
+- ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
-<u>As a practitioner you will benefit from the:</u>
+<u>As a practitioner, you will benefit from the:</u>
 - ability to design and implement arbitrarily complex interactions
 - complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
 - ability to readily reuse or build on top of Flows shared on the FlowVerse
 - direct access to any advancements in the field.
 
-To develop the next-generation of AI tools, and at the same time maximally benefit from it, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own!
+To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own!
 
-Furthermore, we strongly believe that the proof of the pudding is in the eating, and the best way to identify promising directions as well as important missing features is by experimenting. Thefore, we invite researchers and developers alike to be creative and start devlopping Flows that will push the library to its breaking point. We encourage you to try to develop your idea in the public; you are likely to find others interested in your project, benefit from the hivemind and progress faster.
-We will try to support you in any way possible, but also lead by example, and work towards JARVIS -- your fully customizable open-source version of ChatGPT+(++)! This is just the beginning, and we have a long way to go. Let's work on a great future, [together](##Contributing)!
+Furthermore, we strongly believe that the proof of the pudding is in the eating, and the best way to identify promising directions as well as important missing features is by experimenting. Therefore, we invite researchers and developers alike to be creative and start developing Flows that will push the library to its breaking point. We encourage you to try to develop your idea in public; you are likely to find others interested in your project, benefit from the hivemind, and progress faster.
+We will try to support you in any way possible, but also lead by example, working toward JARVIS -- your fully customizable open-source version of ChatGPT+(++)! This is just the beginning, and we have a long way to go. Let's work on a great future [together](#contribute)!
 
 (ToDo: Verify that the link above works)
 
 ## Installation
 (ToDo: Do we need any other information?)
 
-The library requires Python 3.10+. To install the library run the following command:
+The library requires Python 3.10+. To install the library, run the following command:
 
 ```shell
 pip install aiflows
@@ -160,7 +160,7 @@ print(flow_output_data)
 ```
 
 
-Run the Flow on your terminal
+Run the Flow on your terminal:
 
 ```bash
 python run.py
@@ -170,7 +170,7 @@ ______________________________________________________________________
 
 ### Tutorials
 
-To get a deeper understanding of the library go through the <a href="ToDoAddLink">hands on tutorials</a> that introduce you to the library's features by buidling useful Flows while gradually increasing complexity:
+To get a deeper understanding of the library, go through the <a href="ToDoAddLink"> hands-on tutorials</a> that introduce you to the library's features by building useful Flows while gradually increasing complexity:
 
 <a href="AddLink">VanillaQA-to-AutoGPT</a>
 - Introduces the FlowVerse
@@ -181,23 +181,23 @@ To get a deeper understanding of the library go through the <a href="ToDoAddLink
 
 ### Examples
 
-Additionally, we provide detailed walkthough of the Flows used in the tutorials, and more (e.g., visionQA, JARVIS (keeping a placeholder and saying coming soon sufficies)), <a href=ToDoAddLink>here</a>.
+Additionally, we provide a detailed walkthrough of the Flows used in the tutorials and more (e.g., visionQA, JARVIS (keeping a placeholder and saying coming soon suffices)), <a href=ToDoAddLink>here</a>.
 
-## Contributing
+## Contribute
 (ToDo: Nicky)
 
-(ToDo: Include a link to the roadmap. How do we showcase it? Encourage people to pick-up items not in our list. Encourage people that have ambitious projects, consider building them on top of Flows, and would like support / coordination to reach out.  Encourage ppl that build infrastructural goals that are related, aligned, or can complement each other to reach out to us so that we coordinate.)
+(ToDo: Include a link to the roadmap. How do we showcase it? Encourage people to pick up items not on our list. Encourage people who have ambitious projects to consider building them on top of Flows and would like support/coordination to reach out.  Encourage ppl who build infrastructural goals that are related, aligned, or can complement each other to reach out to us so that we can coordinate.)
 
-A non-comprehensive list of items include in the roadmap:
+A non-comprehensive list of items to include in the roadmap:
 - JARVIS
 - conditionals
 - FlowViz
-- Concurrency beyond data paralelism
+- Concurrency beyond data parallelism
 - Further simplification of the developer experience (feedback required!)
 - FlowsStudio
 
 ------
-(old, I left in case you find it useful)
+(old, I left it in case you find it useful)
 
 There are two ways to contribute to the project: by contributing to the **codebase** or by contributing to the **Flow-verse**.
 
