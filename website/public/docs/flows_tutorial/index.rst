@@ -41,9 +41,6 @@ Flow is a sharing-oriented platform, empowering users to contribute their person
 :ref:`publish_module`
 ------------------------
 
-:ref:`contribute_module`
-------------------------
-
 
 Putting It All Together: Complex Flows
 ======================================

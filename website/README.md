@@ -11,7 +11,7 @@ pip install sphinx
 pip install sphinxawesome-theme
 pip install sphinx_copybutton
 pip install sphinx-book-theme==1.0.1
-
+pip install m2r
 ```
 
 ### Building API Documentation

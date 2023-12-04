@@ -6,7 +6,8 @@ This tutorial is organized as such:
 2. [Section 2](##Exploring-and-understanding-the-Flows-examples): Exploring and understanding the Flows [examples](examples/)
 
 ## Getting started with Flows and the Flowverse
-First let's start creating setting up the Flow environment with cond:
+First let's start creating setting up the Flow environment with conda:
+
 ```
 conda create --name flows python=3.10
 conda activate flows

@@ -20,7 +20,7 @@ author = "FLOWS Project"
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ["sphinx_copybutton", "sphinx.ext.autodoc"]
+extensions = ["sphinx_copybutton", "sphinx.ext.autodoc","m2r"]
 # extensions = ['autoapi.extension']
 # autoapi_dirs = ['./../../../flows']
 

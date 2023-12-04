@@ -24,7 +24,7 @@ Connecting with Like-Minded Contributors & How to Get Help ?
     Explore the :ref:`finding_collaborators` section for resources, tips, and guidance on connecting with potential collaborators, sharing project ideas, building your dream team or how to get help. 🚀🌟
 
 aiFlows Contribution Guides
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Contributing To aiFlows Library: Bug Fixes and Feature Additions Guide
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
