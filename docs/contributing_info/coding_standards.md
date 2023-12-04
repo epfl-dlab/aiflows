@@ -39,14 +39,16 @@ Ensure that your code changes are backward compatible whenever possible. This he
 Create comprehensive tests for your code. Tests should cover various scenarios, including edge cases, to ensure the robustness of your implementation.
 Test Coverage:
 
-## 6. Test Coverage
+## 7. Test Coverage
 
 Try to Maintain or increase test coverage when adding new features or modifying existing ones when needed. Aim for a high percentage of code coverage to catch potential issues early.
 
 
-## 7. Feature Tests:
+## 8. Feature Tests
 
 When introducing new features, include corresponding tests. Every feature should have a test, and existing tests should be updated as needed.
+
+___
 
 Your dedication to simplicity, readability, and best practices is greatly appreciated. Your contributions help make the aiFlows library more accessible, robust, and user-friendly for the entire community.
 

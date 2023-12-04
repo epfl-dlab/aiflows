@@ -40,7 +40,7 @@ git checkout -b fix-branch
 
 ### 3.1 Make Changes & And adhere to aiFlow's coding practices
 
-Implement your fix or feature. Follow best practices, and consider the project's coding standards. TODO:SEE HERREE REFFFFFEEERRRENCCCEEE
+Implement your fix or feature. Follow best practices, and consider the project's [coding standards](./coding_standards.md).
 
 ### 3.2. Commit Changes
 
