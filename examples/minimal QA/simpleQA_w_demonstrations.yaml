@@ -13,7 +13,7 @@ flow: # Overrides the ChatAtomicFlow config
       data: null
       params:
         data_dir: examples/minimal QA/
-        demonstrations_id: my_sir_demo
+        demonstrations_id: my_sire_demo
       query_prompt_template:
         template: |2-
           Answer the following question: {{query}}
