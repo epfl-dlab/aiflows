@@ -1,3 +1,7 @@
 .. _publish_module:
 
-.. mdinclude:: ../../../../docs/typical_developper_workflows.md
+----------------------------------------
+Typical Developper's Workflow Tutorial
+----------------------------------------
+
+.. mdinclude:: ../../../../docs/typical_developer_workflows.md

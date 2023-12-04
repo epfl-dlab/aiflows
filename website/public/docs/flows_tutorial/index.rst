@@ -35,9 +35,6 @@ Flow Module Management
 
 Flow is a sharing-oriented platform, empowering users to contribute their personal Flows, called **flow modules**, to Hugging Face.
 
-:ref:`flow_modules`
--------------------
-
 :ref:`publish_module`
 ------------------------
 
