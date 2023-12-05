@@ -1,8 +1,8 @@
 # Setting up aiFlows
 Welcome to this straightforward tutorial where we'll walk you through the essential steps to set up aiFlows for a smooth and efficient workflow. Let's dive right in. This document is a tutorial for setting up the following:
-1. [Section 1:](##-Section-1:-Installing-aiFlows) Installing aiFlows
-2. [Section 2:](##-Section-2:-Setting-Up-The-FlowVerse) Setting Up The FlowVerse
-3. [Section 3:](##-Section-3:-Setting-Up-Your-API-Keys) Setting Up Your API Keys
+1. [Section 1:](#section-1-installing-aiflows) Installing aiFlows
+2. [Section 2:](#section-2-setting-up-the-flowverse) Setting Up The FlowVerse
+3. [Section 3:](#section-3-setting-up-your-api-keys) Setting Up Your API Keys
 This file goes through some of the examples in this repository. The goal is to walk through the examples to better understand the Flows library to then implement our own Flow: Create a simple assistant Flow which, given a python file with a set of functions, is able to use them to accomplish a certain task while interacting with a user.
 
 ## Section 1: Installing aiFlows

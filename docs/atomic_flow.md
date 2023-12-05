@@ -72,7 +72,7 @@ You can find this example [here](https://github.com/epfl-dlab/flows/tree/main/tu
 
 Note that we can pass a Python dictionary as the `overrides` parameter and not rely on YAML files.
 
-To run this Flow, execute the following commands in your terminal:
+To run this Flow, execute the following commands in your terminal (make sure to clone the repository first):
 ```bash
 cd examples/minimal\ reverse\ number/
 python reverse_number_atomic.py
