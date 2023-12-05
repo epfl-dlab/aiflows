@@ -1,8 +1,8 @@
 # Sequential Flow
 
 This guide presents the concept of a Sequential Flow and is organized into two sections:
-1. [Section 1:](#section-1-defining-sequential-flows-and-composite-flows) Defining Sequential Flows
-2. [Section 2:](##section-2-writing-your-first-sequential-flow) Writing Your First Atomic Flow
+1. [Section 1:](#section-1-defining-sequential-flows--composite-flows) Defining Sequential Flows
+2. [Section 2:](#section-2-writing-your-first-sequential-flow) Writing Your First Atomic Flow
 
 ## Section 1: Defining Sequential Flows & Composite Flows
 
