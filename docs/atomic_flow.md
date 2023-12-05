@@ -1,8 +1,8 @@
 # AtomicFlow
 
 This guide presents the concept of AtomicFlow and is organized into two sections:
-1. [Section 1:](##-Section-1:-Defining-Atomic-Flows) Defining Atomic Flows
-2. [Section 2:](##-Section-2:-Writing-Your-First-Atomic-Flow) Writing Your First Atomic Flow
+1. [Section 1:](#section-1-defining-atomic-flows) Defining Atomic Flows
+2. [Section 2:](##section-2-writing-your-first-atomic-flow) Writing Your First Atomic Flow
 
 ## Section 1: Defining Atomic Flows
 
@@ -68,7 +68,7 @@ overrides_config = read_yaml_file("reverseNumberAtomic.yaml")
 
 flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
 ```
-You can find this example [here](https://github.com/epfl-dlab/flows/tree/main/tutorials/minimal_reverse_number). Few other notable examples are [HumanStandardInputFlowModule](https://huggingface.co/aiflows/HumanStandardInputFlowModule) and the the [FixedReplyFlowModule](https://huggingface.co/aiflows/FixedReplyFlowModule) Flow.
+You can find this example [here](../examples/minimal%20reverse%20number/). Few other notable examples are [HumanStandardInputFlowModule](https://huggingface.co/aiflows/HumanStandardInputFlowModule) and the the [FixedReplyFlowModule](https://huggingface.co/aiflows/FixedReplyFlowModule) Flow.
 
 Note that we can pass a Python dictionary as the `overrides` parameter and not rely on YAML files.
 
