@@ -3,8 +3,8 @@
 **Prerequisites:** setting up your API keys (see [setting_up_aiFlows.md](./setting_up_aiFlows.md))
 
 This guide introduces the FlowVerse via an example: [minimalQA](../examples/minimal%20QA/). The guide is organized in two sections:
-1. [Section 1:](#section-1-what-is-the-flowverse) What's the FlowVerse?
-2. [Section 2:](#section-2-crafting-a-simple-q&a-with-the-chatflowmodule) Crafting a Simple Q&A Flow with the ChatFlowModule
+1. [Section 1:](#section-1-whats-the-flowverse) What's the FlowVerse?
+2. [Section 2:](#section-2-crafting-a-simple-qa-flow-with-the-chatflowmodule) Crafting a Simple Q&A Flow with the ChatFlowModule
 
 ## Section 1: What's the FlowVerse ? 
 The FlowVerse is the hub of flows created and shared by our amazing community for everyone to use! These flows are usually shared on Hugging Face with the intention of being reused by others. Explore our own FlowVerse [here](https://huggingface.co/aiflows)!
