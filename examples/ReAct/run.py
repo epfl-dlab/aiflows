@@ -15,11 +15,12 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 
 logging.set_verbosity_debug()
 
+from flows import flow_verse
+
 dependencies = [
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
     {"url": "aiflows/ControllerExecutorFlowModule", "revision": "09cda9615e5c48ae18e2c1244519ed7321145187"},
 ]
-from flows import flow_verse
 
 flow_verse.sync_dependencies(dependencies)
 
@@ -28,15 +29,15 @@ if __name__ == "__main__":
     # OpenAI backend
     api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
     # Azure backend
-    # api_information = ApiInfo(backend_used = "azure",
+    # api_information = [ApiInfo(backend_used = "azure",
     #                           api_base = os.getenv("AZURE_API_BASE"),
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
-    #                           api_version =  os.getenv("AZURE_API_VERSION") )
+    #                           api_version =  os.getenv("AZURE_API_VERSION") )]
 
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
 
-    root_dir = "examples/ReAct"
+    root_dir = "."
     cfg_path = os.path.join(root_dir, "ReAct.yaml")
     cfg = read_yaml_file(cfg_path)
     # print(cfg["flow"].keys())
@@ -60,8 +61,11 @@ if __name__ == "__main__":
     # ~~~ Get the data ~~~
     # This can be a list of samples
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
-    data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}
-
+    # data = {"id": 0, "goal": "Answer the following question: Who was the NBA champion in 2023?"}
+    data = {
+        "id": 0,
+        "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?",
+    }
     # ~~~ Run inference ~~~
     path_to_output_file = None
     # path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk

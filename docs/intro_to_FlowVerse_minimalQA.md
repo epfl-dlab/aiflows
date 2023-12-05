@@ -19,7 +19,7 @@ Note that all the code referenced from this point onwards can be found [here](..
 
 Let's dive in without further delay!
 
-First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](examples/minimal%20QA/run_qa_flow.py to see all the code):
+First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](../examples/minimal%20QA/run_qa_flow.py) to see all the code):
 ```python
 from flows import flow_verse
 
@@ -33,7 +33,7 @@ Let's break this down:
   * `url`: Specifies the URL where the flow can be found on Hugging Face. Here, the URL is `aiflows/ChatFlowModule`, where `aiflows` is the name of our organization on Hugging Face (or the username of a user hosting their flow on Hugging Face), and `ChatFlowModule` is the name of the FlowModule containing the `ChatAtomicFlow` on the FlowVerse. Note that the `url` is literally the address of the `ChatFlowModule`on Hugging Face (excluding the https://huggingface.co/). So if you type https://huggingface.co/aiflows/ChatFlowModule in your browser, you will find the Flow.
   * `revision`: Represents the revision number (i.e., the full commit hash) of the commit we want to fetch. Note that if you set `revision` to `main`, it will fetch the latest commit on the main branch.
 
-Now that we've fetched the `ChatAtomicFlowModule` from the FlowVerse, we can creating our Flow.
+Now that we've fetched the `ChatAtomicFlowModule` from the FlowVerse, we can start creating our Flow.
 
 The configuration for our flow can be found in [simpleQA.yaml](examples/minimal%20QA/run_qa_flow.py) and looks like this:
 ```yaml
@@ -90,14 +90,14 @@ flow: # Overrides the ChatAtomicFlow config
     partial_variables: {}
 
 ```
-Note that the Flow is instantiate from it's default config, so we are only defining the paramaeters we wish to override here.
+Note that the Flow is instantiate from it's default config, so we are only defining the paramaeters we wish to override here. The default config can be found [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/ChatAtomicFlow.yaml)
 
 Here's a breakdown of this configuration:
 
 * `input_interface` specifies the expected keys in the input data dictionary passed to our flow.
 * `output_interface`  outlines the expected keys in the output data dictionary produced by our flow.
 * `flow` contains the parameters for our flow, including:
-  * `_target_`: parameter indicates how we'll be instantiating our flow, in our case we're going to instantiating the `ChatAtomicFlow` ndicates how we'll be instantiating our flow. In this case, we're instantiating the `ChatAtomicFlow` from its default configuration file (can be found [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/ChatAtomicFlow.yaml)),
+  * The `_target_` parameter specifies the instantiation method for our flow. In this instance, we're using it to instantiate the `ChatAtomicFlow` from its default configuration file.
   * `name` and `description`: self-explanatory parameters 
   *  The `input_interface_non_initialized` parameter in our configuration specifies the keys expected in the input data dictionary when our flow is called for the first time. This is particularly useful for scenarios like setting up a simple Q&A Flow. In essence, it serves a role similar to the regular `input_interface`. The distinction becomes apparent when you need different inputs for the initial query compared to subsequent queries. For example, in ReAct, the first time you query the LLM, the input is provided by a human, such as a question. In subsequent queries, the input comes from the execution of a tool (e.g. a query to wikipedia). In ReAct's case, these two scenarios are distinguished by the `input_interface_non_initialized` and `input_interface_initialized` parameters.
   *  `backend` is a dictionary containing parameters specific to the LLM. These parameters include:
