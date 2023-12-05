@@ -2,7 +2,7 @@
 
 This guide presents the concept of an AtomicFlow and is organized into two sections:
 1. [Section 1:](#section-1-defining-atomic-flows) Defining Atomic Flows
-2. [Section 2:](##section-2-writing-your-first-atomic-flow) Writing Your First Atomic Flow
+2. [Section 2:](#section-2-writing-your-first-atomic-flow) Writing Your First Atomic Flow
 
 ## Section 1: Defining Atomic Flows
 

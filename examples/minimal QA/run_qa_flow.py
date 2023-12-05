@@ -29,10 +29,10 @@ if __name__ == "__main__":
     api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
 
     # # Azure backend
-    # api_information = ApiInfo(backend_used = "azure",
+    # api_information = [ApiInfo(backend_used = "azure",
     #                           api_base = os.getenv("AZURE_API_BASE"),
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
-    #                           api_version =  os.getenv("AZURE_API_VERSION") )
+    #                           api_version =  os.getenv("AZURE_API_VERSION") )]
 
     root_dir = "."
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
@@ -55,8 +55,7 @@ if __name__ == "__main__":
         ),
     }
     # ~~~ Get the data ~~~
-    data = {"id": 0, "question": "Generate a short random sentence"}  # This can be a list of samples
-    # data = {"id": 0, "question": "Who was the NBA champion in 2023?"}  # This can be a list of samples
+    data = {"id": 0, "question": "Who was the NBA champion in 2023?"}  # This can be a list of samples
 
     # ~~~ Run inference ~~~
     path_to_output_file = None

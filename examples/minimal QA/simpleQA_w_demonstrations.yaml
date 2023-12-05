@@ -12,7 +12,7 @@ flow: # Overrides the ChatAtomicFlow config
     demonstration_flow:
       data: null
       params:
-        data_dir: examples/minimal QA/
+        data_dir: mock_data
         demonstrations_id: my_sire_demo
       query_prompt_template:
         template: |2-
