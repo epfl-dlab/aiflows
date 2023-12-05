@@ -33,10 +33,12 @@ class KeyRename(DataTransformation):
         """
         if self.nested_keys:
             for old_key, new_key in self.old_key2new_key.items():
-                value, found = nested_keys_search(data_dict, old_key)
-                if found:
-                    nested_keys_update(data_dict, new_key, value)
-                    nested_keys_pop(data_dict, old_key)
+                # Had to add because it was failing for cases where old_key == new_key (was poping key it just had updated)
+                if old_key != new_key: 
+                    value, found = nested_keys_search(data_dict, old_key)
+                    if found:
+                        nested_keys_update(data_dict, new_key, value)
+                        nested_keys_pop(data_dict, old_key)
 
         else:
             for old_key, new_key in self.old_key2new_key.items():

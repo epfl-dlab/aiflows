@@ -7,19 +7,15 @@ input_interface:
 output_interface:
   - "output_number"
 
-keep_raw_response: False # Set to True to keep the raw flow response in the output data
-
 subflows_config:
   first_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
     name: "ReverseNumberFirst"
     description: "A flow that takes in a number and reverses it."
-    keep_raw_response: False
   second_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
     name: "ReverseNumberSecond"
     description: "A flow that takes in a number and reverses it."
-    keep_raw_response: False
 
 topology:
   - goal: reverse the input number
@@ -45,7 +41,5 @@ topology:
     flow: second_reverse_flow
     output_interface:
       _target_: flows.interfaces.KeyInterface
-      keys_to_rename:
-        raw_response.output_number: output_number
       keys_to_select: ["output_number"]
     reset: false

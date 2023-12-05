@@ -1,6 +1,6 @@
-# AtomicFlow
+# Atomic Flow
 
-This guide presents the concept of AtomicFlow and is organized into two sections:
+This guide presents the concept of an AtomicFlow and is organized into two sections:
 1. [Section 1:](#section-1-defining-atomic-flows) Defining Atomic Flows
 2. [Section 2:](##section-2-writing-your-first-atomic-flow) Writing Your First Atomic Flow
 
@@ -48,7 +48,7 @@ output_interface: # Connector between the Flow's output and the caller
 
 Breaking it down:
 - The `name` and `description` parameters are self-explanatory. When defining a Flow you must always define these parameters
-- `input_interface` and `output_interface` define transformations to the input and output data before and after using the tool. In this case, the `input_interface` ensures the key `number` is in the input data dictionary and passes it to the flow. The `output_interface` renames the key `output_number` to `reversed_number` in the output data dictionary.
+- `input_interface` and `output_interface` define the series of transformations applied to the input and output data before and after using the tool. In this case, the `input_interface` ensures the key `number` is in the input data dictionary and passes it to the flow. The `output_interface` renames the key `output_number` to `reversed_number` in the output data dictionary.
 
 Now let's define the Flow. The class would be implemented as follows (you can also check out the py file [reverse_number_atomic.py](../examples/minimal%20reverse%20number/reverse_number_atomic.py)):
 ```python
