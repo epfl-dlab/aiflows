@@ -38,6 +38,9 @@ To exchange information, Flows communicate via a standardized message-based inte
       </p>
 <p>
 
+## FlowVerse in a Nutshell
+The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++).
+
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
@@ -84,104 +87,23 @@ pip install -e .
 
 ## Getting Started
 
-### Hello World
+### <a href="ToDoAddLink">Quick start (5 min)</a>
 
-```python
-# run.py
-import os
+Here you'll see how you can run inference with your first question answering Flow, and you can trivially change between vastly different question answering Flows thanks to the modular abstraction and FlowVerse!
 
-import hydra
+### <a href="ToDoAddLink">Tutorial (15 min)</a>
 
-import flows
-from flows.flow_launchers import FlowLauncher
-from flows.backends.api_info import ApiInfo
-from flows.utils.general_helpers import read_yaml_file
+In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we'll first extendind it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!
 
-# -----------------------------------
-# Step 1: Syncronize the dependencies
-# -----------------------------------
-# Specifies the Flows in the FlowVerse that this code depends on
+### <a href="ToDoAddLink">Developer's Guide (10 min)</a>
 
-from flows import flow_verse
+We are constantly optimizing our Flow development workflow (pun intended:). In this short guide, we share our best tips, so that you don't have to learn the hard way.
 
-dependencies = [
-    {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},
-]
-flow_verse.sync_dependencies(dependencies)
+### <a href="ToDoAddLink">Detailed Examples</a>
 
-# -------------------------------
-# Step 2: Set the API information
-# -------------------------------
-# Note that we support many backends including locally hosted models (shout-out to LiteLLM) and vision models
-api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
+Many of the recently proposed prompting and collaboration strategies involving tools, humans and AI model are in essence specific Flows (see the figure below). In the link above, you'll find a detailed walkthrough of how to build some representative workflows.
 
-# ----------------------------
-# Step 3: Instantiate the Flow
-# ----------------------------
-# ToDo: Showcase that we can easily switch between simpleQA, ReAct or AutoGPT
-# ToDo: Can this be simplified for the hello world?
-
-root_dir = "."
-cfg_path = os.path.join(root_dir, "simpleQA.yaml")
-cfg = read_yaml_file(cfg_path)
-
-cfg["flow"]["backend"]["api_infos"] = api_information
-
-# ~~~ Instantiate the Flow ~~~
-flow_with_interfaces = {
-      "flow": hydra.utils.instantiate(cfg["flow"], _recursive_=False, _convert_="partial"),
-      "input_interface": (
-      None
-      if cfg.get("input_interface", None) is None
-      else hydra.utils.instantiate(cfg["input_interface"], _recursive_=False)
-      ),
-      "output_interface": (
-      None
-      if cfg.get("output_interface", None) is None
-      else hydra.utils.instantiate(cfg["output_interface"], _recursive_=False)
-      ),
-}
-
-# -------------------
-# Step 4: Define data
-# -------------------
-data = {"id": 0, "question": "Who was the NBA champion in 2023?"}  # This can be a list of samples
-
-# ---------------------
-# Step 5: Run inference
-# ---------------------
-_, outputs = FlowLauncher.launch(
-      flow_with_interfaces=flow_with_interfaces, data=data, path_to_output_file=path_to_output_file
-)
-
-# ~~~ Print the output ~~~
-flow_output_data = outputs[0]
-print(flow_output_data)
-```
-
-
-Run the Flow on your terminal:
-
-```bash
-python run.py
-```
-
-______________________________________________________________________
-
-### Tutorials
-
-To get a deeper understanding of the library, go through the <a href="ToDoAddLink"> hands-on tutorials</a> that introduce you to the library's features by building useful Flows while gradually increasing complexity:
-
-<a href="AddLink">VanillaQA-to-AutoGPT</a>
-- Introduces the FlowVerse
-- ... ToDO
-
-<a href="AddLink">VanillaQA-to-AutoGPT</a>
-- ...
-
-### Examples
-
-Additionally, we provide a detailed walkthrough of the Flows used in the tutorials and more (e.g., visionQA, JARVIS (keeping a placeholder and saying coming soon suffices)), <a href=ToDoAddLink>here</a>.
+ToDo: Add Figure with all methods from appendix with rounded corners.
 
 ## Contribute
 (ToDo: Nicky)
@@ -225,8 +147,19 @@ To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Bui
 
 # ToDO
 
-- Which version of the paper to link?
+- Update the time estimates in the Demos and Tutorials
 - Make sure that the library is published as aiflows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
-- Check if `together` links to Contributing
-- Can one install the library with conda?
-- Should we have a dedicated list of the features?
+
+<hr>
+Q: Which version of the paper to link?
+
+A: I suggest the new one, but where to host it? Maybe in the repo?
+
+<hr>
+Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
+
+<hr>
+Q: Should we have a list of existing / useful Flows (otherwise how do we highlight the useful Flows e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
+
+<hr>
+Q: Can one install the library with conda? Should we support that?

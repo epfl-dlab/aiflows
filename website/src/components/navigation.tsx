@@ -18,7 +18,7 @@ export const Navigation = (props:any) => {
             <span className="icon-bar"></span>{" "}
           </button>
           <a className="navbar-brand page-scroll" href="#page-top">
-            FLOWS
+            aiFlows
           </a>{" "}
         </div>
 
