@@ -1,7 +1,7 @@
 {
   "Header": {
-    "title": "Flows",
-    "paragraph": "The Building Blocks of Reasoning and Collaborative AI",
+    "title": "aiFlows",
+    "paragraph": "The building blocks of your collaborative AI",
     "code": "pip install flows\ngit clone git@github.com:epfl-dlab/flows.git \ncd flows/tutorials/getting-started",
     "language": "bash",
     "showLineNumbers": false,
