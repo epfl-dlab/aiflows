@@ -7,7 +7,7 @@ Get ready for an engaging journey where you'll build practical skills and gain a
 Let's dive in and explore the following tutorials !
 
 ## [1. Setting up aiFlows](./setting_up_aiFlows.md)
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 * Installed the aiFlows library successfully
 * Established an organized file structure for seamless collaboration within the FlowVerse
 * Set up a Hugging Face account for contribution to the FlowVerse (Optional)
@@ -15,14 +15,14 @@ Let's dive in and explore the following tutorials !
 
 ## [2. Atomic Flow Tutorial](./atomic_flow.md)
 
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Gained insight into the relationship among a Flow, an input interface, and an output interface
 * Acquired hands-on experience in creating an `AtomicFlow` with the example of `ReverseNumberAtomic`
 * Learned how to run a flow with a `FlowLauncher`
 
 ## [3. Composite Flow Tutorial](./composite_flow.md)
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Gained insights into the concept of a Composite Flow
 * Acquired the skills to create a `SequentialFlow` through a toy example
@@ -30,7 +30,7 @@ Let's dive in and explore the following tutorials !
 
 ## [4. Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_FlowVerse_minimalQA.md)
 
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Gained an understanding of the FlowVerse and its significance
 * Acquired the skills to retrieve flows from the FlowVerse
@@ -40,7 +40,7 @@ Let's dive in and explore the following tutorials !
 
 ## [5. ReAct Tutorial](./reAct.md)
 
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Gained an understanding of the ReAct flow and its significance
 * Acquired the skills to pull multiple flows from the FlowVerse with external library dependencies
@@ -49,7 +49,7 @@ Let's dive in and explore the following tutorials !
 
 ## [6. ReAct With Human Feedback Tutorial](./reActwHumanFeedback.md)
 
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Recognized the distinctions between ReAct and ReActWithHumanFeedback and their consequences
 * Learned how to integrate a human feedback flow into ReAct
@@ -60,7 +60,7 @@ Let's dive in and explore the following tutorials !
 
 ## [7. AutoGPT Tutorial](./autogpt_tutorial.md)
 
-### By the Tutorial's End, I Will Have...
+#### By the Tutorial's End, I Will Have...
 
 * Acknowledged the differences between AutoGPT and ReActWithHumanFeedback and their implications
 * Gained proficiency in executing the AutoGPTFlow
