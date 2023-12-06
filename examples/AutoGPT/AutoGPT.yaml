@@ -4,6 +4,7 @@ flow:
 
   ### Subflows specification
   subflows_config:
+    #ControllerFlow Configuration
     Controller:
       _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
       commands:
@@ -35,6 +36,7 @@ flow:
         last_k: 1
         first_k: 2
 
+    #ExecutorFlow Configuration
     Executor:
       _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
       subflows_config:
@@ -45,7 +47,8 @@ flow:
           backend:
             _target_: langchain.tools.DuckDuckGoSearchRun
 
+    #MemoryFlow Configuration
     Memory:
       backend:
-        model_name: text-embedding-ada-002
+        model_name: none
         api_infos: ???

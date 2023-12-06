@@ -1,16 +1,22 @@
 # AutoGPT Tutorial
 **Prequisites:** setting up your API keys (see [setting_up_aiFlows.md](./setting_up_aiFlows.md)), [Introducing the FlowVerse with a Simple Q&A Flow Tutorial](./intro_to_FlowVerse_minimalQA.md), [ReAct Tutorial](./reAct.md), [React With Human Feedback Tutorial](./reActwHumanFeedback.md)
 
-This guide introduces an implementation of the AutoGPT flow. The guide is organized in two sections:
+This guide introduces an implementation of the AutoGPT flow. It's organized in two sections:
 
 1. [Section 1:](#section-1-whats-the-autogpt-flow) What's The AutoGPT flow ?
 2. [Section 2:](#section-2-running-the-autogpt-flow) Running the AutoGPT Flow
 
+### By the Tutorial's End, I Will Have...
+
+* Acknowledged the differences between AutoGPT and ReActWithHumanFeedback and their implications
+* Gained proficiency in executing the AutoGPTFlow
+* Enhanced comprehension of intricate flow structures
+
 ## Section 1: What's The AutoGPT flow ?
 
-In the previous tutorial [React With Human Feedback Tutorial](./reActwHumanFeedback.md), we introduced the `ReActWithHumanFeedback` Flow. Towards the end, while the flow demonstrated effective functionality, we observed a notable challenge, especially in prolonged conversations. The principal issue emerged when attempting to transmit the entire message history to the language model (LLM), eventually surpassing the permissible maximum token limit. As a temporary solution, we opted to send only the first two and the last messages as context to the LLM. However, this approach proves suboptimal if your objective is to enable the model to maintain a more comprehensive long-term memory.  Consequently, in this tutorial, we will demonstrate how to create the `AutoGPT` flow, providing a solution to this issue.
+In the previous tutorial [React With Human Feedback Tutorial](./reActwHumanFeedback.md), we introduced the `ReActWithHumanFeedback` Flow. Towards the end, while the flow demonstrated effective functionality, we observed a notable challenge, especially in prolonged conversations. The principal issue emerged when attempting to transmit the entire message history to the language model (LLM), eventually surpassing the permissible maximum token limit. As a temporary solution, we opted to send only the first two and the last messages as context to the LLM. However, this approach proves suboptimal if your objective is to enable the model to maintain a more comprehensive long-term memory.  Consequently, in this tutorial, we will demonstrate how to create a basic implementation of the `AutoGPT` flow, providing a solution to tackles this issue.
 
-The `AutoGPT` flow is a circular flow is a circular flow that organizes the problem-solving process into four distinct flows:
+The `AutoGPT` flow is a circular flow that organizes the problem-solving process into four distinct flows:
 
 1. `ControllerFlow`: Given an a goal and observations (from past executions), it selects from a predefined set of actions, which are explicitly defined in the `ExecutorFlow`, the next action it should execute to get closer accomplishing its goal. In our configuration, we implement the `ControllerFlow` using the `ChatAtomicFlow`
 
@@ -18,7 +24,19 @@ The `AutoGPT` flow is a circular flow is a circular flow that organizes the prob
     * `WikiSearchAtomicFlow`: This flow, given a "search term," executes a Wikipedia search and returns content related to the search term.
     * `LCToolFlow` using `DuckDuckGoSearchRun`: This flow, given a "query," queries the DuckDuckGo search API and retrieves content related to the query.
 
-3. `MemoryFlow`/`VectorStoreFlow`: This flow is used to read and write and read memories stored of passed conversations in a database. These memories can be passed to the `ControllerFlow` enabling it to have a long term memory without having to transmit the entire message history to the language model (LLM)
+3. `HumanFeedbackFlow`: This flow prompts the user for feedback on the latest execution of the `ExecutorFlow`. The collected feedback is then conveyed back to the `ControllerFlow` to be considered in the subsequent execution step. Additionally, the flow is designed to have the capability to terminate the `ReActWithHumanFeedbackFlow` if the user expresses such a preference.
+
+4. `MemoryFlow`: This flow is used to read and write and read memories stored of passed conversations in a database. These memories can be passed to the `ControllerFlow` enabling it to have a long term memory without having to transmit the entire message history to the language model (LLM). It's implemented with the `VectorStoreFlow`
+
+Here's a broad overview of the  `AutoGPTFlow`:
+
+```
+| -------> Memory Flow -------> Controller Flow ------->|
+^                                                       |      
+|                                                       |
+|                                                       v
+| <----- HumanFeedback Flow <------- Executor Flow <----|
+```
 
 ## Section 2 Running the AutoGPT Flow
 
@@ -32,10 +50,12 @@ Similar to the [Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_Flo
 
 ```python
 from flows import flow_verse
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/AutoGPTFlowModule", "revision": "f56bea985728b3b12d1042873abadfa9ebd4b4f6"},
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
 ]
+
 flow_verse.sync_dependencies(dependencies)
 ```
 
@@ -51,15 +71,23 @@ pip install faiss-cpu==1.7.4
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our Flow.
 
-The configuration for our flow can be found in [AutoGPT.yaml](../../examples/AutoGPT/AutoGPT.yaml) and looks like this:
+The configuration for our flow is available in [AutoGPT.yaml](../../examples/AutoGPT/AutoGPT.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. `AutoGPTFlow`'s default config  can be found [here](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml), the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml) and memory's flow default config `VectorStoreFlow` can be found [here](https://huggingface.co/aiflows/VectorStoreFlowModule/blob/main/VectorStoreFlow.yaml)
 
+Our focus will be on explaining the modified parameters in the configuration, with reference to the [ReAct With Human Feedback Tutorial](./reActwHumanFeedback.md) Tutorial for unchanged parameters.
+Now let's look at the flow's configuration:
 ```yaml
 flow:
   _target_: aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
   max_rounds: 30
+```
+* `_target_`: We're instantiating `AutoGPTFlow` with its default configuration and introducing some overrides, as specified below.
+* `max_rounds`: The maximum number of rounds the flow can run for.
 
+Now let's look at the flow's `subflows_config`, which provides configuration details for ReAct's subflows—`ControllerFlow`, the `ExecutorFlow`, the `HumanFeedbackFlow` and the `MemoryFlow`:
+```yaml
   ### Subflows specification
   subflows_config:
+    #ControllerFlow Configuration
     Controller:
       _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
       commands:
@@ -90,7 +118,10 @@ flow:
       previous_messages:
         last_k: 1
         first_k: 2
-
+```
+The `ControllerFlow` is identical to `ReActWithHumanFeedback`.
+```yaml
+    #ExecutorFlow Configuration
     Executor:
       _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
       subflows_config:
@@ -100,21 +131,16 @@ flow:
           _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
           backend:
             _target_: langchain.tools.DuckDuckGoSearchRun
-
+```
+The `ExecutorFlow` is identical to `ReActWithHumanFeedback` and `ReAct`.
+```yaml
+    #MemoryFlow Configuration
     Memory:
       backend:
-        model_name: text-embedding-ada-002
+        model_name: none
         api_infos: ???
-
 ```
-
-Please be aware that the Flow is instantiated from its default configuration, and we are solely defining the parameters we wish to override in this section. The default configuration for `AutoGPTFlow` can be accessed [here](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml).
-
-It's important to note that the configuration closely resembles the one presented in the previous tutorial, [ReAct With Human Feedback Tutorial](./reActwHumanFeedback.md)Tutorial. The only differences are:
-
-1. The addition of the `MemoryFlow`, primarily instantiated from instantiated from [AutoGPT's defaut configuration](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml#L87)
-
-2. Changes in the topology (refer to [AutoGPT's defaut configuration](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml#L91)) to accommodate the inclusion of the `MemoryFlow`. 
+The `MemoryFlow`, primarily instantiated from [AutoGPT's defaut configuration](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml#L87).Additionally, please refer to the `MemoryFlow`'s [FlowCard](https://huggingface.co/aiflows/VectorStoreFlowModule) for more details.
 
 With our configuration file in place, we can now proceed to call our flow. Begin by configuring your API information. Below is an example using an OpenAI key, along with examples for other API providers (commented):
 
@@ -130,12 +156,12 @@ api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_
 
 ```
 
-ollowing that, load the YAML configuration, insert your API information, and define the `flow_with_interfaces` dictionary as shown below:
+Next, load the YAML configuration, insert your API information, and define the `flow_with_interfaces` dictionary as shown below:
 
 ```python
-root_dir = "."
-cfg_path = os.path.join(root_dir, "AutoGPT.yaml")
 cfg = read_yaml_file(cfg_path)
+    
+# put the API information in the config
 cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
 cfg["flow"]["subflows_config"]["Memory"]["backend"]["api_infos"] = api_information
 # ~~~ Instantiate the Flow ~~~

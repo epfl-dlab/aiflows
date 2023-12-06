@@ -1,4 +1,9 @@
 # Auto-GPT
+WHAT ITS COMPOSED OF AND WHAT THE PARTS DOO
+
+AUTOGPT
+CHATFLOWMODULE
+VISIONFLOWMODULE
 
 As autonomous LLM-powered agents, autoGPT has the following components:
 

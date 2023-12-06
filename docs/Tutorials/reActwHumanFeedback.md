@@ -1,27 +1,36 @@
 # ReAct With Human Feedback Tutorial
 **Prequisites:** setting up your API keys (see [setting_up_aiFlows.md](./setting_up_aiFlows.md)), [Introducing the FlowVerse with a Simple Q&A Flow Tutorial](./intro_to_FlowVerse_minimalQA.md), [ReAct Tutorial](./reAct.md)
 
-This guide introduces an implementation of the ReAct flow. The guide is organized in two sections:
+This guide introduces an implementation of the ReAct flow. It's organized in two sections:
 
 1. [Section 1:](#section-1-whats-the-react-with-human-feedback-flow) What's The ReAct With Human Feedback Flow ?
 2. [Section 2:](#section-2-running-the-react-with-human-feedback-flow) Running the ReAct With Human Feedback Flow
+
+### By the Tutorial's End, I Will Have...
+
+* Recognized the distinctions between ReAct and ReActWithHumanFeedback and their consequences
+* Learned how to integrate a human feedback flow into ReAct
+* Incorporated customized functions into the input and output interfaces.
+* Grasped the limitations of ReAct, particularly its lack of long-term memory
+* Deepened my understanding of the key parameters in the `ControllerExecutorFlow` configuration
 
 ## Section 1:  What's The ReAct With Human Feedback Flow ?
 
 In the previous tutorial ([ReAct Tutorial](./reAct.md)), we introduced the ReAct flow. We noticed towards the end that, eventhough it works well, it can fail in some situations. For example, consider you ask the following:
 > **Answer the following question: What is the profession and date of birth of Michael Jordan?**
 
-Where the Michael Jordan we're talking about is the Professor of Electrical Engineering and Computer Sciences and Professor of Statistics at Berkley. ReAct will assume you're talking about the Michael Jordan the basketball player and give you information about him. In these situations, it might be reasonable to add an another flow in the circular where the user/human can give feedback on intermediate answers. Therefore, in this tutorial we will be showing how to create the `ReActWithHumanFeedback` flow.
+
+In scenarios where the mentioned "Michael Jordan" refers to the Professor of Electrical Engineering and Computer Sciences and Professor of Statistics at Berkeley, ReAct may misinterpret it as the basketball player Michael Jordan and provide information about the latter. To address this, we can introduce an additional flow in our circular flow, allowing users to provide feedback on intermediate answers. This tutorial will guide you through the creation of the `ReActWithHumanFeedback` flow to handle such situations.
 
 The `ReActWithHumanFeedback` flow is a circular flow that organizes the problem-solving process into three distinct flows:
 
-1. `ControllerFlow`: Given an a goal and observations (from past executions), it selects from a predefined set of actions, which are explicitly defined in the `ExecutorFlow`, the next action it should execute to get closer accomplishing its goal. In our configuration, we implement the `ControllerFlow` using the `ChatAtomicFlow`
+1. `ControllerFlow`: With a specified goal and past observations from prior executions, the `ControllerFlow` makes decisions by choosing the next action from a predefined set. These actions are explicitly defined in the `ExecutorFlow` and contribute to progressing towards the defined goal. In our configuration, we implement the `ControllerFlow` using the `ChatAtomicFlow`.
 
 2. `ExecutorFlow`:  Following the action selection by the `ControllerFlow`, the process moves to the `ExecutorFlow`. This is a branching flow that encompasses a set of subflows, with each subflow dedicated to a specific action. The `ExecutorFlow` executes the particular subflow associated with the action chosen by the `ControllerFlow`. In our setup, the `ExecutorFlow` includes the following individual flows:
     * `WikiSearchAtomicFlow`: This flow, given a "search term," executes a Wikipedia search and returns content related to the search term.
     * `LCToolFlow` using `DuckDuckGoSearchRun`: This flow, given a "query," queries the DuckDuckGo search API and retrieves content related to the query.
 
-3. `HumanFeedbackFlow`: This flow prompts the user for feedback on the latest execution of the `ExecutorFlow`. The collected feedback is then conveyed back to the `ControllerFlow` o be considered in the subsequent execution step. Additionally, the flow is designed to have the capability to terminate the `ReActWithHumanFlow` if the user expresses such a preference.
+3. `HumanFeedbackFlow`: This flow prompts the user for feedback on the latest execution of the `ExecutorFlow`. The collected feedback is then conveyed back to the `ControllerFlow` to be considered in the subsequent execution step. Additionally, the flow is designed to have the capability to terminate the `ReActWithHumanFeedbackFlow` if the user expresses such a preference.
 
 ## Section 2: Running the ReAct With Human Feedback Flow
 
@@ -35,12 +44,12 @@ Similar to the [Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_Flo
 
 ```python
 from flows import flow_verse
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/ControllerExecutorFlowModule", "revision": "09cda9615e5c48ae18e2c1244519ed7321145187"},
     {"url": "aiflows/HumanStandardInputFlowModule", "revision": "5683a922372c5fa90be9f6447d6662d8d80341fc"},
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
 ]
-
 
 flow_verse.sync_dependencies(dependencies)
 ```
@@ -78,13 +87,20 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
 ```
 Note that, we've simply added one function to the class which initiates the procedure to terminate the flow should the user enter "q"  when prompted for feedback.
 
-Let's now start defining the configuration of the flow (can be found in [ReActWithHumanFeedback.yaml](../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml)):
+The configuration for our flow is available in [ReActWithHumanFeedback.yaml](../../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config  can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
 
+Our focus will be on explaining the modified parameters in the configuration, with reference to the previous tutorial for unchanged parameters.
+Now let's look at the flow's configuration:
 ```yaml
 max_rounds: 30
+```
+* `max_rounds`: The maximum number of rounds the flow can run for.
 
+Now let's look at the flow's `subflows_config`, which provides configuration details for ReAct's subflows—`ControllerFlow`, the `ExecutorFlow` and the `HumanFeedbackFlow`:
+```yaml
 ### Subflows specification
 subflows_config:
+  #ControllerFlow
   Controller:
     _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
     backend:
@@ -99,6 +115,7 @@ subflows_config:
       finish:
         description: "Signal that the objective has been satisfied, and returns the answer to the user."
         input_args: ["answer"]
+
     human_message_prompt_template:
       template: |2-
         Here is the response to your last action:
@@ -113,9 +130,18 @@ subflows_config:
       - "human_feedback"
 
     previous_messages:
-      last_k: 1
-      first_k: 2
+      first_k: 2 # keep the system prompt and the original goal
+      last_k: 1 # keep only the last message
+```
+Note that the `ControllerFlow` configuration remains nearly identical to that in the previous tutorial, [ReAct Tutorial](./reAct.md). The only differences are:
+*  The inclusion of an extra argument, "human_feedback," in both the `input_interface_initialized` parameter and the `input_variables` pararameter of the `human_message_prompt_template`. This is to incorporate the human's feedback in the message fed to the `ContollerFlow`
+* Implementation of a mechanism to limit the number of `previous_messages` from the flow's chat history that is input to the Language Model (LLM). This limitation is crucial to prevent the Language Model (LLM) from exceeding the maximum token limit. Two parameters are overriden for this purpose:
+  * `first_k`: Adds the first_k earliest messages of the flow's chat history to the input of the LLM.
+  * `last_k`: Adds the last_k latest messages of the flow's chat history to the input of the LLM.M
 
+
+```yaml
+  #ExecutorFlow   
   Executor:
     _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
     subflows_config:
@@ -125,7 +151,9 @@ subflows_config:
         _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
         backend:
           _target_: langchain.tools.DuckDuckGoSearchRun
-
+```
+The `ExecutorFlow` is identical to ReAct.
+```yaml
   HumanFeedback:
     _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
     request_multi_line_input_flag: False
@@ -155,7 +183,16 @@ subflows_config:
       - "command"
       - "command_args"
       - "observation"
+```
+`HumanFeedback`:
+  * `request_multi_line_input_flag`: This boolean parameter determines whether the user/human is prompted to enter a multi-line input (True) or a single-line input (False).
+  * `query_message_prompt_template`: This parameter involves a prompt template used to generate the message presented to the human. It includes:
+      * `template`: The prompt template in Jinja format.
+      * `input_variables` The input variables of the prompt. Note that these input variables have the same names as the placeholders "{{}}" in the `template`. Before querying the human, the template is rendered by placing the `input_variables` in the placeholders of the `template`.
+  * `input_interface`:  Describes the expected input interface for the flow. It's noteworthy that the `input_interface` is identical to the `input_variables` of the `query_message_prompt_template`. This alignment is intentional, as they are passed as `input_variables` to the `query_message_prompt_template` to render the message presented to the user.
 
+
+```yaml
 topology: # The first two are the same as in the ControllerExecutorFlow
   - goal: "Select the next action and prepare the input for the executor."
     input_interface:
@@ -191,30 +228,11 @@ topology: # The first two are the same as in the ControllerExecutorFlow
     reset: false
 
 ```
-Note that the `ControllerFlow` and the `ExecutorFlow` remain nearly identical to those in the previous tutorial,[ReAct Tutorial](./reAct.md). The sole difference is the inclusion of an extra argument, "human_feedback," in both the `input_interface_initialized` and the `input_variables` of the `human_message_prompt_template` within the `ControllerFlow`. Our focus will be on explaining the modified parameters in the configuration, with reference to the previous tutorial for unchanged parameters. Two specific changes have been made:
-
-1. Addition of `HumanFeedback` in subflows_config:
-    * `request_multi_line_input_flag`: This boolean parameter determines whether the user/human is prompted to enter a multi-line input (True) or a single-line input (False).
-    * `query_message_prompt_template`: This parameter involves a prompt template used to generate the message presented to the human. It includes:
-        * `template`: The prompt template in Jinja format.
-        * `input_variables` The input variables of the prompt. Note that these input variables have the same names as the placeholders "{{}}" in the `template`. Before querying the human, the template is rendered by placing the `input_variables` in the placeholders of the `template`.
-    * `input_interface`:  Describes the expected input interface for the flow. It's noteworthy that the `input_interface` is identical to the `input_variables` of the `query_message_prompt_template`. This alignment is intentional, as they are passed as `input_variables` to the `query_message_prompt_template` to render the message presented to the user.
-2. Changing the topology to include the HumanFeedback flow in the circular flow:
-    * For more details on topology, refer to the tutorial [Sequential Flow](./sequential_flow.md).
-    * The topology of the `ControllerExecutorFlow`'s  default config is available [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml#L36). 
-    * Upon comparison with the default config's topology, the sole alteration is the incorporation of the human feedback flow:
-    ```yaml
-    - goal: "Ask the user for feedback."
-        input_interface:
-        _target_: flows.interfaces.KeyInterface
-        flow: HumanFeedback
-        output_interface:
-            _target_: ReActWithHumanFeedback.detect_finish_in_human_input
-        reset: false
-    ```
-    * Take note of the inclusion of the function `detect_finish_in_human_input` from `ReActWithHumanFeedback` class into the output interface is crucial. This function, as defined earlier, triggers the sequence for terminating the flow if the human/user submits "q" as feedback.
-
-Now that we've set up our configuration file, we can finally call our flow.
+The default topology of the `ControllerExecutorFlow` is overriden here:
+* For more details on topology, refer to the tutorial [Composite Flow](./composite_flow.md).
+* The topology of the `ControllerExecutorFlow`'s  default config is available [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml#L36). 
+* Upon comparison with the default config's topology, one would observe that the sole alteration is the incorporation of the `HumanFeedbackFlow` to the circular flow.
+* Note the significance of including the `detect_finish_in_human_input` function from the `ReActWithHumanFeedback` class in the output interface. This function, as defined earlier, plays a crucial role in initiating the process of terminating the flow if the human/user provides "q" as feedback.
 
 Now that our configuration file is set up, we can proceed to call our flow. Begin by configuring your API information. Below is an example using an OpenAI key, along with examples for other API providers (in comment):
 
@@ -233,11 +251,12 @@ Next, load the YAML configuration, insert your API information,
 and define the flow_with_interfaces dictionary:
 
 ```python
-from ReActWithHumanFeedback import ReActWithHumanFeedback
 path_to_output_file = None
+# path_to_output_file = "output.jsonl"  # Uncomment this line to save the output to disk
 root_dir = "."
 cfg_path = os.path.join(root_dir, "ReActWithHumanFeedback.yaml")
 cfg = read_yaml_file(cfg_path)
+# put the API information in the config
 cfg["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
 flow = ReActWithHumanFeedback.instantiate_from_default_config(**cfg)
 
@@ -346,4 +365,9 @@ Finally, it provides the correct answer!
 
 Nevertheless, persisting with the use of `ReActWithHumanFeedback` may reveal an inherent challenge, particularly in prolonged conversations. The primary issue arises when attempting to pass the entire message history to the language model (LLM), eventually surpassing the maximum token limit allowable. As a workaround, we currently send only the first two and the last messages as context to the LLM. However, this approach is suboptimal if you desire your model to maintain a more comprehensive long-term memory.
 
-To address this limitation, we recommend exploring the subsequent tutorial, [AutoGPTFlow Tutorial](./autogpt_tutorial.md). This tutorial introduces a fundamental implementation of AutoGPT, enhancing the ReAct flow by incorporating a Memory Flow. This addition effectively tackles the challenge of managing longer conversations, offering a more robust solution for handling extended dialogue and preserving context over time.
+To address this limitation, we recommend exploring the subsequent tutorial, [AutoGPTFlow Tutorial](./autogpt_tutorial.md). This tutorial introduces a fundamental implementation of AutoGPT, enhancing the ReAct flow by incorporating a Memory Flow. This addition tackles the challenge of managing longer conversations.
+
+___
+
+
+**Next Tutorial:** [AutoGPT Tutorial](./autogpt_tutorial.md)

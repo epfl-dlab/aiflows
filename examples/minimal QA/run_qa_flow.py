@@ -17,6 +17,7 @@ logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
 from flows import flow_verse
 
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},
 ]
@@ -37,7 +38,7 @@ if __name__ == "__main__":
     root_dir = "."
     cfg_path = os.path.join(root_dir, "simpleQA.yaml")
     cfg = read_yaml_file(cfg_path)
-
+    # put api information in config (done like this for privacy reasons)
     cfg["flow"]["backend"]["api_infos"] = api_information
 
     # ~~~ Instantiate the Flow ~~~

@@ -15,11 +15,12 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 
 logging.set_verbosity_debug()
 
+from flows import flow_verse
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/AutoGPTFlowModule", "revision": "f56bea985728b3b12d1042873abadfa9ebd4b4f6"},
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
 ]
-from flows import flow_verse
 
 flow_verse.sync_dependencies(dependencies)
 if __name__ == "__main__":
@@ -35,6 +36,8 @@ if __name__ == "__main__":
     root_dir = "."
     cfg_path = os.path.join(root_dir, "AutoGPT.yaml")
     cfg = read_yaml_file(cfg_path)
+    
+    # put the API information in the config
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     cfg["flow"]["subflows_config"]["Memory"]["backend"]["api_infos"] = api_information
     # ~~~ Instantiate the Flow ~~~

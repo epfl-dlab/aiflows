@@ -30,8 +30,8 @@ subflows_config:
       - "human_feedback"
 
     previous_messages:
-      last_k: 1
-      first_k: 2
+      first_k: 2 # keep the system prompt and the original goal
+      last_k: 1 # keep only the last message
 
   Executor:
     _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config

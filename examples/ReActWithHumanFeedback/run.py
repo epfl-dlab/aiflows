@@ -15,12 +15,12 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 logging.auto_set_dir()
 from flows import flow_verse
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/ControllerExecutorFlowModule", "revision": "09cda9615e5c48ae18e2c1244519ed7321145187"},
     {"url": "aiflows/HumanStandardInputFlowModule", "revision": "5683a922372c5fa90be9f6447d6662d8d80341fc"},
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
 ]
-
 
 flow_verse.sync_dependencies(dependencies)
 from ReActWithHumanFeedback import ReActWithHumanFeedback
@@ -40,6 +40,7 @@ if __name__ == "__main__":
     root_dir = "."
     cfg_path = os.path.join(root_dir, "ReActWithHumanFeedback.yaml")
     cfg = read_yaml_file(cfg_path)
+    # put the API information in the config
     cfg["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
     flow = ReActWithHumanFeedback.instantiate_from_default_config(**cfg)
 

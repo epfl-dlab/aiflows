@@ -16,7 +16,7 @@ CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 logging.set_verbosity_debug()
 
 from flows import flow_verse
-
+# ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
     {"url": "aiflows/ControllerExecutorFlowModule", "revision": "09cda9615e5c48ae18e2c1244519ed7321145187"},
@@ -40,7 +40,7 @@ if __name__ == "__main__":
     root_dir = "."
     cfg_path = os.path.join(root_dir, "ReAct.yaml")
     cfg = read_yaml_file(cfg_path)
-    # print(cfg["flow"].keys())
+    # put the API information in the config
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information
 
     # ~~~ Instantiate the Flow ~~~
