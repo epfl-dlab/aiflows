@@ -22,7 +22,7 @@ These steps are repeated until an answer is obtained.
 
 In this section, we'll guide you through running the ReAct Flow.
 
-For the code snippets referenced from this point onward, you can find them[here](../examples/ReAct/)
+For the code snippets referenced from this point onward, you can find them [here](../examples/ReAct/)
 
 Now, let's delve into the details without further delay!
 

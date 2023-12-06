@@ -29,6 +29,10 @@ subflows_config:
       - "observation"
       - "human_feedback"
 
+    previous_messages:
+      last_k: 1
+      first_k: 2
+
   Executor:
     _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
     subflows_config:
@@ -63,7 +67,7 @@ subflows_config:
         - "command"
         - "command_args"
         - "observation"
-    input_interface_initialized:
+    input_interface:
       - "goal"
       - "command"
       - "command_args"
