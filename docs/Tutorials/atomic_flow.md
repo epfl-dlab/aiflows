@@ -50,7 +50,7 @@ Breaking it down:
 - The `name` and `description` parameters are self-explanatory. When defining a Flow you must always define these parameters
 - `input_interface` and `output_interface` define the series of transformations applied to the input and output data before and after using the tool. In this case, the `input_interface` ensures the key `number` is in the input data dictionary and passes it to the flow. The `output_interface` renames the key `output_number` to `reversed_number` in the output data dictionary.
 
-Now let's define the Flow. The class would be implemented as follows (you can also check out the py file [reverse_number_atomic.py](../examples/minimal%20reverse%20number/reverse_number_atomic.py)):
+Now let's define the Flow. The class would be implemented as follows (you can also check out the py file [reverse_number_atomic.py](../../examples/minimal%20reverse%20number/reverse_number_atomic.py)):
 ```python
 class ReverseNumberAtomicFlow(AtomicFlow):
     def __init__(self, **kwargs):
@@ -68,11 +68,11 @@ overrides_config = read_yaml_file("reverseNumberAtomic.yaml")
 
 flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
 ```
-You can find this example [here](../examples/minimal%20reverse%20number/). Few other notable examples are [HumanStandardInputFlowModule](https://huggingface.co/aiflows/HumanStandardInputFlowModule) and the the [FixedReplyFlowModule](https://huggingface.co/aiflows/FixedReplyFlowModule) Flow.
+You can find this example [here](../../examples/minimal%20reverse%20number/). Few other notable examples are [HumanStandardInputFlowModule](https://huggingface.co/aiflows/HumanStandardInputFlowModule) and the the [FixedReplyFlowModule](https://huggingface.co/aiflows/FixedReplyFlowModule) Flow.
 
 Note that we can pass a Python dictionary as the `overrides` parameter and not rely on YAML files.
 
-To run this Flow, execute the following commands in your terminal (make sure to clone the repository first):
+To run this Flow, execute the following commands in your terminal:
 ```bash
 cd examples/minimal\ reverse\ number/
 python reverse_number_atomic.py

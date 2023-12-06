@@ -32,7 +32,7 @@ if __name__ == "__main__":
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
 
-    root_dir = "examples/AutoGPT"
+    root_dir = "."
     cfg_path = os.path.join(root_dir, "AutoGPT.yaml")
     cfg = read_yaml_file(cfg_path)
     cfg["flow"]["subflows_config"]["Controller"]["backend"]["api_infos"] = api_information

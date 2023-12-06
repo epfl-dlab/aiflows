@@ -2,7 +2,7 @@
 # Introducing the FlowVerse with a Simple Q&A Flow
 **Prerequisites:** setting up your API keys (see [setting_up_aiFlows.md](./setting_up_aiFlows.md))
 
-This guide introduces the FlowVerse via an example: [minimalQA](../examples/minimal%20QA/). The guide is organized in two sections:
+This guide introduces the FlowVerse via an example: [minimalQA](../../examples/minimal%20QA/). The guide is organized in two sections:
 1. [Section 1:](#section-1-whats-the-flowverse) What's the FlowVerse?
 2. [Section 2:](#section-2-crafting-a-simple-qa-flow-with-the-chatflowmodule) Crafting a Simple Q&A Flow with the ChatFlowModule
 
@@ -15,11 +15,11 @@ In this section, we'll guide you through the creation of a simple Q&A flow — a
 
 For an in-depth understanding of `ChatAtomicFlow`, refer to its [FlowCard (README)](https://huggingface.co/aiflows/ChatFlowModule/blob/main/README.md) or delve into the comprehensive documentation [TODO:CITEEEEE HEERREEE].
 
-Note that all the code referenced from this point onwards can be found [here](../examples/minimal%20QA/)
+Note that all the code referenced from this point onwards can be found [here](../../examples/minimal%20QA/)
 
 Let's dive in without further delay!
 
-First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](../examples/minimal%20QA/run_qa_flow.py) to see all the code):
+First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](../../examples/minimal%20QA/run_qa_flow.py) to see all the code):
 ```python
 from flows import flow_verse
 
@@ -35,7 +35,7 @@ Let's break this down:
 
 Now that we've fetched the `ChatAtomicFlowModule` from the FlowVerse, we can start creating our Flow.
 
-The configuration for our flow can be found in [simpleQA.yaml](examples/minimal%20QA/run_qa_flow.py) and looks like this:
+The configuration for our flow can be found in [simpleQA.yaml](../../examples/minimal%20QA/run_qa_flow.py) and looks like this:
 ```yaml
 input_interface: # Connector between the "input data" and the Flow
   _target_: flows.interfaces.KeyInterface
@@ -179,7 +179,7 @@ Finally, run the flow with `FlowLauncher`.
     print(flow_output_data)
 ```
 
-The full example is available [here](../examples/minimal%20QA/) and can be executed as follows:
+The full example is available [here](../../examples/minimal%20QA/) and can be executed as follows:
 
 ```bash
 cd examples/minimal\ QA/
@@ -192,13 +192,13 @@ Upon running, the answer is similar to the following:
 ```
 To learn how to obtain information on the 2023 NBA Champion using Flows, refer to the next tutorial [ReAct](./reAct.md), a Flow that provides `ChatAtomicFlow` to tools like searches on Wikipedia!
 
-Additionally, the [minimal QA](../examples/minimal%20QA/) folder contains other examples using `ChatAtomicFlow` such as:
-* Running a [Flow with Demonstrations](../examples/minimal%20QA/run_qa_flow_w_demonstrations.py) (encouraging the LLM to finshis answers with "my sire"). To run:
+Additionally, the [minimal QA](../../examples/minimal%20QA/) folder contains other examples using `ChatAtomicFlow` such as:
+* Running a [Flow with Demonstrations](../../examples/minimal%20QA/run_qa_flow_w_demonstrations.py) (encouraging the LLM to finshis answers with "my sire"). To run:
   ```bash
   cd examples/minimal\ QA/
   python run_qa_flow_w_demonstrations.py
   ```
-* Running the [Simple Q&A flow in a multithreaded fashion](../examples/minimal%20QA/run_qa_flow_multithreaded.py) in order answer multiple questions with mulitple API_keys or providers. To run:
+* Running the [Simple Q&A flow in a multithreaded fashion](../../examples/minimal%20QA/run_qa_flow_multithreaded.py) in order answer multiple questions with mulitple API_keys or providers. To run:
   ```bash
   cd examples/minimal\ QA/
   python run_qa_flow_multithreaded.py

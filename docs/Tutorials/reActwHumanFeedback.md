@@ -27,7 +27,7 @@ The `ReActWithHumanFeedback` flow is a circular flow that organizes the problem-
 
 In this section, we'll guide you through running the `ReActWithHumanFeedbackFlow`. 
 
-For the code snippets referenced from this point onward, you can find them [here](../examples/ReActWithHumanFeedback/).
+For the code snippets referenced from this point onward, you can find them [here](../../examples/ReActWithHumanFeedback/).
 
 Now, let's delve into the details without further delay!
 
@@ -54,7 +54,7 @@ pip install duckduckgo-search==3.9.6
 ```
 
 
-Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
+Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](../../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
 
 
 ```python
@@ -283,7 +283,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible[here](../examples/ReActWithHumanFeedback/) and can be executed as follows:
+The complete example is accessible [here](../../examples/ReActWithHumanFeedback/) and can be executed as follows:
 
 ```bash
 cd examples/ReActWithHumanFeedback
@@ -343,4 +343,7 @@ Eventually, the flow should terminate and return something similar to:
 
 Finally, it provides the correct answer!
 
-However, it's worth noting that using ReActWithHumanFeedback for prolonged conversations may encounter issues, particularly exceeding the maximum token limit for passing messages to the language model. To address this, the tutorial introduces the next step,[AutoGPTFlow Tutorial](./autogpt.md), which implements AutoGPT, adding a Memory Flow to the ReAct flow to handle longer conversations.
+
+Nevertheless, persisting with the use of `ReActWithHumanFeedback` may reveal an inherent challenge, particularly in prolonged conversations. The primary issue arises when attempting to pass the entire message history to the language model (LLM), eventually surpassing the maximum token limit allowable. As a workaround, we currently send only the first two and the last messages as context to the LLM. However, this approach is suboptimal if you desire your model to maintain a more comprehensive long-term memory.
+
+To address this limitation, we recommend exploring the subsequent tutorial, [AutoGPTFlow Tutorial](./autogpt_tutorial.md). This tutorial introduces a fundamental implementation of AutoGPT, enhancing the ReAct flow by incorporating a Memory Flow. This addition effectively tackles the challenge of managing longer conversations, offering a more robust solution for handling extended dialogue and preserving context over time.

@@ -22,7 +22,7 @@ These steps are repeated until an answer is obtained.
 
 In this section, we'll guide you through running the ReAct Flow.
 
-For the code snippets referenced from this point onward, you can find them [here](../examples/ReAct/)
+For the code snippets referenced from this point onward, you can find them [here](../../examples/ReAct/)
 
 Now, let's delve into the details without further delay!
 
@@ -47,7 +47,7 @@ pip install duckduckgo-search==3.9.6
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our Flow.
 
-The configuration for our flow can be found in [ReAct.yaml](../examples/ReAct/ReAct.yaml) and looks like this:
+The configuration for our flow can be found in [ReAct.yaml](../../examples/ReAct/ReAct.yaml) and looks like this:
 ```yaml
 flow:
   _target_: aiflows.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
@@ -163,7 +163,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The full example is available [here](../examples/ReAct/) and can be executed as follows:
+The full example is available [here](../../examples/ReAct/) and can be executed as follows:
 
 ```bash
 cd examples/ReAct

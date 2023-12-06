@@ -25,8 +25,8 @@ In the associated paper, a Composite Flow is described as follows:
 Therefore, a `SequentialFlow` is a specialized form of `CompositeFlow` that runs Flows sequentially.
 
 Other types of Composit Flows inclue:
-* `CircularFlow`: A series of flows excuted in a circular fashion (e.g [ReAct](../examples/ReAct/))
-* `BranchingFlow`: A series of flows organized in a parallel fashion. The branch (Flow) executed depends on the input of the branching flow (e.g. [BranchingFlow](../flows/base_flows/branching.py))
+* `CircularFlow`: A series of flows excuted in a circular fashion (e.g [ReAct](../../examples/ReAct/))
+* `BranchingFlow`: A series of flows organized in a parallel fashion. The branch (Flow) executed depends on the input of the branching flow (e.g. [BranchingFlow](../../flows/base_flows/branching.py))
 
 ## Section 2: Writing Your First Sequential Flow
 
@@ -43,7 +43,7 @@ Input       |          Sequential Flow             |        Output          |
             |                                      |                        |
 ```
 
-Here's how the `flow_config` looks as a YAML file (you can alos check out [reverseNumberSequential.yaml](../examples/minimal%20reverse%20number/reverseNumberSequential.yaml)):
+Here's how the `flow_config` looks as a YAML file (you can alos check out [reverseNumberSequential.yaml](../../examples/minimal%20reverse%20number/reverseNumberSequential.yaml)):
 ```yaml
 name: "ReverseNumberTwice"
 description: "A sequential flow that reverses a number twice."
@@ -118,7 +118,7 @@ that renames the dictionary key `first_reverse_output`, which is passed by the f
 This ensures proper key naming and enables the seamless execution of the subsequent flow.
 
 Now let's instantiate the `SequentialFlow` (you can alos check out the py file 
-[reverse_number_sequential.py](../examples/minimal%20reverse%20number/reverse_number_sequential.py)):
+[reverse_number_sequential.py](../../examples/minimal%20reverse%20number/reverse_number_sequential.py)):
 
 ```python
 cfg_path = os.path.join(root_dir, "reverseNumberSequential.yaml")
@@ -129,9 +129,9 @@ flow = SequentialFlow.instantiate_from_default_config(**cfg)
 ```
 
 There is no need to define any new class 
-since the `SequentialFlow` is a [base_flow](../flows/base_flows/sequential.py) and we've already
+since the `SequentialFlow` is a [base_flow](../../flows/base_flows/sequential.py) and we've already
 defined the `ReverseNumberAtomicFlow` in the [previous tutorial](./atomic_flow.md) 
-You can find this example [here](../examples/minimal%20reverse%20number/).
+You can find this example [here](../../examples/minimal%20reverse%20number/).
 
 Note that we can pass a Python dictionary as the overrides parameter and not rely on YAML files.
 
