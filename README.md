@@ -91,7 +91,7 @@ pip install -e .
 
 Here you'll see how you can run inference with your first question answering Flow, and you can trivially change between vastly different question answering Flows thanks to the modular abstraction and FlowVerse!
 
-### <a href="ToDoAddLink">Tutorial (15 min)</a>
+### [Tutorial (20 min)](docs/Tutorials/tutorial_landing_page.md)
 
 In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we'll first extendind it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!
 
