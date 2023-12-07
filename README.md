@@ -80,11 +80,11 @@ pip install -e .
 
 ## Getting Started
 
-### [Quick start (🕓 5 min)](docs/Quick_Start/quick_start.md)
+### [Quick start (🕓 5 min)](./website/public/docs/getting_started/Quick_Start/quick_start.md)
 
 Here, you'll see how you can run inference with your first question-answering Flow, and you can trivially change between vastly different question-answering Flows thanks to the modular abstraction and FlowVerse!
 
-### [Tutorial (🕓 20 min)](docs/Tutorials/tutorial_landing_page.md)
+### [Tutorial (🕓 20 min)](./website/public/docs/getting_started/Tutorial/tutorial_landing_page.md)
 
 In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we'll first extend it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!
 
