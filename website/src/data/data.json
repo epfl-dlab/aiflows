@@ -11,23 +11,23 @@
   "Features": [
     {
       "icon": "fa fa-comments-o",
-      "title": "Flexible and Customizable",
-      "text": "A framework for building composable interactions between LLM agents, tools, and humans."
+      "title": "Modularity",
+      "text": "Design Flows of complex interactions involving humans, AI systems, and tools, like LEGO blocks."
     },
     {
       "icon": "fa fa-solid fa-share",
       "title": "Reusable",
-      "text": "Share your flows with the community. Re-use and combine flows created by other researchers."
+      "text": "Readily reuse, customize, and build on top of Flows published on FlowVerse by the community."
     },
     {
       "icon": "fa fa-solid fa-eye",
-      "title": "Concurrency Friendly",
-      "text": "Debug and visualize the reasoning process of your LLMs."
+      "title": "Concurrency",
+      "text": "Build on top of a concurrency friendly abstraction inspired by the Actor model of concurrent computation."
     },
     {
       "icon": "fa fa-solid fa-eye",
-      "title": "Completely Free",
-      "text": "Debug and visualize the reasoning process of your LLMs."
+      "title": "Forever Free",
+      "text": "The aiFlows library is free and always will be."
     }
   ],
   "About": {
