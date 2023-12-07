@@ -122,7 +122,13 @@ We have tried to find a way for anyone to benefit by contributing to the project
 
 In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
 
-## Contributor's wall (ToDo)
+## Contributor's wall
+
+<a href="https://github.com/epfl-dlab/aiflows/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=epfl-dlab/aiflows" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## Citation
 
