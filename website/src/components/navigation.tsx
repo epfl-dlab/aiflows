@@ -46,12 +46,18 @@ export const Navigation = (props:any) => {
             {/*</li>*/}
             <li>
               <a href="#getting_started" className="page-scroll">
-                Galllery
+                Example
               </a>
             </li>
             <li>
               <a href="#contribute" className="page-scroll">
                 Contribute
+              </a>
+            </li>
+            {/*ToDo: Add link to tutorials index*/}
+            <li>
+              <a href="docs/built_with_sphinx/html/index.html" className="page-scroll">
+                Getting Started
               </a>
             </li>
             <li>
