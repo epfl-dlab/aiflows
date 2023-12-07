@@ -22,7 +22,7 @@
 
 🤖🌊 **aiFlows** embodies the <a href="docs/flows_paper.pdf">*Flows*</a> abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
-- 🧩 Modularity: Flows can be stacked like lego-blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
+- 🧩 Modularity: Flows can be stacked like Lego blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows can be shared publicly on the FlowVerse, readily downloaded and reused as part of different Flows
 - 🔀 Concurrency: Being consistent with the Actor model of concurrent computation, Flows are concurrency friendly – a necessary feature for a multi-agent future
 
@@ -105,7 +105,7 @@ Many of the recently proposed prompting and collaboration strategies involving t
 
 ## Contribute
 
-As mentioned above, our mission is to make this a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section) and to achieve this goal, we need your help.
+As mentioned above, our goal is to make Flows a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section), and to achieve this goal, we need your help.
 
 You can become a part of the project in a few ways:
 - contribute to the aiFlows codebase: this will directly improve the library and benefit everyone using it
