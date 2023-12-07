@@ -13,6 +13,9 @@ h3,
 h4 {
   font-family: "Raleway", sans-serif;
 }
+logo {
+  object-fit: fill;
+}
 h2 {
   text-transform: uppercase;
   margin: 0 0 20px;
@@ -76,21 +79,23 @@ hr {
   transition: all 0.8s;
 }
 #menu.navbar-default {
-  background-color: #fff;
+  /*background-color: #fff;*/ /* prev */
+  background-color: black;
   border-color: rgba(231, 231, 231, 0);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
 }
 #menu a.navbar-brand {
   font-family: "Raleway", sans-serif;
-  font-size: 24px;
   font-weight: 700;
-  color: #333;
+  /*color: #333;*/ /* prev */
+  color: #fff;
   text-transform: uppercase;
 }
 #menu.navbar-default .navbar-nav > li > a {
   font-family: "Lato", sans-serif;
   text-transform: uppercase;
-  color: #555;
+  /*color: #555;*/ /* prev */
+  color: #fff;
   font-size: 15px;
   font-weight: 400;
   padding: 8px 2px;
@@ -165,14 +170,15 @@ hr {
 .btn-custom {
   font-family: "Raleway", sans-serif;
   text-transform: uppercase;
-  color: #fff;
+  /*color: #fff;*/
+  color: black;
   background-color: #5ca9fb;
   background-image: linear-gradient(to right, #5ca9fb 0%, #6372ff 100%);
   padding: 14px 34px;
   letter-spacing: 1px;
   margin: 0;
   font-size: 15px;
-  font-weight: 500;
+  font-weight: 650;
   border-radius: 25px;
   transition: all 0.5s linear;
   border: 0;
@@ -247,7 +253,10 @@ header .intro-text {
 /* Features Section */
 #features {
   background: #f6f6f6;
+  padding-top: 30px;
+  padding-bottom: 30px;
 }
+
 #features i.fa {
   font-size: 38px;
   margin-bottom: 20px;
@@ -350,15 +359,15 @@ header .intro-text {
 #contribute .service-desc {
   margin-bottom: 40px;
 }
-/* Portfolio Section */
-#portfolio {
-  padding: 100px 0;
+/* Getting Started Section */
+#getting_started {
+  padding: 40px 0;
 }
-.portfolio-item {
+.getting_started-item {
   margin: 1px -15px 0 -14px;
   padding: 0;
 }
-.portfolio-item .hover-bg {
+.getting_started-item .hover-bg {
   overflow: hidden;
   position: relative;
   margin: 0;
@@ -597,6 +606,14 @@ label {
 }
 #footer a:hover {
   border-bottom: 2px solid #608dfd;
+}
+
+.logo {
+  width: auto;  /* Adjust width automatically */
+  height: 50px; /* Inherit the height from the container */
+  object-fit: contain; /* Maintain the aspect ratio of the image */
+  transform: translateY(-12px);
+  border-radius: 10px;
 }
 
 @media (max-width: 768px) {
