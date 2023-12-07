@@ -22,7 +22,7 @@
 
 🤖🌊 **aiFlows** embodies the <a href="docs/flows_paper.pdf">*Flows*</a> abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
-- 🧩 Modularity: Flows can be stacked like lego-blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
+- 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows can be shared publicly on the FlowVerse, readily downloaded and reused as part of different Flows
 - 🔀 Concurrency: Being consistent with the Actor model of concurrent computation, Flows are concurrency friendly – a necessary feature for a multi-agent future
 
@@ -34,7 +34,7 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the <a href="https://arxiv.org/abs/2308.01285">paper</a>. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
       </p>
 <p>
 
@@ -68,7 +68,7 @@ pip install aiflows
 <details>
   <summary>Other installation options</summary>
 
-### Install bleeding-edge (ToDo: is this the easiest way to do it?)
+### Install bleeding-edge version
 
 ```shell
 git clone git@github.com:epfl-dlab/aiflows.git
@@ -99,13 +99,11 @@ Many of the recently proposed prompting and collaboration strategies involving t
 <p align="center">
       <img src="assets/previous_flows_rounded.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the <a href="https://arxiv.org/abs/2308.01285">paper</a>. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
-      </p>
 <p>
 
 ## Contribute
 
-As mentioned above, our mission is to make this a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section) and to achieve this goal, we need your help.
+As mentioned above, our goal is to make Flows a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section), and to achieve this goal, we need your help.
 
 You can become a part of the project in a few ways:
 - contribute to the aiFlows codebase: this will directly improve the library and benefit everyone using it
@@ -122,11 +120,17 @@ We have tried to find a way for anyone to benefit by contributing to the project
 
 In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
 
-## Contributor's wall (ToDo)
+## Contributors
+
+<a href="https://github.com/epfl-dlab/aiflows/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=epfl-dlab/aiflows" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## Citation
 
-To reference the 🤖🌊 **aiFlows** library, for now, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
+To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
 
 ```
 @misc{josifoski2023flows,
@@ -142,16 +146,18 @@ To reference the 🤖🌊 **aiFlows** library, for now, please cite the paper [F
 
 # ToDO
 
+- Update the TOML and publish the library on pip as *aiflows* (verify that the change of name doesn't brake sth, e.g., logging)
 - Verify that all links are correct
 - Verify that the installation instructions are correct
 - Update the time estimates in the Demos and Tutorials
-- Make sure that the library is published as aiFlows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
 
 <hr>
 Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
 
 <hr>
 Q: Should we have a list of existing / useful Flows (otherwise, how do we highlight the useful Flows, e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
+A: @Nicky, we said that discussions support that, right? Is this documented somewhere?
 
 <hr>
 Q: Can one install the library with conda? Should we support that?
+Q: Is the installation for the bleeding edge correct? Is it the best way to do it? Check HF.

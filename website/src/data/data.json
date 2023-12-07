@@ -16,7 +16,7 @@
     },
     {
       "icon": "fa fa-solid fa-share",
-      "title": "Reusable",
+      "title": "Reusability",
       "text": "Readily reuse, customize, and build on top of Flows published on FlowVerse by the community."
     },
     {
@@ -45,38 +45,32 @@
       "Visualization toolkit: Debug and visualize the reasoning process of your LLMs."
     ]
   },
-  "GettingStarted": [
-    {
-      "title": "Competitive Coding Flows",
-      "largeImage": "https://github.com/epfl-dlab/multi-level-reasoning-for-code",
-      "smallImage": "img/portfolio/pexels-thirdman-7652039_small.jpg"
-    },
-    {
-      "title": "Flow-verse",
-      "largeImage": "link",
-      "smallImage": "img/portfolio/pexels-taryn-elliott-4390730_small.jpg"
-    },
-    {
-      "title": "Your project here",
-      "largeImage": "contribute",
-      "smallImage": "img/portfolio/03-small.jpg"
-    }
-  ],
+  "GettingStarted": {
+    "title": "Flow",
+    "text_1": "Option 1: Text",
+    "code_1": "import os\nimport flows\nfrom flows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ChatFlowModule\", \"revision\": \"main\"}\n]\n\nflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [flows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ChatFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ChatAtomicFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = flows.flow_launchers.FlowLauncher.launch(flows, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+    "text_2": "Option 2: Text",
+    "code_2": "print(Option 2: Code)",
+    "text_3": "Option 3: Text",
+    "code_3": "print(Option 3: Code)",
+    "language": "python",
+    "showLineNumbers": false
+  },
   "Contribute": [
     {
       "icon": "fa fa-github-square",
-      "name": "Code",
-      "text": "See something wrong? Have an awesome idea for a new feature? Contribute to the repository by fixing bugs or adding new features."
+      "name": "Research",
+      "text": "The ability to implement arbitrarily complex interactions, paired with complete control and systematicity, make aiFlows an ideal tool for research."
     },
     {
       "icon": "fa fa-wrench",
-      "name": "Implement",
-      "text": "Find LLMs are not working well enough on some real-world tasks? Try to get better performance with FLOWS"
+      "name": "Developer",
+      "text": "FlowVerse enables direct benefit from all research advancements, and aiFlows lets you make each Flow your own!"
     },
     {
       "icon": "fa fa-cloud-download",
-      "name": "Share",
-      "text": "Already got some projects implemented with FLOWS and want to share it with the conmunity? We'd love to feature your projects, and would especially love to see tutorials and how-to's."
+      "name": "Critic",
+      "text": "Use aiFlows in your personal and professional projects, and push the library to its limits. Let us know what breaks, and what do we need to improve – we are always listening!"
     }
   ],
   "Testimonials": [

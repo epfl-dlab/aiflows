@@ -81,10 +81,10 @@ export const Header = (props: any) => {
     justifyContent: 'space-between' // This keeps the buttons spaced across the width of the container
   }}>
     <a
-      href="docs/built_with_sphinx/html/index.html"
+      href="#getting_started"
       className="btn btn-custom btn-lg page-scroll"
     >
-      Quick Start
+      Flows in Action
     </a>
     <a
       href="https://github.com/epfl-dlab/multi-level-reasoning-for-code"
