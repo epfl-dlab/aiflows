@@ -34,19 +34,19 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exmplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the <a href="https://arxiv.org/abs/2308.01285">paper</a>. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the <a href="https://arxiv.org/abs/2308.01285">paper</a>. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
       </p>
 <p>
 
 ## FlowVerse in a Nutshell
-The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++).
+The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended, or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++).
 
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
 #### As a researcher, you will benefit from the:
 - ability to design, implement, and study arbitrarily complex interactions
-- complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- complete control and customizable (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
 - ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
 - ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
@@ -56,16 +56,9 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 - ability to readily reuse or build on top of Flows shared on the FlowVerse
 - direct access to any advancements in the field.
 
-To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own!
-
-Furthermore, we strongly believe that the proof of the pudding is in the eating, and the best way to identify promising directions as well as important missing features is by experimenting. Therefore, we invite researchers and developers alike to be creative and start developing Flows that will push the library to its breaking point. We encourage you to try to develop your idea in public; you are likely to find others interested in your project, benefit from the hivemind, and progress faster.
-We will try to support you in any way possible, but also lead by example, working toward JARVIS -- your fully customizable open-source version of ChatGPT+(++)! This is just the beginning, and we have a long way to go. Let's work on a great future [together](#contribute)!
-
-(ToDo: Verify that the link above works)
+To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
 ## Installation
-(ToDo: Do we need any other information?)
-
 The library requires Python 3.10+. To install the library, run the following command:
 
 ```shell
@@ -87,60 +80,53 @@ pip install -e .
 
 ## Getting Started
 
-### [Quick start (5 min)](docs/Quick_Start/quick_start.md)
+### [Quick start (🕓 5 min)](docs/Quick_Start/quick_start.md)
 
-Here you'll see how you can run inference with your first question answering Flow, and you can trivially change between vastly different question answering Flows thanks to the modular abstraction and FlowVerse!
+Here, you'll see how you can run inference with your first question-answering Flow, and you can trivially change between vastly different question-answering Flows thanks to the modular abstraction and FlowVerse!
 
-### [Tutorial (20 min)](docs/Tutorials/tutorial_landing_page.md)
+### [Tutorial (🕓 20 min)](docs/Tutorials/tutorial_landing_page.md)
 
-In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we'll first extendind it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!
+In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we'll first extend it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!
 
-### <a href="ToDoAddLink">Developer's Guide (10 min)</a>
+### <a href="ToDoAddLink">Developer's Guide (🕓 10 min)</a>
 
-We are constantly optimizing our Flow development workflow (pun intended:). In this short guide, we share our best tips, so that you don't have to learn the hard way.
+We are constantly optimizing our Flow development workflow (pun intended:). In this short guide, we share our best tips so that you don't have to learn the hard way.
 
 ### <a href="ToDoAddLink">Detailed Examples</a>
 
-Many of the recently proposed prompting and collaboration strategies involving tools, humans and AI model are in essence specific Flows (see the figure below). In the link above, you'll find a detailed walkthrough of how to build some representative workflows.
+Many of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). In the link above, you'll find a detailed walkthrough of how to build some representative workflows.
 
-ToDo: Add Figure with all methods from appendix with rounded corners.
+<p align="center">
+      <img src="assets/previous_flows_rounded.png" alt="image" width="1000" height="auto">
+      <p align="justify">
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the <a href="https://arxiv.org/abs/2308.01285">paper</a>. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      </p>
+<p>
 
-## Contribution
-There are two ways to contribute to the project: by contributing to the aiFlows codebase or by contributing to the Flow-verse.
+## Contribute
 
-- **aiFlows Codebase**: We welcome contributions to the project and accept pull requests of all sorts: documentation, code, bug fixes, etc.
+As mentioned above, our mission is to make this a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section) and to achieve this goal, we need your help.
 
-- **FlowVerse**: We hope to establish flows as a platform to enable collaboration, sharing and reusing. Uploading your work to the Flow-verse is a great way to contribute to the community and to the project.
+You can become a part of the project in a few ways:
+- contribute to the aiFlows codebase: this will directly improve the library and benefit everyone using it
+- contribute to the FlowVerse: by making your work accessible to everyone, others might improve your work and build on it, or you can build on others' work
+- use the library in your creative projects, push it to its limits, and share your feedback: the proof of the pudding is in the eating, and the best way to identify promising directions, as well as important missing features, is by experimenting   
+- last but not least, ⭐ the repository and 📣 share aiFlows with your friends and colleagues; spread the word ❤️ 
 
-Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you! We are happy to link to your content from the project website.
+We will support the community in the best way we can but also lead by example. In the coming weeks, we will share:
+  - a roadmap for the library (FlowViz; FlowStudio; improve flexibility, developer experience, and support for concurrency, etc. -- feedback and help would be greatly appreciated!)
+  - write-ups outlining features, ideas, and our long-term vision for Flows -- we encourage you to pick up any of these and start working on them in whatever way you see fit
+  - a version of JARVIS -- your fully customizable open-source version of ChatGPT+(++), which we will continue building in public! We hope that this excites you as much as it excites us, and JARVIS will become one of those useful projects that will constantly push the boundaries of what's possible with Flows
 
-All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
+We have tried to find a way for anyone to benefit by contributing to the project. The <a href="ToDo">Contribution Guide</a> describes our envisioned workflow and how you could get involved in more detail (we would love to hear your feedback on it -- the Discord server already has a channel for it :)).
 
-### To delve into the world of contribution, explore our <a href="ToDoAddLink">Contribution Guide</a> !
+In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
 
-This comprehensive resource is designed to equip you with valuable insights on various aspects, including:
-
-- Connecting with Like-Minded Contributors & How to Get Help
-- aiFlows Contribution Guides (for aiFlows' codebase and the FlowVerse)
-- Automating The Generation Of FlowCards (READMEs) for the FlowVerse
-- Coding Standards for aiFlows
-- Contributors Wall and Sharing/Publicizing Your aiFlows Project or Flow
-- Licence Information (spoiler alert: it’s open-source and completely free!)
-
-(ToDo: Include a link to the roadmap. How do we showcase it? Encourage people to pick up items not on our list. Encourage people who have ambitious projects to consider building them on top of Flows and would like support/coordination to reach out.  Encourage ppl who build infrastructural goals that are related, aligned, or can complement each other to reach out to us so that we can coordinate.)
-
-A non-comprehensive list of items to include in the roadmap:
-- JARVIS
-- conditionals
-- FlowViz
-- Concurrency beyond data parallelism
-- Further simplification of the developer experience (feedback required!)
-- FlowsStudio
-
+## Contributor's wall (ToDo)
 
 ## Citation
 
-To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
+To reference the 🤖🌊 **aiFlows** library, for now, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
 
 ```
 @misc{josifoski2023flows,
@@ -153,16 +139,19 @@ To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Bui
 }
 ```
 
+
 # ToDO
 
+- Verify that all links are correct
+- Verify that the installation instructions are correct
 - Update the time estimates in the Demos and Tutorials
-- Make sure that the library is published as aiflows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
+- Make sure that the library is published as aiFlows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
 
 <hr>
 Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
 
 <hr>
-Q: Should we have a list of existing / useful Flows (otherwise how do we highlight the useful Flows e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
+Q: Should we have a list of existing / useful Flows (otherwise, how do we highlight the useful Flows, e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
 
 <hr>
 Q: Can one install the library with conda? Should we support that?
