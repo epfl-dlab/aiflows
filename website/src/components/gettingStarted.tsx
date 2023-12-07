@@ -1,16 +1,14 @@
 import { Image } from "./image";
 import React from "react";
 
-export const Gallery = (props:any) => {
+export const GettingStarted = (props:any) => {
   return (
-    <div id="portfolio" className="text-center">
+    <div id="getting_started" className="text-center">
       <div className="container">
         <div className="section-title">
-          <h2>Gallery</h2>
+          <h2>Getting Started</h2>
           <p>
-            We have used our Flows library to create AI agents that can participate in competitive coding challenges.
-            But this is just the beginning.
-            With the Flow-verse we prepare a new paradigm of sharing and collaborating on next-generation AI agents.
+            ToDo
           </p>
         </div>
         <div className="row">

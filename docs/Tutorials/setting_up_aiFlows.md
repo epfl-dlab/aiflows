@@ -1,5 +1,5 @@
 # Setting up aiFlows
-Welcome to this straightforward tutorial where we'll walk you through the essential steps to set up aiFlows for a smooth and efficient workflow. 
+Welcome to a straightforward tutorial in which we walk you through a suggested setup that will provide you with a smooth and efficient workflow.
 
 
 Let's dive right in. This document is a tutorial for setting up the following:
@@ -50,7 +50,7 @@ This ensures all your Flows are conveniently centralized in a single place, simp
 ### Step 2: Optional - Linking Hugging Face for FlowVerse Push
 
 To facilitate FlowVerse pushing, it's essential to link your Hugging Face account:
-1. Begin by creating a [Hugging Face](https://huggingface.co/join) account at huggingface and verify your email. 
+1. Begin by creating a [Hugging Face](https://huggingface.co/join) account at huggingface and verify your email.
 2. Log in to Hugging Face in the terminal using:
     * For terminal login, you'll need an access token. If you haven't already, [created one](https://huggingface.co/settings/tokens) (a read token should be sufficient)
     * Enter the following command in the terminal, and when prompted, paste your access token:

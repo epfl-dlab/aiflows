@@ -2,6 +2,12 @@ import React from "react";
 import {faCopy} from "@fortawesome/free-regular-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 
+export const Image = ({ title, src }:{title:any, src:any}) => {
+  return (
+      <img src={src} className="img-responsive header-logo" alt={title} />
+  );
+};
+
 export const Header = (props: any) => {
     return (
         <header id="header">
@@ -10,20 +16,22 @@ export const Header = (props: any) => {
                     <div className="container">
                         <div className="row">
                             <div className="col-md-8 col-md-offset-2 intro-text">
-                                <h1>
-                                    {props.data ? props.data.title : "Loading"}
-                                    <span></span>
-                                </h1>
-                                <p>{props.data ? props.data.paragraph : "Loading"}</p>
+                                <Image src="assets/flows_logo_header.png" title="logo" />
+                                {/*<h1>*/}
+                                {/*    {props.data ? props.data.title : "Loading"}*/}
+                                {/*    <span></span>*/}
+                                {/*</h1>*/}
+                                {/*<p>{props.data ? props.data.paragraph : "Loading"}</p>*/}
 
-                                <div style={{height: "100px"}}>
+                                <div style={{height: "70px"}}>
                                     <div style={{
                                         paddingTop: "20px",
                                         borderRadius: "10px",
                                         width: "70%",
                                         position: "relative",
                                         left: "15%",
-                                        marginTop: "20px",
+                                        marginTop: "35px",
+                                        marginBottom: "20px",
                                         whiteSpace: "pre",
                                         textAlign: "left",
                                     }}><pre style={{
@@ -34,6 +42,8 @@ export const Header = (props: any) => {
                                         backgroundColor: props.data.codeBGColor,
                                         color: "#ffffff",
                                         borderColor: "#111111",
+                                        borderRadius: "10px",
+                                        fontSize: "20px",
                                     }}>{props.data.code}
                                 </pre>
 
@@ -59,20 +69,32 @@ export const Header = (props: any) => {
                                 </div>
 
 
-                                <div style={{width: "100%"}}>
-                                    <a
-                                        href="docs/built_with_sphinx/html/index.html"
-                                        className="btn btn-custom btn-lg page-scroll"
-                                    >
-                                        Quick Start
-                                    </a>{" "}
-                                    <a
-                                        href="https://github.com/epfl-dlab/multi-level-reasoning-for-code"
-                                        className="btn btn-custom btn-lg page-scroll"
-                                    >
-                                        Github repo
-                                    </a>{" "}
-                                </div>
+<div style={{
+  display: 'flex', // This makes the parent a flex container
+  justifyContent: 'center', // This centers its children horizontally
+  alignItems: 'center', // This centers its children vertically (if the parent has a defined height)
+  height: '100%' // Set a height if you want vertical centering
+}}>
+  <div style={{
+    width: "50%",
+    display: 'flex',
+    justifyContent: 'space-between' // This keeps the buttons spaced across the width of the container
+  }}>
+    <a
+      href="docs/built_with_sphinx/html/index.html"
+      className="btn btn-custom btn-lg page-scroll"
+    >
+      Quick Start
+    </a>
+    <a
+      href="https://github.com/epfl-dlab/multi-level-reasoning-for-code"
+      className="btn btn-custom btn-lg page-scroll"
+    >
+      Github
+    </a>
+  </div>
+</div>
+
                             </div>
                         </div>
                     </div>
