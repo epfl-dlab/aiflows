@@ -23,7 +23,7 @@ dependencies = [
 flow_verse.sync_dependencies(dependencies)
 
 if __name__ == "__main__":
-    root_dir = "examples/minimal QA"
+    root_dir = "."
 
     openai_api = ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))
     # # Azure backend

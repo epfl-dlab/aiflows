@@ -8,10 +8,9 @@ py-modules = ["flows"]
 [project]
 name = "flows"
 version = "0.0.1"
-description = "ToDo"  # ToDo: https://github.com/epfl-dlab/flows/issues/70
-readme = "ToDo" # ToDo:
+description = 'aiFlows embodies the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" by Josifoski et al., and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'  
 authors = [
-  { name = "ToDo", email = "my_email@domain.com" },  # ToDo:
+  { name = "ToDo", email = "my_email@domain.com" },  # ToDo: Is this necessary? If so put names.
 ]
 license = {file = "LICENSE"}
 
@@ -33,7 +32,8 @@ dependencies = [
     "litellm==1.0.0"
 ]
 
+# ToDo: check links
 [project.urls]
-Home = "ToDo"  # ToDo:
-Documentation = "ToDo"  # ToDo:
+Home = "https://epfl-dlab.github.io/flows/"
+Documentation = "https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html"  
 Source = "https://github.com/epfl-dlab/flows"

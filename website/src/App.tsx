@@ -4,7 +4,7 @@ import { Header } from "./components/header";
 import { Features } from "./components/features";
 import { About } from "./components/about";
 import { Contribute } from "./components/contribute";
-import { Gallery } from "./components/gallery";
+import { GettingStarted } from "./components/gettingStarted";
 import { Testimonials } from "./components/testimonials";
 import { Team } from "./components/Team";
 import JsonData from "./data/data.json";
@@ -26,7 +26,7 @@ interface Props {
   Header: object;
   Features: object;
   About: object;
-  Gallery: object;
+  GettingStarted: object;
   Team: object;
   Contact: object;
   Contribute: object
@@ -38,7 +38,7 @@ const App = () => {
     Header: {},
     Features: [],
     About: {},
-    Gallery: [],
+    GettingStarted: [],
     Team: [],
     Contact: {},
     Contribute: []
@@ -52,8 +52,7 @@ const App = () => {
       <Navigation />
       <Header data={landingPageData.Header} />
       <Features data={landingPageData.Features} />
-      <About data={(landingPageData.About)} />
-      <Gallery data={landingPageData.Gallery} />
+      <GettingStarted data={landingPageData.GettingStarted} />
       <Contribute data={landingPageData.Contribute} />
 
         {

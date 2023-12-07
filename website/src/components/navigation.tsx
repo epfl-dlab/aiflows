@@ -1,5 +1,12 @@
 import React from "react";
 
+
+export const Image = ({ title, src }:{title:any, src:any}) => {
+  return (
+      <img src={src} className="img-responsive logo" alt={title} />
+  );
+};
+
 export const Navigation = (props:any) => {
   return (
     <nav id="menu" className="navbar navbar-default navbar-fixed-top">
@@ -18,7 +25,7 @@ export const Navigation = (props:any) => {
             <span className="icon-bar"></span>{" "}
           </button>
           <a className="navbar-brand page-scroll" href="#page-top">
-            FLOWS
+            <Image src="assets/flows_logo_nav.png" title="logo" />
           </a>{" "}
         </div>
 
@@ -32,19 +39,25 @@ export const Navigation = (props:any) => {
                 Features
               </a>
             </li>
+            {/*<li>*/}
+            {/*  <a href="#about" className="page-scroll">*/}
+            {/*    About*/}
+            {/*  </a>*/}
+            {/*</li>*/}
             <li>
-              <a href="#about" className="page-scroll">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#portfolio" className="page-scroll">
-                Galllery
+              <a href="#getting_started" className="page-scroll">
+                Example
               </a>
             </li>
             <li>
               <a href="#contribute" className="page-scroll">
                 Contribute
+              </a>
+            </li>
+            {/*ToDo: Add link to tutorials index*/}
+            <li>
+              <a href="docs/built_with_sphinx/html/index.html" className="page-scroll">
+                Getting Started
               </a>
             </li>
             <li>

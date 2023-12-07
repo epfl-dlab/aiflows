@@ -11,14 +11,15 @@ pip install sphinx
 pip install sphinxawesome-theme
 pip install sphinx_copybutton
 pip install sphinx-book-theme==1.0.1
-
+pip install m2r
+pip install myst-parser[sphinx]
 ```
 
 ### Building API Documentation
 
 ```
 # build API documentation
-cd website/public/docs
+cd public/docs
 make clean
 sphinx-apidoc -o source/ ../../../flows
 make html
@@ -34,7 +35,7 @@ npm run start
 For pushing the newest version:
 Add this line to package.json, just above `"name":"my-app",`:
 ```
-  "homepage": "https://epfl-dlab.github.io/FLOWS-landingpage",
+  "homepage": ".",
 ```
 Then execute:
 ```

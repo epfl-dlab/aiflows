@@ -1,29 +1,28 @@
 name: "ReverseNumberTwice"
 description: "A sequential flow that reverses a number twice."
 
+# input and output interfaces of SequentialFlow
 input_interface:
   - "number"
 
 output_interface:
   - "output_number"
 
-keep_raw_response: False # Set to True to keep the raw flow response in the output data
-
+#configuration of subflows
 subflows_config:
   first_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
     name: "ReverseNumberFirst"
     description: "A flow that takes in a number and reverses it."
-    keep_raw_response: False
   second_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
     name: "ReverseNumberSecond"
     description: "A flow that takes in a number and reverses it."
-    keep_raw_response: False
 
+# Define order of execution of subflows and input & output interfaces for proper execution
 topology:
+  #fist flow to execute
   - goal: reverse the input number
-    # circular flow as the orchestrator, prepare the correct input for the agent
     input_interface:
       _target_: flows.interfaces.KeyInterface
       keys_to_select: ["number"]
@@ -34,9 +33,8 @@ topology:
         output_number: first_reverse_output
       keys_to_select: ["first_reverse_output"]
     reset: false
-
+  #second flow to execute
   - goal: reverse the output of the first reverse
-    # circular flow as the orchestrator, prepare the correct input for the agent
     input_interface:
       _target_: flows.interfaces.KeyInterface
       keys_to_rename:
@@ -45,7 +43,5 @@ topology:
     flow: second_reverse_flow
     output_interface:
       _target_: flows.interfaces.KeyInterface
-      keys_to_rename:
-        raw_response.output_number: output_number
       keys_to_select: ["output_number"]
     reset: false

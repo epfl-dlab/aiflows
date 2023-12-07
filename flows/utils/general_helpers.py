@@ -495,3 +495,32 @@ def encode_image(image_path):
 def encode_from_buffer(buffer):
     """Encodes a buffer (typically an image from a video) to base64."""
     return base64.b64encode(buffer).decode("utf-8")
+
+
+def find_replace_in_dict(cfg, key_to_find, new_value,current_path=""):
+    """Recursively searches for keys == key_to_find in a dictionary and replaces its value with new_value.
+    note1: it replaces each key == key_to_find, whever it is nested in the dictionary or not.
+    note2: we recommend to only use this function in the Quick Start tutorial, and not in production code.
+    
+    :param cfg: The dictionary to search in
+    :type cfg: Dict[str, Any]
+    :param key_to_find: The key to find
+    :type key_to_find: str
+    :param new_value: The new value to set
+    :type new_value: Any
+    :param current_path: The current path, defaults to ""
+    :type current_path: str, optional
+    :return: The updated dictionary
+    :rtype: Dict[str, Any]
+    """
+    if not isinstance(cfg, collections.abc.Mapping):
+        return cfg
+    for key, item in cfg.items():
+        new_path = current_path + "." + key if current_path != "" else key
+        if key_to_find == key:
+            cfg[key] = new_value
+        elif isinstance(item, collections.abc.Mapping):
+            find_replace_in_dict(cfg.get(key), key_to_find, new_value, new_path)
+        elif isinstance(item, list):
+            cfg[key] = [find_replace_in_dict(x, key_to_find, new_value, new_path) for x in item]
+    return cfg

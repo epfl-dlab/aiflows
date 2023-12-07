@@ -1,88 +1,56 @@
-==================
-Welcome to FLOWS!
-==================
-
-This is the landing page for Flows Project, generated as part of
-`FLOWS Repository <https://github.com/epfl-dlab/flows>`_.
-
-
-Introduction
-=============
-
-**Flows** is a framework for building complex reasoning and interaction patterns on top of LLM and tools.
-It provides a set of basic interaction patterns, such as:
-
-- **sequential execution**: execute a set of LLMs or tools in a sequence
-- **selection execution**: execute one of a set of LLMs or tools based on a runtime condition
-- **circulation execution**: execute a set of LLMs or tools in a loop until a runtime condition is met
-
-These patterns are composable, allowing you to build complex flows of execution.
-
-
-Why should I care?
-===================
-
-While LLMs are powerful enough to solve many problems, they are not a silver bullet.
-Collaboration between...
-
-
-Get started
-=============
-
-To install flows, run the following command:
-
-.. code-block:: shell
-
-    git clone git@github.com:epfl-dlab/flows.git
-    cd flows
-    pip install -e .
-
-
-
-Tutorials
-===========
-
-A series of guides that explain how to build your own ``Flow``, use our visualization toolkit to debug it,
-and finally upload it to the Flow-verse to share it with the community.
+======================
+Welcome to aiFlows! 🚀
+======================
 
 .. toctree::
-    :titlesonly:
-
-    flows_tutorial/index
-
-
-
-
-
-Documentation
-===============
-
-To get an overview of the project, check out the following sections:
-
-.. toctree::
-    :titlesonly:
-
-    get_started/index
+   :titlesonly:
+   :caption: Table of Contents
+   :hidden:
+   
+   introduction/index
+   installation/index
+   getting_started/index
+   contibution_info/index
+   citation/index
+   documentation/index
 
 
-For a more in-depth look at the codebase, check out the following sections:
+.. INTRODUCTION SECTION
 
-.. toctree::
-    :titlesonly:
+.. include:: introduction/index.rst
 
-    source/modules.rst
+.. INSTALLATION SECTION
+
+.. include:: installation/index.rst
 
 
-Contributing
-=============
+.. GETING STARTED SECTION
 
-There are two ways to contribute to the project: by contributing to the **codebase** or by contributing to the **Flow-verse**.
+.. include:: getting_started/index.md
+   :parser: myst_parser.sphinx_
 
-- **Codebase**: We welcome contributions to the project and accept pull requests of all sorts: documentation, code, bug fixes, etc.
-- **Flow-verse**: We hope to establish flows as a platform to enable collaboration, sharing and reusing. Uploading your work to the Flow-verse is a great way to contribute to the community and to the project.
+.. figure:: ./media/previous_flows_rounded.png
+   :align: center
+   :alt: image
+   :width: 1000px
 
-Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you!
-We are happy to link to your content from the project website.
+   **The Flows framework exemplified.** The first column depicts examples of tools. Notably, 
+   in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, 
+   constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. 
+   The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the `paper`_ . 
+   The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
 
-All Github contributors will be explicitly named in release notes of future versions of the library.
-If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
+.. _paper: https://arxiv.org/abs/2308.01285
+
+.. CONTIBUTION SECTION SECTION
+
+.. include:: contributing_info/index.rst
+
+.. CITATION SECTION
+
+.. include:: citation/index.md
+   :parser: myst_parser.sphinx_
+
+
+.. DOCUMENTATION SECTION
+.. include:: documentation/index.rst
