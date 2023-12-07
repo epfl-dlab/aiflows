@@ -1,5 +1,12 @@
 import React from "react";
 
+
+export const Image = ({ title, src }:{title:any, src:any}) => {
+  return (
+      <img src={src} className="img-responsive logo" alt={title} />
+  );
+};
+
 export const Navigation = (props:any) => {
   return (
     <nav id="menu" className="navbar navbar-default navbar-fixed-top">
@@ -18,7 +25,7 @@ export const Navigation = (props:any) => {
             <span className="icon-bar"></span>{" "}
           </button>
           <a className="navbar-brand page-scroll" href="#page-top">
-            aiFlows
+            <Image src="assets/flows_logo_nav.png" title="logo" />
           </a>{" "}
         </div>
 
@@ -32,13 +39,13 @@ export const Navigation = (props:any) => {
                 Features
               </a>
             </li>
+            {/*<li>*/}
+            {/*  <a href="#about" className="page-scroll">*/}
+            {/*    About*/}
+            {/*  </a>*/}
+            {/*</li>*/}
             <li>
-              <a href="#about" className="page-scroll">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="#portfolio" className="page-scroll">
+              <a href="#getting_started" className="page-scroll">
                 Galllery
               </a>
             </li>
