@@ -20,12 +20,18 @@ from flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow
 if __name__ == "__main__":
 
     # ~~~ Set the API information ~~~
-    #openai backend
-    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
+    #OpenAI backend
+    api_key = "" # copy paste your api key here
+    api_information = [ApiInfo(backend_used="openai", api_key=api_key)]
+
+    # Azure backend
+    # api_key = "" # copy paste your api key here
+    # api_base = "" # copy paste your api base here
+    # api_version = "" #copypase your api base here
     # api_information = ApiInfo(backend_used = "azure",
-    #                           api_base = os.getenv("AZURE_API_BASE"),
-    #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
-    #                           api_version =  os.getenv("AZURE_API_VERSION") ) 
+    #                           api_base =api_base,
+    #                           api_key = api_version,
+    #                           api_version =  api_version )
     
     # get demo configuration
     cfg = read_yaml_file("flow_modules/aiflows/ChatFlowModule/demo.yaml")

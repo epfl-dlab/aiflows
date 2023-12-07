@@ -5,20 +5,11 @@ Welcome to the exciting world of aiFlows! 🚀
 This quick start tutorial will guide you through your first inference runs, where we will address the task of question answering (QA) as a use case with  different Flows from the FlowVerse. In the process, you'll get familiar with the key aspects of the library and experience how, thanks to the modular abstraction and FlowVerse, we can trivially switch between very different pre-implemented question-answering Flows!
 
 The guide is organized in three sections:
-1. [Section 1:](#section-1-setting-up-aiflows) Setting up aiFlows
-2. [Section 2:](#section-2-running-your-first-qa-flow-using-a-flow-from-the-flowverse) Running your first QA Flow using a Flow from the FlowVerse 🥳
-3. [Section 3:](#section-3-flowverse-playground-notebook) FlowVerse Playground Notebook
+1. [Section 1:](#section-1-running-your-first-qa-flow-using-a-flow-from-the-flowverse) Running your first QA Flow using a Flow from the FlowVerse 🥳
+2. [Section 2:](#section-2-flowverse-playground-notebook) FlowVerse Playground Notebook
 
 
-## Section 1: Setting up aiFlows
-Start off by installing the aiFlows with the [Setting Up aiFlows Tutorial](../Tutorials/setting_up_aiFlows.md)
-#### By the Tutorial's End, I Will Have...
-* Installed the aiFlows library successfully
-* Established a file structure that allows me to effectively use all the features of the FlowVerse
-* Set up a Hugging Face account allowing me to the FlowVerse (Optional)
-* Configured and activated my API keys
-
-## Section 2: Running your First QA Flow using a Flow from the FlowVerse
+## Section 1: Running your First QA Flow using a Flow from the FlowVerse
 
 #### By the Tutorial's End, I Will Have...
 * Learned how to pull Flows from the FlowVerse
@@ -27,12 +18,15 @@ Start off by installing the aiFlows with the [Setting Up aiFlows Tutorial](../Tu
 
 While, we support many more API providers (including custom ones), for the sake of simplicity, in this tutorial, we'll assume you're using either using OpenAI or Azure.
 
-### Step 1: Explore the FlowVerse
-Discover a diverse range of Flows, including the [ChatFlowModule](https://huggingface.co/aiflows), by visiting our Flows on the FlowVerse [here](https://huggingface.co/aiflows). The `ChatAtomicFlow` within the `ChatFlowModule` is a versatile Flow that employs a language model (LLM) via an API to generate textual responses to textual inputs.
+### Step 1: Pull a Flow From the FlowVerse
 
-### Step 2: Pull From the FlowVerse
+Explore a diverse array of Flows on the FlowVerse here. In this demonstration, we'll illustrate how to use a Flow from the FlowVerse, focusing on the `ChatAtomicFlow` within the `ChatFlowModule`. This versatile Flow utilizes a language model (LLM) via an API to generate textual responses for given textual inputs. It's worth noting the same process applies to any available Flow in the FlowVerse (implemented by any member of the community). 
 
-To show you how to use a Flow from the FlowVerse, we will use the `ChatAtomicFlow`. The same process applies to any available Flow in the FlowVerse (implemented by any member of the community). Concretely, you would use the `sync_dependencies` function:
+Without further ado, let's dive in!
+
+
+
+Concretely, you would use the `sync_dependencies` function to pull the flow from th FlowVerse:
 
 ```python
 from flows import flow_verse
@@ -42,27 +36,37 @@ dependencies = [
 
 flow_verse.sync_dependencies(dependencies)
 ```
+#### External Library Dependencies
 
-Keep in mind that "aiflows" here refers to our organization on Hugging Face, and `ChatFlowModule` is the specific Flow module being pulled from the FlowVerse.
 
-Each Flow on the FlowVerse should include a `pip_requirements.txt` file for external library dependencies (if it doesn't have any, the file should be empty). You can check its dependencies on the FlowVerse. As you can see [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/pip_requirements.txt), the `ChatFlowModule` doesn't have any external dependencies, so we're all set. In general, if there are any, you need to make sure to install them.
+Each Flow on the FlowVerse should include a `pip_requirements.txt` file for external library dependencies (if it doesn't have any, the file should be empty).You can check its dependencies on the FlowVerse. In general, if there are any, you need to make sure to install them.
+
+As you can see [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/pip_requirements.txt), the `ChatFlowModule` doesn't have any external dependencies, so we're all set. 
 
 ### Step 3: Run the Flow!
 Import the flow you've just pulled:
 ```python
 from flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow
 ```
-Set your API information:
+Set your API information (copy-paste it):
 ```python
-api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
-# Azure backend
-# api_information = ApiInfo(backend_used = "azure",
-#                           api_base = os.getenv("AZURE_API_BASE"),
-#                           api_key = os.getenv("AZURE_OPENAI_KEY"),
-#                           api_version =  os.getenv("AZURE_API_VERSION") )
-```
-Each flow from the FlowVerse should have a `demo.yaml` file, which is a demo configuration of how to instantiate the flow. Give it a quick look (`ChatFlowModule`'s configuration can be found [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/demo.yaml)) and then load it:
 
+#OpenAI backend
+api_key = "" # copy paste your api key here
+api_information = [ApiInfo(backend_used="openai", api_key=api_key)]
+
+# Azure backend
+# api_key = "" # copy paste your api key here
+# api_base = "" # copy paste your api base here
+# api_version = "" #copypase your api base here
+# api_information = ApiInfo(backend_used = "azure",
+#                           api_base =api_base,
+#                           api_key = api_version,
+#                           api_version =  api_version )
+```
+Each flow from the FlowVerse should have a `demo.yaml` file, which is a demo configuration of how to instantiate the flow. 
+
+Load the  `demo.yaml` configuration:
 ```python
 from flows.utils.general_helpers import read_yaml_file
 # get demo configuration
@@ -117,10 +121,10 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 Congratulations! You've successfully run your first question-answering Flow!
-
+___
 You can find this example in [runChatAtomicFlow.py](../../examples/quick_start/runChatAtomicFlow.py)
 
-To run it, use the following commands in your terminal:
+To run it, use the following commands in your terminal (make sure to copy-paste your keys first):
 ```bash
 cd examples/quick_start/
 python runChatAtomicFlow.py
@@ -131,7 +135,7 @@ Upon execution, the result should appear as follows:
 [{'api_output': 'The capital of France is Paris.'}]
 ```
 
-## Section 3: FlowVerse Playground Notebook
+## Section 2: FlowVerse Playground Notebook
 
 Want to quickly run some Flows from FlowVerse? Check out our jupyter notebook [flow_verse_playground.ipynb](../../examples/quick_start/flow_verse_playground.ipynb) where you can quicky switch between the following flows from the FlowVerse:
 
