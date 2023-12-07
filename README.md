@@ -142,16 +142,17 @@ To reference the 🤖🌊 **aiFlows** library, for now, please cite the paper [F
 
 # ToDO
 
+- Update the TOML and publish the library on pip as *aiflows* (verify that the change of name doesn't brake sth, e.g., logging)
 - Verify that all links are correct
 - Verify that the installation instructions are correct
 - Update the time estimates in the Demos and Tutorials
-- Make sure that the library is published as aiFlows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
 
 <hr>
 Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
 
 <hr>
 Q: Should we have a list of existing / useful Flows (otherwise, how do we highlight the useful Flows, e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
+A: @Nicky, we said that discussions support that, right? Is this documented somewhere?
 
 <hr>
 Q: Can one install the library with conda? Should we support that?
