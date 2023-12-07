@@ -20,7 +20,7 @@
     </a>
 </p>
 
-🤖🌊 **aiFlows** embodies the <a href="https://arxiv.org/abs/2308.01285">*Flows*</a> abstraction and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
+🤖🌊 **aiFlows** embodies the *Flows* abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>, <a href="docs/flows_paper.pdf">updated</a> version) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
 - 🧩 Modularity: Flows can be stacked like lego-blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows can be shared publicly on the FlowVerse, readily downloaded and reused as part of different Flows
@@ -116,7 +116,7 @@ Last but not least, if you want to prepare educational material (tutorials, vide
 
 All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
 
-### To delve into the world of contribution, explore our <a href="ToDoAddLink">Contribution Guide</a> ! 
+### To delve into the world of contribution, explore our <a href="ToDoAddLink">Contribution Guide</a> !
 
 This comprehensive resource is designed to equip you with valuable insights on various aspects, including:
 
@@ -157,11 +157,6 @@ To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Bui
 
 - Update the time estimates in the Demos and Tutorials
 - Make sure that the library is published as aiflows on pip (check if `flows` is hardcoded somewhere in the context of the loggers)
-
-<hr>
-Q: Which version of the paper to link?
-
-A: I suggest the new one, but where to host it? Maybe in the repo?
 
 <hr>
 Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
