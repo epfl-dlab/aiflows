@@ -2,7 +2,7 @@
   "Header": {
     "title": "aiFlows",
     "paragraph": "The building blocks of your collaborative AI",
-    "code": "pip install flows\ngit clone git@github.com:epfl-dlab/flows.git \ncd flows/tutorials/getting-started",
+    "code": "pip install aiflows",
     "language": "bash",
     "showLineNumbers": false,
     "codeBGColor": "#2d2d2d"
@@ -11,17 +11,22 @@
   "Features": [
     {
       "icon": "fa fa-comments-o",
-      "title": "FLOWS library",
+      "title": "Flexible and Customizable",
       "text": "A framework for building composable interactions between LLM agents, tools, and humans."
     },
     {
       "icon": "fa fa-solid fa-share",
-      "title": "Flow-verse",
+      "title": "Reusable",
       "text": "Share your flows with the community. Re-use and combine flows created by other researchers."
     },
     {
       "icon": "fa fa-solid fa-eye",
-      "title": "Visualization toolkit",
+      "title": "Concurrency Friendly",
+      "text": "Debug and visualize the reasoning process of your LLMs."
+    },
+    {
+      "icon": "fa fa-solid fa-eye",
+      "title": "Completely Free",
       "text": "Debug and visualize the reasoning process of your LLMs."
     }
   ],
@@ -40,8 +45,7 @@
       "Visualization toolkit: Debug and visualize the reasoning process of your LLMs."
     ]
   },
-
-  "Gallery": [
+  "GettingStarted": [
     {
       "title": "Competitive Coding Flows",
       "largeImage": "https://github.com/epfl-dlab/multi-level-reasoning-for-code",
