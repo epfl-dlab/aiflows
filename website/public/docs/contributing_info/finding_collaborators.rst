@@ -1,7 +1,7 @@
 .. _finding_collaborators:
 
 ==============
-Looking For Collaborators ?
+Looking For Collaborators?
 ==============
 
 🤝 Seeking Collaborators? If you're on the lookout for a collaborator to tackle an issue or work on a feature, head over to the `👥│flows-friends`_ forum on Discord.
@@ -19,18 +19,18 @@ Looking For Collaborators - FAQ
 **2. Where Can I Get Feedback On My Work?**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    📣 For feedback on your work, visit the appropriate `Discord`_ channel based on your project or focus.
-   For FlowVerse-related projects, check out channels like Flow-sharing or Flow-verse. If you're involved in research, head to the  `🔬│research`_ channel. General 
+   For FlowVerse-related projects, check out channels like Flow-sharing or Flow-verse. If you're involved in research, head to the  `🔬│research`_ channel. General
    development queries can be directed to the developers channel. Community-projects are also a great space for feedback.
 
 **3. I'm Looking To Brainstorm ideas. Where Can I Discuss Them With The Community?**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    💡 For brainstorming sessions, consider discussing your ideas in channels like Flows Ideas, Flow-verse, or Developers on `Discord`_.
    Engaging with the community in these spaces can lead to fruitful discussions and valuable input on your concepts.
 
 **4. I Don't Have The Bandwidth/Time To Work On A Project Related To Flows And Would Like To Find Somebody To Collaborate With. What Should I do?**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    🤝 If you're seeking collaborators due to time constraints, head to the `👥│flows-friends`_ channel on `Discord`_. Share your project ideas, skills,
-   and areas where you need assistance. You might find the perfect collaborator who shares your passion and can contribute to your project. Let the collaboration begin! 🚀
+   and areas where you need assistance. You might find the perfect collaborator who shares your passion and can contribute to your project.
 
 .. _👥│flows-friends: https://discord.gg/yFZkpD2HAh
 .. _🔬│research: https://discord.gg/yFZkpD2HAh
