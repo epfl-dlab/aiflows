@@ -68,7 +68,7 @@ pip install aiflows
 <details>
   <summary>Other installation options</summary>
 
-### Install bleeding-edge (ToDo: is this the easiest way to do it?)
+### Install bleeding-edge version
 
 ```shell
 git clone git@github.com:epfl-dlab/aiflows.git
@@ -132,7 +132,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 
 ## Citation
 
-To reference the 🤖🌊 **aiFlows** library, for now, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
+To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Building Blocks of Reasoning and Collaborating AI](https://arxiv.org/pdf/2308.01285.pdf):
 
 ```
 @misc{josifoski2023flows,
@@ -162,3 +162,4 @@ A: @Nicky, we said that discussions support that, right? Is this documented some
 
 <hr>
 Q: Can one install the library with conda? Should we support that?
+Q: Is the installation for the bleeding edge correct? Is it the best way to do it? Check HF.
