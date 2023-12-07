@@ -1,23 +1,42 @@
-# Auto-GPT
-WHAT ITS COMPOSED OF AND WHAT THE PARTS DOO
+# AutoGPT
 
-AUTOGPT
-CHATFLOWMODULE
-VISIONFLOWMODULE
+## Definition
 
-As autonomous LLM-powered agents, autoGPT has the following components:
+The `AutoGPT` flow is a circular flow that organizes the problem-solving process into four distinct subflows:
 
-- An `AgentAtomicFlow`: This component evaluates the goal and execution history, determining the next course of action.
-- An `ActionFlow`: Responsible for executing the action based on the newly generated command, and subsequently sending the observation back to the agent.
+1. `ControllerFlow`: Given an a goal and observations (from past executions), it selects from a predefined set of actions, which are explicitly defined in the `ExecutorFlow`, the next action it should execute to get closer accomplishing its goal. In our configuration, we implement the `ControllerFlow` using the `ChatAtomicFlow`
 
-What sets Auto-GPT apart and makes it more powerful are the introduction of two new subflows:
+2. `ExecutorFlow`:  Following the action selection by the `ControllerFlow`, the process moves to the `ExecutorFlow`. This is a branching flow that encompasses a set of subflows, with each subflow dedicated to a specific action. The `ExecutorFlow` executes the particular subflow associated with the action chosen by the `ControllerFlow`. In our setup, the `ExecutorFlow` includes the following individual flows:
+    * `WikiSearchAtomicFlow`: This flow, given a "search term," executes a Wikipedia search and returns content related to the search term.
+    * `LCToolFlow` using `DuckDuckGoSearchRun`: This flow, given a "query," queries the DuckDuckGo search API and retrieves content related to the query.
 
-- The `VectorStoreFlow`: This subflow retrieves pertinent history associated with the last action's observation. The retrieved information is then forwarded to the agent flow, where it is utilised to construct the prompt for the subsequent action.
-- An optional `HumanFeedbackFlow`: This component allows for the incorporation of human feedback into the observation, further enhancing the agent's performance.
+3. `HumanFeedbackFlow`: This flow prompts the user for feedback on the latest execution of the `ExecutorFlow`. The collected feedback is then conveyed back to the `ControllerFlow` to be considered in the subsequent execution step. Additionally, the flow is designed to have the capability to terminate the `ReActWithHumanFeedbackFlow` if the user expresses such a preference.
 
-Furthermore, Auto-GPT is equipped with a highly versatile tool called the `LCToolFlow`, which provides a wide range of functionalities beyond the human-like Wikipedia search found in ReAct.
+4. `MemoryFlow`: This flow is used to read and write and read memories stored of passed conversations in a database. These memories can be passed to the `ControllerFlow` enabling it to have a long term memory without having to transmit the entire message history to the language model (LLM). It's implemented with the `VectorStoreFlow`
 
-## Vector Store Flow
+## Topology
+
+The sequence of execution for `AutoGPT`'s flows is circular and follows this specific order:
+
+1. The `MemoryFlow` retrieves relevant information from memory
+2. The `ControllerFlow` selects the next action to execute and prepares the input for the `ExecutorFlow`
+3. The `ExecutorFlow` executes the action specified by the `ControllerFlow`
+4. The `HumanFeedbackFlow` asks the user for feedback
+5. The `MemoryFlow` writes relevant information to memory
+
+Here's a broad overview of the  `AutoGPTFlow`:
+
+```
+| -------> Memory Flow -------> Controller Flow ------->|
+^                                                       |      
+|                                                       |
+|                                                       v
+| <----- HumanFeedback Flow <------- Executor Flow <----|
+```
+
+
+
+## Going Through
 
 `VectorStoreFlow` acts as an encapsulation for LangChain's vector store-backend memory, which offers support for two types of operations:
 
