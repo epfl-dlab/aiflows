@@ -20,7 +20,7 @@
     </a>
 </p>
 
-🤖🌊 **aiFlows** embodies the *Flows* abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>, <a href="docs/flows_paper.pdf">updated</a> version) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
+🤖🌊 **aiFlows** embodies the <a href="docs/flows_paper.pdf">*Flows*</a> abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
 - 🧩 Modularity: Flows can be stacked like lego-blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows can be shared publicly on the FlowVerse, readily downloaded and reused as part of different Flows
