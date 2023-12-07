@@ -87,7 +87,7 @@ pip install -e .
 
 ## Getting Started
 
-### <a href="ToDoAddLink">Quick start (5 min)</a>
+### [Quick start (5 min)](docs/Quick_Start/quick_start.md)
 
 Here you'll see how you can run inference with your first question answering Flow, and you can trivially change between vastly different question answering Flows thanks to the modular abstraction and FlowVerse!
 
