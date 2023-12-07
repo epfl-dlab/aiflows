@@ -17,7 +17,7 @@ It encourages collaboration and community contribution.
 Not at all! aiFlows is free to use, and there's no need to worry about hidden fees. 
 It's a library designed to make development, research, and the creation of structured interactions seamless and accessible.
 
-3. Can I Use aiFlows In Commercial Projects?
+3. Can I Use aiFlows in Commercial Projects?
 ----------------------------------------------
 
 Yes, you can! The MIT License allows you to use aiFlows in both open-source and commercial projects. 
@@ -29,7 +29,7 @@ Feel free to incorporate aiFlows into your endeavors, whether they are for resea
 Nope! The MIT License provides you with considerable freedom. You can use aiFlows in any way you see fit, modify it according to your needs, 
 and integrate it into your projects without worrying about restrictive conditions.
 
-5. How Can I Contribute To aiFlows?
+5. How Can I Contribute to aiFlows?
 ------------------------------------
 
 Contributions are highly welcome! Whether it's bug fixes, new features, or improvements, the community thrives on collaboration. Head over to the Contribution Guidelines to 

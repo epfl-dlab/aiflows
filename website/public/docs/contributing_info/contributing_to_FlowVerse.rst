@@ -39,7 +39,7 @@ Your structure should look like something like this:
 Consider adopting our `Flow template <https://huggingface.co/aiflows/FlowModule>`_ as a solid foundation for your project. This recommended structure serves as a guide, 
 enhancing consistency and facilitating a smoother collaborative experience. Also, check the `ChatFlowModule <https://huggingface.co/aiflows/ChatFlowModule>`_ for an example.
 
-**2.3. Code with Precision**
+**2.3. Code With Precision**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Embrace our recommended coding standards, which serve as the backbone of a robust project. Strive for code that is not only creative but 

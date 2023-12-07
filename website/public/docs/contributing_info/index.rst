@@ -16,10 +16,10 @@ Quick Links
 
 
 
-**Want To Contribute to aiFlows?**
+**Want To Contribute to Aiflows aiFlows?**
 ----------------------------------------------
 
-Connecting with Like-Minded Contributors & How to Get Help ?
+Connecting With Like-Minded Contributors & How To Get Help ?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Explore the :ref:`finding_collaborators` section for resources, tips, and guidance on connecting with potential collaborators, sharing project ideas, building your dream team or how to get help. 🚀🌟
 
@@ -37,7 +37,7 @@ Contributing To the FlowVerse: Creating New Flows and Contributing To Existing F
     Contribute to the Flows from the FlowVerse! Follow the guidelines in the :ref:`contributing_to_FlowVerse` guide to understand how to create 
     and publish your Flow or contribute to an existing one. 🚀
    
-Automating The Generation Of FlowCards (READMEs) for the FlowVerse
+Automating the Generation of FlowCards (README) for the FlowVerse
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Check out the :ref:`automating_doc` guide to speed up the process of creating FlowCards (READMEs) for the FlowVerse.
 
@@ -50,7 +50,7 @@ Contributors Wall and Sharing/Publicizing Your aiFlows Project or Flow
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Learn about contributor recognition, sharing work on Discord, and the importance of acknowledgment for aiFlows library contributions in the :ref:`recognition_info` guide. Happy contributing! 🚀🌐
 
-Licence Information (spoiler alert: it's open-source and completely free!)
+Licence Information (Spoiler Alert: It’s Open-Source and Completely Free!)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     Check out :ref:`license_info` to get quick answers about aiFlows' open-source MIT License, its free-of-charge accessibility, and its versatility for use in commercial projects. 
     Understand the flexibility the license offers, and explore how you can contribute to the thriving aiFlows community.
