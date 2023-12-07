@@ -105,8 +105,27 @@ Many of the recently proposed prompting and collaboration strategies involving t
 
 ToDo: Add Figure with all methods from appendix with rounded corners.
 
-## Contribute
-(ToDo: Nicky)
+## Contribution
+There are two ways to contribute to the project: by contributing to the aiFlows codebase or by contributing to the Flow-verse.
+
+- **aiFlows Codebase**: We welcome contributions to the project and accept pull requests of all sorts: documentation, code, bug fixes, etc.
+
+- **FlowVerse**: We hope to establish flows as a platform to enable collaboration, sharing and reusing. Uploading your work to the Flow-verse is a great way to contribute to the community and to the project.
+
+Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you! We are happy to link to your content from the project website.
+
+All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
+
+### To delve into the world of contribution, explore our <a href="ToDoAddLink">Contribution Guide</a> ! 
+
+This comprehensive resource is designed to equip you with valuable insights on various aspects, including:
+
+- Connecting with Like-Minded Contributors & How to Get Help
+- aiFlows Contribution Guides (for aiFlows' codebase and the FlowVerse)
+- Automating The Generation Of FlowCards (READMEs) for the FlowVerse
+- Coding Standards for aiFlows
+- Contributors Wall and Sharing/Publicizing Your aiFlows Project or Flow
+- Licence Information (spoiler alert: it’s open-source and completely free!)
 
 (ToDo: Include a link to the roadmap. How do we showcase it? Encourage people to pick up items not on our list. Encourage people who have ambitious projects to consider building them on top of Flows and would like support/coordination to reach out.  Encourage ppl who build infrastructural goals that are related, aligned, or can complement each other to reach out to us so that we can coordinate.)
 
@@ -118,17 +137,6 @@ A non-comprehensive list of items to include in the roadmap:
 - Further simplification of the developer experience (feedback required!)
 - FlowsStudio
 
-------
-(old, I left it in case you find it useful)
-
-There are two ways to contribute to the project: by contributing to the **codebase** or by contributing to the **Flow-verse**.
-
-- **Codebase**: We welcome contributions to the project and accept pull requests of all sorts: documentation, code, bug fixes, etc.
-- **Flow-verse**: We hope to establish flows as a platform to enable collaboration, sharing, and reusing. Uploading your work to the Flow-verse is a great way to contribute to the community and to the project.
-
-Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you! We are happy to link to your content from the project website.
-
-All Github contributors will be explicitly named in release notes of future versions of the library. If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
 
 ## Citation
 
