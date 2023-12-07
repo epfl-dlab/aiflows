@@ -11,7 +11,7 @@ The guide is organized in three sections:
 
 
 ## Section 1: Setting up aiFlows
-Start off by installing the aiFlows with the [Setting Up aiFlows Tutorial](./setting_up_aiFlows.md)
+Start off by installing the aiFlows with the [Setting Up aiFlows Tutorial](../Tutorials/setting_up_aiFlows.md)
 #### By the Tutorial's End, I Will Have...
 * Installed the aiFlows library successfully
 * Established a file structure that allows me to effectively use all the features of the FlowVerse
@@ -28,11 +28,11 @@ Start off by installing the aiFlows with the [Setting Up aiFlows Tutorial](./set
 While, we support many more API providers (including custom ones), for the sake of simplicity, in this tutorial, we'll assume you're using either using OpenAI or Azure.
 
 ### Step 1: Explore the FlowVerse
-Discover a diverse range of Flows, including the [ChatFlowModule](https://huggingface.co/aiflows), by visiting our Flows on the FlowVerse[here](https://huggingface.co/aiflows). The `ChatAtomicFlow` within the `ChatFlowModule` is a versatile Flow that employs a language model (LLM) via an API to generate textual responses to textual inputs.
+Discover a diverse range of Flows, including the [ChatFlowModule](https://huggingface.co/aiflows), by visiting our Flows on the FlowVerse [here](https://huggingface.co/aiflows). The `ChatAtomicFlow` within the `ChatFlowModule` is a versatile Flow that employs a language model (LLM) via an API to generate textual responses to textual inputs.
 
-### Step 2: Pull From the FlowVerse 
+### Step 2: Pull From the FlowVerse
 
-To show you how to use a Flow from the FlowVerse, we will use the `ChatAtomicFlow`. The same process applies to any available Flow in the FlowVerse (implemented by any member of the community). Concretely, you would use the `sync_dependencies` function: 
+To show you how to use a Flow from the FlowVerse, we will use the `ChatAtomicFlow`. The same process applies to any available Flow in the FlowVerse (implemented by any member of the community). Concretely, you would use the `sync_dependencies` function:
 
 ```python
 from flows import flow_verse
@@ -47,7 +47,7 @@ Keep in mind that "aiflows" here refers to our organization on Hugging Face, and
 
 Each Flow on the FlowVerse should include a `pip_requirements.txt` file for external library dependencies (if it doesn't have any, the file should be empty). You can check its dependencies on the FlowVerse. As you can see [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/pip_requirements.txt), the `ChatFlowModule` doesn't have any external dependencies, so we're all set. In general, if there are any, you need to make sure to install them.
 
-### Step 3: Run the Flow! 
+### Step 3: Run the Flow!
 Import the flow you've just pulled:
 ```python
 from flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow
@@ -95,7 +95,7 @@ cfg["flow"]["backend"]["api_infos"] = api_information
 Instantiate your Flow:
 ```python
 # ~~~ Instantiate the Flow ~~~
-flow = ChatAtomicFlow.instantiate_from_default_config(**cfg["flow"])    
+flow = ChatAtomicFlow.instantiate_from_default_config(**cfg["flow"])
 flow_with_interfaces = {
     "flow": flow,
     "input_interface": None,
@@ -106,7 +106,7 @@ flow_with_interfaces = {
 Load some data and run your flow with the `FlowLauncher`:
 ```python
 # ~~~ Get the data ~~~
-data = {"id": 0, "question": "What is the capital of France?"} 
+data = {"id": 0, "question": "What is the capital of France?"}
 
 # ~~~ Run the Flow ~~~
 _, outputs  = FlowLauncher.launch(
