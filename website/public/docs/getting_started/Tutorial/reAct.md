@@ -29,7 +29,7 @@ These steps are repeated until an answer is obtained.
 
 In this section, we'll guide you through running the ReAct Flow.
 
-For the code snippets referenced from this point onward, you can find them [here](../../examples/ReAct/)
+For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/)
 
 Now, let's delve into the details without further delay!
 
@@ -54,7 +54,7 @@ pip install duckduckgo-search==3.9.6
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our flow.
 
-The configuration for our flow is available in [ReAct.yaml](../../examples/ReAct/ReAct.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
+The configuration for our flow is available in [ReAct.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/ReAct.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
 Now let's look at the flow's configuration:
 ```yaml
 flow:
@@ -168,7 +168,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The full example is available [here](../../examples/ReAct/) and can be executed as follows:
+The full example is available [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/) and can be executed as follows:
 
 ```bash
 cd examples/ReAct

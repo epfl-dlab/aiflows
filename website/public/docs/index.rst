@@ -3,21 +3,13 @@ Welcome to FLOWS!
 ==================
 
 This is the landing page for Flows Project, generated as part of
-`FLOWS Repository <https://github.com/epfl-dlab/flows>`_.
+`aiFlows Repository <https://github.com/epfl-dlab/aiflows>`_.
 
 
 Introduction
 =============
 
-**Flows** is a framework for building complex reasoning and interaction patterns on top of LLM and tools.
-It provides a set of basic interaction patterns, such as:
-
-- **sequential execution**: execute a set of LLMs or tools in a sequence
-- **selection execution**: execute one of a set of LLMs or tools based on a runtime condition
-- **circulation execution**: execute a set of LLMs or tools in a loop until a runtime condition is met
-
-These patterns are composable, allowing you to build complex flows of execution.
-
+.. include:: introduction/index.rst
 
 Why should I care?
 ===================
@@ -48,7 +40,7 @@ and finally upload it to the Flow-verse to share it with the community.
 .. toctree::
     :titlesonly:
 
-    flows_tutorial/index
+    getting_started/index
 
 
 Documentation
@@ -56,10 +48,7 @@ Documentation
 
 To get an overview of the project, check out the following sections:
 
-.. toctree::
-    :titlesonly:
-
-    get_started/index
+.. mdinclude:: getting_started/Tutorial/atomic_flow.md
 
 
 

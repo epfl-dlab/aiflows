@@ -122,7 +122,7 @@ print(flow_output_data)
 ```
 Congratulations! You've successfully run your first question-answering Flow!
 ___
-You can find this example in [runChatAtomicFlow.py](../../examples/quick_start/runChatAtomicFlow.py)
+You can find this example in [runChatAtomicFlow.py](https://github.com/epfl-dlab/flows/tree/main/examples/quick_start/runChatAtomicFlow.py)
 
 To run it, use the following commands in your terminal (make sure to copy-paste your keys first):
 ```bash
@@ -137,7 +137,7 @@ Upon execution, the result should appear as follows:
 
 ## Section 2: FlowVerse Playground Notebook
 
-Want to quickly run some Flows from FlowVerse? Check out our jupyter notebook [flow_verse_playground.ipynb](../../examples/quick_start/flow_verse_playground.ipynb) where you can quicky switch between the following flows from the FlowVerse:
+Want to quickly run some Flows from FlowVerse? Check out our jupyter notebook [flow_verse_playground.ipynb](https://github.com/epfl-dlab/flows/tree/main/examples/quick_start/flow_verse_playground.ipynb) where you can quicky switch between the following flows from the FlowVerse:
 
 * [ChatFlowModule](https://huggingface.co/aiflows/ChatFlowModule)
 

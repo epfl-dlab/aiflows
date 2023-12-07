@@ -36,7 +36,7 @@ Examples of Atomic Flows include:
 
 As a starting example, let's create an Atomic Flow that takes a number and returns its reverse. (e.g., if the input is 1234, it should return 4321)
 
-The flow configuration, presented as a YAML file, is outlined below (you can also review the configuration in [reverseNumberAtomic.yaml](../../examples/minimal%20reverse%20number/reverseNumberAtomic.yaml)):
+The flow configuration, presented as a YAML file, is outlined below (you can also review the configuration in [reverseNumberAtomic.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/reverseNumberAtomic.yaml)):
 
 ```yaml
 name: "ReverseNumber"
@@ -57,7 +57,7 @@ Breaking it down:
 
 - `input_interface` and `output_interface` define the transformation applied to the input and output data before and after calling the flow. In this case, the `input_interface` ensures the key `number` is in the input data dictionary and passes it to the flow. The `output_interface` renames the key `output_number` to `reversed_number` in the output data dictionary.
 
-Now let's define the Flow. The class would be implemented as follows (you can also check out the py file [reverse_number_atomic.py](../../examples/minimal%20reverse%20number/reverse_number_atomic.py)):
+Now let's define the Flow. The class would be implemented as follows (you can also check out the py file [reverse_number_atomic.py](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/reverse_number_atomic.py)):
 ```python
 class ReverseNumberAtomicFlow(AtomicFlow):
     def __init__(self, **kwargs):
@@ -97,7 +97,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible [here](../../examples/minimal%20reverse%20number/) and can be executed as follows:
+The complete example is accessible [here](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/) and can be executed as follows:
 
 ```bash
 cd examples/minimal\ reverse\ number/

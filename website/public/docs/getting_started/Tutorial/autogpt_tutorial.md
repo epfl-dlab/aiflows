@@ -42,7 +42,7 @@ Here's a broad overview of the  `AutoGPTFlow`:
 
 In this section, we'll guide you through running the ReActWithHumanFeedbackFlow.
 
-For the code snippets referenced from this point onward, you can find them [here](../../examples/AutoGPT/).
+For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/flows/tree/main/examples/AutoGPT/).
 
 Now, let's delve into the details without further delay!
 
@@ -71,7 +71,7 @@ pip install faiss-cpu==1.7.4
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our Flow.
 
-The configuration for our flow is available in [AutoGPT.yaml](../../examples/AutoGPT/AutoGPT.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. `AutoGPTFlow`'s default config  can be found [here](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml), the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml) and memory's flow default config `VectorStoreFlow` can be found [here](https://huggingface.co/aiflows/VectorStoreFlowModule/blob/main/VectorStoreFlow.yaml)
+The configuration for our flow is available in [AutoGPT.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/AutoGPT/AutoGPT.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. `AutoGPTFlow`'s default config  can be found [here](https://huggingface.co/aiflows/AutoGPTFlowModule/blob/main/AutoGPTFlow.yaml), the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml) and memory's flow default config `VectorStoreFlow` can be found [here](https://huggingface.co/aiflows/VectorStoreFlowModule/blob/main/VectorStoreFlow.yaml)
 
 Our focus will be on explaining the modified parameters in the configuration, with reference to the [ReAct With Human Feedback Tutorial](./reActwHumanFeedback.md) Tutorial for unchanged parameters.
 Now let's look at the flow's configuration:
@@ -204,7 +204,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible [here](../../examples/AutoGPT/) and can be executed as follows:
+The complete example is accessible [here](https://github.com/epfl-dlab/flows/tree/main/examples/AutoGPT/) and can be executed as follows:
 
 ```bash
 cd examples/AutoGPT

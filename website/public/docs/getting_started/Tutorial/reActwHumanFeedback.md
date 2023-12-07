@@ -36,7 +36,7 @@ The `ReActWithHumanFeedback` flow is a circular flow that organizes the problem-
 
 In this section, we'll guide you through running the `ReActWithHumanFeedbackFlow`. 
 
-For the code snippets referenced from this point onward, you can find them [here](../../examples/ReActWithHumanFeedback/).
+For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/).
 
 Now, let's delve into the details without further delay!
 
@@ -63,7 +63,7 @@ pip install duckduckgo-search==3.9.6
 ```
 
 
-Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](../../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
+Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
 
 
 ```python
@@ -87,7 +87,7 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
 ```
 Note that, we've simply added one function to the class which initiates the procedure to terminate the flow should the user enter "q"  when prompted for feedback.
 
-The configuration for our flow is available in [ReActWithHumanFeedback.yaml](../../examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config  can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
+The configuration for our flow is available in [ReActWithHumanFeedback.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config  can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
 
 Our focus will be on explaining the modified parameters in the configuration, with reference to the previous tutorial for unchanged parameters.
 Now let's look at the flow's configuration:
@@ -302,7 +302,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible [here](../../examples/ReActWithHumanFeedback/) and can be executed as follows:
+The complete example is accessible [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/) and can be executed as follows:
 
 ```bash
 cd examples/ReActWithHumanFeedback
@@ -365,7 +365,7 @@ Finally, it provides the correct answer!
 
 Nevertheless, persisting with the use of `ReActWithHumanFeedback` may reveal an inherent challenge, particularly in prolonged conversations. The primary issue arises when attempting to pass the entire message history to the language model (LLM), eventually surpassing the maximum token limit allowable. As a workaround, we currently send only the first two and the last messages as context to the LLM. However, this approach is suboptimal if you desire your model to maintain a more comprehensive long-term memory.
 
-To address this limitation, we recommend exploring the subsequent tutorial, [AutoGPTFlow Tutorial](./autogpt_tutorial.md). This tutorial introduces a fundamental implementation of AutoGPT, enhancing the ReAct flow by incorporating a Memory Flow. This addition tackles the challenge of managing longer conversations.
+To address this limitation, we recommend exploring the subsequent tutorial, [AutoGPT Tutorial](./autogpt_tutorial.md). This tutorial introduces a fundamental implementation of AutoGPT, enhancing the ReAct flow by incorporating a Memory Flow. This addition tackles the challenge of managing longer conversations.
 
 ___
 

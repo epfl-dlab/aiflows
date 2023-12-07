@@ -1,12 +1,14 @@
 # Flow Module Management
 
-Flow is a sharing-oriented platform, empowering users to contribute their personal Flows, called **flow modules**, to Hugging Face.
+The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++). 
+
+In the heart of this platform, the community shares their unique Flows, encapsulated in what we call **flow modules**.
 
 ## Flow Modules
 
-- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) is a flow module.
-- A module may include multiple Flow classes and potentially a default configuration YAML file. In the [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows) module, you can find [ChatGPT4.py](https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.py).
-- Each Flow class can depend on other remote, publicly available modules. For example, [ChatGPT4.py](https://huggingface.co/saibo/ChatFlows/blob/main/ChatGPT4.py) depends on [martinjosifoski/ChatAtomicFlow](https://huggingface.co/martinjosifoski/ChatAtomicFlow/tree/main).
+- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [aiflows/ChatInteractiveFlowModule](https://huggingface.co/aiflows/ChatInteractiveFlowModule) is a flow module.
+- A module may include multiple Flow classes and potentially a default configuration YAML file. In the [aiflows/ChatInteractiveFlowModule](https://huggingface.co/aiflows/ChatInteractiveFlowModule) module, you can find [ChatHumanFlowModule.py](https://huggingface.co/aiflows/ChatInteractiveFlowModule/blob/main/ChatHumanFlowModule.py).
+- Each Flow class can depend on other remote, publicly available modules. For example, [ChatHumanFlowModule.py](https://huggingface.co/aiflows/ChatInteractiveFlowModule/blob/main/ChatHumanFlowModule.py) depends on [aiflows/ChatFlowModule](https://huggingface.co/aiflows/ChatFlowModule).
 
 ## Syncing Flow Modules
 

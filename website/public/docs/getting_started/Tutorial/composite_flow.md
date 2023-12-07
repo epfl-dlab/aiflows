@@ -32,8 +32,8 @@ In the paper, a Composite Flow is described as follows:
 Therefore, a `SequentialFlow` is a specialized form of `CompositeFlow` that runs Flows sequentially.
 
 Other types of Composite Flows include:
-* `CircularFlow`: A series of flows excuted in a circular fashion (e.g [ReAct](../../examples/ReAct/))
-* `BranchingFlow`: A series of flows organized in a parallel fashion. The branch (Flow) executed depends on the input of the branching flow (e.g. [BranchingFlow](../../flows/base_flows/branching.py))
+* `CircularFlow`: A series of flows excuted in a circular fashion (e.g [ReAct](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/))
+* `BranchingFlow`: A series of flows organized in a parallel fashion. The branch (Flow) executed depends on the input of the branching flow (e.g. [BranchingFlow](https://github.com/epfl-dlab/flows/tree/main/flows/base_flows/branching.py))
 
 ## Section 2: Writing Your First Sequential Flow
 
@@ -50,7 +50,7 @@ Input       |          Sequential Flow             |        Output
             |                                      |                        
 ```
 
-The flow configuration, presented as a YAML file, is outlined below (you can also review the configuration in [reverseNumberSequential.yaml](../../examples/minimal%20reverse%20number/reverseNumberSequential.yaml)):
+The flow configuration, presented as a YAML file, is outlined below (you can also review the configuration in [reverseNumberSequential.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/reverseNumberSequential.yaml)):
 ```yaml
 name: "ReverseNumberTwice"
 description: "A sequential flow that reverses a number twice."
@@ -129,7 +129,7 @@ that renames the dictionary key `first_reverse_output`, which is passed by the `
 This ensures proper key naming and enables the seamless execution of the subsequent flow.
 
 Now let's instantiate the `SequentialFlow` (you can also check out the py file 
-[reverse_number_sequential.py](../../examples/minimal%20reverse%20number/reverse_number_sequential.py)):
+[reverse_number_sequential.py](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/reverse_number_sequential.py)):
 
 ```python
 cfg_path = os.path.join(root_dir, "reverseNumberSequential.yaml")
@@ -140,7 +140,7 @@ flow = SequentialFlow.instantiate_from_default_config(**cfg)
 ```
 
 There is no need to define any new class 
-since the `SequentialFlow` is a [base_flow](../../flows/base_flows/sequential.py) (meaning it's already defined in the aiFlows library) and we've already
+since the `SequentialFlow` is a [base_flow](https://github.com/epfl-dlab/flows/tree/main/flows/base_flows/sequential.py) (meaning it's already defined in the aiFlows library) and we've already
 defined the `ReverseNumberAtomicFlow` in the previous tutorial ([Atomic Flow Tutorial](./atomic_flow.md)) 
 
 With all the preparations in place, we can now proceed to invoke our flow and execute it using the `FlowLauncher`.
@@ -161,7 +161,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible [here](../../examples/minimal%20reverse%20number/) and can be executed as follows:
+The complete example is accessible [here](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20reverse%20number/) and can be executed as follows:
 
 ```bash
 cd examples/minimal\ reverse\ number/
