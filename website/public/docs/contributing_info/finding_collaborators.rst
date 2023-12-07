@@ -1,8 +1,8 @@
 .. _finding_collaborators:
 
-==============
+================================
 Looking for Collaborators ?
-==============
+================================
 
 🤝 Seeking Collaborators? If you're on the lookout for a collaborator to tackle an issue or work on a feature, head over to the `👥│flows-friends`_ forum on Discord.
 Share your project ideas, highlight your skills, or specify areas where you could use assistance. For more targeted searches, consider posting in specialized channels,

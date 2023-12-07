@@ -1,7 +1,7 @@
 .. _contributing_to_ai_flows:
 
 Contributing to aiFlows Library (for bug fixes and adding features)
-==================================================================
+======================================================================
 
 **Step 1: Identifying and Reporting an Issue / Bug**
 -------------------------------------------------------
@@ -13,20 +13,20 @@ Before creating a new issue, check if the problem you've encountered already exi
 provide additional details or express your interest in working on it.
 
 Community Discussion on Discord:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Additionally, for more immediate interaction and collaboration, you can discuss the issue on the project's `Discord`_ channel. 
 Join the 💻│developers or 🐛│debugging channels to connect with the community, seek advice, and coordinate efforts. Engaging with the 
 community on Discord can provide valuable insights and assistance throughout the issue resolution process.
 
 **1.2. Creating a New Issue**
-^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If the issue doesn't exist, create a new one. Include a clear and concise title, detailed description of the problem, and steps to reproduce it. 
 Utilize the "Report a Bug" template for bug reports and the "Feature Request" template for suggesting new features.
 
 **Step 2: Getting Started with a Pull Request (PR)**
---------------------------------------------------
+----------------------------------------------------------
 
 **2.0. Inform the Community**
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -38,7 +38,7 @@ collaboration but also to inform others that you're actively working on the issu
 fostering a collaborative and efficient development environment.
 
 **2.1. Fork the Repository**
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 On the "aiflows" GitHub page, click "Fork" to create a copy of the repository under your GitHub account.
 

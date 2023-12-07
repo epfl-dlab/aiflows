@@ -1,8 +1,8 @@
 .. _automating_doc:
 
-=============================
+===========================================================
 Automating the documentation of a Flow on  the FlowVerse
-=============================
+===========================================================
 
 Documenting your Flow is a crucial step in ensuring clarity and accessibility. Let's explore an efficient way to automate this process using pydoc-markdown.
 

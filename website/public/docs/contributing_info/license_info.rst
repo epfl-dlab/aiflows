@@ -1,10 +1,10 @@
 .. _license_info:
 
 Licence Info: Frequently Asked Questions
-=======================================
+=========================================
 
 1. I’m Worried About License Issues. Is aiFlows Open-Source?
------------------------------------------------------------
+-------------------------------------------------------------
 
 Absolutely! aiFlows is proudly open-source, and it operates under the MIT License.
 

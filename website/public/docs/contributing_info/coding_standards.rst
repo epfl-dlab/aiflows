@@ -6,21 +6,21 @@ Coding Standards
 When contributing to aiFlows library, it's essential to adhere to the following coding standards to maintain consistency, readability, and the overall quality of the codebase:
 
 1. Simplicity and Readability
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Strive to make your code as simple and readable as possible. Use clear and meaningful variable/function names, and avoid unnecessary complexity.
 
 2. Best Practices
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^
 
 Follow industry best practices when implementing features or fixing bugs. This includes adhering to language-specific conventions and guidelines.
 
 3. Documentation
-^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^
 
 Document your code thoroughly. Provide comments where necessary to explain complex logic or algorithms. Use clear and concise language to describe your thought process.
 
 4. Docstrings in Sphinx Format
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For all new functions and classes, include docstrings in Sphinx format. These docstrings should describe the purpose, parameters, return values, and possibly exceptions raised by the function or class. Here is an example of the docstring of a function in the Sphinx format::
 

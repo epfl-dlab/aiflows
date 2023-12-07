@@ -1,83 +1,56 @@
-==================
-Welcome to FLOWS!
-==================
+======================
+Welcome to aiFlows! 🚀
+======================
 
-This is the landing page for Flows Project, generated as part of
-`aiFlows Repository <https://github.com/epfl-dlab/aiflows>`_.
+.. toctree::
+   :titlesonly:
+   :caption: Table of Contents
+   :hidden:
+   
+   introduction/index
+   installation/index
+   getting_started/index
+   contibution_info/index
+   citation/index
+   documentation/index
 
 
-Introduction
-=============
+.. INTRODUCTION SECTION
 
 .. include:: introduction/index.rst
 
-Why should I care?
-===================
+.. INSTALLATION SECTION
 
-While LLMs are powerful enough to solve many problems, they are not a silver bullet.
-Collaboration between...
+.. include:: installation/index.rst
 
 
-Get started
-=============
+.. GETING STARTED SECTION
 
-To install flows, run the following command:
+.. include:: getting_started/index.md
+   :parser: myst_parser.sphinx_
 
-.. code-block:: shell
+.. figure:: ./media/previous_flows_rounded.png
+   :align: center
+   :alt: image
+   :width: 1000px
 
-    git clone git@github.com:epfl-dlab/flows.git
-    cd flows
-    pip install -e .
+   **The Flows framework exemplified.** The first column depicts examples of tools. Notably, 
+   in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, 
+   constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. 
+   The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the `paper`_ . 
+   The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
 
+.. _paper: https://arxiv.org/abs/2308.01285
 
+.. CONTIBUTION SECTION SECTION
 
-Tutorials
-===========
+.. include:: contributing_info/index.rst
 
-A series of guides that explain how to build your own ``Flow``, use our visualization toolkit to debug it,
-and finally upload it to the Flow-verse to share it with the community.
+.. CITATION SECTION
 
-.. toctree::
-    :titlesonly:
-
-    getting_started/index
-
-
-Documentation
-===============
-
-To get an overview of the project, check out the following sections:
-
-.. mdinclude:: getting_started/Tutorial/atomic_flow.md
+.. include:: citation/index.md
+   :parser: myst_parser.sphinx_
 
 
-
-For a more in-depth look at the codebase, check out the following sections:
-
-.. toctree::
-    :titlesonly:
-
-    source/modules.rst
-
-
-Contributing
-=============
-
-There are two ways to contribute to the project: by contributing to the **aiFlows codebase** or by contributing to the **Flow-verse**.
-
-- **aiFlows Codebase**: We welcome contributions to the project and accept pull requests of all sorts: documentation, code, bug fixes, etc.
-- **Flow-verse**: We hope to establish flows as a platform to enable collaboration, sharing and reusing. Uploading your work to the Flow-verse is a great way to contribute to the community and to the project.
-
-Last but not least, if you want to prepare educational material (tutorials, videos, etc.) about flows, we would love to hear from you!
-We are happy to link to your content from the project website.
-
-All Github contributors will be explicitly named in release notes of future versions of the library.
-If anything is unclear, confusing, or needs to be refactored, please let us know by opening an issue on the repository.
-
-Contributing information can be found here:
-
-
-.. toctree::
-    :titlesonly:
-
-    contributing_info/index
+.. DOCUMENTATION SECTION
+.. include:: documentation/index.rst
