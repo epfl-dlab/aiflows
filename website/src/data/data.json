@@ -1,147 +1,143 @@
 {
-  "Header": {
-    "title": "aiFlows",
-    "paragraph": "The building blocks of your collaborative AI",
-    "code": "pip install aiflows",
-    "language": "bash",
-    "showLineNumbers": false,
-    "codeBGColor": "#2d2d2d"
-  },
+    "Header": {
+        "title": "aiFlows",
+        "paragraph": "The building blocks of your collaborative AI",
+        "code": "pip install aiflows",
+        "language": "bash",
+        "showLineNumbers": false,
+        "codeBGColor": "#2d2d2d"
+    },
 
-  "Features": [
-    {
-      "icon": "fa fa-comments-o",
-      "title": "Modularity",
-      "text": "Design Flows of complex interactions involving humans, AI systems, and tools, like LEGO blocks."
-    },
-    {
-      "icon": "fa fa-solid fa-share",
-      "title": "Reusability",
-      "text": "Readily reuse, customize, and build on top of Flows published on FlowVerse by the community."
-    },
-    {
-      "icon": "fa fa-solid fa-eye",
-      "title": "Concurrency",
-      "text": "Build on top of a concurrency friendly abstraction inspired by the Actor model of concurrent computation."
-    },
-    {
-      "icon": "fa fa-solid fa-eye",
-      "title": "Forever Free",
-      "text": "The aiFlows library is free and always will be."
-    }
-  ],
-  "About": {
-    "paragraph": "Flows is a framework to orchestrate interactions between LLMs, tools and humans. It is designed to be modular and composable, allowing you to build complex reasoning processes from simple building blocks. The Flow-verse allows you to share your flows with the community, and re-use and combine flows created by other researchers.",
-    "Why": [
-      "Easy to get started: Create your own Flow in just a few lines of code",
-      "Flexible: Anything can be a Flow. With our library you can easily let your LLMs talk to other LLMs, tools, and even humans. Our tutorials show convenient templates that you can adjust to your needs.",
-      "Modular and composable: Chain together multiple Flows with smart branching and merging of data. Create deeply nested Flows to build complex reasoning processes from simple building blocks.",
-      "Seamlessly extends existing libraries, such as LangChain."
+    "Features": [{
+            "icon": "fa fa-comments-o",
+            "title": "Modularity",
+            "text": "Design Flows of complex interactions involving humans, AI systems, and tools, like LEGO blocks."
+        },
+        {
+            "icon": "fa fa-solid fa-share",
+            "title": "Reusability",
+            "text": "Readily reuse, customize, and build on top of Flows published on FlowVerse by the community."
+        },
+        {
+            "icon": "fa fa-solid fa-eye",
+            "title": "Concurrency",
+            "text": "Build on top of a concurrency friendly abstraction inspired by the Actor model of concurrent computation."
+        },
+        {
+            "icon": "fa fa-solid fa-eye",
+            "title": "Forever Free",
+            "text": "The aiFlows library is free and always will be."
+        }
     ],
-    "Why2": [
-      "Caching: Save time and resources by caching the results of your Flows. Our caching mechanism makes your Flows resilient to crashes and interruptions.",
-      "Share data: Our cache is based on an intelligent data and task driven hashing mechanism. You can share cached computations across deeply nested Flow architectures.",
-      "Multi-threaded: Our Flow execution engine is multi-threaded and offers a powerful waiting&retrying mechanism to integrate with external services.",
-      "Visualization toolkit: Debug and visualize the reasoning process of your LLMs."
-    ]
-  },
-  "GettingStarted": {
-    "title": "Flow",
-    "text_1": "Option 1: Text",
-    "code_1": "import os\nimport flows\nfrom flows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ChatFlowModule\", \"revision\": \"main\"}\n]\n\nflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [flows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ChatFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ChatAtomicFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = flows.flow_launchers.FlowLauncher.launch(flows, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
-    "text_2": "Option 2: Text",
-    "code_2": "print(Option 2: Code)",
-    "text_3": "Option 3: Text",
-    "code_3": "print(Option 3: Code)",
-    "language": "python",
-    "showLineNumbers": false
-  },
-  "Contribute": [
-    {
-      "icon": "fa fa-github-square",
-      "name": "Research",
-      "text": "The ability to implement arbitrarily complex interactions, paired with complete control and systematicity, make aiFlows an ideal tool for research."
+    "About": {
+        "paragraph": "Flows is a framework to orchestrate interactions between LLMs, tools and humans. It is designed to be modular and composable, allowing you to build complex reasoning processes from simple building blocks. The Flow-verse allows you to share your flows with the community, and re-use and combine flows created by other researchers.",
+        "Why": [
+            "Easy to get started: Create your own Flow in just a few lines of code",
+            "Flexible: Anything can be a Flow. With our library you can easily let your LLMs talk to other LLMs, tools, and even humans. Our tutorials show convenient templates that you can adjust to your needs.",
+            "Modular and composable: Chain together multiple Flows with smart branching and merging of data. Create deeply nested Flows to build complex reasoning processes from simple building blocks.",
+            "Seamlessly extends existing libraries, such as LangChain."
+        ],
+        "Why2": [
+            "Caching: Save time and resources by caching the results of your Flows. Our caching mechanism makes your Flows resilient to crashes and interruptions.",
+            "Share data: Our cache is based on an intelligent data and task driven hashing mechanism. You can share cached computations across deeply nested Flow architectures.",
+            "Multi-threaded: Our Flow execution engine is multi-threaded and offers a powerful waiting&retrying mechanism to integrate with external services.",
+            "Visualization toolkit: Debug and visualize the reasoning process of your LLMs."
+        ]
     },
-    {
-      "icon": "fa fa-wrench",
-      "name": "Developer",
-      "text": "FlowVerse enables direct benefit from all research advancements, and aiFlows lets you make each Flow your own!"
+    "GettingStarted": {
+        "title": "Flow",
+        "text_1": "Option 1: Text",
+        "code_1": "import os\nimport flows\nfrom flows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ChatFlowModule\", \"revision\": \"main\"}\n]\n\nflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [flows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ChatFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ChatAtomicFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = flows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "text_2": "Option 2: Text",
+        "code_2": "import os\nimport flows\nfrom flows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ControllerExecutorFlowModule\", \"revision\": \"main\"}\n]\n\nflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ControllerExecutorFlowModule import ControllerExecutorFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [flows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ControllerExecutorFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ControllerExecutorFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = flows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "text_3": "Option 3: Text",
+        "code_3": "import os\nimport flows\nfrom flows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/AutoGPTFlowModule\", \"revision\": \"main\"}\n]\n\nflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.AutoGPTFlowModule import AutoGPTFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [flows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/AutoGPTFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = AutoGPTFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = flows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "language": "python",
+        "showLineNumbers": false
     },
-    {
-      "icon": "fa fa-cloud-download",
-      "name": "Critic",
-      "text": "Use aiFlows in your personal and professional projects, and push the library to its limits. Let us know what breaks, and what do we need to improve – we are always listening!"
+    "Contribute": [{
+            "icon": "fa fa-github-square",
+            "name": "Research",
+            "text": "The ability to implement arbitrarily complex interactions, paired with complete control and systematicity, make aiFlows an ideal tool for research."
+        },
+        {
+            "icon": "fa fa-wrench",
+            "name": "Developer",
+            "text": "FlowVerse enables direct benefit from all research advancements, and aiFlows lets you make each Flow your own!"
+        },
+        {
+            "icon": "fa fa-cloud-download",
+            "name": "Critic",
+            "text": "Use aiFlows in your personal and professional projects, and push the library to its limits. Let us know what breaks, and what do we need to improve – we are always listening!"
+        }
+    ],
+    "Testimonials": [{
+            "img": "img/testimonials/01.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "John Doe"
+        },
+        {
+            "img": "img/testimonials/02.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "Johnathan Doe"
+        },
+        {
+            "img": "img/testimonials/03.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "John Doe"
+        },
+        {
+            "img": "img/testimonials/04.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "Johnathan Doe"
+        },
+        {
+            "img": "img/testimonials/05.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "John Doe"
+        },
+        {
+            "img": "img/testimonials/06.jpg",
+            "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
+            "name": "Johnathan Doe"
+        }
+    ],
+    "Team": [{
+            "img": "img/team/lab_logo.png",
+            "name": "Martin Josifoski",
+            "job": "Phd student"
+        },
+        {
+            "img": "img/team/lab_logo.png",
+            "name": "Lars Henning Klein",
+            "job": "Phd Student"
+        },
+        {
+            "img": "img/team/lab_logo.png",
+            "name": "Maxime Peyrard",
+            "job": "Phd Student"
+        },
+        {
+            "img": "img/team/lab_logo.png",
+            "name": "Julian Paul Schnitzler",
+            "job": "Master student"
+        },
+        {
+            "img": "img/team/lab_logo.png",
+            "name": "Yuxing Yao",
+            "job": "Master student"
+        },
+        {
+            "img": "img/team/lab_logo.png",
+            "name": "Debjit Paul",
+            "job": "Postdoc"
+        }
+    ],
+    "Contact": {
+        "address": "Rte Cantonale, 1015 Lausanne",
+        "phone": "+1 123 456 1234",
+        "email": "info@company.com",
+        "twitter": "twitter.com",
+        "youtube": "youtube.com"
     }
-  ],
-  "Testimonials": [
-    {
-      "img": "img/testimonials/01.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "John Doe"
-    },
-    {
-      "img": "img/testimonials/02.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "Johnathan Doe"
-    },
-    {
-      "img": "img/testimonials/03.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "John Doe"
-    },
-    {
-      "img": "img/testimonials/04.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "Johnathan Doe"
-    },
-    {
-      "img": "img/testimonials/05.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "John Doe"
-    },
-    {
-      "img": "img/testimonials/06.jpg",
-      "text": "\"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis sed dapibus leo nec ornare diam sedasd commodo nibh ante facilisis bibendum dolor feugiat at.\"",
-      "name": "Johnathan Doe"
-    }
-  ],
-  "Team": [
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Martin Josifoski",
-      "job": "Phd student"
-    },
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Lars Henning Klein",
-      "job": "Phd Student"
-    },
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Maxime Peyrard",
-      "job": "Phd Student"
-    },
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Julian Paul Schnitzler",
-      "job": "Master student"
-    },
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Yuxing Yao",
-      "job": "Master student"
-    },
-    {
-      "img": "img/team/lab_logo.png",
-      "name": "Debjit Paul",
-      "job": "Postdoc"
-    }
-  ],
-  "Contact": {
-    "address": "Rte Cantonale, 1015 Lausanne",
-    "phone": "+1 123 456 1234",
-    "email": "info@company.com",
-    "twitter": "twitter.com",
-    "youtube": "youtube.com"
-  }
 }

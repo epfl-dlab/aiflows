@@ -54,9 +54,8 @@ export const Navigation = (props:any) => {
                 Contribute
               </a>
             </li>
-            {/*ToDo: Add link to tutorials index*/}
             <li>
-              <a href="docs/built_with_sphinx/html/index.html" className="page-scroll">
+              <a href="docs/built_with_sphinx/html/getting_started/index.html" className="page-scroll">
                 Getting Started
               </a>
             </li>

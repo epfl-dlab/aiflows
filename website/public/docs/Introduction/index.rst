@@ -1,3 +1,7 @@
+Introduction
+=============
+
+
 Flows in a Nutshell
 ---------------------
 
@@ -7,7 +11,7 @@ goal-driven entities able to complete a semantically meaningful unit of work.
 To exchange information, Flows communicate via a standardized message-based interface. 
 Messages can be of any type the recipient Flow can process.
 
-.. figure:: ./media/fig1_rounded_corners.png
+.. figure:: ../media/fig1_rounded_corners.png
    :align: center
    :alt: image
    :width: 1000px
