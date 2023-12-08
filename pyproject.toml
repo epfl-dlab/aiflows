@@ -1,18 +1,22 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["setuptools>=42", "setuptools-scm"]
 
 [tool.setuptools]
 py-modules = ["aiflows"]
 
+[tool.setuptools.dynamic]
+version = {attr = "aiflows.VERSION"}
+
 [project]
-name = "aiflows"
-version = "0.0.1"
-description = 'aiFlows embodies the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" by Josifoski et al., and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'  
-authors = [
-  { name = "ToDo", email = "my_email@domain.com" },  # ToDo: Is this necessary? If so put names.
-]
 license = {file = "LICENSE"}
+name = "aiflows"
+description = 'aiFlows implements the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'
+authors = [
+  { name = "Martin Josifoski", email = "martin.josifoski@epfl.ch" },
+]
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
 
 dependencies = [
     "colorama==0.4.6",
@@ -32,8 +36,9 @@ dependencies = [
     "litellm==1.0.0"
 ]
 
-# ToDo: check links
+# ToDo: Change home and documentation to aiflows
 [project.urls]
 Home = "https://epfl-dlab.github.io/flows/"
-Documentation = "https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html"  
-Source = "https://github.com/epfl-dlab/flows"
+Documentation = "https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html"
+Source = "https://github.com/epfl-dlab/aiflows"
+Issues = "https://github.com/epfl-dlab/aiflows/issues"
