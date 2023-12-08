@@ -19,7 +19,7 @@ from aiflows import flow_verse
 
 
 dependencies = [
-    {"url": "aiflows/ChatWithDemonstrationsFlowModule", "revision": "798fa73017095a0dd4ff7af9a892b104b9531572"}
+    {"url": "aiflows/ChatWithDemonstrationsFlowModule", "revision": "main"}
 ]
 
 flow_verse.sync_dependencies(dependencies)

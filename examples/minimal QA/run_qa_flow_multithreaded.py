@@ -18,7 +18,7 @@ from aiflows.backends.api_info import ApiInfo
 from aiflows import flow_verse
 
 dependencies = [
-    {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},
+    {"url": "aiflows/ChatFlowModule", "revision": "main"},
 ]
 flow_verse.sync_dependencies(dependencies)
 

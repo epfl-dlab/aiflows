@@ -31,7 +31,7 @@ First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_
 from aiflows import flow_verse
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
-    {"url": "aiflows/ChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
+    {"url": "aiflows/ChatFlowModule", "revision": "297c90d08087d9ff3139521f11d1a48d7dc63ed4"},
 ]
 flow_verse.sync_dependencies(dependencies)
 ```

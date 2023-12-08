@@ -19,7 +19,7 @@ from aiflows import flow_verse
 
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
-    {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},
+    {"url": "aiflows/ChatFlowModule", "revision": "297c90d08087d9ff3139521f11d1a48d7dc63ed4"},
 ]
 flow_verse.sync_dependencies(dependencies)
 
