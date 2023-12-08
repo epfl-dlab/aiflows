@@ -1,97 +1,81 @@
 # Flow Module Management
 
+### By the Tutorial's End, I Will Have...
+
+* Gained a clear understanding of pulling flows from the FlowVerse.
+
+* Mastered the handling of flows that depend on other flows.
+
+## Introduction
+
 The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++). 
 
 In the heart of this platform, the community shares their unique Flows, encapsulated in what we call **flow modules**.
 
 ## Flow Modules
 
-- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [aiflows/ChatInteractiveFlowModule](https://huggingface.co/aiflows/ChatInteractiveFlowModule) is a flow module.
-- A module may include multiple Flow classes and potentially a default configuration YAML file. In the [aiflows/ChatInteractiveFlowModule](https://huggingface.co/aiflows/ChatInteractiveFlowModule) module, you can find [ChatHumanFlowModule.py](https://huggingface.co/aiflows/ChatInteractiveFlowModule/blob/main/ChatHumanFlowModule.py).
+- Each Hugging Face published repository corresponds to a self-contained flow module. For instance, [nbaldwin/ChatInteractiveFlowModule](https://huggingface.co/nbaldwin/ChatInteractiveFlowModule) is a flow module.
+- A module may include multiple Flow classes and potentially a default configuration YAML file. In the [nbaldwin/ChatInteractiveFlowModule](https://huggingface.co/nbaldwin/ChatInteractiveFlowModule) module, you can find [ChatHumanFlowModule.py](https://huggingface.co/nbaldwin/ChatInteractiveFlowModule/blob/main/ChatHumanFlowModule.py).
 - Each Flow class can depend on other remote, publicly available modules. For example, [ChatHumanFlowModule.py](https://huggingface.co/aiflows/ChatInteractiveFlowModule/blob/main/ChatHumanFlowModule.py) depends on [aiflows/ChatFlowModule](https://huggingface.co/aiflows/ChatFlowModule).
 
 ## Syncing Flow Modules
 
-To use or import a flow module, first sync it to the `flow_modules` directory in your root directory. You can then import it like any local Python package. Consider the following `trivial_sync_demo.py`, which relies on [saibo/ChatFlows](https://huggingface.co/saibo/ChatFlows):
+To use or import a flow module, first sync it to the `flow_modules` directory in your root directory. You can then import it like any local Python package. Consider the following `trivial_sync_demo.py`, which relies on [nbaldwin/ChatFlows](https://huggingface.co/nbaldwin/ChatInteractiveFlowModule):
 
 ```python
 dependencies = [
-    {"url": "saibo/ChatFlows", "revision": "main"},
+    {"url": "nbaldwin/ChatInteractiveFlowModule", "revision": "main"},
 ]
 from flows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
-from flow_modules.saibo.ChatFlows import ChatGPT4
+from flow_modules.nbaldwin.ChatInteractiveFlowModule import ChatHumanFlowModule
 
 if __name__ == "__main__":
 	print("This is a trivial sync demo.")
 ```
 
-This sync process, while initially unusual, offers several benefits:
-- Inspect the implementation of remote flow modules without swapping between your IDE and a webpage. Additionally, benefit from IDE features like intellisense.
-- Easily build on an existing implementation without needing to download or clone the repository yourself. You can then [create a PR with ease](TODO).
+This synchronization process, though it may seem unconventional at first, provides a number of advantages:
+* The synchronization process examines the implementation of remote flow modules seamlessly, eliminating the need to switch between your integrated development * environment (IDE) and a web page.
+* It extends existing implementations effortlessly without the requirement to download or clone the repository manually.
 
 ## Flow Module Namespace
 
-- Remote flow modules are identified by their Hugging Face repo ID and revision, e.g., `saibo/ChatFlows:main`.
-- Each locally synced flow module is a valid Python package found under the `flow_modules` directory. **Only one revision** is kept for each remote flow module, e.g., `flow_modules.saibo.ChatFlows`. If there's a revision conflict, a warning will prompt you to choose which version to keep.
+* Remote flow modules are identified by their Hugging Face repository ID and revision, such as `nbaldwin/ChatInteractiveFlowModule:main`.
+* Each locally synchronized flow module manifests as a valid Python package within the `flow_modules` directory, exemplified by structures like `flow_modules.nbaldwin.ChatInteractiveFlowModule`. Importantly, only one revision is retained for each remote flow module, a practice upheld to ensure clarity and manage revision conflicts. Should a conflict arise, a warning will guide you to select the preferred version.
 
-For example, your file structure might look like this:
+For a visual representation, consider the following directory structure:
 
 ```shell
 (flows) ➜  dev-tutorial tree .
 .
 ├── flow_modules
-│   ├── martinjosifoski
-│   │   └── ChatAtomicFlow
-│   │       ├── FLOW_MODULE_ID
+│   ├── aiflows
+│   │   └── ChatFlowModule
+│   │       ├── ...
 │   │       ├── ChatAtomicFlow.py
 │   │       ├── ChatAtomicFlow.yaml
-│   │       ├── README.md
-│   │       ├── __init__.py
+│   │       ├── ...
+│   │       ├── ...
 │   │       └── __pycache__
 │   │           ├── ChatAtomicFlow.cpython-39.pyc
 │   │           └── __init__.cpython-39.pyc
-│   └── saibo
-│       └── ChatFlows
-│           ├── FLOW_MODULE_ID
-│           ├── ChatGPT4.py
-│           ├── ChatGPT4.yaml
+│   └── nbaldwin
+│       └── ChatInteractiveFlowModule
+│           ├── ...
+│           ├── ChatHumanFlowModule.py
+│           ├── ChatHumanFlowModule.yaml
 │           ├── README.md
-│           ├── __init__.py
+│           ├── ...
 │           └── __pycache__
-│               ├── ChatGPT4.cpython-39.pyc
+│               ├── ChatHumanFlowModule.cpython-39.pyc
 │               └── __init__.cpython-39.pyc
 └── trivial_sync_demo.py
 
 9 directories, 16 files
 ```
+In this illustration, the `nbaldwin/ChatInteractiveFlowModule` flow module relies on the remote flow module `aiflows/ChatAtomicFlow`. Both dependencies are seamlessly synchronized under the flow_modules directory. The synchronization and importation of dependencies mirror each other, ensuring a consistent and logical approach across remote and local development environments.
 
-As illustrated, the flow module `saibo/ChatFlows` depends on the remote flow module `martinjosifoski/ChatAtomicFlow`. Both of these dependencies are synchronized under the `flow_modules` directory. For the `saibo/ChatFlows` module, it syncs and imports its dependencies in the same way, maintaining consistency in the sync logic across both remote and local development.
+____
 
-```python
-dependencies = [
-    {"url": "martinjosifoski/ChatAtomicFlow", "revision": "cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a"}
-]
-from flows import flow_verse
-flow_verse.sync_dependencies(dependencies)
-
-from flow_modules.martinjosifoski.ChatAtomicFlow import ChatAtomicFlow
-
-class ChatGPT4(ChatAtomicFlow):
-    def __init__(self, **kwargs):
-```
-The namespace for flow modules is consistent with its Hugging Face repo ID, meaning `martinjosifoski/ChatAtomicFlow` will be synced as `flow_modules.martinjosifoski.ChatAtomicFlow`.
-
-If you wish to discard all your changes to a synced module, you can add an `overwrite` parameter to the dependencies. This will cause all of your modifications to be replaced with the original content of the specified revision:
-
-```python
-dependencies = [
-    {"url": "martinjosifoski/ChatAtomicFlow", "revision": "cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a", "overwrite": True}
-]
-```
-
-Note that HuggingFace's user name and repository name can be prefixed with numbers. For example `1234/6789` is a valid repository id for HuggingFace. However, python does not allow its module name to be prefixed with numbers. `import 1234.6789` is illegal. In Flows, the repository id of the flow module has following implications:
-
-- the user name can be prefixed with a number, as we cannot ask a user to change their name. The flow module will be synced into `./flow_modules/user_{NUMBER_PREFIX_USERNAME}`. So we add a prefix to the synced python module, such that it can be correctly imported.
-- the repository name **cannot** be prefixed with a number. Repository name is easy to change. A alphabetic-prefixed name is also easier for your audience to understand.
+**Next Tutorial**: [Typical Developer Workflows](./typical_developer_workflows.md)
