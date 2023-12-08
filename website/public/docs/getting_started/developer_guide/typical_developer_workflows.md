@@ -19,14 +19,14 @@
 To start, create a local directory where you'll develop your flow module:
 
 ```shell
-(flows) ➜  dev-tutorial mkdir PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
-(flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
-(flows) ➜  dev_UsefulChatBots touch __init__.py
-(flows) ➜  dev_UsefulChatBots touch .gitignore
-(flows) ➜  dev_UsefulChatBots touch EconomicExpertBot.py
-(flows) ➜  dev_UsefulChatBots git init
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git add .
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"
+(aiflows) ➜  dev-tutorial mkdir PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
+(aiflows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
+(aiflows) ➜  dev_UsefulChatBots touch __init__.py
+(aiflows) ➜  dev_UsefulChatBots touch .gitignore
+(aiflows) ➜  dev_UsefulChatBots touch EconomicExpertBot.py
+(aiflows) ➜  dev_UsefulChatBots git init
+(aiflows) ➜  dev_UsefulChatBots git:(main) ✗ git add .
+(aiflows) ➜  dev_UsefulChatBots git:(main) ✗ git commit -m "initial commit"
 [main (root-commit) e592fd1] initial commit
 3 files changed, 0 insertions(+), 0 deletions(-)
 create mode 100644 .gitignore
@@ -40,7 +40,7 @@ Next, we could either develop from scratch as in [Tutorial for AtomicFlow](../Tu
 dependencies = [
    {"url": "aiflows/ChatFlowModule", "revision": "main"},
 ]
-from flows import flow_verse
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow
@@ -62,7 +62,7 @@ output_interface:
  - "response"
 
 system_message_prompt_template:
- _target_: flows.prompt_template.JinjaPrompt
+ _target_: aiflows.prompt_template.JinjaPrompt
  template: |2-
    You are an expertise in finance, economy and investment. When you explain something, you always provide associated statistical numbers, source of the information and concrete examples. You tend to explain things in a step-by-step fashion to help the reader to understand. You are also proficient in both English and Chinese. You can answer questions fluently in both languages.
 
@@ -81,13 +81,13 @@ So far so good, we have created our own flow. Let's now try to test it:
 dependencies = [
     {"url": "yeeef/UsefulChatBots", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"},
 ]
-from flows import flow_verse
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 import os
 
 from flow_modules.yeeef.UsefulChatBots.EconomicExpertBot import EconomicExpertBot
-from flows.flow_launchers import FlowLauncher
+from aiflows.flow_launchers import FlowLauncher
 
 
 if __name__ == "__main__":
@@ -123,9 +123,9 @@ We also specify the namespace of our flow module: `yeeef/UsefulChatBots`. yeeef 
 Then let’s execute the code and test our new flow:
 
 ```
-(flows) ➜  dev-tutorial python ask_economic_expert_bot.py
+(aiflows) ➜  dev-tutorial python ask_economic_expert_bot.py
 inputs: [{'id': 0, 'query': 'What is CPI? What is the current CPI in the US?'}]
-[2023-07-05 17:05:35,530][flows.base_flows.abstract][WARNING] - The raw response was not logged.
+[2023-07-05 17:05:35,530][aiflows.base_flows.abstract][WARNING] - The raw response was not logged.
 [{'id': 0, 'inference_outputs': [OutputMessage(message_id='d95683d6-9507-4a90-b290-6a43e609c904', created_at='2023-07-05 09:05:35.530972000', created_by='EconomicExpertBot', message_type='OutputMessage', data={'output_keys': ['response'], 'output_data': {'response': 'CPI, or the Consumer Price Index, is a measure that examines the weighted average of prices of a basket of consumer goods and services, such as transportation, food, and medical care. It is calculated by taking price changes for each item in the predetermined basket of goods and averaging them. Changes in the CPI are used to assess price changes associated with the cost of living.'}, 'missing_output_keys': []}, private_keys=['api_keys'])], 'error': None}]
 ```
 
@@ -141,10 +141,10 @@ aligning it with the namespace used during testing: `yeeef/UsefulChatBots`. Clic
 Then, you can either upload the files manually through the Hugging Face webpage or push your changes to the remote:
 
 ```shell
-(flows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main
-(flows) ➜  dev_UsefulChatBots git:(main) ✗ git push --set-upstream origin main
+(aiflows) ➜  dev-tutorial cd PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots
+(aiflows) ➜  dev_UsefulChatBots git:(main) ✗ git remote add origin https://huggingface.co/yeeef/UsefulChatBots
+(aiflows) ➜  dev_UsefulChatBots git:(main) ✗ git pull -r origin main
+(aiflows) ➜  dev_UsefulChatBots git:(main) ✗ git push --set-upstream origin main
 ```
 
 Congratulations! You now have your remote module online, available for everyone to use!
@@ -162,7 +162,7 @@ For instance, let's say we want to update the dependency of [nbaldwin/ChatIntera
 dependencies = [
     {"url": "aiflows/ChatFlowModule", "revision": "main"} # cae3fdf2f0ef7f28127cf4bc35ce985c5fc4d19a -> main
 ]
-from flows import flow_verse
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow
@@ -176,11 +176,11 @@ class ChatHumanFlowModule(ChatAtomicFlow):
 Firstly, navigate to the synced folder, initialize a git repository, and commit your changes:
 
 ```
-(flows) ➜  dev-tutorial cd flow_modules/nbaldwin/ChatFlows
-(flows) ➜  ChatFlows git init
-Initialized empty Git repository in /Users/yeeef/Desktop/dlab-ra/dev-tutorial/flow_modules/saibo/ChatFlows/.git/
-(flows) ➜  ChatFlows git:(main) ✗ git add .
-(flows) ➜  ChatFlows git:(main) ✗ git commit -m "Change the dependency revision to main"
+(aiflows) ➜  dev-tutorial cd flow_modules/nbaldwin/ChatInteractiveFlowModule
+(aiflows) ➜  ChatInteractiveFlowModule git init
+Initialized empty Git repository in /Users/yeeef/Desktop/dlab-ra/dev-tutorial/flow_modules/nbaldwin/ChatInteractiveFlowModule/.git/
+(aiflows) ➜  ChatInteractiveFlowModule git:(main) ✗ git add .
+(aiflows) ➜  ChatInteractiveFlowModule git:(main) ✗ git commit -m "Change the dependency revision to main"
 [main d7465df] Change the dependency revision to main
  1 file changed, 1 insertion(+), 1 deletion(-)
 ```
@@ -198,11 +198,11 @@ Enter a brief description for your PR branch and click on `Create PR branch`.
 Once your PR branch has been created (for instance, `pr/2`), you'll need to push your changes to this branch:
 
 ```
-(flows) ➜  ChatFlows git:(main) git checkout -b pr/2
+(aiflows) ➜  ChatInteractiveFlowModule git:(main) git checkout -b pr/2
 Switched to a new branch 'pr/2'
-(flows) ➜  ChatFlows git:(pr/2) git remote add origin https://huggingface.co/aiflows/ChatFlowModule
-(flows) ➜  ChatFlows git:(pr/2) git pull -r origin pr/2
-(flows) ➜  ChatFlows git:(pr/2) git push origin pr/2:pr/2
+(aiflows) ➜  ChatInteractiveFlowModule git:(pr/2) git remote add origin https://huggingface.co/nbaldwin/ChatInteractiveFlowModule
+(aiflows) ➜  ChatInteractiveFlowModule git:(pr/2) git pull -r origin pr/2
+(aiflows) ➜  ChatInteractiveFlowModule git:(pr/2) git push origin pr/2:pr/2
 Enumerating objects: 11, done.
 Counting objects: 100% (11/11), done.
 Delta compression using up to 10 threads
@@ -211,7 +211,7 @@ Writing objects: 100% (8/8), 952 bytes | 952.00 KiB/s, done.
 Total 8 (delta 5), reused 0 (delta 0), pack-reused
 
  0
-To https://huggingface.co/aiflows/ChatFlowModule
+To https://huggingface.co/nbaldwin/ChatInteractiveFlowModule
    1849a87..1818057  pr/2 -> refs/pr/2
 ```
 
@@ -228,7 +228,7 @@ Let’s get back to our `trivial_sync_demo`, where we leverage `nbaldwin/ChatI
 **Step 1**: Manually copy the modified flow module out of the `flow_modules` directory:
 
 ```shell
-(flows) ➜  dev-tutorial cp -r ./flow_modules/nbaldwin/ChatInteractiveFlowModules PATH_TO_LOCAL_DEV_DIRECTORY/MyChatInteractiveFlowModules
+(aiflows) ➜  dev-tutorial cp -r ./flow_modules/nbaldwin/ChatInteractiveFlowModules PATH_TO_LOCAL_DEV_DIRECTORY/MyChatInteractiveFlowModules
 ```
 
 **Step 2**: Next, we can treat it as a local file directory and sync it with a local revision:
@@ -239,7 +239,7 @@ dependencies = [
     {"url": "yeeef/MyChatInteractiveFlowModule", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/MyChatInteractiveFlowModules"},
 
 ]
-from flows import flow_verse
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.nbaldwin.ChatInteractiveFlowModules import ChatHumanFlowModule

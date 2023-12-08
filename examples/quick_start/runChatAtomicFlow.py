@@ -1,11 +1,11 @@
-from flows.backends.api_info import ApiInfo
-from flows.utils.general_helpers import find_replace_in_dict
-from flows.flow_launchers import FlowLauncher
-from flows.backends.api_info import ApiInfo
-from flows import flow_verse
+from aiflows.backends.api_info import ApiInfo
+from aiflows.utils.general_helpers import find_replace_in_dict
+from aiflows.flow_launchers import FlowLauncher
+from aiflows.backends.api_info import ApiInfo
+from aiflows import flow_verse
 import os 
-from flows import logging
-from flows.utils.general_helpers import read_yaml_file
+from aiflows import logging
+from aiflows.utils.general_helpers import read_yaml_file
 
 
 dependencies = [

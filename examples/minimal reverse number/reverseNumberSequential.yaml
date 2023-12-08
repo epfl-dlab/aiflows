@@ -24,11 +24,11 @@ topology:
   #fist flow to execute
   - goal: reverse the input number
     input_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_select: ["number"]
     flow: first_reverse_flow
     output_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_rename:
         output_number: first_reverse_output
       keys_to_select: ["first_reverse_output"]
@@ -36,12 +36,12 @@ topology:
   #second flow to execute
   - goal: reverse the output of the first reverse
     input_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_rename:
         first_reverse_output: number
       keys_to_select: ["number"]
     flow: second_reverse_flow
     output_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_select: ["output_number"]
     reset: false

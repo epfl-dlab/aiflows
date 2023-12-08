@@ -75,10 +75,10 @@ This distinction proves useful when different inputs are needed for the initial 
 [ChatAtomicFlow's default configuration](https://huggingface.co/aiflows/ChatFlowModule/blob/main/ChatAtomicFlow.yaml) defines user prompt templates as so:
 ```yaml
 init_human_message_prompt_template:
-  _target_: flows.prompt_template.JinjaPrompt
+  _target_: aiflows.prompt_template.JinjaPrompt
 
 human_message_prompt_template:
-  _target_: flows.prompt_template.JinjaPrompt
+  _target_: aiflows.prompt_template.JinjaPrompt
   template: "{{query}}"
   input_variables:
     - "query"

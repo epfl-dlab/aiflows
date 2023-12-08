@@ -2,7 +2,7 @@
 # Introducing the FlowVerse with a Simple Q&A Flow
 **Prerequisites:** setting up your API keys (see [setting_up_aiFlows.md](./setting_up_aiFlows.md)), [Atomic Flow Tutorial](./atomic_flow.md)
 
-This guide introduces the FlowVerse via an example: [minimalQA](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/). The guide is organized in two sections:
+This guide introduces the FlowVerse via an example: [minimalQA](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/). The guide is organized in two sections:
 1. [Section 1:](#section-1-whats-the-flowverse) What's the FlowVerse?
 2. [Section 2:](#section-2-crafting-a-simple-qa-flow-with-the-chatflowmodule) Crafting a Simple Q&A Flow with the ChatFlowModule
 
@@ -22,13 +22,13 @@ The FlowVerse is the hub of flows created and shared by our amazing community fo
 In this section, we'll guide you through the creation of a simple Q&A flow — a single user-assitant interaction with a LLM. We'll achieve this by leveraging the `ChatAtomicFlow` from the [ChatFlowModule](https://huggingface.co/aiflows/ChatFlowModule) in the FlowVerse. The `ChatAtomicFlow` seamlessly interfaces with an LLM through an API, generating textual responses for textual input. Powered by the LiteLLM library in the backend, `ChatAtomicFlow` supports various API providers; explore the full list [here](https://docs.litellm.ai/docs/providers).
 
 For an in-depth understanding of `ChatAtomicFlow`, refer to its [FlowCard (README)](https://huggingface.co/aiflows/ChatFlowModule/blob/main/README.md).
-Note that all the code referenced from this point onwards can be found [here](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/)
+Note that all the code referenced from this point onwards can be found [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/)
 
 Let's dive in without further delay!
 
-First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/run_qa_flow.py) to see all the code):
+First thing to do is to fetch the `ChatFlowModule` from the FlowVerse (see [run_qa_flow.py](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/run_qa_flow.py) to see all the code):
 ```python
-from flows import flow_verse
+from aiflows import flow_verse
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/ChatFlowModule", "revision": "6a1e351a915f00193f18f3da3b61c497df1d31a3"},
@@ -42,17 +42,17 @@ Let's break this down:
 
 Now that we've fetched the `ChatAtomicFlowModule` from the FlowVerse, we can start creating our Flow.
 
-The configuration for our flow is available in [simpleQA.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/simpleQA.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The default configuration can be found [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/ChatAtomicFlow.yaml)
+The configuration for our flow is available in [simpleQA.yaml](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/simpleQA.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The default configuration can be found [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/ChatAtomicFlow.yaml)
 
 Let's start with the input and output interface:
 ```yaml
 input_interface: # Connector between the "input data" and the Flow
-  _target_: flows.interfaces.KeyInterface
+  _target_: aiflows.interfaces.KeyInterface
   additional_transformations:
-    - _target_: flows.data_transformations.KeyMatchInput # Pass the input parameters specified by the flow
+    - _target_: aiflows.data_transformations.KeyMatchInput # Pass the input parameters specified by the flow
 
 output_interface: # Connector between the Flow's output and the caller
-  _target_: flows.interfaces.KeyInterface
+  _target_: aiflows.interfaces.KeyInterface
   keys_to_rename:
     api_output: answer # Rename the api_output to answer
 ```
@@ -62,7 +62,7 @@ output_interface: # Connector between the Flow's output and the caller
 Now let's look at the flow's configuration:
 ```yaml
 flow: # Overrides the ChatAtomicFlow config
-  _target_: aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+  _target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
 
   name: "SimpleQA_Flow"
   description: "A flow that answers questions."
@@ -82,7 +82,7 @@ flow: # Overrides the ChatAtomicFlow config
 ```yaml
   # ~~~ backend model parameters ~~
   backend:
-    _target_: flows.backends.llm_lite.LiteLLMBackend
+    _target_: aiflows.backends.llm_lite.LiteLLMBackend
     api_infos: ???
     model_name:
       openai: "gpt-3.5-turbo"
@@ -102,7 +102,7 @@ flow: # Overrides the ChatAtomicFlow config
     * `model_name` A dictionary with key-item pairs, where keys correspond to the `backend_used` attribute of the `ApiInfo` class for the chosen backend, and values represent the desired model for that backend. Model selection depends on the provided `api_infos`. Additional models can be added for different backends, following LiteLLM's naming conventions (refer to LiteLLM's supported providers and model names [here](https://docs.litellm.ai/docs/providers)). For instance, with an Anthropic API key and a desire to use "claude-2," one would check Anthropic's model details [here](https://docs.litellm.ai/docs/providers/anthropic#model-details). As "claude-2" is named the same in LiteLLM, the `model_name` dictionary would be updated as follows:
       ```yaml
       backend:
-      _target_: flows.backends.llm_lite.LiteLLMBackend
+      _target_: aiflows.backends.llm_lite.LiteLLMBackend
       api_infos: ???
       model_name:
         openai: "gpt-3.5-turbo"
@@ -115,14 +115,14 @@ flow: # Overrides the ChatAtomicFlow config
 ```yaml
   # ~~~ Prompt specification ~~~
   system_message_prompt_template:
-    _target_: flows.prompt_template.JinjaPrompt
+    _target_: aiflows.prompt_template.JinjaPrompt
     template: |2-
       You are a helpful chatbot that truthfully answers questions.
     input_variables: []
     partial_variables: {}
 
   init_human_message_prompt_template:
-    _target_: flows.prompt_template.JinjaPrompt
+    _target_: aiflows.prompt_template.JinjaPrompt
     template: |2-
       Answer the following question: {{question}}
     input_variables: ["question"]
@@ -194,7 +194,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The full example is available [here](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/) and can be executed as follows:
+The full example is available [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/) and can be executed as follows:
 
 ```bash
 cd examples/minimal\ QA/
@@ -207,13 +207,13 @@ Upon running, the answer is similar to the following:
 ```
 To learn how to obtain information on the 2023 NBA Champion using Flows, refer to the next tutorial [ReAct](./reAct.md), a Flow that provides `ChatAtomicFlow` to tools like search engines!
 
-Additionally, the [minimal QA](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/) folder contains other examples using `ChatAtomicFlow` such as:
-* Running a [Flow with Demonstrations](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/run_qa_flow_w_demonstrations.py) (encouraging the LLM to finshis answers with "my sire"). To run:
+Additionally, the [minimal QA](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/) folder contains other examples using `ChatAtomicFlow` such as:
+* Running a [Flow with Demonstrations](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/run_qa_flow_w_demonstrations.py) (encouraging the LLM to finshis answers with "my sire"). To run:
   ```bash
   cd examples/minimal\ QA/
   python run_qa_flow_w_demonstrations.py
   ```
-* Running the [Simple Q&A flow in a multithreaded fashion](https://github.com/epfl-dlab/flows/tree/main/examples/minimal%20QA/run_qa_flow_multithreaded.py) in order answer multiple questions with mulitple API_keys or providers. To run:
+* Running the [Simple Q&A flow in a multithreaded fashion](https://github.com/epfl-dlab/aiflows/tree/main/examples/minimal%20QA/run_qa_flow_multithreaded.py) in order answer multiple questions with mulitple API_keys or providers. To run:
   ```bash
   cd examples/minimal\ QA/
   python run_qa_flow_multithreaded.py

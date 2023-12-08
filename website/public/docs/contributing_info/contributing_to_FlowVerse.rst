@@ -28,7 +28,7 @@ Your structure should look like something like this:
 .. code-block:: bash
 
     ├── workspace-using-your-flows
-    └── FlowVerse
+    └── flow_modules
         ├── Flow1
         ├── Flow2
         ├── ...

@@ -1,10 +1,10 @@
 import os
 
-import flows
-from flows.flow_launchers import FlowLauncher
-from flows.base_flows import SequentialFlow
+import aiflows
+from aiflows.flow_launchers import FlowLauncher
+from aiflows.base_flows import SequentialFlow
 
-from flows.utils.general_helpers import read_yaml_file
+from aiflows.utils.general_helpers import read_yaml_file
 
 
 # logging.set_verbosity_debug()  # Uncomment this line to see verbose logs

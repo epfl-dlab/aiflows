@@ -2,20 +2,20 @@ import os
 
 import hydra
 
-import flows
-from flows.flow_launchers import FlowLauncher
-from flows.backends.api_info import ApiInfo
-from flows.utils.general_helpers import read_yaml_file
+import aiflows
+from aiflows.flow_launchers import FlowLauncher
+from aiflows.backends.api_info import ApiInfo
+from aiflows.utils.general_helpers import read_yaml_file
 
-from flows import logging
-from flows.flow_cache import CACHING_PARAMETERS, clear_cache
+from aiflows import logging
+from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
 
 CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
 logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
-from flows import flow_verse
+from aiflows import flow_verse
 
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [

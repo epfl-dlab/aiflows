@@ -3,10 +3,10 @@ requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
-py-modules = ["flows"]
+py-modules = ["aiflows"]
 
 [project]
-name = "flows"
+name = "aiflows"
 version = "0.0.1"
 description = 'aiFlows embodies the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" by Josifoski et al., and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'  
 authors = [

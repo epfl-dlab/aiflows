@@ -2,20 +2,20 @@ import os
 
 import hydra.utils
 
-from flows import logging
-from flows.datasets import OutputsDataset
-from flows.flow_cache import CACHING_PARAMETERS, clear_cache
-from flows.flow_launchers import FlowLauncher
+from aiflows import logging
+from aiflows.datasets import OutputsDataset
+from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
+from aiflows.flow_launchers import FlowLauncher
 
 CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
 logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
-from flows.utils.general_helpers import read_yaml_file
-from flows.backends.api_info import ApiInfo
+from aiflows.utils.general_helpers import read_yaml_file
+from aiflows.backends.api_info import ApiInfo
 
-from flows import flow_verse
+from aiflows import flow_verse
 
 dependencies = [
     {"url": "aiflows/ChatFlowModule", "revision": "a749ad10ed39776ba6721c37d0dc22af49ca0f17"},

@@ -29,7 +29,7 @@ Without further ado, let's dive in!
 Concretely, you would use the `sync_dependencies` function to pull the flow definition and its code from the FlowVerse:
 
 ```python
-from flows import flow_verse
+from aiflows import flow_verse
 dependencies = [
 {"url": "aiflows/ChatFlowModule", "revision": "main"}
 ]
@@ -71,7 +71,7 @@ Each flow from the FlowVerse should have a `demo.yaml` file, which is a demo con
 
 Load the  `demo.yaml` configuration:
 ```python
-from flows.utils.general_helpers import read_yaml_file
+from aiflows.utils.general_helpers import read_yaml_file
 # get demo configuration
 cfg = read_yaml_file("flow_modules/aiflows/ChatFlowModule/demo.yaml")
 ```
@@ -79,7 +79,7 @@ cfg = read_yaml_file("flow_modules/aiflows/ChatFlowModule/demo.yaml")
 An attentive reader might have noticed that the field `flow.backend.api_infos` in `demo.yaml` is set to "???" (see a snippet here below).
 ```yaml
 flow:  # Overrides the ChatAtomicFlow config
-  _target_: aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+  _target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
 
   name: "SimpleQA_Flow"
   description: "A flow that answers questions."
@@ -90,7 +90,7 @@ flow:  # Overrides the ChatAtomicFlow config
 
   # ~~~ backend model parameters ~~
   backend:
-    _target_: flows.backends.llm_lite.LiteLLMBackend
+    _target_: aiflows.backends.llm_lite.LiteLLMBackend
     api_infos: ???
 ```
 
@@ -127,7 +127,7 @@ print(flow_output_data)
 ```
 Congratulations! You've successfully run your first question-answering Flow!
 ___
-You can find this example in [runChatAtomicFlow.py](https://github.com/epfl-dlab/flows/tree/main/examples/quick_start/runChatAtomicFlow.py)
+You can find this example in [runChatAtomicFlow.py](https://github.com/epfl-dlab/aiflows/tree/main/examples/quick_start/runChatAtomicFlow.py)
 
 To run it, use the following commands in your terminal (make sure to copy-paste your keys first):
 ```bash
@@ -142,7 +142,7 @@ Upon execution, the result should appear as follows:
 
 ## Section 2: FlowVerse Playground Notebook
 
-Want to quickly run some Flows from FlowVerse? Check out our jupyter notebook [flow_verse_playground.ipynb](https://github.com/epfl-dlab/flows/tree/main/examples/quick_start/flow_verse_playground.ipynb) where you can quicky switch between the following flows from the FlowVerse:
+Want to quickly run some Flows from FlowVerse? Check out our jupyter notebook [flow_verse_playground.ipynb](https://github.com/epfl-dlab/aiflows/tree/main/examples/quick_start/flow_verse_playground.ipynb) where you can quicky switch between the following flows from the FlowVerse:
 
 * [ChatFlowModule](https://huggingface.co/aiflows/ChatFlowModule)
 

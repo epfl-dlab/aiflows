@@ -5,13 +5,13 @@
 <p>
 
 <p align="center">
-    <a href="https://epfl-dlab.github.io/flows">
+    <a href="https://epfl-dlab.github.io/aiflows">
     <img alt="Website" src="https://img.shields.io/badge/website-online-green">
     </a>
     <a href="https://discord.gg/yFZkpD2HAh">
     <img alt="Static Badge" src="https://img.shields.io/badge/Discord-gray?style=flat&logo=discord&link=https%3A%2F%2Fdiscord.gg%2FNJuDxSafCY">
     </a>
-    <a href="https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html">
+    <a href="https://epfl-dlab.github.io/aiflows/docs/built_with_sphinx/html/index.html">
     <img alt="Documentation" src="https://img.shields.io/badge/docs-online-green">
     </a>
     <a href="https://www.python.org/downloads/release/python-3100/"><img alt="PyPi version" src="https://img.shields.io/badge/python-3.10-blue.svg"></a>

@@ -133,7 +133,7 @@ The `run` function is a straightforward wrapper around [ChatAtomicFlow](https://
 
 ```yaml
 system_message_prompt_template:
-  _target_: flows.prompt_template.JinjaPrompt
+  _target_: aiflows.prompt_template.JinjaPrompt
   template: |2-
     You are a smart AI assistant. 
     
@@ -227,7 +227,7 @@ The `LCToolFlow` is an atomic flow functioning as an interface for LangChain too
 Using a tool with the `LCToolFlow` is a straightforward process. By setting the desired tool as the backend's `_target_`, you can seamlessly integrate it into your workflow. For a comprehensive list of compatible tools, please refer to the Integrations section in [LangChain's Tool documentation](https://python.langchain.com/docs/modules/agents/tools/).
 
 ```yaml
-- _target_: flows.application_flows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+- _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
   overrides:
     name: "ddg_search"
     backend:

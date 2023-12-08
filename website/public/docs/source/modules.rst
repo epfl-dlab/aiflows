@@ -1,7 +1,7 @@
-flows
-=====
+aiflows
+=======
 
 .. toctree::
    :maxdepth: 4
 
-   flows
+   aiflows

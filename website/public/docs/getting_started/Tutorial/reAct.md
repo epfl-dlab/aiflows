@@ -29,13 +29,13 @@ These steps are repeated until an answer is obtained.
 
 In this section, we'll guide you through running the ReAct Flow.
 
-For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/)
+For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReAct/)
 
 Now, let's delve into the details without further delay!
 
 Similar to the [Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_FlowVerse_minimalQA.md) tutorial (refer to that tutorial for more insights), we'll start by fetching some flows from the FlowVerse. Specifically, we'll fetch the `ControllerExecutorFlowModule`, which includes the `ControllerExecutorFlow` (the composite flow of `ControllerFlow` and `ExecutorFlow`) and the `WikiSearchAtomicFlow`. Additionally, we'll fetch the `LCToolFlow`, a flow capable of implementing the DuckDuckGo search flow.
 ```python
-from flows import flow_verse
+from aiflows import flow_verse
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/LCToolFlowModule", "revision": "f1020b23fe2a1ab6157c3faaf5b91b5cdaf02c1b"},
@@ -54,11 +54,11 @@ pip install duckduckgo-search==3.9.6
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our flow.
 
-The configuration for our flow is available in [ReAct.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/ReAct.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
+The configuration for our flow is available in [ReAct.yaml](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReAct/ReAct.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
 Now let's look at the flow's configuration:
 ```yaml
 flow:
-  _target_: aiflows.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
+  _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerExecutorFlow.instantiate_from_default_config
   max_rounds: 30
 ```
 * The `_target_` parameter specifies the instantiation method for our flow. In this instance, we're using it to instantiate the `ControllerExecutorFlow` from its default configuration file.
@@ -69,7 +69,7 @@ Now let's look at the flow's `subflows_config`, which provides configuration det
   ### Subflows specification
   subflows_config:
     Controller:
-      _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+      _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
       commands:
         wiki_search:
           description: "Performs a search on Wikipedia."
@@ -81,7 +81,7 @@ Now let's look at the flow's `subflows_config`, which provides configuration det
           description: "Signal that the objective has been satisfied, and returns the answer to the user."
           input_args: ["answer"]
       backend:
-        _target_: flows.backends.llm_lite.LiteLLMBackend
+        _target_: aiflows.backends.llm_lite.LiteLLMBackend
         api_infos: ???
         model_name:
           openai: "gpt-3.5-turbo"
@@ -94,12 +94,12 @@ Now let's look at the flow's `subflows_config`, which provides configuration det
   * `backend`: The backend used by the `ControllerFlow` (see the previous tutorial [Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_FlowVerse_minimalQA.md) for a more detailed description of the backend)
 ```yaml
     Executor:
-      _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
+      _target_: aiflows.base_flows.BranchingFlow.instantiate_from_default_config
       subflows_config:
         wiki_search:
-          _target_: aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+          _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
         ddg_search:
-          _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+          _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
           backend:
             _target_: langchain.tools.DuckDuckGoSearchRun
 
@@ -168,7 +168,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The full example is available [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReAct/) and can be executed as follows:
+The full example is available [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReAct/) and can be executed as follows:
 
 ```bash
 cd examples/ReAct

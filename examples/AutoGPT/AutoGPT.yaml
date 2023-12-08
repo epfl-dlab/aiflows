@@ -1,12 +1,12 @@
 flow:
-  _target_: aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
+  _target_: flow_modules.aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
   max_rounds: 30
 
   ### Subflows specification
   subflows_config:
     #ControllerFlow Configuration
     Controller:
-      _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+      _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
       commands:
         wiki_search:
           description: "Performs a search on Wikipedia."
@@ -38,12 +38,12 @@ flow:
 
     #ExecutorFlow Configuration
     Executor:
-      _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
+      _target_: aiflows.base_flows.BranchingFlow.instantiate_from_default_config
       subflows_config:
         wiki_search:
-          _target_: aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+          _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
         ddg_search:
-          _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+          _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
           backend:
             _target_: langchain.tools.DuckDuckGoSearchRun
 

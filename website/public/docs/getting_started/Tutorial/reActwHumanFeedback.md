@@ -36,14 +36,14 @@ The `ReActWithHumanFeedback` flow is a circular flow that organizes the problem-
 
 In this section, we'll guide you through running the `ReActWithHumanFeedbackFlow`. 
 
-For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/).
+For the code snippets referenced from this point onward, you can find them [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReActWithHumanFeedback/).
 
 Now, let's delve into the details without further delay!
 
 Similar to the [Introducing the FlowVerse with a Simple Q&A Flow](./intro_to_FlowVerse_minimalQA.md) tutorial (refer to that tutorial for more insights), we'll start by fetching some flows from the FlowVerse. Specifically, we'll fetch the `ControllerExecutorFlowModule`, which includes the `ControllerExecutorFlow` (the composite flow of `ControllerFlow` and `ExecutorFlow`) and the `WikiSearchAtomicFlow`. Additionally, we'll fetch the `LCToolFlow`, a flow capable of implementing the DuckDuckGo search flow, and the `HumanStandardInputFlowModule`, a flow capable of gathering human feedback.
 
 ```python
-from flows import flow_verse
+from aiflows import flow_verse
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
     {"url": "aiflows/ControllerExecutorFlowModule", "revision": "09cda9615e5c48ae18e2c1244519ed7321145187"},
@@ -63,13 +63,13 @@ pip install duckduckgo-search==3.9.6
 ```
 
 
-Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
+Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
 
 
 ```python
 from typing import Dict, Any
 
-from flows.base_flows import CircularFlow
+from aiflows.base_flows import CircularFlow
 from flow_modules.aiflows.ControllerExecutorFlowModule import ControllerExecutorFlow
 
 class ReActWithHumanFeedback(ControllerExecutorFlow):
@@ -87,7 +87,7 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
 ```
 Note that, we've simply added one function to the class which initiates the procedure to terminate the flow should the user enter "q"  when prompted for feedback.
 
-The configuration for our flow is available in [ReActWithHumanFeedback.yaml](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config  can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
+The configuration for our flow is available in [ReActWithHumanFeedback.yaml](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.yaml). We will now break it down into chunks and explain its various parameters. Note that the flow is instantiated from its default configuration, so we are only defining the parameters we wish to override here. The `ControllerExecutorFlow`'s default config  can be found [here](https://huggingface.co/aiflows/ControllerExecutorFlowModule/blob/main/ControllerExecutorFlow.yaml) and the `LCToolFlow` default config can be found [here](https://huggingface.co/aiflows/LCToolFlowModule/blob/main/LCToolFlow.yaml).
 
 Our focus will be on explaining the modified parameters in the configuration, with reference to the previous tutorial for unchanged parameters.
 Now let's look at the flow's configuration:
@@ -102,7 +102,7 @@ Now let's look at the flow's `subflows_config`, which provides configuration det
 subflows_config:
   #ControllerFlow
   Controller:
-    _target_: aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
     backend:
       api_infos: ???
     commands:
@@ -143,19 +143,19 @@ Note that the `ControllerFlow` configuration remains nearly identical to that in
 ```yaml
   #ExecutorFlow   
   Executor:
-    _target_: flows.base_flows.BranchingFlow.instantiate_from_default_config
+    _target_: aiflows.base_flows.BranchingFlow.instantiate_from_default_config
     subflows_config:
       wiki_search:
-        _target_: aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+        _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
       ddg_search:
-        _target_: aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+        _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
         backend:
           _target_: langchain.tools.DuckDuckGoSearchRun
 ```
 The `ExecutorFlow` is identical to ReAct.
 ```yaml
   HumanFeedback:
-    _target_: aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+    _target_: flow_modules.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
     request_multi_line_input_flag: False
     query_message_prompt_template:
       template: |2-
@@ -196,9 +196,9 @@ The `ExecutorFlow` is identical to ReAct.
 topology: # The first two are the same as in the ControllerExecutorFlow
   - goal: "Select the next action and prepare the input for the executor."
     input_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       additional_transformations:
-        - _target_: flows.data_transformations.KeyMatchInput
+        - _target_: aiflows.data_transformations.KeyMatchInput
     flow: Controller
     output_interface:
       _target_: ControllerExecutorFlow.detect_finish_or_continue
@@ -206,14 +206,14 @@ topology: # The first two are the same as in the ControllerExecutorFlow
 
   - goal: "Execute the action specified by the Controller."
     input_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_rename:
         command: branch
         command_args: branch_input_data
       keys_to_select: ["branch", "branch_input_data"]
     flow: Executor
     output_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
       keys_to_rename:
         branch_output_data: observation
       keys_to_select: ["observation"]
@@ -221,7 +221,7 @@ topology: # The first two are the same as in the ControllerExecutorFlow
 
   - goal: "Ask the user for feedback."
     input_interface:
-      _target_: flows.interfaces.KeyInterface
+      _target_: aiflows.interfaces.KeyInterface
     flow: HumanFeedback
     output_interface:
       _target_: ReActWithHumanFeedback.detect_finish_in_human_input
@@ -302,7 +302,7 @@ flow_output_data = outputs[0]
 print(flow_output_data)
 ```
 
-The complete example is accessible [here](https://github.com/epfl-dlab/flows/tree/main/examples/ReActWithHumanFeedback/) and can be executed as follows:
+The complete example is accessible [here](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReActWithHumanFeedback/) and can be executed as follows:
 
 ```bash
 cd examples/ReActWithHumanFeedback
@@ -324,7 +324,7 @@ wiki_search
 == Result
 {'wiki_content': 'Michael Jeffrey Jordan (born February 17, 1963), also known by his initials MJ, is an American businessman and former professional basketball player. His profile on the official National Basketball Association (NBA) website states that "by acclamation, Michael Jordan is the greatest basketball player of all time." He played fifteen seasons in the NBA, winning six NBA championships with the Chicago Bulls. He was integral in popularizing the sport of basketball and the NBA around the world in the 1980s and 1990s, becoming a global cultural icon.Jordan played college basketball for three seasons under coach Dean Smith with the North Carolina Tar Heels. As a freshman, he was a member of the Tar Heels\' national championship team in 1982. Jordan joined the Bulls in 1984 as the third overall draft pick and quickly emerged as a league star, entertaining crowds with his prolific scoring while gaining a reputation as one of the game\'s best defensive players. His leaping ability, demonstrated by performing slam dunks from the free-throw line in Slam Dunk Contests, earned him the nicknames "Air Jordan" and "His Airness". Jordan won his first NBA title with the Bulls in 1991 and followed that achievement with titles in 1992 and 1993, securing a three-peat. Jordan abruptly retired from basketball before the 1993–94 NBA season to play Minor League Baseball but returned to the Bulls in March 1995 and led them to three more championships in 1996, 1997, and 1998, as well as a then-record 72 regular season wins in the 1995–96 NBA season. He retired for the second time in January 1999 but returned for two more NBA seasons from 2001 to 2003 as a member of the Washington Wizards. During his professional career, he was also selected to play for the United States national team, winning four gold medals—at the 1983 Pan American Games, 1984 Summer Olympics, 1992 Tournament of the Americas and 1992 Summer Olympics—while also being undefeated.Jordan\'s individual accolades and accomplishments include six NBA Finals Most Valuable Player (MVP) awards, ten NBA scoring titles (both all-time records), five NBA MVP awards, ten All-NBA First Team designations, nine All-Defensive First Team honors, fourteen NBA All-Star Game selections, three NBA All-Star Game MVP awards, three NBA steals titles, and the 1988 NBA Defensive Player of the Year Award. He holds the NBA records for career regular season scoring average (30.1 points per game) and career playoff scoring average (33.4 points per game). In 1999, he was named the 20th century\'s greatest North American athlete by ESPN and was second to Babe Ruth on the Associated Press\' list of athletes of the century. Jordan was twice inducted into the Naismith Memorial Basketball Hall of Fame, once in 2009 for his individual career, and again in 2010 as part of the 1992 United States men\'s Olympic basketball team ("The Dream Team"). He became a member of the United States Olympic Hall of Fame in 2009, a member of the North Carolina Sports Ha'}
 
-[2023-12-06 09:30:40,844][flows.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow:126][INFO] - Please enter you single-line response and press enter.
+[2023-12-06 09:30:40,844][aiflows.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow:126][INFO] - Please enter you single-line response and press enter.
 ```
 
 You can respond with:
@@ -347,7 +347,7 @@ wiki_search
 
 == Result
 {'wiki_content': 'Michael Irwin Jordan  (born February 25, 1956) is an American scientist, professor at the University of California, Berkeley and researcher in machine learning, statistics, and artificial intelligence.Jordan was elected a member of the National Academy of Engineering in 2010 for contributions to the foundations and applications of machine learning.\nHe is one of the leading figures in machine learning, and in 2016 Science reported him as the world\'s most influential computer scientist.In 2022, Jordan won the inaugural World Laureates Association Prize in Computer Science or Mathematics, "for fundamental contributions to the foundations of machine learning and its application."\n\n\n== Education ==\nJordan received his BS magna cum laude in Psychology in 1978 from the Louisiana State University, his MS in Mathematics in 1980 from Arizona State University and his PhD in Cognitive Science in 1985 from the University of California, San Diego. At the University of California, San Diego, Jordan was a student of David Rumelhart and a member of the Parallel Distributed Processing (PDP) Group in the 1980s.\n\n\n== Career and research ==\nJordan is the Pehong Chen Distinguished Professor at the University of California, Berkeley, where his appointment is split across EECS and Statistics. He was a professor at the Department of Brain and Cognitive Sciences at MIT from 1988 to 1998.In the 1980s Jordan started developing recurrent neural networks as a cognitive model. In recent years, his work is less driven from a cognitive perspective and more from the background of traditional statistics.\nJordan popularised Bayesian networks in the machine learning community and is known for pointing out links between machine learning and statistics. He was also prominent in the formalisation of variational methods for approximate inference and the popularisation of the expectation–maximization algorithm in machine learning.\n\n\n=== Resignation from Machine Learning ===\nIn 2001, Jordan and others resigned from the editorial board of the journal Machine Learning. In a public letter, they argued for less restrictive access and pledged support for a new open access journal, the Journal of Machine Learning Research, which was created by Leslie Kaelbling to support the evolution of the field of machine learning.\n\n\n=== Honors and awards ===\nJordan has received numerous awards, including a best student paper award (with X. Nguyen and M. Wainwright) at the International Conference on Machine Learning (ICML 2004), a best paper award (with R. Jacobs) at the American Control Conference (ACC 1991), the ACM-AAAI Allen Newell Award, the IEEE Neural Networks Pioneer Award, and an NSF Presidential Young Investigator Award. In 2002 he was named an AAAI Fellow "for significant contributions to reasoning under uncertainty, machine learning, and human motor control." In 2004 he was named an IMS Fellow "for contributions to graphical models and machine learning." In 2005 he was named an IEEE Fellow "for '}
-[2023-12-06 09:53:52,058][flows.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow:126][INFO] - Please enter you single-line response and press enter.
+[2023-12-06 09:53:52,058][aiflows.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow:126][INFO] - Please enter you single-line response and press enter.
 ```
 Your subsequent response could be:
 

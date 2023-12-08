@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from flows.base_flows import CircularFlow
+from aiflows.base_flows import CircularFlow
 from flow_modules.aiflows.ControllerExecutorFlowModule import ControllerExecutorFlow
 
 

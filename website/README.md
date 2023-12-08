@@ -11,7 +11,6 @@ pip install sphinx
 pip install sphinxawesome-theme
 pip install sphinx_copybutton
 pip install sphinx-book-theme==1.0.1
-pip install m2r
 pip install myst-parser[sphinx]
 ```
 
@@ -21,7 +20,7 @@ pip install myst-parser[sphinx]
 # build API documentation
 cd public/docs
 make clean
-sphinx-apidoc -o source/ ../../../flows
+sphinx-apidoc -o source/ ../../../aiflows
 make html
 ```
 

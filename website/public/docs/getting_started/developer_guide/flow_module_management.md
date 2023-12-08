@@ -26,7 +26,7 @@ To use or import a flow module, first sync it to the `flow_modules` directory in
 dependencies = [
     {"url": "nbaldwin/ChatInteractiveFlowModule", "revision": "main"},
 ]
-from flows import flow_verse
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 
 from flow_modules.nbaldwin.ChatInteractiveFlowModule import ChatHumanFlowModule
@@ -47,7 +47,7 @@ This synchronization process, though it may seem unconventional at first, provid
 For a visual representation, consider the following directory structure:
 
 ```shell
-(flows) ➜  dev-tutorial tree .
+(aiflows) ➜  dev-tutorial tree .
 .
 ├── flow_modules
 │   ├── aiflows

@@ -1,15 +1,15 @@
 input_interface: # Connector between the "input data" and the Flow
-  _target_: flows.interfaces.KeyInterface
+  _target_: aiflows.interfaces.KeyInterface
   additional_transformations:
-    - _target_: flows.data_transformations.KeyMatchInput # Pass the input parameters specified by the flow
+    - _target_: aiflows.data_transformations.KeyMatchInput # Pass the input parameters specified by the flow
 
 output_interface: # Connector between the Flow's output and the caller
-  _target_: flows.interfaces.KeyInterface
+  _target_: aiflows.interfaces.KeyInterface
   keys_to_rename:
     api_output: answer # Rename the api_output to answer
 
 flow: # Overrides the ChatAtomicFlow config
-  _target_: aiflows.VisionFlowModule.VisionAtomicFlow.instantiate_from_default_config
+  _target_: flow_modules.aiflows.VisionFlowModule.VisionAtomicFlow.instantiate_from_default_config
   name: "VisionQA_Flow"
   description: "A flow that answers questions on images."
 
@@ -20,7 +20,7 @@ flow: # Overrides the ChatAtomicFlow config
 
   # ~~~ backend model parameters ~~
   backend:
-    _target_: flows.backends.llm_lite.LiteLLMBackend
+    _target_: aiflows.backends.llm_lite.LiteLLMBackend
     api_infos: ???
     model_name:
       openai: "gpt-4-vision-preview"
@@ -41,14 +41,14 @@ flow: # Overrides the ChatAtomicFlow config
 
   # ~~~ Prompt specification ~~~
   system_message_prompt_template:
-    _target_: flows.prompt_template.JinjaPrompt
+    _target_: aiflows.prompt_template.JinjaPrompt
     template: |2-
       You are a helpful chatbot that truthfully answers questions.
     input_variables: []
     partial_variables: {}
 
   init_human_message_prompt_template:
-    _target_: flows.prompt_template.JinjaPrompt
+    _target_: aiflows.prompt_template.JinjaPrompt
     template: |2-
       Answer the following question: {{question}}
     input_variables: ["question"]

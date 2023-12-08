@@ -40,7 +40,7 @@ mkdir FlowVerse
 Following the download of your initial Flows from the FlowVerse, your folder arrangement should look like this:
 ```bash
 |-- YourProject
-|-- FlowVerse
+|-- flow_modules
 |      |-- Flow1
 |      |-- Flow2
 |      |-- ...

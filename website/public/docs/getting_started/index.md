@@ -21,17 +21,3 @@ Many of the recently proposed prompting and collaboration strategies involving t
 **The Flows framework exemplified.** The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the [paper](https://arxiv.org/abs/2308.01285). The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
 
 
-<!-- Many of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). In the link above, you'll find a detailed walkthrough of how to build some representative workflows.
-
-.. figure:: ./media/previous_flows_rounded.png
-   :align: center
-   :alt: image
-   :width: 1000px
-
-   **The Flows framework exemplified.** The first column depicts examples of tools. Notably, 
-   in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, 
-   constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. 
-   The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the `paper`_ . 
-   The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
-
-.. _paper: https://arxiv.org/abs/2308.01285 -->

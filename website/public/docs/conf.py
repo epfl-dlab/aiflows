@@ -12,9 +12,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../../../"))
 
-project = "FLOWS"
+project = "aiFlows"
 copyright = "2023"
-author = "FLOWS Project"
+author = "aiFlow Team"
 
 
 # -- General configuration ---------------------------------------------------
