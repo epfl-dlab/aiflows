@@ -55,7 +55,3 @@ As a practitioner, you will benefit from:
 - Direct access to any advancements in the field.
 
 To develop the next-generation AI tools and simultaneously maximize the benefits, developers and researchers need to have complete control over their workflows. aiFlows strives to empower you to make each Flow your own! See the `contribute <../contributing_info/index.rst>`_ section for more information.
-
-.. _example_link:
-
-`Example Document <example_document.rst>`_
