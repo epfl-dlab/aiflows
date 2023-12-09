@@ -46,7 +46,7 @@ export const Navigation = (props:any) => {
             </li>
             <li>
               <a href="#contribute" className="page-scroll">
-                Contribute
+                Join us
               </a>
             </li>
             <li>
