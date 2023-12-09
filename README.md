@@ -20,7 +20,7 @@
     </a>
 </p>
 
-🤖🌊 **aiFlows** embodies the <a href="docs/flows_paper.pdf">*Flows*</a> abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
+🤖🌊 **aiFlows** embodies the <a href="assets/flows_paper.pdf">*Flows*</a> abstraction (<a href="https://arxiv.org/abs/2308.01285">arXiv</a>) and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
 - 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows can be shared publicly on the FlowVerse, readily downloaded and reused as part of different Flows
@@ -108,8 +108,8 @@ As mentioned above, our goal is to make Flows a community-driven project that wi
 You can become a part of the project in a few ways:
 - contribute to the aiFlows codebase: this will directly improve the library and benefit everyone using it
 - contribute to the FlowVerse: by making your work accessible to everyone, others might improve your work and build on it, or you can build on others' work
-- use the library in your creative projects, push it to its limits, and share your feedback: the proof of the pudding is in the eating, and the best way to identify promising directions, as well as important missing features, is by experimenting   
-- last but not least, ⭐ the repository and 📣 share aiFlows with your friends and colleagues; spread the word ❤️ 
+- use the library in your creative projects, push it to its limits, and share your feedback: the proof of the pudding is in the eating, and the best way to identify promising directions, as well as important missing features, is by experimenting
+- last but not least, ⭐ the repository and 📣 share aiFlows with your friends and colleagues; spread the word ❤️
 
 We will support the community in the best way we can but also lead by example. In the coming weeks, we will share:
   - a roadmap for the library (FlowViz; FlowStudio; improve flexibility, developer experience, and support for concurrency, etc. -- feedback and help would be greatly appreciated!)
