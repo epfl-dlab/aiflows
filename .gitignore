@@ -168,3 +168,5 @@ data
 # VS Code
 .vscode/
 *predictions*
+
+/website/node_modules/
