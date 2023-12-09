@@ -14,7 +14,7 @@ Welcome to aiFlows! 🚀
    citation/index
    source/modules
 
-🤖🌊 **aiFlows** embodies the *`Flows`_* (`arXiv`_) abstraction and greatly simplifies the design and
+🤖🌊 **aiFlows** embodies the `Flows`_ (`arXiv`_) abstraction and greatly simplifies the design and
 implementation of complex (work)Flows involving humans, AI systems, and tools. It enables:
 
 - 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
