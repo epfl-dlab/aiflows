@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+
+<html :class="{'dark': darkMode === 'dark' || (darkMode === 'system' &amp;&amp; window.matchMedia('(prefers-color-scheme: dark)').matches)}" class="scroll-smooth" lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') || localStorage.setItem('darkMode', 'system'), activeSection: '' }" x-init="$watch('darkMode', val =&gt; localStorage.setItem('darkMode', val))">
+<head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8"/>
+<meta content="white" media="(prefers-color-scheme: light)" name="theme-color"/>
+<meta content="black" metia="(prefers-color-scheme: dark)" name="theme-color"/>
+<meta content="Docutils 0.19: https://docutils.sourceforge.io/" name="generator"/>
+<title>Coding Standards | aiFlows  documentation</title>
+<meta content="Coding Standards | aiFlows  documentation" property="og:title"/>
+<meta content="Coding Standards | aiFlows  documentation" name="twitter:title"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/flows_logo_round.png" rel="icon"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="contributing_to_FlowVerse.html" rel="next" title="Recommended Workflow for Contributing to a Flow on the FlowVerse"/>
+<link href="automating_documentation_flow.html" rel="prev" title="Automating the documentation of a Flow on the FlowVerse"/>
+<script>
+    <!-- Prevent Flash of wrong theme -->
+      const userPreference = localStorage.getItem('darkMode');
+      let mode;
+      if (userPreference === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        mode = 'dark';
+        document.documentElement.classList.add('dark');
+      } else {
+        mode = 'light';
+      }
+      if (!userPreference) {localStorage.setItem('darkMode', mode)}
+    </script>
+</head>
+<body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+      Skip to content
+    </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
+<div class="hidden mr-4 md:flex">
+<a class="flex items-center mr-6" href="../index.html"><span class="hidden font-bold sm:inline-block text-clip whitespace-nowrap">aiFlows  documentation</span>
+</a></div><button @click="showSidebar = true" class="inline-flex items-center justify-center h-10 px-0 py-2 mr-2 text-base font-medium transition-colors rounded-md hover:text-accent-foreground hover:bg-transparent md:hidden" type="button">
+<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M152.587 825.087q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440Zm0-203.587q-19.152 0-32.326-13.174T107.087 576q0-19.152 13.174-32.326t32.326-13.174h320q19.152 0 32.326 13.174T518.087 576q0 19.152-13.174 32.326T472.587 621.5h-320Zm0-203.587q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440ZM708.913 576l112.174 112.174q12.674 12.674 12.674 31.826t-12.674 31.826Q808.413 764.5 789.261 764.5t-31.826-12.674l-144-144Q600 594.391 600 576t13.435-31.826l144-144q12.674-12.674 31.826-12.674t31.826 12.674q12.674 12.674 12.674 31.826t-12.674 31.826L708.913 576Z"></path>
+</svg>
+<span class="sr-only">Toggle navigation menu</span>
+</button>
+<div class="flex items-center justify-between flex-1 space-x-2 sm:space-x-4 md:justify-end">
+<div class="flex-1 w-full md:w-auto md:flex-none"><form @keydown.k.window.meta="$refs.search.focus()" action="../search.html" class="relative flex items-center group" id="searchbox" method="get">
+<input aria-label="Search the docs" class="inline-flex items-center font-medium transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background border border-input hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:placeholder-accent-foreground py-2 px-4 relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64" id="search-input" name="q" placeholder="Search ..." type="search" x-ref="search"/>
+<kbd class="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none text-muted-foreground items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-accent group-hover:text-accent-foreground">
+<span class="text-xs">⌘</span>
+    K
+  </kbd>
+</form>
+</div>
+<nav class="flex items-center space-x-1">
+<button @click="darkMode = darkMode === 'light' ? 'dark' : 'light'" class="relative inline-flex items-center justify-center px-0 text-sm font-medium transition-colors rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9" type="button">
+<svg class="absolute transition-all scale-100 rotate-0 dark:-rotate-90 dark:scale-0" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 685q45.456 0 77.228-31.772Q589 621.456 589 576q0-45.456-31.772-77.228Q525.456 467 480 467q-45.456 0-77.228 31.772Q371 530.544 371 576q0 45.456 31.772 77.228Q434.544 685 480 685Zm0 91q-83 0-141.5-58.5T280 576q0-83 58.5-141.5T480 376q83 0 141.5 58.5T680 576q0 83-58.5 141.5T480 776ZM80 621.5q-19.152 0-32.326-13.174T34.5 576q0-19.152 13.174-32.326T80 530.5h80q19.152 0 32.326 13.174T205.5 576q0 19.152-13.174 32.326T160 621.5H80Zm720 0q-19.152 0-32.326-13.174T754.5 576q0-19.152 13.174-32.326T800 530.5h80q19.152 0 32.326 13.174T925.5 576q0 19.152-13.174 32.326T880 621.5h-80Zm-320-320q-19.152 0-32.326-13.174T434.5 256v-80q0-19.152 13.174-32.326T480 130.5q19.152 0 32.326 13.174T525.5 176v80q0 19.152-13.174 32.326T480 301.5Zm0 720q-19.152 0-32.326-13.17Q434.5 995.152 434.5 976v-80q0-19.152 13.174-32.326T480 850.5q19.152 0 32.326 13.174T525.5 896v80q0 19.152-13.174 32.33-13.174 13.17-32.326 13.17ZM222.174 382.065l-43-42Q165.5 327.391 166 308.239t13.174-33.065q13.435-13.674 32.587-13.674t32.065 13.674l42.239 43q12.674 13.435 12.555 31.706-.12 18.272-12.555 31.946-12.674 13.674-31.445 13.413-18.772-.261-32.446-13.174Zm494 494.761-42.239-43q-12.674-13.435-12.674-32.087t12.674-31.565Q686.609 756.5 705.38 757q18.772.5 32.446 13.174l43 41.761Q794.5 824.609 794 843.761t-13.174 33.065Q767.391 890.5 748.239 890.5t-32.065-13.674Zm-42-494.761Q660.5 369.391 661 350.62q.5-18.772 13.174-32.446l41.761-43Q728.609 261.5 747.761 262t33.065 13.174q13.674 13.435 13.674 32.587t-13.674 32.065l-43 42.239q-13.435 12.674-31.706 12.555-18.272-.12-31.946-12.555Zm-495 494.761Q165.5 863.391 165.5 844.239t13.674-32.065l43-42.239q13.435-12.674 32.087-12.674t31.565 12.674Q299.5 782.609 299 801.38q-.5 18.772-13.174 32.446l-41.761 43Q231.391 890.5 212.239 890t-33.065-13.174ZM480 576Z"></path>
+</svg>
+<svg class="absolute transition-all scale-0 rotate-90 dark:rotate-0 dark:scale-100" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 936q-151 0-255.5-104.5T120 576q0-138 90-239.5T440 218q25-3 39 18t-1 44q-17 26-25.5 55t-8.5 61q0 90 63 153t153 63q31 0 61.5-9t54.5-25q21-14 43-1.5t19 39.5q-14 138-117.5 229T480 936Zm0-80q88 0 158-48.5T740 681q-20 5-40 8t-40 3q-123 0-209.5-86.5T364 396q0-20 3-40t8-40q-78 32-126.5 102T200 576q0 116 82 198t198 82Zm-10-270Z"></path>
+</svg>
+</button>
+</nav>
+</div>
+</div>
+</header>
+<div class="flex-1"><div class="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10"><aside :aria-hidden="!showSidebar" :class="{ 'translate-x-0': showSidebar }" class="fixed inset-y-0 left-0 md:top-14 z-50 md:z-30 bg-background md:bg-transparent transition-all duration-100 -translate-x-full md:translate-x-0 ml-0 p-6 md:p-0 md:-ml-2 md:h-[calc(100vh-3.5rem)] w-5/6 md:w-full shrink-0 overflow-y-auto border-r border-border md:sticky" id="left-sidebar">
+<a class="!justify-start text-sm md:!hidden bg-background" href="../index.html"><span class="font-bold text-clip whitespace-nowrap">aiFlows  documentation</span>
+</a>
+<div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
+<div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction/index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1 current" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="contribute_index.html">Contribution Guide<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="current" x-show="expanded">
+<li class="toctree-l2"><a class="reference internal" href="automating_documentation_flow.html">Automating the documentation of a Flow on  the FlowVerse</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Coding Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing_to_FlowVerse.html">Recommended Workflow for Contributing to a Flow on the FlowVerse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="contributing_to_aiFlows.html">Contributing to aiFlows Library (for bug fixes and adding features)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="finding_collaborators.html">Looking for Collaborators ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html">Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="license_info.html">Licence Info: Frequently Asked Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="recognition_info.html">Publicizing Your Work</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../citation/index.html">Citation</a></li>
+<li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="../source/modules.html">aiflows<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul x-show="expanded">
+<li class="toctree-l2" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="../source/aiflows.html">aiflows package<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul x-show="expanded">
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.backends.html">aiflows.backends package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.base_flows.html">aiflows.base_flows package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.datasets.html">aiflows.datasets package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.history.html">aiflows.history package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.messages.html">aiflows.messages package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.utils.html">aiflows.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+<button @click="showSidebar = false" class="absolute md:hidden right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100" type="button">
+<svg class="h-4 w-4" fill="currentColor" height="24" stroke="none" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 632 284 828q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536 576l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480 632Z"></path>
+</svg>
+</button>
+</aside>
+<main class="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
+<div class="w-full min-w-0 mx-auto">
+<nav aria-label="breadcrumbs" class="flex items-center mb-4 space-x-1 text-sm text-muted-foreground">
+<a class="overflow-hidden text-ellipsis whitespace-nowrap hover:text-foreground" href="../index.html">
+<span class="hidden md:inline">aiFlows  documentation</span>
+<svg aria-label="Home" class="md:hidden" fill="currentColor" height="18" stroke="none" viewbox="0 96 960 960" width="18" xmlns="http://www.w3.org/2000/svg">
+<path d="M240 856h120V616h240v240h120V496L480 316 240 496v360Zm-80 80V456l320-240 320 240v480H520V696h-80v240H160Zm320-350Z"></path>
+</svg>
+</a>
+<div class="mr-1">/</div><a class="hover:text-foreground overflow-hidden text-ellipsis whitespace-nowrap" href="contribute_index.html">Contribution Guide</a>
+<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">Coding Standards</span>
+</nav>
+<div id="content" role="main">
+<section id="coding-standards">
+<span id="id1"></span><h1>Coding Standards<a class="headerlink" href="#coding-standards" title="Permalink to this heading">¶</a></h1>
+<p>When contributing to aiFlows library, it’s essential to adhere to the following coding standards to maintain consistency, readability, and the overall quality of the codebase:</p>
+<section id="simplicity-and-readability">
+<h2>1. Simplicity and Readability<a class="headerlink" href="#simplicity-and-readability" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#simplicity-and-readability'">¶</a></h2>
+<p>Strive to make your code as simple and readable as possible. Use clear and meaningful variable/function names, and avoid unnecessary complexity.</p>
+</section>
+<section id="best-practices">
+<h2>2. Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#best-practices'">¶</a></h2>
+<p>Follow industry best practices when implementing features or fixing bugs. This includes adhering to language-specific conventions and guidelines.</p>
+</section>
+<section id="documentation">
+<h2>3. Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#documentation'">¶</a></h2>
+<p>Document your code thoroughly. Provide comments where necessary to explain complex logic or algorithms. Use clear and concise language to describe your thought process.</p>
+</section>
+<section id="docstrings-in-sphinx-format">
+<h2>4. Docstrings in Sphinx Format<a class="headerlink" href="#docstrings-in-sphinx-format" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#docstrings-in-sphinx-format'">¶</a></h2>
+<p>For all new functions and classes, include docstrings in Sphinx format. These docstrings should describe the purpose, parameters, return values, and possibly exceptions raised by the function or class. Here is an example of the docstring of a function in the Sphinx format:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">example_function</span><span class="p">(</span><span class="n">param1</span><span class="p">,</span> <span class="n">param2</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""</span>
+<span class="sd">    Brief description of the function.</span>
+
+<span class="sd">    :param param1: Description of the first parameter.</span>
+<span class="sd">    :param param2: Description of the second parameter.</span>
+<span class="sd">    :return: Description of the return value.</span>
+<span class="sd">    :raises CustomException: Description of when this exception is raised.</span>
+<span class="sd">    """</span>
+    <span class="c1"># Function implementation</span>
+    <span class="k">return</span> <span class="n">result</span>
+</pre></div>
+</div>
+<p>For more details on the Sphinx docstring format check out this link: <a class="reference external" href="https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html">Sphinx Docstring Format</a>.</p>
+</section>
+<section id="backward-compatibility">
+<h2>5. Backward Compatibility<a class="headerlink" href="#backward-compatibility" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#backward-compatibility'">¶</a></h2>
+<p>Ensure that your code changes are backward compatible whenever possible. This helps maintain the stability of the library for existing users.</p>
+</section>
+<section id="thorough-testing">
+<h2>6. Thorough Testing<a class="headerlink" href="#thorough-testing" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#thorough-testing'">¶</a></h2>
+<p>Create comprehensive tests for your code. Tests should cover various scenarios, including edge cases, to ensure the robustness of your implementation.</p>
+</section>
+<section id="test-coverage">
+<h2>7. Test Coverage<a class="headerlink" href="#test-coverage" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#test-coverage'">¶</a></h2>
+<p>Try to maintain or increase test coverage when adding new features or modifying existing ones when needed. Aim for a high percentage of code coverage to catch potential issues early.</p>
+</section>
+<section id="feature-tests">
+<h2>8. Feature Tests<a class="headerlink" href="#feature-tests" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#feature-tests'">¶</a></h2>
+<p>When introducing new features, include corresponding tests. Every feature should have a test, and existing tests should be updated as needed.</p>
+<hr class="docutils"/>
+<p>Your dedication to simplicity, readability, and best practices is greatly appreciated. Your contributions help make the aiFlows library more accessible, robust, and user-friendly for the entire community.</p>
+<p>Once again, thank you for being a valued member of our community and for your commitment to making aiFlows even better. Happy coding! 🚀⭐</p>
+</section>
+</section>
+</div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
+<div class="sticky top-16 -mt-10 max-h-[calc(var(--vh)-4rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<ul>
+<li><a :data-current="activeSection === '#simplicity-and-readability'" class="reference internal" href="#simplicity-and-readability">1. Simplicity and Readability</a></li>
+<li><a :data-current="activeSection === '#best-practices'" class="reference internal" href="#best-practices">2. Best Practices</a></li>
+<li><a :data-current="activeSection === '#documentation'" class="reference internal" href="#documentation">3. Documentation</a></li>
+<li><a :data-current="activeSection === '#docstrings-in-sphinx-format'" class="reference internal" href="#docstrings-in-sphinx-format">4. Docstrings in Sphinx Format</a></li>
+<li><a :data-current="activeSection === '#backward-compatibility'" class="reference internal" href="#backward-compatibility">5. Backward Compatibility</a></li>
+<li><a :data-current="activeSection === '#thorough-testing'" class="reference internal" href="#thorough-testing">6. Thorough Testing</a></li>
+<li><a :data-current="activeSection === '#test-coverage'" class="reference internal" href="#test-coverage">7. Test Coverage</a></li>
+<li><a :data-current="activeSection === '#feature-tests'" class="reference internal" href="#feature-tests">8. Feature Tests</a></li>
+</ul>
+</div>
+</aside>
+</main>
+</div>
+</div><footer class="py-6 border-t border-border md:py-0">
+<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+<div class="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+<p class="text-sm leading-loose text-center text-muted-foreground md:text-left">© 2023 Built with <a class="font-medium underline underline-offset-4" href="https://www.sphinx-doc.org" rel="noreferrer">Sphinx 6.2.1</a></p>
+</div>
+</div>
+</footer>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/sphinx_highlight.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script defer="defer" src="../_static/theme.js"></script>
+</body>
+</html>

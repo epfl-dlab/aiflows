@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+<html :class="{'dark': darkMode === 'dark' || (darkMode === 'system' &amp;&amp; window.matchMedia('(prefers-color-scheme: dark)').matches)}" class="scroll-smooth" lang="en" x-data="{ darkMode: localStorage.getItem('darkMode') || localStorage.setItem('darkMode', 'system'), activeSection: '' }" x-init="$watch('darkMode', val =&gt; localStorage.setItem('darkMode', val))">
+<head>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta charset="utf-8"/>
+<meta content="white" media="(prefers-color-scheme: light)" name="theme-color"/>
+<meta content="black" metia="(prefers-color-scheme: dark)" name="theme-color"/>
+<meta content="Docutils 0.19: https://docutils.sourceforge.io/" name="generator"/>
+<title>aiflows.utils package | aiFlows  documentation</title>
+<meta content="aiflows.utils package | aiFlows  documentation" property="og:title"/>
+<meta content="aiflows.utils package | aiFlows  documentation" name="twitter:title"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/theme.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/copybutton.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/flows_logo_round.png" rel="icon"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="aiflows.prompt_template.html" rel="prev" title="aiflows.prompt_template package"/>
+<script>
+    <!-- Prevent Flash of wrong theme -->
+      const userPreference = localStorage.getItem('darkMode');
+      let mode;
+      if (userPreference === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        mode = 'dark';
+        document.documentElement.classList.add('dark');
+      } else {
+        mode = 'light';
+      }
+      if (!userPreference) {localStorage.setItem('darkMode', mode)}
+    </script>
+</head>
+<body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+      Skip to content
+    </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
+<div class="hidden mr-4 md:flex">
+<a class="flex items-center mr-6" href="../index.html"><span class="hidden font-bold sm:inline-block text-clip whitespace-nowrap">aiFlows  documentation</span>
+</a></div><button @click="showSidebar = true" class="inline-flex items-center justify-center h-10 px-0 py-2 mr-2 text-base font-medium transition-colors rounded-md hover:text-accent-foreground hover:bg-transparent md:hidden" type="button">
+<svg aria-hidden="true" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M152.587 825.087q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440Zm0-203.587q-19.152 0-32.326-13.174T107.087 576q0-19.152 13.174-32.326t32.326-13.174h320q19.152 0 32.326 13.174T518.087 576q0 19.152-13.174 32.326T472.587 621.5h-320Zm0-203.587q-19.152 0-32.326-13.174t-13.174-32.326q0-19.152 13.174-32.326t32.326-13.174h440q19.152 0 32.326 13.174t13.174 32.326q0 19.152-13.174 32.326t-32.326 13.174h-440ZM708.913 576l112.174 112.174q12.674 12.674 12.674 31.826t-12.674 31.826Q808.413 764.5 789.261 764.5t-31.826-12.674l-144-144Q600 594.391 600 576t13.435-31.826l144-144q12.674-12.674 31.826-12.674t31.826 12.674q12.674 12.674 12.674 31.826t-12.674 31.826L708.913 576Z"></path>
+</svg>
+<span class="sr-only">Toggle navigation menu</span>
+</button>
+<div class="flex items-center justify-between flex-1 space-x-2 sm:space-x-4 md:justify-end">
+<div class="flex-1 w-full md:w-auto md:flex-none"><form @keydown.k.window.meta="$refs.search.focus()" action="../search.html" class="relative flex items-center group" id="searchbox" method="get">
+<input aria-label="Search the docs" class="inline-flex items-center font-medium transition-colors bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ring-offset-background border border-input hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground hover:placeholder-accent-foreground py-2 px-4 relative h-9 w-full justify-start rounded-[0.5rem] text-sm text-muted-foreground sm:pr-12 md:w-40 lg:w-64" id="search-input" name="q" placeholder="Search ..." type="search" x-ref="search"/>
+<kbd class="pointer-events-none absolute right-1.5 top-2 hidden h-5 select-none text-muted-foreground items-center gap-1 rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex group-hover:bg-accent group-hover:text-accent-foreground">
+<span class="text-xs">⌘</span>
+    K
+  </kbd>
+</form>
+</div>
+<nav class="flex items-center space-x-1">
+<button @click="darkMode = darkMode === 'light' ? 'dark' : 'light'" class="relative inline-flex items-center justify-center px-0 text-sm font-medium transition-colors rounded-md hover:bg-accent hover:text-accent-foreground h-9 w-9" type="button">
+<svg class="absolute transition-all scale-100 rotate-0 dark:-rotate-90 dark:scale-0" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 685q45.456 0 77.228-31.772Q589 621.456 589 576q0-45.456-31.772-77.228Q525.456 467 480 467q-45.456 0-77.228 31.772Q371 530.544 371 576q0 45.456 31.772 77.228Q434.544 685 480 685Zm0 91q-83 0-141.5-58.5T280 576q0-83 58.5-141.5T480 376q83 0 141.5 58.5T680 576q0 83-58.5 141.5T480 776ZM80 621.5q-19.152 0-32.326-13.174T34.5 576q0-19.152 13.174-32.326T80 530.5h80q19.152 0 32.326 13.174T205.5 576q0 19.152-13.174 32.326T160 621.5H80Zm720 0q-19.152 0-32.326-13.174T754.5 576q0-19.152 13.174-32.326T800 530.5h80q19.152 0 32.326 13.174T925.5 576q0 19.152-13.174 32.326T880 621.5h-80Zm-320-320q-19.152 0-32.326-13.174T434.5 256v-80q0-19.152 13.174-32.326T480 130.5q19.152 0 32.326 13.174T525.5 176v80q0 19.152-13.174 32.326T480 301.5Zm0 720q-19.152 0-32.326-13.17Q434.5 995.152 434.5 976v-80q0-19.152 13.174-32.326T480 850.5q19.152 0 32.326 13.174T525.5 896v80q0 19.152-13.174 32.33-13.174 13.17-32.326 13.17ZM222.174 382.065l-43-42Q165.5 327.391 166 308.239t13.174-33.065q13.435-13.674 32.587-13.674t32.065 13.674l42.239 43q12.674 13.435 12.555 31.706-.12 18.272-12.555 31.946-12.674 13.674-31.445 13.413-18.772-.261-32.446-13.174Zm494 494.761-42.239-43q-12.674-13.435-12.674-32.087t12.674-31.565Q686.609 756.5 705.38 757q18.772.5 32.446 13.174l43 41.761Q794.5 824.609 794 843.761t-13.174 33.065Q767.391 890.5 748.239 890.5t-32.065-13.674Zm-42-494.761Q660.5 369.391 661 350.62q.5-18.772 13.174-32.446l41.761-43Q728.609 261.5 747.761 262t33.065 13.174q13.674 13.435 13.674 32.587t-13.674 32.065l-43 42.239q-13.435 12.674-31.706 12.555-18.272-.12-31.946-12.555Zm-495 494.761Q165.5 863.391 165.5 844.239t13.674-32.065l43-42.239q13.435-12.674 32.087-12.674t31.565 12.674Q299.5 782.609 299 801.38q-.5 18.772-13.174 32.446l-41.761 43Q231.391 890.5 212.239 890t-33.065-13.174ZM480 576Z"></path>
+</svg>
+<svg class="absolute transition-all scale-0 rotate-90 dark:rotate-0 dark:scale-100" fill="currentColor" height="24" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 936q-151 0-255.5-104.5T120 576q0-138 90-239.5T440 218q25-3 39 18t-1 44q-17 26-25.5 55t-8.5 61q0 90 63 153t153 63q31 0 61.5-9t54.5-25q21-14 43-1.5t19 39.5q-14 138-117.5 229T480 936Zm0-80q88 0 158-48.5T740 681q-20 5-40 8t-40 3q-123 0-209.5-86.5T364 396q0-20 3-40t8-40q-78 32-126.5 102T200 576q0 116 82 198t198 82Zm-10-270Z"></path>
+</svg>
+</button>
+</nav>
+</div>
+</div>
+</header>
+<div class="flex-1"><div class="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10"><aside :aria-hidden="!showSidebar" :class="{ 'translate-x-0': showSidebar }" class="fixed inset-y-0 left-0 md:top-14 z-50 md:z-30 bg-background md:bg-transparent transition-all duration-100 -translate-x-full md:translate-x-0 ml-0 p-6 md:p-0 md:-ml-2 md:h-[calc(100vh-3.5rem)] w-5/6 md:w-full shrink-0 overflow-y-auto border-r border-border md:sticky" id="left-sidebar">
+<a class="!justify-start text-sm md:!hidden bg-background" href="../index.html"><span class="font-bold text-clip whitespace-nowrap">aiFlows  documentation</span>
+</a>
+<div class="relative overflow-hidden md:overflow-auto my-4 md:my-0 h-[calc(100vh-8rem)] md:h-auto">
+<div class="overflow-y-auto h-full w-full relative pr-6"><nav class="table w-full min-w-full my-6 lg:my-8">
+<p class="caption" role="heading"><span class="caption-text">Table of Contents</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduction/index.html">Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started/index.html">Getting Started</a></li>
+<li class="toctree-l1" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="../contributing_info/contribute_index.html">Contribution Guide<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul x-show="expanded">
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/automating_documentation_flow.html">Automating the documentation of a Flow on  the FlowVerse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/coding_standards.html">Coding Standards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/contributing_to_FlowVerse.html">Recommended Workflow for Contributing to a Flow on the FlowVerse</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/contributing_to_aiFlows.html">Contributing to aiFlows Library (for bug fixes and adding features)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/finding_collaborators.html">Looking for Collaborators ?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/index.html">Contribute</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/license_info.html">Licence Info: Frequently Asked Questions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contributing_info/recognition_info.html">Publicizing Your Work</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../citation/index.html">Citation</a></li>
+<li class="toctree-l1 current" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="modules.html">aiflows<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="current" x-show="expanded">
+<li class="toctree-l2 current" x-data="{ expanded: $el.classList.contains('current') ? true : false }"><a :class="{ 'expanded' : expanded }" @click="expanded = !expanded" class="reference internal expandable" href="aiflows.html">aiflows package<button @click.prevent.stop="expanded = !expanded" type="button"><span class="sr-only"></span><svg fill="currentColor" height="18px" stroke="none" viewbox="0 0 24 24" width="18px" xmlns="http://www.w3.org/2000/svg"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"></path></svg></button></a><ul class="current" x-show="expanded">
+<li class="toctree-l3"><a class="reference internal" href="aiflows.backends.html">aiflows.backends package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html">aiflows.base_flows package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html">aiflows.messages package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">aiflows.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+<button @click="showSidebar = false" class="absolute md:hidden right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100" type="button">
+<svg class="h-4 w-4" fill="currentColor" height="24" stroke="none" viewbox="0 96 960 960" width="24" xmlns="http://www.w3.org/2000/svg">
+<path d="M480 632 284 828q-11 11-28 11t-28-11q-11-11-11-28t11-28l196-196-196-196q-11-11-11-28t11-28q11-11 28-11t28 11l196 196 196-196q11-11 28-11t28 11q11 11 11 28t-11 28L536 576l196 196q11 11 11 28t-11 28q-11 11-28 11t-28-11L480 632Z"></path>
+</svg>
+</button>
+</aside>
+<main class="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
+<div class="w-full min-w-0 mx-auto">
+<nav aria-label="breadcrumbs" class="flex items-center mb-4 space-x-1 text-sm text-muted-foreground">
+<a class="overflow-hidden text-ellipsis whitespace-nowrap hover:text-foreground" href="../index.html">
+<span class="hidden md:inline">aiFlows  documentation</span>
+<svg aria-label="Home" class="md:hidden" fill="currentColor" height="18" stroke="none" viewbox="0 96 960 960" width="18" xmlns="http://www.w3.org/2000/svg">
+<path d="M240 856h120V616h240v240h120V496L480 316 240 496v360Zm-80 80V456l320-240 320 240v480H520V696h-80v240H160Zm320-350Z"></path>
+</svg>
+</a>
+<div class="mr-1">/</div><a class="hover:text-foreground overflow-hidden text-ellipsis whitespace-nowrap" href="modules.html">aiflows</a>
+<div class="mr-1">/</div><a class="hover:text-foreground overflow-hidden text-ellipsis whitespace-nowrap" href="aiflows.html">aiflows package</a>
+<div class="mr-1">/</div><span aria-current="page" class="font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">aiflows.utils package</span>
+</nav>
+<div id="content" role="main">
+<section id="aiflows-utils-package">
+<h1>aiflows.utils package<a class="headerlink" href="#aiflows-utils-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#submodules'">¶</a></h2>
+</section>
+<section id="module-aiflows.utils.general_helpers">
+<span id="aiflows-utils-general-helpers-module"></span><h2>aiflows.utils.general_helpers module<a class="headerlink" href="#module-aiflows.utils.general_helpers" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.general_helpers'">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.create_unique_id">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">create_unique_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">existing_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.create_unique_id" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.create_unique_id'">¶</a></dt>
+<dd><p>creates a unique id</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>existing_ids</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A list of existing ids to check against, defaults to None</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A unique id</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.encode_from_buffer">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">encode_from_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buffer</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.encode_from_buffer" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.encode_from_buffer'">¶</a></dt>
+<dd><p>Encodes a buffer (typically an image from a video) to base64.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.encode_image">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">encode_image</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">image_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.encode_image" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.encode_image'">¶</a></dt>
+<dd><p>Encodes an image to base64.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.exception_handler">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">exception_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.exception_handler" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.exception_handler'">¶</a></dt>
+<dd><p>Handles an exception.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>e</strong> (<em>Exception</em>) – The exception to handle</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.extract_top_level_function_names">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">extract_top_level_function_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">python_file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.extract_top_level_function_names" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.extract_top_level_function_names'">¶</a></dt>
+<dd><p>Extracts the top level function names from a python file (ignores nested)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>python_file_path</strong> (<em>str</em>) – The path to the python file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of function names</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[str]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.find_replace_in_dict">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">find_replace_in_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_to_find</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.find_replace_in_dict" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.find_replace_in_dict'">¶</a></dt>
+<dd><p>Recursively searches for keys == key_to_find in a dictionary and replaces its value with new_value.
+note1: it replaces each key == key_to_find, whever it is nested in the dictionary or not.
+note2: we recommend to only use this function in the Quick Start tutorial, and not in production code.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to search in</p></li>
+<li><p><strong>key_to_find</strong> (<em>str</em>) – The key to find</p></li>
+<li><p><strong>new_value</strong> (<em>Any</em>) – The new value to set</p></li>
+<li><p><strong>current_path</strong> (<em>str</em><em>, </em><em>optional</em>) – The current path, defaults to “”</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.flatten_dict">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">flatten_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.flatten_dict" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.flatten_dict'">¶</a></dt>
+<dd><p>Flattens a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to flatten</p></li>
+<li><p><strong>parent_key</strong> (<em>str</em><em>, </em><em>optional</em>) – The parent key to use, defaults to ‘’</p></li>
+<li><p><strong>sep</strong> (<em>str</em><em>, </em><em>optional</em>) – The separator to use, defaults to ‘.’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The flattened dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.get_current_datetime_ns">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">get_current_datetime_ns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.get_current_datetime_ns" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.get_current_datetime_ns'">¶</a></dt>
+<dd><p>Returns the current datetime in nanoseconds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current datetime in nanoseconds</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.get_function_from_name">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">get_function_from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.get_function_from_name" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.get_function_from_name'">¶</a></dt>
+<dd><p>Returns a function from a module given its name.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.get_predictions_dir_path">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">get_predictions_dir_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_if_not_exists</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.get_predictions_dir_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.get_predictions_dir_path'">¶</a></dt>
+<dd><p>Returns the path to the predictions folder.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>output_dir</strong> (<em>str</em>) – The output directory</p></li>
+<li><p><strong>create_if_not_exists</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to create the folder if it does not exist, defaults to True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The path to the predictions folder</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.log_suggest_help">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">log_suggest_help</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.log_suggest_help" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.log_suggest_help'">¶</a></dt>
+<dd><p>Logs a message suggesting to get help or provide feedback on github.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.nested_keys_pop">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">nested_keys_pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#aiflows.utils.general_helpers.nested_keys_pop" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.nested_keys_pop'">¶</a></dt>
+<dd><p>Pop a nested key in a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dict</strong> (<em>dict</em>) – The dictionary to pop from.</p></li>
+<li><p><strong>nested_key</strong> (<em>str</em>) – The nested key to pop, in the format “key1.key2.key3”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The value of the popped key.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.nested_keys_search">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">nested_keys_search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">search_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_key</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#aiflows.utils.general_helpers.nested_keys_search" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.nested_keys_search'">¶</a></dt>
+<dd><p>Searches for a nested key in a dictionary using a composite key string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>search_dict</strong> (<em>dict</em>) – The dictionary to search in.</p></li>
+<li><p><strong>nested_key</strong> (<em>str</em>) – The composite key string to search for.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the value of the nested key and a boolean indicating if the key was found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[Any, bool]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.nested_keys_update">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">nested_keys_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nested_key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.general_helpers.nested_keys_update" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.nested_keys_update'">¶</a></dt>
+<dd><p>Update the value of a nested key in a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_dict</strong> (<em>dict</em>) – The dictionary to update.</p></li>
+<li><p><strong>nested_key</strong> (<em>str</em>) – The nested key to update, in the format “key1.key2.key3”.</p></li>
+<li><p><strong>value</strong> (<em>Any</em>) – The new value to set for the nested key.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.process_config_leafs">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">process_config_leafs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">List</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">leaf_processor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.process_config_leafs" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.process_config_leafs'">¶</a></dt>
+<dd><p>Processes the leafs of a config dictionary or list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<em>Union</em><em>[</em><em>Dict</em><em>, </em><em>List</em><em>]</em>) – The config to process</p></li>
+<li><p><strong>leaf_processor</strong> (<em>Callable</em><em>[</em><em>[</em><em>Tuple</em><em>[</em><em>Any</em><em>, </em><em>Any</em><em>]</em><em>]</em><em>, </em><em>Any</em><em>]</em>) – The leaf processor to use</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.python_file_path_to_module_path">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">python_file_path_to_module_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.python_file_path_to_module_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.python_file_path_to_module_path'">¶</a></dt>
+<dd><p>Converts a python file path to a python module path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – The python file path</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The python module path</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.python_module_path_to_file_path">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">python_module_path_to_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.python_module_path_to_file_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.python_module_path_to_file_path'">¶</a></dt>
+<dd><p>Converts a python module path to a python file path</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>module_path</strong> (<em>str</em>) – The python module path</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The python file path</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_gzipped_jsonlines">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">read_gzipped_jsonlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.read_gzipped_jsonlines" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.read_gzipped_jsonlines'">¶</a></dt>
+<dd><p>Reads a gzipped jsonlines file and returns a list of dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_to_file</strong> (<em>str</em>) – The path to the gzipped jsonlines file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_jsonlines">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">read_jsonlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.read_jsonlines" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.read_jsonlines'">¶</a></dt>
+<dd><p>Reads a jsonlines file and returns a list of dictionaries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path_to_file</strong> (<em>str</em>) – The path to the jsonlines file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A list of dictionaries</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_outputs">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">read_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">outputs_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.read_outputs" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.read_outputs'">¶</a></dt>
+<dd><p>Reads the outputs from a jsonlines file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>outputs_dir</strong> (<em>str</em>) – The directory containing the output files</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The outputs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List[Dict[str, Any]]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_yaml_file">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">read_yaml_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.read_yaml_file" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.read_yaml_file'">¶</a></dt>
+<dd><p>Reads a yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – The path to the yaml file</p></li>
+<li><p><strong>resolve</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to resolve the config, defaults to True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The config</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.recursive_dictionary_update">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">recursive_dictionary_update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">u</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.recursive_dictionary_update" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.recursive_dictionary_update'">¶</a></dt>
+<dd><p>Performs a recursive update of the values in dictionary d with the values of dictionary u</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to update</p></li>
+<li><p><strong>u</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to update with</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated dictionary</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.try_except_decorator">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">try_except_decorator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.try_except_decorator" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.try_except_decorator'">¶</a></dt>
+<dd><p>A decorator that wraps the passed in function in order to handle exceptions and log a message suggesting to get help or provide feedback on github.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.unflatten_dict">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">unflatten_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.unflatten_dict" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.unflatten_dict'">¶</a></dt>
+<dd><p>Unflattens a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to unflatten</p></li>
+<li><p><strong>sep</strong> (<em>str</em><em>, </em><em>optional</em>) – The separator to use, defaults to ‘.’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The unflattened dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.validate_flow_config">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">validate_flow_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.validate_flow_config" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.validate_flow_config'">¶</a></dt>
+<dd><p>Validates the flow config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls</strong> (<em>class</em>) – The class to validate the flow config for</p></li>
+<li><p><strong>flow_config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The flow config to validate</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If the flow config is invalid</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.write_gzipped_jsonlines">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">write_gzipped_jsonlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.write_gzipped_jsonlines" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.write_gzipped_jsonlines'">¶</a></dt>
+<dd><p>Writes a list of dictionaries to a gzipped jsonlines file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – The path to the gzipped jsonlines file</p></li>
+<li><p><strong>data</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – The data to write</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – The mode to use, defaults to “w”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.write_jsonlines">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">write_jsonlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'w'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.write_jsonlines" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.write_jsonlines'">¶</a></dt>
+<dd><p>Writes a list of dictionaries to a jsonlines file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_file</strong> (<em>str</em>) – The path to the jsonlines file</p></li>
+<li><p><strong>data</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – The data to write</p></li>
+<li><p><strong>mode</strong> (<em>str</em><em>, </em><em>optional</em>) – The mode to use, defaults to “w”</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.write_outputs">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">write_outputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_output_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">summary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.write_outputs" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.write_outputs'">¶</a></dt>
+<dd><p>Writes the summary to a jsonlines file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path_to_output_file</strong> (<em>str</em>) – The path to the output file</p></li>
+<li><p><strong>summary</strong> (<em>List</em><em>[</em><em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>]</em>) – The summary to write</p></li>
+<li><p><strong>mode</strong> (<em>str</em>) – The mode to use</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils.io_utils">
+<span id="aiflows-utils-io-utils-module"></span><h2>aiflows.utils.io_utils module<a class="headerlink" href="#module-aiflows.utils.io_utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.io_utils'">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.io_utils.load_pickle">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">load_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.io_utils.load_pickle" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.io_utils.load_pickle'">¶</a></dt>
+<dd><p>Loads data from a pickle file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pickle_path</strong> (<em>str</em>) – The path to the pickle file</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The data loaded from the pickle file</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.io_utils.recursive_json_serialize">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">recursive_json_serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obj</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.io_utils.recursive_json_serialize" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.io_utils.recursive_json_serialize'">¶</a></dt>
+<dd><p>Recursively serializes an object to json.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>obj</strong> (<em>Any</em>) – The object to serialize</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The serialized object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils.logging">
+<span id="aiflows-utils-logging-module"></span><h2>aiflows.utils.logging module<a class="headerlink" href="#module-aiflows.utils.logging" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.logging'">¶</a></h2>
+<p>Logging utilities.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.add_handler">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">add_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Handler</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.add_handler" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.add_handler'">¶</a></dt>
+<dd><p>adds a handler to the Flows’s root logger.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.auto_set_dir">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">auto_set_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.auto_set_dir" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.auto_set_dir'">¶</a></dt>
+<dd><p>Use <code class="xref py py-func docutils literal notranslate"><span class="pre">logger.set_logger_dir()</span></code> to set log directory to
+“./.aiflows/logs/{scriptname}:{name}”. “scriptname” is the name of the main python file currently running</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>action</strong> (<em>str</em><em>, </em><em>optional</em>) – an action of [“k”,”d”,”q”] to be performed when the directory exists.
+When the directory exists, Will ask user by default.
+-“d”: delete the directory. Note that the deletion may fail when
+the directory is used by tensorboard.
+-“k”: keep the directory. This is useful when you resume from a
+previous training and want the directory to look as if the
+training was not interrupted.
+Note that this option does not load old models or any other
+old states for you. It simply does nothing.</p></li>
+<li><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the directory</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.disable_default_handler">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">disable_default_handler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.disable_default_handler" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.disable_default_handler'">¶</a></dt>
+<dd><p>Disable the default handler of the Flows’s root logger.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.disable_propagation">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">disable_propagation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.disable_propagation" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.disable_propagation'">¶</a></dt>
+<dd><p>Disable propagation of the library log outputs. Note that log propagation is disabled by default.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.enable_default_handler">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">enable_default_handler</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.enable_default_handler" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.enable_default_handler'">¶</a></dt>
+<dd><p>Enable the default handler of the Flows’s root logger.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.enable_explicit_format">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">enable_explicit_format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.enable_explicit_format" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.enable_explicit_format'">¶</a></dt>
+<dd><p>Enable explicit formatting for every Flows’s logger. The explicit formatter is as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">LEVELNAME</span><span class="o">|</span><span class="n">FILENAME</span><span class="o">|</span><span class="n">LINE</span> <span class="n">NUMBER</span><span class="p">]</span> <span class="n">TIME</span> <span class="o">&gt;&gt;</span> <span class="n">MESSAGE</span>
+</pre></div>
+</div>
+<p>All handlers currently bound to the root logger are affected by this method.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.enable_propagation">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">enable_propagation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.enable_propagation" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.enable_propagation'">¶</a></dt>
+<dd><p>Enable propagation of the library log outputs. Please disable the Flows’s default handler to
+prevent double logging if the root logger has been configured.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.get_log_levels_dict">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">get_log_levels_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.get_log_levels_dict" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.get_log_levels_dict'">¶</a></dt>
+<dd><p>Return a dictionary of all available log levels.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.get_logger">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">get_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Logger</span></span></span><a class="headerlink" href="#aiflows.utils.logging.get_logger" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.get_logger'">¶</a></dt>
+<dd><p>Return a logger with the specified name.
+This function is not supposed to be directly accessed unless you are writing a custom aiflows module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> (<em>str</em><em>, </em><em>optional</em>) – The name of the logger to return</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The logger</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.get_logger_dir">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">get_logger_dir</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.get_logger_dir" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.get_logger_dir'">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The logger directory, or None if not set.
+The directory is used for general logging, tensorboard events, checkpoints, etc.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.get_verbosity">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">get_verbosity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#aiflows.utils.logging.get_verbosity" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.get_verbosity'">¶</a></dt>
+<dd><p>Return the current level for the Flows’s root logger as an int.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The logging level</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>int</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Flows has following logging levels:</p>
+<ul class="simple">
+<li><p>50: <cite>aiflows.logging.CRITICAL</cite> or <cite>aiflows.logging.FATAL</cite></p></li>
+<li><p>40: <cite>aiflows.logging.ERROR</cite></p></li>
+<li><p>30: <cite>aiflows.logging.WARNING</cite> or <cite>aiflows.logging.WARN</cite></p></li>
+<li><p>20: <cite>aiflows.logging.INFO</cite></p></li>
+<li><p>10: <cite>aiflows.logging.DEBUG</cite></p></li>
+</ul>
+</div>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.remove_handler">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">remove_handler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">handler</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Handler</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.remove_handler" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.remove_handler'">¶</a></dt>
+<dd><p>removes given handler from the Flows’s root logger.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.reset_format">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">reset_format</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.reset_format" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.reset_format'">¶</a></dt>
+<dd><p>Resets the formatting for Flows’s loggers.
+All handlers currently bound to the root logger are affected by this method.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_dir">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dirname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.set_dir" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_dir'">¶</a></dt>
+<dd><p>Set the directory for global logging.
+:param dirname: log directory
+:type dirname: str
+:param action: an action of [“k”,”d”,”q”] to be performed when the directory exists.
+When the directory exists, Will ask user by default.
+- “d”: delete the directory. Note that the deletion may fail when
+the directory is used by tensorboard.
+- “k”: keep the directory. This is useful when you resume from a
+previous training and want the directory to look as if the
+training was not interrupted.
+Note that this option does not load old models or any other
+old states for you. It simply does nothing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dirname</strong> (<em>str</em>) – log directory</p></li>
+<li><p><strong>action</strong> (<em>str</em><em>, </em><em>optional</em>) – an action of [“k”,”d”,”q”] to be performed when the directory exists.
+When the directory exists, Will ask user by default.
+- “d”: delete the directory. Note that the deletion may fail when
+the directory is used by tensorboard.
+- “k”: keep the directory. This is useful when you resume from a
+previous training and want the directory to look as if the
+training was not interrupted.
+Note that this option does not load old models or any other
+old states for you. It simply does nothing.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_verbosity">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_verbosity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">verbosity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.logging.set_verbosity" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_verbosity'">¶</a></dt>
+<dd><p>Set the verbosity level for the Flows’s root logger.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>verbosity</strong> (<em>int</em>) – Logging level. For example, it can be one of the following:
+- <cite>aiflows.logging.CRITICAL</cite> or <cite>aiflows.logging.FATAL</cite>
+- <cite>aiflows.logging.ERROR</cite>
+- <cite>aiflows.logging.WARNING</cite> or <cite>aiflows.logging.WARN</cite>
+- <cite>aiflows.logging.INFO</cite>
+- <cite>aiflows.logging.DEBUG</cite></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_verbosity_debug">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_verbosity_debug</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.set_verbosity_debug" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_verbosity_debug'">¶</a></dt>
+<dd><p>Set the verbosity to the <cite>DEBUG</cite> level.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_verbosity_error">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_verbosity_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.set_verbosity_error" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_verbosity_error'">¶</a></dt>
+<dd><p>Set the verbosity to the <cite>ERROR</cite> level.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_verbosity_info">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_verbosity_info</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.set_verbosity_info" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_verbosity_info'">¶</a></dt>
+<dd><p>Set the verbosity to the <cite>INFO</cite> level.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.set_verbosity_warning">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">set_verbosity_warning</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.set_verbosity_warning" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.set_verbosity_warning'">¶</a></dt>
+<dd><p>Set the verbosity to the <cite>WARNING</cite> level.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.warning_advice">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">warning_advice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.warning_advice" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.warning_advice'">¶</a></dt>
+<dd><p>This method is identical to <cite>logger.warning()</cite>, but if env var FLOWS_NO_ADVISORY_WARNINGS=1 is set, this
+warning will not be printed</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>self</strong> – The logger object</p></li>
+<li><p><strong>*args</strong> – The arguments to pass to the warning method</p></li>
+<li><p><strong>**kwargs</strong> – The keyword arguments to pass to the warning method</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.logging.warning_once">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.logging.</span></span><span class="sig-name descname"><span class="pre">warning_once</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.logging.warning_once" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.logging.warning_once'">¶</a></dt>
+<dd><p>This method is identical to <cite>logger.warning()</cite>, but will emit the warning with the same message only once</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The cache is for the function arguments, so 2 different callers using the same arguments will hit the cache.
+The assumption here is that all warning messages are unique across the code. If they aren’t then need to switch to
+another type of cache that includes the caller frame information in the hashing function.</p>
+</div>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils.rich_utils">
+<span id="aiflows-utils-rich-utils-module"></span><h2>aiflows.utils.rich_utils module<a class="headerlink" href="#module-aiflows.utils.rich_utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.rich_utils'">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.rich_utils.print_config_tree">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.rich_utils.</span></span><span class="sig-name descname"><span class="pre">print_config_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DictConfig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Sequence</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resolve</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_to_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.utils.rich_utils.print_config_tree" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.rich_utils.print_config_tree'">¶</a></dt>
+<dd><p>Prints content of DictConfig using Rich library and its tree structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>DictConfig</em>) – Configuration composed by Hydra.</p></li>
+<li><p><strong>print_order</strong> (<em>Sequence</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Determines in what order config components are printed, defaults to []</p></li>
+<li><p><strong>resolve</strong> (<em>bool</em><em>, </em><em>optional</em>) – Whether to resolve reference fields of DictConfig, defaults to False</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-aiflows.utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils'">¶</a></h2>
+</section>
+</section>
+</div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
+<div class="sticky top-16 -mt-10 max-h-[calc(var(--vh)-4rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<ul>
+<li><a :data-current="activeSection === '#submodules'" class="reference internal" href="#submodules">Submodules</a></li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.general_helpers'" class="reference internal" href="#module-aiflows.utils.general_helpers">aiflows.utils.general_helpers module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.create_unique_id'" class="reference internal" href="#aiflows.utils.general_helpers.create_unique_id"><code class="docutils literal notranslate"><span class="pre">create_unique_id()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.encode_from_buffer'" class="reference internal" href="#aiflows.utils.general_helpers.encode_from_buffer"><code class="docutils literal notranslate"><span class="pre">encode_from_buffer()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.encode_image'" class="reference internal" href="#aiflows.utils.general_helpers.encode_image"><code class="docutils literal notranslate"><span class="pre">encode_image()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.exception_handler'" class="reference internal" href="#aiflows.utils.general_helpers.exception_handler"><code class="docutils literal notranslate"><span class="pre">exception_handler()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.extract_top_level_function_names'" class="reference internal" href="#aiflows.utils.general_helpers.extract_top_level_function_names"><code class="docutils literal notranslate"><span class="pre">extract_top_level_function_names()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.find_replace_in_dict'" class="reference internal" href="#aiflows.utils.general_helpers.find_replace_in_dict"><code class="docutils literal notranslate"><span class="pre">find_replace_in_dict()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.flatten_dict'" class="reference internal" href="#aiflows.utils.general_helpers.flatten_dict"><code class="docutils literal notranslate"><span class="pre">flatten_dict()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_current_datetime_ns'" class="reference internal" href="#aiflows.utils.general_helpers.get_current_datetime_ns"><code class="docutils literal notranslate"><span class="pre">get_current_datetime_ns()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_function_from_name'" class="reference internal" href="#aiflows.utils.general_helpers.get_function_from_name"><code class="docutils literal notranslate"><span class="pre">get_function_from_name()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_predictions_dir_path'" class="reference internal" href="#aiflows.utils.general_helpers.get_predictions_dir_path"><code class="docutils literal notranslate"><span class="pre">get_predictions_dir_path()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.log_suggest_help'" class="reference internal" href="#aiflows.utils.general_helpers.log_suggest_help"><code class="docutils literal notranslate"><span class="pre">log_suggest_help()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_pop'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_pop"><code class="docutils literal notranslate"><span class="pre">nested_keys_pop()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_search'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_search"><code class="docutils literal notranslate"><span class="pre">nested_keys_search()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_update'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_update"><code class="docutils literal notranslate"><span class="pre">nested_keys_update()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.process_config_leafs'" class="reference internal" href="#aiflows.utils.general_helpers.process_config_leafs"><code class="docutils literal notranslate"><span class="pre">process_config_leafs()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.python_file_path_to_module_path'" class="reference internal" href="#aiflows.utils.general_helpers.python_file_path_to_module_path"><code class="docutils literal notranslate"><span class="pre">python_file_path_to_module_path()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.python_module_path_to_file_path'" class="reference internal" href="#aiflows.utils.general_helpers.python_module_path_to_file_path"><code class="docutils literal notranslate"><span class="pre">python_module_path_to_file_path()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_gzipped_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_gzipped_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_gzipped_jsonlines()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_jsonlines()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_outputs'" class="reference internal" href="#aiflows.utils.general_helpers.read_outputs"><code class="docutils literal notranslate"><span class="pre">read_outputs()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_yaml_file'" class="reference internal" href="#aiflows.utils.general_helpers.read_yaml_file"><code class="docutils literal notranslate"><span class="pre">read_yaml_file()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.recursive_dictionary_update'" class="reference internal" href="#aiflows.utils.general_helpers.recursive_dictionary_update"><code class="docutils literal notranslate"><span class="pre">recursive_dictionary_update()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.try_except_decorator'" class="reference internal" href="#aiflows.utils.general_helpers.try_except_decorator"><code class="docutils literal notranslate"><span class="pre">try_except_decorator()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.unflatten_dict'" class="reference internal" href="#aiflows.utils.general_helpers.unflatten_dict"><code class="docutils literal notranslate"><span class="pre">unflatten_dict()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.validate_flow_config'" class="reference internal" href="#aiflows.utils.general_helpers.validate_flow_config"><code class="docutils literal notranslate"><span class="pre">validate_flow_config()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.write_gzipped_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.write_gzipped_jsonlines"><code class="docutils literal notranslate"><span class="pre">write_gzipped_jsonlines()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.write_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.write_jsonlines"><code class="docutils literal notranslate"><span class="pre">write_jsonlines()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.write_outputs'" class="reference internal" href="#aiflows.utils.general_helpers.write_outputs"><code class="docutils literal notranslate"><span class="pre">write_outputs()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.io_utils'" class="reference internal" href="#module-aiflows.utils.io_utils">aiflows.utils.io_utils module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.io_utils.load_pickle'" class="reference internal" href="#aiflows.utils.io_utils.load_pickle"><code class="docutils literal notranslate"><span class="pre">load_pickle()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.io_utils.recursive_json_serialize'" class="reference internal" href="#aiflows.utils.io_utils.recursive_json_serialize"><code class="docutils literal notranslate"><span class="pre">recursive_json_serialize()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.logging'" class="reference internal" href="#module-aiflows.utils.logging">aiflows.utils.logging module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.add_handler'" class="reference internal" href="#aiflows.utils.logging.add_handler"><code class="docutils literal notranslate"><span class="pre">add_handler()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.auto_set_dir'" class="reference internal" href="#aiflows.utils.logging.auto_set_dir"><code class="docutils literal notranslate"><span class="pre">auto_set_dir()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.disable_default_handler'" class="reference internal" href="#aiflows.utils.logging.disable_default_handler"><code class="docutils literal notranslate"><span class="pre">disable_default_handler()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.disable_propagation'" class="reference internal" href="#aiflows.utils.logging.disable_propagation"><code class="docutils literal notranslate"><span class="pre">disable_propagation()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.enable_default_handler'" class="reference internal" href="#aiflows.utils.logging.enable_default_handler"><code class="docutils literal notranslate"><span class="pre">enable_default_handler()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.enable_explicit_format'" class="reference internal" href="#aiflows.utils.logging.enable_explicit_format"><code class="docutils literal notranslate"><span class="pre">enable_explicit_format()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.enable_propagation'" class="reference internal" href="#aiflows.utils.logging.enable_propagation"><code class="docutils literal notranslate"><span class="pre">enable_propagation()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.get_log_levels_dict'" class="reference internal" href="#aiflows.utils.logging.get_log_levels_dict"><code class="docutils literal notranslate"><span class="pre">get_log_levels_dict()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.get_logger'" class="reference internal" href="#aiflows.utils.logging.get_logger"><code class="docutils literal notranslate"><span class="pre">get_logger()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.get_logger_dir'" class="reference internal" href="#aiflows.utils.logging.get_logger_dir"><code class="docutils literal notranslate"><span class="pre">get_logger_dir()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.get_verbosity'" class="reference internal" href="#aiflows.utils.logging.get_verbosity"><code class="docutils literal notranslate"><span class="pre">get_verbosity()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.remove_handler'" class="reference internal" href="#aiflows.utils.logging.remove_handler"><code class="docutils literal notranslate"><span class="pre">remove_handler()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.reset_format'" class="reference internal" href="#aiflows.utils.logging.reset_format"><code class="docutils literal notranslate"><span class="pre">reset_format()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_dir'" class="reference internal" href="#aiflows.utils.logging.set_dir"><code class="docutils literal notranslate"><span class="pre">set_dir()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_verbosity'" class="reference internal" href="#aiflows.utils.logging.set_verbosity"><code class="docutils literal notranslate"><span class="pre">set_verbosity()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_verbosity_debug'" class="reference internal" href="#aiflows.utils.logging.set_verbosity_debug"><code class="docutils literal notranslate"><span class="pre">set_verbosity_debug()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_verbosity_error'" class="reference internal" href="#aiflows.utils.logging.set_verbosity_error"><code class="docutils literal notranslate"><span class="pre">set_verbosity_error()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_verbosity_info'" class="reference internal" href="#aiflows.utils.logging.set_verbosity_info"><code class="docutils literal notranslate"><span class="pre">set_verbosity_info()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.set_verbosity_warning'" class="reference internal" href="#aiflows.utils.logging.set_verbosity_warning"><code class="docutils literal notranslate"><span class="pre">set_verbosity_warning()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.warning_advice'" class="reference internal" href="#aiflows.utils.logging.warning_advice"><code class="docutils literal notranslate"><span class="pre">warning_advice()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.logging.warning_once'" class="reference internal" href="#aiflows.utils.logging.warning_once"><code class="docutils literal notranslate"><span class="pre">warning_once()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.rich_utils'" class="reference internal" href="#module-aiflows.utils.rich_utils">aiflows.utils.rich_utils module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.rich_utils.print_config_tree'" class="reference internal" href="#aiflows.utils.rich_utils.print_config_tree"><code class="docutils literal notranslate"><span class="pre">print_config_tree()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils'" class="reference internal" href="#module-aiflows.utils">Module contents</a></li>
+</ul>
+</div>
+</aside>
+</main>
+</div>
+</div><footer class="py-6 border-t border-border md:py-0">
+<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+<div class="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
+<p class="text-sm leading-loose text-center text-muted-foreground md:text-left">© 2023 Built with <a class="font-medium underline underline-offset-4" href="https://www.sphinx-doc.org" rel="noreferrer">Sphinx 6.2.1</a></p>
+</div>
+</div>
+</footer>
+</div>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/sphinx_highlight.js"></script>
+<script src="../_static/clipboard.min.js"></script>
+<script src="../_static/copybutton.js"></script>
+<script defer="defer" src="../_static/theme.js"></script>
+</body>
+</html>
