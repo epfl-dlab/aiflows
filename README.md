@@ -39,7 +39,9 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p>
 
 ## FlowVerse in a Nutshell
-The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended, or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++).
+The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, Flows can be readily downloaded, used, extended, or composed into novel, more complex For instance, sharing a Flow that uses only API-based tools (tools subsume models in the Flows abstraction) is as simple as sharing a config file. As an example, [here](https://huggingface.co/aiflows/AutoGPTFlowModule) is the AutoGPT Flow on FlowVerse. For the ones using ChatGPT, you could think of them as completely customizable open-source GPTs(++). 
+
+The FlowVerse is continuously growing. To explore the currently available Flows, check out the FlowVerse Forum on the Discord [channel](https://discord.gg/yFZkpD2HAh). Additionally, the _Tutorials_ and _Detailed Examples_ in the [Getting Started](https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/getting_started/index.html) sections cover some of the Flows we provide in more detail (e.g., the ChatAtomicFlow and QA, VisionAtomicFlow and VisualQA, ReAct and ReAct with human feedback, AutoGPT, etc.).
 
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
