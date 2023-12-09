@@ -26,7 +26,7 @@ export const Header = (props: any) => {
                                 <div style={{height: "70px"}}>
                                     <div style={{
                                         paddingTop: "20px",
-                                        borderRadius: "10px",
+                                        borderRadius: "20px",
                                         width: "70%",
                                         position: "relative",
                                         left: "15%",
@@ -42,7 +42,7 @@ export const Header = (props: any) => {
                                         backgroundColor: props.data.codeBGColor,
                                         color: "#ffffff",
                                         borderColor: "#111111",
-                                        borderRadius: "10px",
+                                        borderRadius: "20px",
                                         fontSize: "20px",
                                     }}>{props.data.code}
                                 </pre>
@@ -53,7 +53,7 @@ export const Header = (props: any) => {
                                             top: "0%",
                                             backgroundColor: props.data.codeBGColor,
                                             color: "#ffffff",
-                                            borderRadius: "10px",
+                                            borderRadius: "20px",
                                             border: "none",
                                             padding: "10px",
                                             cursor: "pointer",

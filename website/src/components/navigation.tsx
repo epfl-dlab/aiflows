@@ -65,7 +65,7 @@ export const Navigation = (props:any) => {
               </a>
             </li>
             <li>
-                <a href="https://github.com/epfl-dlab/flows" style={{position:'relative', top:'-5'}}>
+                <a href="https://github.com/epfl-dlab/aiflows" style={{position:'relative', top:'-5'}}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor"
 
                        className="bi bi-github" viewBox="0 0 16 16">
