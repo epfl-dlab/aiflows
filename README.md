@@ -46,17 +46,17 @@ The FlowVerse is continuously growing. To explore the currently available Flows,
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
-#### As a researcher, you will benefit from the:
-- ability to design, implement, and study arbitrarily complex interactions
-- complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
-- ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
-- ability to readily make your work accessible to practitioners and other researchers and access their feedback.
+#### As a researcher, you will benefit from:
+- The ability to design, implement, and study arbitrarily complex interactions
+- Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- The ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
+- The ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
 #### As a practitioner, you will benefit from the:
-- ability to design and implement arbitrarily complex interactions
-- complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
-- ability to readily reuse or build on top of Flows shared on the FlowVerse
-- direct access to any advancements in the field.
+- The ability to design and implement arbitrarily complex interactions
+- Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- The ability to readily reuse or build on top of Flows shared on the FlowVerse
+- Direct access to any advancements in the field.
 
 To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
