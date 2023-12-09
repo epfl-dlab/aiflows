@@ -41,7 +41,7 @@ To exchange information, Flows communicate via a standardized message-based inte
 ## FlowVerse in a Nutshell
 The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, Flows can be readily downloaded, used, extended, or composed into novel, more complex Flows. For instance, sharing a Flow that uses only API-based tools (tools subsume models in the Flows abstraction) is as simple as sharing a config file (e.g., [here](https://huggingface.co/aiflows/AutoGPTFlowModule) is the AutoGPT Flow on FlowVerse). For the ones using ChatGPT, you could think of them as completely customizable open-source GPTs(++).
 
-The FlowVerse is continuously growing. To explore the currently available Flows, check out the 🤲│flow-sharing Forum on the Discord [channel](https://discord.gg/yFZkpD2HAh). Additionally, the _Tutorials_ and _Detailed Examples_ in the [Getting Started](https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/getting_started/index.html) sections cover some of the Flows we provide in more detail (e.g., the ChatAtomicFlow and QA, VisionAtomicFlow and VisualQA, ReAct and ReAct with human feedback, AutoGPT, etc.).
+The FlowVerse is continuously growing. To explore the currently available Flows, check out the 🤲│flow-sharing Forum on the Discord [server](https://discord.gg/yFZkpD2HAh). Additionally, the _Tutorials_ and _Detailed Examples_ in the [Getting Started](https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/getting_started/index.html) sections cover some of the Flows we provide in more detail (e.g., the ChatAtomicFlow and QA, VisionAtomicFlow and VisualQA, ReAct and ReAct with human feedback, AutoGPT, etc.).
 
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
@@ -118,7 +118,7 @@ We will support the community in the best way we can but also lead by example. I
   - write-ups outlining features, ideas, and our long-term vision for Flows -- we encourage you to pick up any of these and start working on them in whatever way you see fit
   - a version of JARVIS -- your fully customizable open-source version of ChatGPT+(++), which we will continue building in public! We hope that this excites you as much as it excites us, and JARVIS will become one of those useful projects that will constantly push the boundaries of what's possible with Flows
 
-We have tried to find a way for anyone to benefit by contributing to the project. The <a href="ToDo">Contribution Guide</a> describes our envisioned workflow and how you could get involved in more detail (we would love to hear your feedback on it -- the Discord server already has a channel for it :)).
+We have tried to find a way for anyone to benefit by contributing to the project. The <a href="ToDo">Contribution Guide</a> describes our envisioned workflows in more detail (we would love to hear your feedback on this -- the Discord [server](https://discord.gg/yFZkpD2HAh) already has a channel for it :)).
 
 In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
 
