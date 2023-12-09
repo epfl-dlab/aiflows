@@ -46,7 +46,7 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 
 #### As a researcher, you will benefit from the:
 - ability to design, implement, and study arbitrarily complex interactions
-- complete control and customization (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
 - ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
 - ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
