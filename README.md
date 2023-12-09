@@ -144,22 +144,3 @@ To reference the 🤖🌊 **aiFlows** library, please cite the paper [Flows: Bui
       primaryClass={cs.AI}
 }
 ```
-
-
-# ToDO
-
-- Update the TOML and publish the library on pip as *aiflows* (verify that the change of name doesn't brake sth, e.g., logging)
-- Verify that all links are correct
-- Verify that the installation instructions are correct
-- Update the time estimates in the Demos and Tutorials
-
-<hr>
-Q: Should we have a dedicated list of the features? Which features would we include? Where would we keep the list?
-
-<hr>
-Q: Should we have a list of existing / useful Flows (otherwise, how do we highlight the useful Flows, e.g., HumanInput, ChatFlow etc.)? Maybe suggest that everyone should share his Flow in a discussion page on Discord or sth like that? Would that support searching? What about voting?
-A: @Nicky, we said that discussions support that, right? Is this documented somewhere?
-
-<hr>
-Q: Can one install the library with conda? Should we support that?
-Q: Is the installation for the bleeding edge correct? Is it the best way to do it? Check HF.
