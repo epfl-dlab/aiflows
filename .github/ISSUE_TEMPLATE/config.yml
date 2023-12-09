@@ -4,5 +4,5 @@ contact_links:
     url: https://discord.gg/yFZkpD2HAh
     about: Ask questions to our Discord community.
   - name: Documentation
-    website: https://epfl-dlab.github.io/aiflows/docs
+    website: https://epfl-dlab.github.io/aiflows/docs/built_with_sphinx/html/index.html
     about: Check out our documentation
