@@ -17,11 +17,6 @@ export const Header = (props: any) => {
                         <div className="row">
                             <div className="col-md-8 col-md-offset-2 intro-text">
                                 <Image src="assets/flows_logo_header.png" title="logo" />
-                                {/*<h1>*/}
-                                {/*    {props.data ? props.data.title : "Loading"}*/}
-                                {/*    <span></span>*/}
-                                {/*</h1>*/}
-                                {/*<p>{props.data ? props.data.paragraph : "Loading"}</p>*/}
 
                                 <div style={{height: "70px"}}>
                                     <div style={{
@@ -87,7 +82,7 @@ export const Header = (props: any) => {
       Flows in Action
     </a>
     <a
-      href="https://github.com/epfl-dlab/multi-level-reasoning-for-code"
+      href="https://github.com/epfl-dlab/aiflows"
       className="btn btn-custom btn-lg page-scroll"
     >
       Github

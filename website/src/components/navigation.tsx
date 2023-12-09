@@ -39,11 +39,6 @@ export const Navigation = (props:any) => {
                 Features
               </a>
             </li>
-            {/*<li>*/}
-            {/*  <a href="#about" className="page-scroll">*/}
-            {/*    About*/}
-            {/*  </a>*/}
-            {/*</li>*/}
             <li>
               <a href="#getting_started" className="page-scroll">
                 Example
