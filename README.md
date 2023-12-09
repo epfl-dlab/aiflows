@@ -34,7 +34,7 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between _Atomic_ or _Composite_ Flows. The fourth column illustrates a specific _Composite_ competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
       </p>
 <p>
 
@@ -46,7 +46,7 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 
 #### As a researcher, you will benefit from the:
 - ability to design, implement, and study arbitrarily complex interactions
-- complete control and customizable (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- complete control and customization (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
 - ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
 - ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
