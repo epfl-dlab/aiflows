@@ -3,7 +3,9 @@ Contribute
 =================
 
 
-As mentioned above, our mission is to make this a community-driven project that will benefit researchers and developers alike (see the [Why should I use aiFlows?](#why-should-i-use-aiflows) section) and to achieve this goal, we need your help.
+
+Our mission is to make this a community-driven project that will benefit researchers and developers alike 
+(see the `Why should I use aiFlows?`_ ) and to achieve this goal, we need your help.
 
 You can become a part of the project in a few ways:
 - contribute to the aiFlows codebase: this will directly improve the library and benefit everyone using it
@@ -22,3 +24,6 @@ We have tried to find a way for anyone to benefit by contributing to the project
 involved in more detail (we would love to hear your feedback on it -- the Discord server already has a channel for it :).
 
 In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
+
+
+.. _Why Should I Use aiFlows?: ../introduction/index.html
