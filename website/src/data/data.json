@@ -9,22 +9,22 @@
     },
 
     "Features": [{
-            "icon": "fa fa-comments-o",
+            "icon": "fa fa-solid fa-puzzle-piece",
             "title": "Modularity",
             "text": "Design Flows of complex interactions involving humans, AI systems, and tools, like LEGO blocks."
         },
         {
-            "icon": "fa fa-solid fa-share",
+            "icon": "fa fa-regular fa-handshake",
             "title": "Reusability",
             "text": "Readily reuse, customize, and build on top of Flows published on FlowVerse by the community."
         },
         {
-            "icon": "fa fa-solid fa-eye",
+            "icon": "fa fa-regular fa-solid fa-arrows-split-up-and-left",
             "title": "Concurrency",
             "text": "Build on top of a concurrency friendly abstraction inspired by the Actor model of concurrent computation."
         },
         {
-            "icon": "fa fa-solid fa-eye",
+            "icon": "fa fa-solid fa-hand-holding-heart",
             "title": "Forever Free",
             "text": "The aiFlows library is free and always will be."
         }
@@ -47,28 +47,28 @@
     "GettingStarted": {
         "title": "Flow",
         "text_1": "ChatAtomicFlow",
-        "code_1": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ChatFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ChatFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ChatAtomicFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "code_1": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ChatFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ChatFlowModule import ChatAtomicFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ChatFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ChatAtomicFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"Who won the 2023 NBA Championship?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
         "text_2": "ReAct",
-        "code_2": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ControllerExecutorFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ControllerExecutorFlowModule import ControllerExecutorFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ControllerExecutorFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ControllerExecutorFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "code_2": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/ControllerExecutorFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.ControllerExecutorFlowModule import ControllerExecutorFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/ControllerExecutorFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = ControllerExecutorFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"Who won the 2023 NBA Championship?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
         "text_3": "AutoGPT",
-        "code_3": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/AutoGPTFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.AutoGPTFlowModule import AutoGPTFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/AutoGPTFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = AutoGPTFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"What is the capital of France?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
+        "code_3": "import os\nimport aiflows\nfrom aiflows.utils.general_helpers import read_yaml_file\n\ndependencies = [\n    {\"url\": \"aiflows/AutoGPTFlowModule\", \"revision\": \"main\"}\n]\n\naiflows.flow_verse.sync_dependencies(dependencies)\n\nfrom flow_modules.aiflows.AutoGPTFlowModule import AutoGPTFlow\n\nif __name__ == \"__main__\":\n    # ~~~ Set the API information ~~~\n    api_information = [aiflows.backends.api_info.ApiInfo(backend_used=\"openai\",\n                                                       api_key=os.getenv(\"OPENAI_API_KEY\"))]\n\n    # read the config file and set the api information\n    cfg = read_yaml_file(\"flow_modules/aiflows/AutoGPTFlowModule/demo.yaml\")\n    cfg[\"flow\"][\"backend\"][\"api_infos\"] = api_information\n\n    # ~~~ Instantiate the Flow ~~~\n    flow = AutoGPTFlow.instantiate_from_default_config(**cfg[\"flow\"])\n\n    # ~~~ Get the data ~~~\n    data = {\"id\": 0, \"question\": \"Who won the 2023 NBA Championship?\"}\n\n    # ~~~ Run the Flow ~~~\n    _, outputs = aiflows.flow_launchers.FlowLauncher.launch({\"flow\": flow}, data=data)\n\n    # ~~~ Print the output ~~~\n    flow_output_data = outputs[0]\n    print(flow_output_data)\n",
         "language": "python",
         "showLineNumbers": false
     },
     "Contribute": [{
-            "icon": "fa fa-github-square",
+            "icon": "fa fa-magnifying-glass",
             "name": "Research",
             "text": "The ability to implement arbitrarily complex interactions, paired with complete control and systematicity, make aiFlows an ideal tool for research."
         },
         {
-            "icon": "fa fa-wrench",
-            "name": "Developer",
-            "text": "FlowVerse enables direct benefit from all research advancements, and aiFlows lets you make each Flow your own!"
+            "icon": "fa fa-solid fa-screwdriver-wrench",
+            "name": "Build",
+            "text": "FlowVerse brings all research advancements at your fingertips, and aiFlows enables you to build applications and make each Flow your own."
         },
         {
-            "icon": "fa fa-cloud-download",
-            "name": "Critic",
-            "text": "Use aiFlows in your personal and professional projects, and push the library to its limits. Let us know what breaks, and what do we need to improve – we are always listening!"
+            "icon": "fa fa-solid fa-comment",
+            "name": "Critique",
+            "text": "Use aiFlows in your personal and professional projects, and push the library to its limits. Let us know what breaks and what can be improved – we are always listening."
         }
     ],
     "Testimonials": [{
