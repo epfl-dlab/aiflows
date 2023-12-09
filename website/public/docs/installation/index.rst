@@ -10,7 +10,7 @@ The library requires Python 3.10+. To install the library, run the following com
 Other Installation Options
 --------------------------
 
-Install bleeding-edge
+Install bleeding-edge version
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. code-block:: shell
 

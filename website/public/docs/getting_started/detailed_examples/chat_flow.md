@@ -2,7 +2,7 @@
 
 ## Definition
 
-The `ChatAtomVicFlow` is a flow that seamlessly interfaces with an LLM through an API, generating textual responses for textual inputs. Powered by the LiteLLM library in the backend, `ChatAtomicFlow` supports various API providers; explore the full list [here](https://docs.litellm.ai/docs/providers). For a detailed understanding of its parameters, refer to its [`FlowCard`](https://huggingface.co/aiflows/VectorStoreFlowModule) for an extensive description of its parameters.
+The `ChatAtomicFlow` is a flow that seamlessly interfaces with an LLM through an API, generating textual responses for textual inputs. Powered by the LiteLLM library in the backend, `ChatAtomicFlow` supports various API providers; explore the full list [here](https://docs.litellm.ai/docs/providers). For a detailed understanding of its parameters, refer to its [`FlowCard`](https://huggingface.co/aiflows/VectorStoreFlowModule) for an extensive description of its parameters.
 
 ## Methods
 

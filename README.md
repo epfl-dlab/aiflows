@@ -34,27 +34,29 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools, constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between Atomic or Composite Flows. The fourth column illustrates a specific Composite competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between _Atomic_ or _Composite_ Flows. The fourth column illustrates a specific _Composite_ competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
       </p>
 <p>
 
 ## FlowVerse in a Nutshell
-The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, these Flows can be readily downloaded, used, extended, or composed into novel, more complex Flows. For the ones using ChatGPT, you could think of them as open-source GPTs(++).
+The FlowVerse is a repository of Flows (powered by the 🤗 HuggingFace hub) created and shared by our community for everyone to use! With aiFlows, Flows can be readily downloaded, used, extended, or composed into novel, more complex For instance, sharing a Flow that uses only API-based tools (tools subsume models in the Flows abstraction) is as simple as sharing a config file. As an example, [here](https://huggingface.co/aiflows/AutoGPTFlowModule) is the AutoGPT Flow on FlowVerse. For the ones using ChatGPT, you could think of them as completely customizable open-source GPTs(++).
+
+The FlowVerse is continuously growing. To explore the currently available Flows, check out the FlowVerse Forum on the Discord [channel](https://discord.gg/yFZkpD2HAh). Additionally, the _Tutorials_ and _Detailed Examples_ in the [Getting Started](https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/getting_started/index.html) sections cover some of the Flows we provide in more detail (e.g., the ChatAtomicFlow and QA, VisionAtomicFlow and VisualQA, ReAct and ReAct with human feedback, AutoGPT, etc.).
 
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
-#### As a researcher, you will benefit from the:
-- ability to design, implement, and study arbitrarily complex interactions
-- complete control and customizable (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
-- ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
-- ability to readily make your work accessible to practitioners and other researchers and access their feedback.
+#### As a researcher, you will benefit from:
+- The ability to design, implement, and study arbitrarily complex interactions
+- Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- The ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
+- The ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
 #### As a practitioner, you will benefit from the:
-- ability to design and implement arbitrarily complex interactions
-- complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
-- ability to readily reuse or build on top of Flows shared on the FlowVerse
-- direct access to any advancements in the field.
+- The ability to design and implement arbitrarily complex interactions
+- Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+- The ability to readily reuse or build on top of Flows shared on the FlowVerse
+- Direct access to any advancements in the field.
 
 To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 

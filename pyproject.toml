@@ -10,6 +10,7 @@ version = {attr = "aiflows.VERSION"}
 [project]
 license = {file = "LICENSE"}
 name = "aiflows"
+version = "0.0.4"
 description = 'aiFlows implements the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'
 authors = [
   { name = "Martin Josifoski", email = "martin.josifoski@epfl.ch" },

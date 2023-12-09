@@ -24,5 +24,6 @@ Sharing your work is highly encouraged! Here are some channels on `Discord <http
 
 Absolutely. Proper recognition is key. Contributors to projects and research are, and should always be, acknowledged and cited for their valuable contributions. This not only honors your work but also builds a culture of respect and collaboration within the community.
 
-------
+
+
 Remember, your contributions matter, and sharing your work not only benefits you but also enriches the entire aiFlows community. Happy contributing! 🚀🌐
