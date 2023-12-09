@@ -41,7 +41,7 @@ export const Navigation = (props:any) => {
             </li>
             <li>
               <a href="#getting_started" className="page-scroll">
-                Example
+                Examples
               </a>
             </li>
             <li>
