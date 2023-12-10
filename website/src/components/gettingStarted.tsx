@@ -22,7 +22,7 @@ export const GettingStarted = (props: any) => {
   return (
     <div id="getting_started" className="container">
       <div className="text-center col-md-10 col-md-offset-1 section-title">
-        <h2 className="display-3">Example</h2>
+        <h2 className="display-3">Examples</h2>
       </div>
       <div className="row">
         <div className="col-md-4 d-flex flex-column">

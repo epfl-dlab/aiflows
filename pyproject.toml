@@ -10,13 +10,13 @@ version = {attr = "aiflows.VERSION"}
 [project]
 license = {file = "LICENSE"}
 name = "aiflows"
-version = "0.0.4"
 description = 'aiFlows implements the abstraction of Flows proposed in "Flows: Building Blocks of Reasoning and Collaborating AI" and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools.'
 authors = [
-  { name = "Martin Josifoski", email = "martin.josifoski@epfl.ch" },
+    { name = "Martin Josifoski", email = "martin.josifoski@epfl.ch" },
+    { name = "Nicolas Baldwin", email = "nicolas.baldwin@epfl.ch"}
 ]
 requires-python = ">=3.10"
-readme = "README.md"
+readme = "README_PyPI.md"
 dynamic = ["version"]
 
 dependencies = [
@@ -37,9 +37,8 @@ dependencies = [
     "litellm==1.0.0"
 ]
 
-# ToDo: Change home and documentation to aiflows
 [project.urls]
-Home = "https://epfl-dlab.github.io/flows/"
-Documentation = "https://epfl-dlab.github.io/flows/docs/built_with_sphinx/html/index.html"
+Home = "https://epfl-dlab.github.io/aiflows/"
+Documentation = "https://epfl-dlab.github.io/aiflows/docs/built_with_sphinx/html/index.html"
 Source = "https://github.com/epfl-dlab/aiflows"
 Issues = "https://github.com/epfl-dlab/aiflows/issues"
