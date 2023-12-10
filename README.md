@@ -34,7 +34,7 @@ To exchange information, Flows communicate via a standardized message-based inte
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
       <p align="justify">
-      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between _Atomic_ or _Composite_ Flows. The fourth column illustrates a specific _Composite_ competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
+      <strong>The <em>Flows</em> framework exemplified.</strong> The first column depicts examples of tools. Notably, in the Flows framework, AI systems correspond to tools. The second column depicts Atomic Flows, effectively minimal wrappers around tools constructed from the example tools. The third column depicts examples of Composite Flows defining structured interaction between <em>Atomic</em> or <em>Composite</em> Flows. The fourth column illustrates a specific <em>Composite</em> competitive coding Flow as those used in the experiments in the paper. The fifth column outlines the structure of a hypothetical Flow, defining a meta-reasoning process that could support autonomous behavior.
       </p>
 <p>
 
