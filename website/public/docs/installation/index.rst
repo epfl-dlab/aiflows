@@ -1,7 +1,7 @@
 Installation
 ===================
 
-The library requires Python 3.10+. To install the library, run the following command:
+The library is compatible with Python 3.10+, with a preference for installation on versions 3.10 or 3.11. To install the library, use the following command:
 
 .. code-block:: shell
 

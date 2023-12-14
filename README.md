@@ -61,7 +61,7 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
 ## Installation
-The library requires Python 3.10+. To install the library, run the following command:
+The library is compatible with Python 3.10+, with a preference for installation on versions 3.10 or 3.11. To install the library, use the following command:
 
 ```shell
 pip install aiflows
