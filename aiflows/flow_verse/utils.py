@@ -1,6 +1,6 @@
 import os
 import re
-
+import colorama
 
 def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     """
@@ -31,3 +31,42 @@ def is_local_revision(revision: str):
     :rtype: bool
     """
     return os.path.exists(revision)
+
+def yes_no_question(logger,question_message,yes_message, no_message, colorama_style=colorama.Fore.RED):
+    """Asks a yes/no question and returns True if the user answers yes, False otherwise.
+    
+    :param question_message: The message to display when asking the question
+    :type question_message: str
+    :param yes_message: The message to display when the user answers yes
+    :type yes_message: str
+    :param no_message: The message to display when the user answers no
+    :type no_message: str
+    :param colarama_style: The colorama style to use when displaying the question, defaults to colorama.Fore.RED
+    :type colarama_style: colorama.Fore, optional
+    :return: True if the user answers yes, False otherwise
+    :rtype: bool
+    """
+    while True:
+        
+        logger.warn(
+                f""" {colorama_style} {question_message} (Y/N){colorama.Style.RESET_ALL}"""
+        )
+        user_input = input()
+        
+        if user_input == "Y":
+            logger.warn(
+                f"{colorama_style}  {yes_message} {colorama.Style.RESET_ALL}"
+            )
+            break
+        
+        elif user_input == "N":
+            logger.warn(
+                f"{colorama_style}  {no_message} {colorama.Style.RESET_ALL}"
+            )
+            break
+        
+        else:
+            logger.warn("Invalid input. Please enter 'Y' or 'N'.")
+            
+    
+    return user_input == "Y"

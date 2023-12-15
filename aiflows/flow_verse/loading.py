@@ -13,8 +13,10 @@ import huggingface_hub
 from huggingface_hub.hf_api import HfApi
 
 from aiflows.utils import logging
-
-from . import utils
+import subprocess
+import pkg_resources
+import importlib
+from aiflows.flow_verse import utils
 
 logger = logging.get_logger(__name__)
 logger.warn = logger.warning
@@ -389,6 +391,96 @@ def remove_dir_or_link(sync_dir: str):
         raise ValueError(f"Invalid sync_dir: {sync_dir}, it is not a valid directory nor a valid link")
 
 
+def get_unsatisfied_pip_requirements(requirements_file):
+    """ Returns a list of unsatisfied pip requirements from a requirements file.
+    
+    :param requirements_file: The path to the requirements file
+    :type requirements_file: str
+    :return: A list of unsatisfied pip requirements
+    :rtype: List[str]
+    """
+    #reload pkg_resources to check for newly installed packages (e.g. from previous flow modules of the same flow)
+    importlib.reload(pkg_resources)
+    
+    # Parse the requirements file
+    with open(requirements_file, 'r') as f:
+        requirements = [line.strip() for line in f]
+
+    # Get the distributions of installed packages
+    installed_distributions = {dist.project_name.lower(): dist for dist in pkg_resources.working_set}
+
+    # Check if each requirement is satisfied
+    unsatisfied_requirements = []
+    for line in requirements:
+        
+        req = line.split('#')[0].strip()
+        if req == '':
+            continue
+        req_dist = pkg_resources.Requirement.parse(req)
+        installed_dist = installed_distributions.get(req_dist.project_name.lower())
+
+        if not installed_dist or not installed_dist in req_dist:
+            unsatisfied_requirements.append(req)
+            
+    return unsatisfied_requirements
+
+
+def display_and_confirm_requirements(flow_name,requirements):
+    """ Displays the uninstalled requirements for a flow and asks the user if they want to install them.
+    
+    :param flow_name: The name of the flow
+    :type flow_name: str
+    :param requirements: The list of unsatisfied pip requirements
+    :type requirements: List[str]
+    :return: True if the user wants to install the requirements, False otherwise
+    :rtype: bool
+    """
+    
+    if len(requirements) == 0:
+        return False
+    
+    requirements_str = "\n".join([f"  - {req}" for req in requirements])
+    
+    question_message = \
+        f"""\n{flow_name} is requesting to install the following pip requirements:\n{requirements_str}\n Do you want to proceed with the installation?"""
+    
+    no_message = \
+        f"""Installation of requirements for {flow_name} is canceled. This may impact the proper functioning of the Flow."""
+    
+    yes_message = \
+         f"Requirements from {flow_name} will be installed."
+    
+      
+    answer = utils.yes_no_question(logger,question_message,yes_message,no_message,colorama_style=colorama.Fore.RED)
+    
+    return answer
+
+
+def install_requirements(synced_flow_mod_spec):
+    """ Installs the pip requirements (if not already installed) for a flow module.
+    
+    :param synced_flow_mod_spec: The synced flow module specification
+    :type synced_flow_mod_spec: FlowModuleSpec
+    """
+    repo_id = synced_flow_mod_spec.repo_id
+    requirements_file = os.path.join(synced_flow_mod_spec.sync_dir, "pip_requirements.txt")
+    
+    # For the moment, we require that every flow module has a pip_requirements.txt file. Should we change this?
+    if not os.path.exists(requirements_file):
+        raise ValueError(f"Every flow module must have a pip_requirements.txt file, but {requirements_file} does not exist for {repo_id}")
+    
+    # Get the unsatisfied pip requirements
+    unsatisfied_requirements = get_unsatisfied_pip_requirements(requirements_file)
+    
+    #answer of the user on whether to install the requirements
+    user_wants_to_install_requirements = display_and_confirm_requirements(repo_id,unsatisfied_requirements)
+    
+    #install the requirements
+    if user_wants_to_install_requirements:
+        subprocess.run(['pip', 'install', '-r', requirements_file])
+
+
+
 # # TODO(Yeeef): add repo_hash and modified_flag to decrease computing
 
 
@@ -576,32 +668,42 @@ def sync_remote_dep(
     sync_dir_modified = is_sync_dir_modified(sync_dir, previous_synced_flow_mod_spec.cache_dir)
 
     if overwrite:
-        logger.warn(
-            f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}"
-        )
-        user_input = input()
-        if user_input != "Y":
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}"
-            )
-            overwrite = False
+        
+        question_message = \
+            f"[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure?"
+        
+        no_message = \
+            f"[{caller_module_name}] {flow_mod_id} will not be overwritten."
+            
+        yes_message = \
+            f"[{caller_module_name}]{flow_mod_id} will be fetched from remote."
+        
+        overwrite = utils.yes_no_question(logger, question_message,yes_message,no_message)
+        
+        if not overwrite:
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
-            logger.info(f"{flow_mod_id} will be fetched from remote.{colorama.Style.RESET_ALL}")
             synced_flow_mod_spec = fetch_remote(repo_id, revision, sync_dir, cache_root)
+
     elif previous_synced_flow_mod_spec.mod_id != flow_mod_id:
         # user has supplied a new flow_mod_id, we fetch the remote directly with warning
-        logger.warn(
-            f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}"
-        )
-        user_input = input()
-        if user_input != "Y":
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}"
-            )
+        
+        question_message =  \
+            """{previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? """
+        
+        no_message = \
+            f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will not be overwritten."
+        
+        yes_message = \
+            f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will be fetched from remote."
+        
+        fetch_from_remote = utils.yes_no_question(logger, question_message,yes_message,no_message)   
+        
+        if not fetch_from_remote:
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
             synced_flow_mod_spec = fetch_remote(repo_id, revision, sync_dir, cache_root)
+            
     ### user has supplied same flow_mod_id(repo_id:revision), we check if the remote commit has changed
     elif not remote_revision_commit_hash_changed:
         # trivial case, we do nothing
@@ -670,33 +772,41 @@ def sync_local_dep(
     assert sync_dir == previous_synced_flow_mod_spec.sync_dir, (sync_dir, previous_synced_flow_mod_spec.sync_dir)
 
     if overwrite:
-        logger.warn(
-            f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure? (Y/N){colorama.Style.RESET_ALL}"
-        )
-        user_input = input()
-        if user_input != "Y":
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {flow_mod_id} will not be overwritten.{colorama.Style.RESET_ALL}"
-            )
-            overwrite = False
+        
+        question_message = \
+            f"[{caller_module_name}] {flow_mod_id} will be overwritten, are you sure?"
+            
+        no_message = \
+            f"[{caller_module_name}] {flow_mod_id} will not be overwritten."
+            
+        yes_message = \
+            f"[{caller_module_name}] {flow_mod_id} will be fetched from local."
+            
+        overwrite = utils.yes_no_question(logger, question_message,yes_message,no_message)
+        
+        if not overwrite:
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
-            logger.info(f"{flow_mod_id} will be fetched from local")
             synced_flow_mod_spec = fetch_local(repo_id, module_synced_from_dir, sync_dir)
 
     elif previous_synced_flow_mod_spec.mod_id != flow_mod_id:
-        logger.warn(
-            f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by {flow_mod_id}, are you sure? (Y/N){colorama.Style.RESET_ALL}"
-        )
-        user_input = input()
-        if user_input != "Y":
-            logger.warn(
-                f"{colorama.Fore.RED}[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will not be overwritten.{colorama.Style.RESET_ALL}"
-            )
+        
+        question_message = \
+            f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by {flow_mod_id}, are you sure?"
+
+        no_message = \
+            f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will not be overwritten."
+        
+        yes_message = \
+            f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will be fetched from local."
+            
+        fetch_from_local = utils.yes_no_question(logger, question_message,yes_message,no_message)
+        
+        if not fetch_from_local:
             synced_flow_mod_spec = previous_synced_flow_mod_spec
         else:
-            logger.info(f"{flow_mod_id} will be fetched from local")
             synced_flow_mod_spec = fetch_local(repo_id, module_synced_from_dir, sync_dir)
+            
     else:
         logger.info(f"{flow_mod_id} already synced, skip")
         synced_flow_mod_spec = previous_synced_flow_mod_spec
@@ -817,6 +927,7 @@ def _sync_dependencies(
                 )
                 # logger.debug(f"add remote dep {synced_flow_mod_spec} to flow_mod_summary")
             flow_mod_summary.add_mod(synced_flow_mod_spec)
+            install_requirements(synced_flow_mod_spec)
 
         # write flow.mod
         # logger.debug(f"write flow mod summary: {flow_mod_summary}")
