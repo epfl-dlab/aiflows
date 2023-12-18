@@ -17,6 +17,7 @@ def build_hf_cache_path(repo_id: str, commit_hash: str, cache_root: str) -> str:
     :return: The path to the cache directory for the given model snapshot.
     :rtype: str
     """
+    breakpoint()
     username, modelname = repo_id.split("/")
     relative_path = os.path.join(f"models--{username}--{modelname}", "snapshots", commit_hash)
     return os.path.join(cache_root, relative_path)

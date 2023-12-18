@@ -44,6 +44,8 @@ Each Flow on the FlowVerse should include a `pip_requirements.txt` file for exte
 
 As you can see [here](https://huggingface.co/aiflows/ChatFlowModule/blob/main/pip_requirements.txt), the `ChatFlowModule` doesn't have any external dependencies, so we're all set. 
 
+**IMPORTANT:** For `aiflows >= 0.1.7` , dependencies are installed automatically through the `flow_verse.sync_dependencies` function, so you can skip this step.
+
 ### Step 3: Run the Flow!
 After executing `sync_dependencies`, the code implementation of `ChatFlowModule` has been pulled into the local repository.
 We can now just import it:

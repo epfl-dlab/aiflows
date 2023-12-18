@@ -689,7 +689,7 @@ def sync_remote_dep(
         # user has supplied a new flow_mod_id, we fetch the remote directly with warning
         
         question_message =  \
-            """{previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? """
+            f"{previous_synced_flow_mod_spec.mod_id} already synced, it will be overwritten by new revision {flow_mod_id}, are you sure? "
         
         no_message = \
             f"[{caller_module_name}] {previous_synced_flow_mod_spec.mod_id} will not be overwritten."

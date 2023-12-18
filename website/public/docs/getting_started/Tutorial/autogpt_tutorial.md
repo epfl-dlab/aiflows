@@ -68,6 +68,7 @@ pip install langchain==0.0.336
 pip install chromadb==0.3.29
 pip install faiss-cpu==1.7.4
 ```
+**IMPORTANT:** For `aiflows >= 0.1.7` , dependencies are installed automatically through the `flow_verse.sync_dependencies` function. Consequently, there is no need for manual installation of these libraries.
 
 Now that we've fetched the flows from the FlowVerse and installed their respective requirements, we can start creating our Flow.
 
