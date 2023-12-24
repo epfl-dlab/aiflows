@@ -425,67 +425,6 @@ def read_yaml_file(path_to_file, resolve=True):
     cfg = OmegaConf.to_container(cfg, resolve=resolve)
     return cfg
 
-
-def python_file_path_to_module_path(file_path):
-    """Converts a python file path to a python module path
-
-    :param file_path: The python file path
-    :type file_path: str
-    :return: The python module path
-    :rtype: str
-    """
-    return file_path.replace("/", ".").replace(".py", "")
-
-
-def python_module_path_to_file_path(module_path):
-    """Converts a python module path to a python file path
-
-    :param module_path: The python module path
-    :type module_path: str
-    :return: The python file path
-    :rtype: str
-    """
-    return module_path.replace(".", "/") + ".py"
-
-
-def extract_top_level_function_names(python_file_path):
-    """Extracts the top level function names from a python file (ignores nested)
-
-    :param python_file_path: The path to the python file
-    :type python_file_path: str
-    :return: A list of function names
-    :rtype: List[str]
-    """
-    function_names = []
-    with open(python_file_path, "r") as file:
-        file_content = file.read()
-        tree = ast.parse(file_content)
-
-    functions = filter(lambda node: isinstance(node, ast.FunctionDef), ast.iter_child_nodes(tree))
-    function_names = list(map(lambda node: node.name, functions))
-
-    return function_names
-
-
-# def get_function_meta_data(function):
-#     """ Returns the meta data of a function. (docstring)"""
-#     return function_to_dict(function)
-
-
-def get_function_from_name(function_name, module):
-    """Returns a function from a module given its name."""
-    return getattr(module, function_name)
-
-
-# def get_pyfile_functions_metadata_from_file(python_file_path):
-#     """ Returns the meta data of all the functions in a python file (docstring)"""
-#     function_names = extract_top_level_function_names(python_file_path)
-#     module_path = python_file_path_to_module_path(python_file_path)
-#     module = importlib.import_module(module_path)
-#     functions = [get_function_from_name(function_name, module) for function_name in function_names]
-#     return [get_function_meta_data(function) for function in functions]
-
-
 def encode_image(image_path):
     """Encodes an image to base64."""
     with open(image_path, "rb") as image_file:
