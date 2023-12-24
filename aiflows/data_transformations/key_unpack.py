@@ -2,7 +2,7 @@ from typing import Dict, Any, List
 
 from aiflows.data_transformations.abstract import DataTransformation
 from aiflows.utils.logging import get_logger
-from aiflows.utils.general_helpers import nested_keys_search
+from aiflows.utils.general_helpers import nested_keys_search, nested_keys_pop
 
 log = get_logger(__name__)
 
@@ -75,10 +75,12 @@ class KeyUnpack(DataTransformation):
                 value, found = nested_keys_search(ret, key_to_unpack)
                 if found and len(nested_keys) > 1:
                     parent_key = nested_keys[0]
-                    ret[parent_key] = value
+                    ret[parent_key].update(value)
+                    nested_keys_pop(ret, key_to_unpack)
                 elif found and len(nested_keys) == 1:
-                    ret = value
+                    ret.update(value)
+                    nested_keys_pop(ret, key_to_unpack)
         else:
             for key_to_unpack in self.keys_to_unpack:
-                ret = ret.get(key_to_unpack, ret)
+                ret.update(ret.pop(key_to_unpack))
         return ret
