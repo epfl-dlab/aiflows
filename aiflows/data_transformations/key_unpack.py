@@ -10,21 +10,44 @@ log = get_logger(__name__)
 class KeyUnpack(DataTransformation):
     """This class unpacks one layer of the nested data dictionary.
     :param keys_to_unpack: A list of keys to unpack
+    :param nested_keys: Whether the keys are nested or not, defaults to True
     :type keys_to_unpack: List[str]
+    :type nested_keys: bool, optional
     :return The unpacked data dictionary
 
     example:
     keys_to_unpack: ["observation"]
     data_dict = {
-    "observation":
-        "code": "some code",
-        "file_loc": "some path",
-        "human_feedback": "some feedback"
+        "observation":
+            {
+                "code": "some code",
+                "file_loc": "some path",
+                "human_feedback": "some feedback"
+            }
     }
     output = {
     "code": "some code",
     "file_loc": "some path",
     "human_feedback":"some feedback"
+    }
+
+    example2:
+    keys_to_unpack: ["observation.A"]
+    data_dict = {
+        "observation": {
+            "A": {
+                "code": "some code",
+                "file_loc": "some path",
+                "human_feedback": "some feedback"
+            }
+        }
+    }
+    output = {
+    "observation": {
+        "code": "some code",
+        "file_loc": "some path",
+        "human_feedback":"some feedback"
+        }
     }
     """
 
@@ -37,6 +60,14 @@ class KeyUnpack(DataTransformation):
         self.nested_keys = nested_keys
 
     def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+        """
+        Applies the transformation to the given data dictionary. It unpacks one layer of the nested data dictionary.
+        :param data_dict: The data dictionary to apply the transformation to
+        :type data_dict: Dict[str, Any]
+        :param \**kwargs: Arbitrary keyword arguments
+        :return: The transformed data dictionary
+        :rtype: Dict[str, Any]
+        """
         ret = data_dict.copy()
         if self.nested_keys:
             for key_to_unpack in self.keys_to_unpack:
