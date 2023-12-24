@@ -4,7 +4,7 @@ from typing import Dict, Any, List
 
 import hydra
 
-from aiflows.data_transformations import KeySelect, KeyRename, KeyCopy, KeySet, KeyDelete
+from aiflows.data_transformations import KeySelect, KeyRename, KeyCopy, KeySet, KeyDelete, KeyUnpack
 
 
 class KeyInterface(ABC):
@@ -48,6 +48,7 @@ class KeyInterface(ABC):
         additional_transformations: List = [],
         keys_to_select: List[str] = [],
         keys_to_delete: List[str] = [],
+        keys_to_unpack: List[str] = [],
     ):
         self.transformations = []
 
@@ -65,6 +66,8 @@ class KeyInterface(ABC):
             self.transformations.append(KeySelect(keys_to_select))
         if keys_to_delete:
             self.transformations.append(KeyDelete(keys_to_delete))
+        if keys_to_unpack:
+            self.transformations.append(KeyUnpack(keys_to_unpack))
 
     def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         r"""Applies the all transformations to the given data dictionary.
