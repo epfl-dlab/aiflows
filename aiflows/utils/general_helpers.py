@@ -524,3 +524,19 @@ def find_replace_in_dict(cfg, key_to_find, new_value,current_path=""):
         elif isinstance(item, list):
             cfg[key] = [find_replace_in_dict(x, key_to_find, new_value, new_path) for x in item]
     return cfg
+
+def update_api_infos(cfg, api_information):
+    """Recursively updates the api_infos in a dictionary with the api_information.
+    :param cfg: The dictionary to update
+    :type cfg: Dict[str, Any]
+    :param api_information: The api_information to use
+    :type api_information: Dict[str, Any]
+    """
+    if isinstance(cfg, dict):
+        if "api_infos" in cfg and cfg["api_infos"] == "???":
+            cfg["api_infos"] = api_information
+        for key, value in cfg.items():
+            update_api_infos(value, api_information)
+    elif isinstance(cfg, list):
+        for item in cfg:
+            update_api_infos(item, api_information)
