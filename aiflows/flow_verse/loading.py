@@ -299,7 +299,7 @@ def validate_and_augment_dependency(dependency: Dict[str, str], caller_module_na
     if "url" not in dependency:  # TODO(yeeef): url is not descriptive
         raise ValueError("dependency must have a `url` field")
 
-    match = re.search(r"^(\w+)/(\w+)$", dependency["url"])
+    match = re.search(r"^([\w-]+)/([\w-]+)$", dependency["url"])
     if not match:
         raise ValueError("dependency url must be in the format of `username/repo_name`(huggingface repo)")
     username, repo_name = match.group(1), match.group(2)
