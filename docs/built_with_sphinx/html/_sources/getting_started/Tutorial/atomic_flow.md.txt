@@ -75,7 +75,7 @@ and instantiate the Flow by executing:
 overrides_config = read_yaml_file("reverseNumberAtomic.yaml")
 
 # ~~~ Instantiate the flow ~~~
-flow = ReverseNumberAtomicFlow.instantiate_from_default_config(overrides=overrides_config)
+flow = ReverseNumberAtomicFlow.instantiate_from_default_config(**overrides_config)
 ```
 Note that you can also pass a Python dictionary as the `overrides` parameter and not rely on YAML files.
 

@@ -200,7 +200,7 @@ GPT-4 would specify the prompts and the generation parameters)</p></li>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">overrides_config</span> <span class="o">=</span> <span class="n">read_yaml_file</span><span class="p">(</span><span class="s2">"reverseNumberAtomic.yaml"</span><span class="p">)</span>
 
 <span class="c1"># ~~~ Instantiate the flow ~~~</span>
-<span class="n">flow</span> <span class="o">=</span> <span class="n">ReverseNumberAtomicFlow</span><span class="o">.</span><span class="n">instantiate_from_default_config</span><span class="p">(</span><span class="n">overrides</span><span class="o">=</span><span class="n">overrides_config</span><span class="p">)</span>
+<span class="n">flow</span> <span class="o">=</span> <span class="n">ReverseNumberAtomicFlow</span><span class="o">.</span><span class="n">instantiate_from_default_config</span><span class="p">(</span><span class="o">**</span><span class="n">overrides_config</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that you can also pass a Python dictionary as the <code class="docutils literal notranslate"><span class="pre">overrides</span></code> parameter and not rely on YAML files.</p>
@@ -235,7 +235,7 @@ python<span class="w"> </span>reverse_number_atomic.py
 </section>
 </section>
 </div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
-<div class="sticky top-16 -mt-10 max-h-[calc(var(--vh)-4rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
 <li><a :data-current="activeSection === '#by-the-tutorial-s-end-i-will-have'" class="reference internal" href="#by-the-tutorial-s-end-i-will-have">By the Tutorial’s End, I Will Have…</a></li>
 <li><a :data-current="activeSection === '#section-1-defining-atomic-flows'" class="reference internal" href="#section-1-defining-atomic-flows">Section 1: Defining Atomic Flows</a></li>

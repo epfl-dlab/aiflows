@@ -137,7 +137,7 @@
 <span id="aiflows-utils-general-helpers-module"></span><h2>aiflows.utils.general_helpers module<a class="headerlink" href="#module-aiflows.utils.general_helpers" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.general_helpers'">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="aiflows.utils.general_helpers.create_unique_id">
-<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">create_unique_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">existing_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.create_unique_id" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.create_unique_id'">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">create_unique_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">existing_ids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.create_unique_id" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.create_unique_id'">¶</a></dt>
 <dd><p>creates a unique id</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -168,22 +168,6 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>e</strong> (<em>Exception</em>) – The exception to handle</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="aiflows.utils.general_helpers.extract_top_level_function_names">
-<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">extract_top_level_function_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">python_file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.extract_top_level_function_names" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.extract_top_level_function_names'">¶</a></dt>
-<dd><p>Extracts the top level function names from a python file (ignores nested)</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>python_file_path</strong> (<em>str</em>) – The path to the python file</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A list of function names</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[str]</p>
 </dd>
 </dl>
 </dd></dl>
@@ -242,11 +226,6 @@ note2: we recommend to only use this function in the Quick Start tutorial, and n
 <dd class="field-even"><p>int</p>
 </dd>
 </dl>
-</dd></dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="aiflows.utils.general_helpers.get_function_from_name">
-<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">get_function_from_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">function_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.get_function_from_name" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.get_function_from_name'">¶</a></dt>
-<dd><p>Returns a function from a module given its name.</p>
 </dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="aiflows.utils.general_helpers.get_predictions_dir_path">
@@ -338,36 +317,84 @@ note2: we recommend to only use this function in the Quick Start tutorial, and n
 </dl>
 </dd></dl>
 <dl class="py function">
-<dt class="sig sig-object py" id="aiflows.utils.general_helpers.python_file_path_to_module_path">
-<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">python_file_path_to_module_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.python_file_path_to_module_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.python_file_path_to_module_path'">¶</a></dt>
-<dd><p>Converts a python file path to a python module path</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>file_path</strong> (<em>str</em>) – The python file path</p>
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.quick_load">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">quick_load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">item</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'api_infos'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.quick_load" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.quick_load'">¶</a></dt>
+<dd><p>Recursively loads the config item in a dictionary with key.
+:param cfg: The dictionary to update
+:type cfg: Dict[str, Any]
+:param item: The item to set
+:type item: Dict[str, Any]
+:param key: The key to use, defaults to ‘api_infos’
+:type key: str, optional</p>
+<p>example:
+cfg = {</p>
+<blockquote>
+<div><blockquote>
+<div><dl>
+<dt>‘backend’: {</dt><dd><p>‘api_infos’: ‘???’,
+‘model_name’: {</p>
+<blockquote>
+<div><p>‘openai’: ‘gpt-4’,
+‘azure’: ‘azure/gpt-4’
+}</p>
+</div></blockquote>
+<p>}</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The python module path</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dt>‘Executor’<span class="classifier">{</span></dt><dd><dl>
+<dt>‘subflows_config’: {</dt><dd><blockquote>
+<div><p>‘backend’: {
+‘api_infos’: ‘???’,
+‘model_name’: {</p>
+<blockquote>
+<div><p>‘openai’: ‘gpt-4’,
+‘azure’: ‘azure/gpt-4’
+}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
 </dd>
 </dl>
-</dd></dl>
-<dl class="py function">
-<dt class="sig sig-object py" id="aiflows.utils.general_helpers.python_module_path_to_file_path">
-<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">python_module_path_to_file_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">module_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.python_module_path_to_file_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.python_module_path_to_file_path'">¶</a></dt>
-<dd><p>Converts a python module path to a python file path</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>module_path</strong> (<em>str</em>) – The python module path</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The python file path</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<p>}</p>
 </dd>
 </dl>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>api_information = [ApiInfo(backend_used=”openai”, api_key=os.getenv(“OPENAI_API_KEY”))]
+quick_load(cfg, api_information)
+returns: cfg = {</p>
+<blockquote>
+<div><dl>
+<dt>‘backend’: {</dt><dd><p>‘api_infos’: [ApiInfo(backend_used=”openai”, api_key=os.getenv(“OPENAI_API_KEY”))],
+‘model_name’: {</p>
+<blockquote>
+<div><p>‘openai’: ‘gpt-4’,
+‘azure’: ‘azure/gpt-4’
+}</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+<dt>‘Executor’<span class="classifier">{</span></dt><dd><dl>
+<dt>‘subflows_config’: {</dt><dd><blockquote>
+<div><p>‘backend’: {
+‘api_infos’: [ApiInfo(backend_used=”openai”, api_key=os.getenv(“OPENAI_API_KEY”))],
+‘model_name’: {</p>
+<blockquote>
+<div><p>‘openai’: ‘gpt-4’,
+‘azure’: ‘azure/gpt-4’
+}</p>
+</div></blockquote>
+<p>}</p>
+</div></blockquote>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+</div></blockquote>
 </dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_gzipped_jsonlines">
@@ -813,7 +840,7 @@ another type of cache that includes the caller frame information in the hashing 
 </section>
 </section>
 </div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
-<div class="sticky top-16 -mt-10 max-h-[calc(var(--vh)-4rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
 <li><a :data-current="activeSection === '#submodules'" class="reference internal" href="#submodules">Submodules</a></li>
 <li><a :data-current="activeSection === '#module-aiflows.utils.general_helpers'" class="reference internal" href="#module-aiflows.utils.general_helpers">aiflows.utils.general_helpers module</a><ul>
@@ -821,19 +848,16 @@ another type of cache that includes the caller frame information in the hashing 
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.encode_from_buffer'" class="reference internal" href="#aiflows.utils.general_helpers.encode_from_buffer"><code class="docutils literal notranslate"><span class="pre">encode_from_buffer()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.encode_image'" class="reference internal" href="#aiflows.utils.general_helpers.encode_image"><code class="docutils literal notranslate"><span class="pre">encode_image()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.exception_handler'" class="reference internal" href="#aiflows.utils.general_helpers.exception_handler"><code class="docutils literal notranslate"><span class="pre">exception_handler()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.extract_top_level_function_names'" class="reference internal" href="#aiflows.utils.general_helpers.extract_top_level_function_names"><code class="docutils literal notranslate"><span class="pre">extract_top_level_function_names()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.find_replace_in_dict'" class="reference internal" href="#aiflows.utils.general_helpers.find_replace_in_dict"><code class="docutils literal notranslate"><span class="pre">find_replace_in_dict()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.flatten_dict'" class="reference internal" href="#aiflows.utils.general_helpers.flatten_dict"><code class="docutils literal notranslate"><span class="pre">flatten_dict()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_current_datetime_ns'" class="reference internal" href="#aiflows.utils.general_helpers.get_current_datetime_ns"><code class="docutils literal notranslate"><span class="pre">get_current_datetime_ns()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_function_from_name'" class="reference internal" href="#aiflows.utils.general_helpers.get_function_from_name"><code class="docutils literal notranslate"><span class="pre">get_function_from_name()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.get_predictions_dir_path'" class="reference internal" href="#aiflows.utils.general_helpers.get_predictions_dir_path"><code class="docutils literal notranslate"><span class="pre">get_predictions_dir_path()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.log_suggest_help'" class="reference internal" href="#aiflows.utils.general_helpers.log_suggest_help"><code class="docutils literal notranslate"><span class="pre">log_suggest_help()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_pop'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_pop"><code class="docutils literal notranslate"><span class="pre">nested_keys_pop()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_search'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_search"><code class="docutils literal notranslate"><span class="pre">nested_keys_search()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_update'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_update"><code class="docutils literal notranslate"><span class="pre">nested_keys_update()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.process_config_leafs'" class="reference internal" href="#aiflows.utils.general_helpers.process_config_leafs"><code class="docutils literal notranslate"><span class="pre">process_config_leafs()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.python_file_path_to_module_path'" class="reference internal" href="#aiflows.utils.general_helpers.python_file_path_to_module_path"><code class="docutils literal notranslate"><span class="pre">python_file_path_to_module_path()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.python_module_path_to_file_path'" class="reference internal" href="#aiflows.utils.general_helpers.python_module_path_to_file_path"><code class="docutils literal notranslate"><span class="pre">python_module_path_to_file_path()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.quick_load'" class="reference internal" href="#aiflows.utils.general_helpers.quick_load"><code class="docutils literal notranslate"><span class="pre">quick_load()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_gzipped_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_gzipped_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_gzipped_jsonlines()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_jsonlines()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_outputs'" class="reference internal" href="#aiflows.utils.general_helpers.read_outputs"><code class="docutils literal notranslate"><span class="pre">read_outputs()</span></code></a></li>

@@ -212,10 +212,15 @@ We can now just import it:</p>
 </pre></div>
 </div>
 <p>The following overwrites the field with your personal API information:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># put the API information in the config</span>
-<span class="n">cfg</span><span class="p">[</span><span class="s2">"flow"</span><span class="p">][</span><span class="s2">"backend"</span><span class="p">][</span><span class="s2">"api_infos"</span><span class="p">]</span> <span class="o">=</span> <span class="n">api_information</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># recursively find the 'api_infos' entry and put the API information in the config</span>
+<span class="n">quick_load</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">api_information</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"api_infos"</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>This is equivalent to the following:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="p">[</span><span class="s2">"flow"</span><span class="p">][</span><span class="s2">"backend"</span><span class="p">][</span><span class="s2">"api_infos"</span><span class="p">]</span> <span class="o">=</span> <span class="n">api_information</span>
+</pre></div>
+</div>
+<p>However, with <code class="docutils literal notranslate"><span class="pre">quick_load</span></code>, we are able to quickly set all entries of api_infos, this is useful when we need to configure more than just one config entries.</p>
 <p>Instantiate your Flow:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ~~~ Instantiate the Flow ~~~</span>
 <span class="n">flow</span> <span class="o">=</span> <span class="n">ChatAtomicFlow</span><span class="o">.</span><span class="n">instantiate_from_default_config</span><span class="p">(</span><span class="o">**</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"flow"</span><span class="p">])</span>
@@ -268,7 +273,7 @@ python<span class="w"> </span>runChatAtomicFlow.py
 </section>
 </section>
 </div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
-<div class="sticky top-16 -mt-10 max-h-[calc(var(--vh)-4rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
+<div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
 <li><a :data-current="activeSection === '#section-1-running-your-first-qa-flow-using-a-flow-from-the-flowverse'" class="reference internal" href="#section-1-running-your-first-qa-flow-using-a-flow-from-the-flowverse">Section 1: Running your First QA Flow using a Flow from the FlowVerse</a><ul>
 <li><a :data-current="activeSection === '#by-the-tutorial-s-end-i-will-have'" class="reference internal" href="#by-the-tutorial-s-end-i-will-have">By the Tutorial’s End, I Will Have…</a></li>
