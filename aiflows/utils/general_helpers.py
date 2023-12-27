@@ -480,20 +480,21 @@ def update_api_infos(cfg, api_information):
         for item in cfg:
             update_api_infos(item, api_information)
 
-def quick_load(cfg, item, key = "api_infos"):
+def quick_load(cfg, item, key="api_infos"):
     """Recursively loads the item in a dictionary with key.
     :param cfg: The dictionary to update
     :type cfg: Dict[str, Any]
     :param item: The item to set
     :type item: Dict[str, Any]
-    :param key: The key to use, defaults to "api_infos"
+    :param key: The key to use, defaults to 'api_infos'
     :type key: str, optional
     """
     if isinstance(cfg, dict):
         if key in cfg and cfg[key] == "???":
             cfg[key] = item
-        for key, value in cfg.items():
-            quick_load(value, item, key)
+        for k, v in cfg.items():
+            quick_load(v, item, key)
     elif isinstance(cfg, list):
-        for item in cfg:
-            quick_load(item, item, key)
+        for elem in cfg:
+            quick_load(elem, item, key)
+
