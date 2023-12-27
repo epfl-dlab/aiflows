@@ -472,6 +472,50 @@ def quick_load(cfg, item, key="api_infos"):
     :type item: Dict[str, Any]
     :param key: The key to use, defaults to 'api_infos'
     :type key: str, optional
+
+    example:
+    cfg = {
+         'backend': {
+            'api_infos': '???',
+            'model_name': {
+                'openai': 'gpt-4',
+                'azure': 'azure/gpt-4'
+                }
+            }
+         'Executor' : {
+            'subflows_config': {
+                    'backend': {
+                    'api_infos': '???',
+                    'model_name': {
+                        'openai': 'gpt-4',
+                        'azure': 'azure/gpt-4'
+                        }
+                    }
+                }
+            }
+        }
+    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
+    quick_load(cfg, api_information)
+    returns: cfg = {
+            'backend': {
+                'api_infos': [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))],
+                'model_name': {
+                    'openai': 'gpt-4',
+                    'azure': 'azure/gpt-4'
+                    }
+                }
+            'Executor' : {
+                'subflows_config': {
+                        'backend': {
+                        'api_infos': [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))],
+                        'model_name': {
+                            'openai': 'gpt-4',
+                            'azure': 'azure/gpt-4'
+                            }
+                        }
+                    }
+                }
+            }
     """
     if isinstance(cfg, dict):
         if key in cfg and cfg[key] == "???":
