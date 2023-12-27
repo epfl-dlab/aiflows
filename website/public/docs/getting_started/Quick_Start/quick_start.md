@@ -96,9 +96,14 @@ flow:  # Overrides the ChatAtomicFlow config
 
 The following overwrites the field with your personal API information:
 ```python
-# put the API information in the config
+# recursively find the 'api_infos' entry and put the API information in the config
+quick_load(cfg, api_information, key="api_infos")
+```
+This is equivalent to the following:
+```python
 cfg["flow"]["backend"]["api_infos"] = api_information
 ```
+However, with `quick_load`, we are able to quickly set all entries of api_infos, this is useful when we need to configure more than just one config entries.
 
 Instantiate your Flow:
 ```python
