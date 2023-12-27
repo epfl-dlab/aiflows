@@ -1,11 +1,8 @@
-from aiflows.backends.api_info import ApiInfo
-from aiflows.utils.general_helpers import find_replace_in_dict
 from aiflows.flow_launchers import FlowLauncher
 from aiflows.backends.api_info import ApiInfo
 from aiflows import flow_verse
-import os 
 from aiflows import logging
-from aiflows.utils.general_helpers import read_yaml_file
+from aiflows.utils.general_helpers import read_yaml_file, quick_load
 
 
 dependencies = [
@@ -37,7 +34,7 @@ if __name__ == "__main__":
     cfg = read_yaml_file("flow_modules/aiflows/ChatFlowModule/demo.yaml")
 
     # put the API information in the config
-    cfg["flow"]["backend"]["api_infos"] = api_information
+    quick_load(cfg, api_information, key="api_infos")
 
     # ~~~ Instantiate the Flow ~~~
     flow = ChatAtomicFlow.instantiate_from_default_config(**cfg["flow"])    
