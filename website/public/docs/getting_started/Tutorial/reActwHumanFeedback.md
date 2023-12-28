@@ -61,6 +61,7 @@ pip install wikipedia==1.4.0
 pip install langchain==0.0.336
 pip install duckduckgo-search==3.9.6
 ```
+**IMPORTANT:** For `aiflows >= 0.1.7` , dependencies are installed automatically through the `flow_verse.sync_dependencies` function. Consequently, there is no need for manual installation of these libraries.
 
 
 Next, in order to empower the `HumanStandardInputFlow` to terminate the `ReActWithHumanFeedback` flow, it is essential to implement a function in the `ControllerExecutorFlow` class for this specific purpose. Consequently, a new class, `ReActWithHumanFeedback`, is introduced as follows (you can find it in [ReActWithHumandFeedback.py](https://github.com/epfl-dlab/aiflows/tree/main/examples/ReActWithHumanFeedback/ReActWithHumanFeedback.py)):
