@@ -7,7 +7,7 @@ memory_files: ???
 
 subflows_config:
   MemoryReading:
-    _target_: Tachi67.MemoryReadingFlowModule.MemoryReadingAtomicFlow.instantiate_from_default_config
+    _target_: flow_modules.aiflows.MemoryReadingFlowModule.MemoryReadingAtomicFlow.instantiate_from_default_config
     output_interface:
       - "plan"
       - "logs"

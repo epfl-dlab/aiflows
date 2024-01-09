@@ -19,13 +19,13 @@ logging.auto_set_dir()
 dependencies = [
     {"url": "aiflows/HumanStandardInputFlowModule", "revision": "4ff043522c89a964ea3a928ce09811c51a2b5b98"},
     {"url": "aiflows/ChatFlowModule", "revision": "297c90d08087d9ff3139521f11d1a48d7dc63ed4"},
-    {"url": "Tachi67/AbstractBossFlowModule", "revision": "main"},
-    {"url": "Tachi67/MemoryReadingFlowModule", "revision": "main"},
-    {"url": "Tachi67/PlanWriterFlowModule", "revision": "main"},
-    {"url": "Tachi67/ExtendLibraryFlowModule", "revision": "main"},
-    {"url": "Tachi67/RunCodeFlowModule", "revision": "main"},
-    {"url": "Tachi67/ReplanningFlowModule", "revision": "main"},
-    {"url": "Tachi67/CoderFlowModule", "revision": "main"},
+    {"url": "aiflows/AbstractBossFlowModule", "revision": "main"},
+    {"url": "aiflows/MemoryReadingFlowModule", "revision": "main"},
+    {"url": "aiflows/PlanWriterFlowModule", "revision": "main"},
+    {"url": "aiflows/ExtendLibraryFlowModule", "revision": "main"},
+    {"url": "aiflows/RunCodeFlowModule", "revision": "main"},
+    {"url": "aiflows/ReplanningFlowModule", "revision": "main"},
+    {"url": "aiflows/CoderFlowModule", "revision": "main"},
     {"url": "aiflows/JarvisFlowModule", "revision": "main"},
 ]
 
