@@ -122,6 +122,45 @@ We have tried to find a way for anyone to benefit by contributing to the project
 
 In a nutshell, this is just the beginning, and we have a long way to go. Stay tuned, and let's work on a great (open-source) AI future together!
 
+## JARVIS V0
+Explore our [JARVIS V0 Tutorial](./examples/Jarvis/Introduction_to_Jarvis.md):  a general purpose agent built upon `aiflows`, empowered by a hierarchical structure of large language models and tools including a code interpreter. At a high level, Jarvis takes in tasks in natural language, and achieve the task by making plans, writing and executing code.
+
+### JARVIS V0 Demo
+You can find a demo of JARVIS V0 in [examples/run_jarvis.py](./examples/Jarvis/run_Jarvis.py).
+
+To run:
+```shell
+cd examples/Jarvis
+python run_Jarvis.py
+```
+
+### How can I contribute to JARVIS?
+Our current iteration, V0 of JARVIS, acknowledges its potential for improvement on various fronts. We recognize that there are numerous areas where enhancements can be made. Therefore, **we eagerly welcome any and all contributions to elevate the capabilities and performance of JARVIS**. Your insights and efforts play a vital role in shaping the future iterations of this system. Let's collaborate to unlock the full potential of JARVIS! 🚀
+
+Here are some of the areas where we would like to see improvements:
+
+- **Feedback, Feedback, Feedback**: We would like to hear your feedback on JARVIS! What do you like about JARVIS? What do you dislike about JARVIS? What do you think can be improved? What do you think can be added? We would like to hear your thoughts!
+
+- **JARVIS Tutorials & Documentation**: We would like to provide more tutorials and documentation for JARVIS, so that users can get started with JARVIS more easily. We would also like to provide more examples of JARVIS in action, so that users can get a better understanding of JARVIS. Feel free to contribute !
+
+- **JARVIS General Structure**: Do you have any thoughts on the general structure of JARVIS? Is there any way to make it more efficient (e.g, less calls to the LLM)? Is there any way to make it more general? We would like to hear your thoughts!
+
+- **Memory Management : Rething the memory management mechanisms**: 
+  - We are currently using a workaround for the token limitations of the LLM APIs, we are using a sliding window to crop the chat history, and we are using external memory files to store the memory of the flows. This is not ideal, we should be able to have **more efficient memory management mechanisms** (e.g., Vector Store Database)
+  - The full content of the memory files are injected in the prompts. This can still make JARVIS eventually fail (due to the token limitations of the LLM APIs). We should be able to **inject only the necessary part of the memory** to the prompts.
+  - **Develop mechanisms to work with a larger codebase** (saving and structuring the code library like an actual library, instead of a single file). How can we make the controller aware of the code library? How can we make the controller aware of the code library's structure? How can we make the controller aware of the code library's content?
+
+- **Clear up prompts**: Improving the clarity of prompts is crucial. Consider the option of incorporating more examples instead of relying solely on natural language instructions. Are there alternative approaches to enhance the straightforwardness of prompts? Another issue involves non-json parsable results from LLM calls, currently addressed by specifying in the system prompt that the output should be json parsable. If the output falls short, the LLM is recalled with an instruction to reformat the answer. Beyond instructions, exploring alternative strategies to tackle this issue is essential. Valuable insights and contributions are welcome in refining this process.
+
+You can also check out a more extensive list of potential improvements in the **Future Improvements** section of the [JARVIS V0 Tutorial](./examples/Jarvis/Introduction_to_Jarvis.md).
+
+## Contributors
+
+<a href="https://github.com/epfl-dlab/aiflows/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=epfl-dlab/aiflows" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
 
 ## Citation
 
