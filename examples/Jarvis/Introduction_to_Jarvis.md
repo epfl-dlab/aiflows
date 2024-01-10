@@ -299,21 +299,21 @@ Here we go!
 - The Controller of CtrlExMemFlow_ExtLib calls write_code to write and test the code. Still, we do not provide any more test suites other than checking syntax.
     ```python
     def plot_stock_prices(df):
-    """
-    Plots the 'Close' prices against the dates.
+      """
+      Plots the 'Close' prices against the dates.
 
-    Parameters:
-    df (pandas.DataFrame): The DataFrame containing the stock data.
-    """
-    import matplotlib.pyplot as plt
+      Parameters:
+      df (pandas.DataFrame): The DataFrame containing the stock data.
+      """
+      import matplotlib.pyplot as plt
 
-    plt.figure(figsize=(10,5))
-    plt.plot(df.index, df['Close'], label='Close Price history') 
-    plt.xlabel('Date')
-    plt.ylabel('Close Price')
-    plt.title('Close Price Trend')
-    plt.legend()
-    plt.show()
+      plt.figure(figsize=(10,5))
+      plt.plot(df.index, df['Close'], label='Close Price history') 
+      plt.xlabel('Date')
+      plt.ylabel('Close Price')
+      plt.title('Close Price Trend')
+      plt.legend()
+      plt.show()
     ```
 - The MemoryWritingFlow of ExtendLibrary updates the logs of ExtendLibrary, it records the action of write_code.
 - The MemoryReadingFlow of ExtendLibrary reads in the memory, here, new logs will override the old logs.
@@ -331,9 +331,9 @@ Here we go!
   
   ```python
   import importlib
-    import library
-    importlib.reload(library)
-    from library import download_stock_data, plot_stock_prices
+  import library
+  importlib.reload(library)
+  from library import download_stock_data, plot_stock_prices
   ```
 
 - The MemoryWritingFlow of Coder updates the logs of Coder, it records the action of run_code.
@@ -375,32 +375,47 @@ Here we go!
 
 Up until the publishing of V0 Jarvis, there are several things that we would like to improve:
 
-- When running code tests in [TestCodeFlow](https://huggingface.co/Tachi67/TestCodeFlowModule) we should show the test results to the user and fetch for feedback before exiting the flow, and add the part of user feedback to the result returned to the controller.
-    -  This can be done by appending a subflow to ask for human feedback (like [this](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/IntermediateAns_Jarvis.py)) to [TestCodeFlow](https://huggingface.co/Tachi67/TestCodeFlowModule/blob/main/TestCodeFlow.py).
+- **Feedback, Feedback, Feedback**: We would like to hear your feedback on Jarvis! What do you like about Jarvis? What do you dislike about Jarvis? What do you think can be improved? What do you think can be added? We would like to hear your thoughts!
 
-- There are repetitive code, consider extracting them to a common module. Down below is a list of the repetitive code:
-    - Controllers:
-        - [Controller of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/Controller_JarvisFlow.py)
-        - [Controller of CoderFlow](https://huggingface.co/Tachi67/ExtendLibraryFlowModule/blob/main/ControllerFlow_ExtLib.py)
-        - [Controller of ExtendLibraryFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/Controller_CoderFlow.py)
-        - [Controller of PlanWriterFlow](https://huggingface.co/Tachi67/PlanWriterFlowModule/blob/main/PlanWriterCtrlFlow.py)
-        - [Controller of CodeWriterFlow](https://huggingface.co/Tachi67/CodeWriterFlowModule/blob/main/CodeWriterFlow.py)
-    - AskUserFlow:
-        - [IntermediateAns of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/IntermediateAns_Jarvis.py)
-        - [FinalAns of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/FinalAns_Jarvis.py)
-        - AskUserFlow of each controller
-    - Planners:
-        basically, modify [PlanWriterFlow](https://huggingface.co/Tachi67/PlanWriterFlowModule/tree/main) to make it adapted to:
-        - [Planner of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/Planner_JarvisFlow.py)
-        - [Planner of CoderFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/Planner_CoderFlow.py)
-    - UpdatePlanFlow:
-        - [UpdatePlanFlow of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/UpdatePlanAtomicFlow.py)
-        - [UpdatePlanFlow of CoderFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/UpdatePlanAtomicFlow.py)
-        - [UpdatePlanFlow of ExtendLibraryFlow](https://huggingface.co/Tachi67/ExtendLibraryFlowModule/blob/main/UpdatePlanAtomicFlow.py)
-- Clear up prompts to use more examples instead of natural language instructions.
-- During the execution of a flow, the user should be able to press `Crtl + C` to exit the current flow and go back to the caller flow. By doing this, the user should also be able to provide feedback to the controller of the caller flow to instruct what to do next.
-- After replanning, the controller sometimes gets confused of the new plan, it may be because that we are simply overriding the plan injected to the system prompts.
-  - Consider providing the controller a user message informing it of the new plan, instead of simply overriding the plan injected to the system prompts.
+- **Jarvis Tutorials & Documentation**: We would like to provide more tutorials and documentation for Jarvis, so that users can get started with Jarvis more easily. We would also like to provide more examples of Jarvis in action, so that users can get a better understanding of Jarvis. Feel free to contribute !
+
+- **Jarvis General Structure**: Do you have any thoughts on the general structure of Jarvis? Is there any way to make it more efficient (e.g, less calls to the LLM)? Is there any way to make it more general? We would like to hear your thoughts!
+
+- **Memory Management : Rething the memory management mechanisms**: 
+  - We are currently using a workaround for the token limitations of the LLM APIs, we are using a sliding window to crop the chat history, and we are using external memory files to store the memory of the flows. This is not ideal, we should be able to have **more efficient memory management mechanisms** (e.g., Vector Store Database)
+  - The full content of the memory files are injected in the prompts. This can still make JARVIS eventually fail (due to the token limitations of the LLM APIs). We should be able to **inject only the necessary part of the memory** to the prompts.
+  - **Develop mechanisms to work with a larger codebase** (saving and structuring the code library like an actual library, instead of a single file). How can we make the controller aware of the code library? How can we make the controller aware of the code library's structure? How can we make the controller aware of the code library's content?
+
+- **Clear up prompts**: Improving the clarity of prompts is crucial. Consider the option of incorporating more examples instead of relying solely on natural language instructions. Are there alternative approaches to enhance the straightforwardness of prompts? Another issue involves non-json parsable results from LLM calls, currently addressed by specifying in the system prompt that the output should be json parsable. If the output falls short, the LLM is recalled with an instruction to reformat the answer. Beyond instructions, exploring alternative strategies to tackle this issue is essential. Valuable insights and contributions are welcome in refining this process.
+
+- **Jarvis V0 specific improvements**
+
+  - When running code tests in [TestCodeFlow](https://huggingface.co/Tachi67/TestCodeFlowModule) we should show the test results to the user and fetch for feedback before exiting the flow, and add the part of user feedback to the result returned to the controller.
+      -  This can be done by appending a subflow to ask for human feedback (like [this](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/IntermediateAns_Jarvis.py)) to [TestCodeFlow](https://huggingface.co/Tachi67/TestCodeFlowModule/blob/main/TestCodeFlow.py).
+
+  - There are repetitive code, consider extracting them to a common module. Down below is a list of the repetitive code:
+      - Controllers:
+          - [Controller of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/Controller_JarvisFlow.py)
+          - [Controller of CoderFlow](https://huggingface.co/Tachi67/ExtendLibraryFlowModule/blob/main/ControllerFlow_ExtLib.py)
+          - [Controller of ExtendLibraryFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/Controller_CoderFlow.py)
+          - [Controller of PlanWriterFlow](https://huggingface.co/Tachi67/PlanWriterFlowModule/blob/main/PlanWriterCtrlFlow.py)
+          - [Controller of CodeWriterFlow](https://huggingface.co/Tachi67/CodeWriterFlowModule/blob/main/CodeWriterFlow.py)
+      - AskUserFlow:
+          - [IntermediateAns of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/IntermediateAns_Jarvis.py)
+          - [FinalAns of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/FinalAns_Jarvis.py)
+          - AskUserFlow of each controller
+      - Planners:
+          basically, modify [PlanWriterFlow](https://huggingface.co/Tachi67/PlanWriterFlowModule/tree/main) to make it adapted to:
+          - [Planner of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/Planner_JarvisFlow.py)
+          - [Planner of CoderFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/Planner_CoderFlow.py)
+      - UpdatePlanFlow:
+          - [UpdatePlanFlow of JarvisFlow](https://huggingface.co/Tachi67/JarvisFlowModule/blob/main/UpdatePlanAtomicFlow.py)
+          - [UpdatePlanFlow of CoderFlow](https://huggingface.co/Tachi67/CoderFlowModule/blob/main/UpdatePlanAtomicFlow.py)
+          - [UpdatePlanFlow of ExtendLibraryFlow](https://huggingface.co/Tachi67/ExtendLibraryFlowModule/blob/main/UpdatePlanAtomicFlow.py)
+
+  - During the execution of a flow, the user should be able to press `Crtl + C` to exit the current flow and go back to the caller flow. By doing this, the user should also be able to provide feedback to the controller of the caller flow to instruct what to do next.
+  - After replanning, the controller sometimes gets confused of the new plan, it may be because that we are simply overriding the plan injected to the system prompts.
+    - Consider providing the controller a user message informing it of the new plan, instead of simply overriding the plan injected to the system prompts.
 
 
 ### Acknowledgement
