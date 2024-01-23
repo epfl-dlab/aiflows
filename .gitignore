@@ -26,6 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 FlowVerse
+examples/Remote_and_Proxy_Flows/colink-server
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

@@ -1,0 +1,49 @@
+name: "ReverseNumberTwice"
+description: "A sequential flow that reverses a number twice."
+
+# input and output interfaces of SequentialFlow
+input_interface:
+  - "number"
+
+output_interface:
+  - "output_number"
+
+#configuration of subflows
+subflows_config:
+  first_reverse_flow:
+    _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
+    name: "ReverseNumberFirst"
+    description: "A flow that takes in a number and reverses it."
+    usage_type: "ProxyFlow"
+    participant_user_id: 035a7b13dbbabb98803c1b97d5e0d2684e5e3c02ff9e32d3f2ae57335c569497f0
+    participant_role: "flow-server"
+  second_reverse_flow:
+    _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
+    name: "ReverseNumberSecond"
+    description: "A flow that takes in a number and reverses it."
+
+# Define order of execution of subflows and input & output interfaces for proper execution
+topology:
+  - goal: reverse the input number
+    input_interface:
+      _target_: aiflows.interfaces.KeyInterface
+      keys_to_select: ["number"]
+    flow: first_reverse_flow
+    output_interface:
+      _target_: aiflows.interfaces.KeyInterface
+      keys_to_rename:
+        output_number: first_reverse_output
+      keys_to_select: ["first_reverse_output"]
+    reset: false
+
+  - goal: reverse the output of the first reverse
+    input_interface:
+      _target_: aiflows.interfaces.KeyInterface
+      keys_to_rename:
+        first_reverse_output: number
+      keys_to_select: ["number"]
+    flow: second_reverse_flow
+    output_interface:
+      _target_: aiflows.interfaces.KeyInterface
+      keys_to_select: ["output_number"]
+    reset: false

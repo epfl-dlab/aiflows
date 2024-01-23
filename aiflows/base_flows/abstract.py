@@ -22,6 +22,8 @@ from aiflows.utils.general_helpers import recursive_dictionary_update, nested_ke
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from ..utils.general_helpers import try_except_decorator
+import colink as CL
+import pickle
 
 log = logging.get_logger(__name__)
 
@@ -36,6 +38,7 @@ class Flow(ABC):
 
     # The required parameters that the user must provide in the config when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
+    VALID_FLOW_USAGE_TYPES = ["LocalFlow", "ProxyFlow"]
 
     SUPPORTS_CACHING = False
 
@@ -60,9 +63,11 @@ class Flow(ABC):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
+        flow_config =  self._validate_flow_usage_type(flow_config)
         self.flow_config = flow_config
         self.cache = FlowCache()
         self._validate_flow_config(flow_config)
+        
 
         self.set_up_flow_state()
 
@@ -96,6 +101,35 @@ class Flow(ABC):
         config = cls.get_config(**overrides)
 
         return cls.instantiate_from_config(config)
+    
+    @classmethod
+    def _validate_flow_usage_type(cls,flow_config):
+        if "usage_type" not in flow_config:
+            flow_config["usage_type"] = "LocalFlow"
+        
+        #Validate Flow usage
+        if flow_config["usage_type"] not in cls.VALID_FLOW_USAGE_TYPES:
+            raise ValueError(
+                "Invalid atomic type: {}. Valid atomic types are: {}".format(
+                    flow_config["usage_type"], cls.VALID_FLOW_USAGE_TYPES
+                )
+            )
+            
+        if flow_config["usage_type"] == "ProxyFlow":
+            
+            if "participant_user_id" not in flow_config:
+                raise ValueError(
+                    "ProxyFlow must have participant_user_id in flow_config"
+                )
+            if "participant_role" not in flow_config:
+                raise ValueError(
+                    "ProxyFlow must have participant_role in flow_config"
+                )
+                
+            flow_config["remote_participant"] = CL.Participant(
+                user_id=flow_config["participant_user_id"], role=flow_config["participant_role"]
+            )
+        return flow_config
 
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
@@ -105,13 +139,14 @@ class Flow(ABC):
         :type flow_config: Dict[str, Any]
         :raises ValueError: If the flow config does not contain all the required keys
         """
+        
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
 
         for key in cls.REQUIRED_KEYS_CONFIG:
             if key not in flow_config:
-                raise ValueError(f"{key} is a required parameter in the flow_config.")
-
+                raise ValueError(f"{key} is a required parameter in the flow_config.")        
+            
     @classmethod
     def get_config(cls, **overrides):
         """
@@ -461,6 +496,56 @@ class Flow(ABC):
             log.debug(f"Cached key: f{cache_key_hash}")
 
         return response
+    
+    def run_proxy(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Runs the flow in proxy mode.
+
+        :param input_data: The input data to run the flow on
+        :type input_data: Dict[str, Any]
+        :return: The output data of the flow
+        :rtype: Dict[str, Any]
+        """
+        
+        log.debug("Running flow in proxy mode...")
+        
+        # ASSUME colink object is injected
+        self.cl = self.flow_config["cl"]
+        
+        print("Sending to remote flow...")
+        self.cl.send_variable(
+            "flow_input", pickle.dumps(input_data), [self.flow_config["remote_participant"]]
+        )
+
+        log.debug("Waiting for response...")
+        # wait for response
+        receive_data = self.cl.recv_variable("flow_output", self.flow_config["remote_participant"])
+        
+        #Is there somehow the need to delete the variable we sent ???
+        
+        response = pickle.loads(receive_data)
+
+        return response
+    
+    def _run_method(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Runs the flow in local mode.
+
+        :param input_data: The input data to run the flow on
+        :type input_data: Dict[str, Any]
+        :return: The output data of the flow
+        :rtype: Dict[str, Any]
+        """
+        
+        if self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching:
+            response = self.__get_from_cache(input_data)
+            
+        elif self.flow_config["usage_type"] == "ProxyFlow":
+            response = self.run_proxy(input_data)
+        
+        else:          
+            response = self.run(input_data)
+                
+        return response
+    
 
     @try_except_decorator
     def __call__(self, input_message: InputMessage):
@@ -475,10 +560,8 @@ class Flow(ABC):
         self._log_message(input_message)
 
         # ~~~ Execute the logic of the flow ~~~
-        if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
-            response = self.run(input_message.data)
-        else:
-            response = self.__get_from_cache(input_message.data)
+        
+        response = self._run_method(input_message.data)
 
         # ~~~ Package output message ~~~
         output_message = self._package_output_message(
@@ -521,3 +604,7 @@ class Flow(ABC):
     @classmethod
     def type(cls):
         raise NotImplementedError
+
+
+    
+    
