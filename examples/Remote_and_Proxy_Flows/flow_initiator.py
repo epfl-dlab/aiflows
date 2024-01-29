@@ -22,24 +22,19 @@ def run_initiator(cl: CoLink, param: bytes, participants: List[CL.Participant]):
     print("Invoked Initiator", cl.get_core_addr())
 
     print("TASK_ID", cl.get_task_id())
-
     # Read user input
     print("Reading user input...")
     user_input_bytes = cl.read_or_wait(f"tasks:{cl.get_task_id()}:user_input")
     user_input = pickle.loads(user_input_bytes)
     print("User input:", user_input)
-
     # Read flow config
     print("Reading config...")
     cfg_bytes = cl.read_or_wait(f"tasks:{cl.get_task_id()}:flow_cfg")
     cfg = OmegaConf.create(pickle.loads(cfg_bytes))
     cfg_container = OmegaConf.to_container(cfg, resolve=True)
-
+    cfg_container["task_id"] = cl.get_task_id()
     # Instantiate Flow
     flow = SequentialFlow.instantiate_from_default_config(**cfg_container)
-
-    # need to inject cl to all ProxyFlows !!!!!!!!!!
-    flow.subflows["first_reverse_flow"].flow_config["cl"] = cl
 
     # Launch Flow
     print("Launching flow...")
@@ -47,6 +42,7 @@ def run_initiator(cl: CoLink, param: bytes, participants: List[CL.Participant]):
         flow_with_interfaces={"flow": flow},
         data=user_input,
         path_to_output_file=None,
+        cl =cl
     )
 
     flow_output_data = outputs[0]

@@ -12,7 +12,7 @@ from aiflows.flow_launchers import MultiThreadedAPILauncher
 from aiflows.messages import InputMessage
 from aiflows.interfaces.abstract import Interface
 from aiflows.utils import logging
-
+import colink as CL
 log = logging.get_logger(__name__)
 
 
@@ -57,6 +57,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
         fault_tolerant_mode: bool = False,
         n_batch_retries: int = 1,
         wait_time_between_retries: int = 1,
+        cl: CL.CoLink = None,
     ) -> Tuple[Dict]:
         """Static method that runs inference on a single sample with a given flow.
 
@@ -97,7 +98,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
             try:
                 input_message = InputMessage.build(data_dict=input_data_dict, src_flow="Launcher", dst_flow=flow.name)
 
-                output_message = flow(input_message)
+                output_message = flow(input_message,cl = cl)
                 output_data = output_message.data["output_data"]
 
                 if output_interface is not None:
@@ -123,12 +124,15 @@ class FlowLauncher(MultiThreadedAPILauncher):
     def predict(
         self,
         batch: List[dict],
+        cl: CL.CoLink = None,
     ):
         """Runs inference for the given batch (possibly in a multithreaded fashion). This method is called by the `predict_dataloader`
         method of the `MultiThreadedAPILauncher` class.
 
         :param batch: The batch to run inference for.
         :type batch: List[dict]
+        :param cl: A CoLink instance. (used for calls of ProxyFlows)
+        :type cl: CL.CoLink
         :return: The batch with the inference outputs added to it.
         :rtype: List[dict]
         """
@@ -149,6 +153,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
             path_to_output_file=path_to_output_file,
             keys_to_write=["id", "inference_outputs", "human_readable_outputs", "error"],
             n_independent_samples=n_independent_samples,
+            cl=cl,
         )
 
         self._resource_IDs.put(_resource_id)
@@ -167,6 +172,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
         fault_tolerant_mode: bool = False,
         n_batch_retries: int = 1,
         wait_time_between_retries: int = 1,
+        cl: CL.CoLink = None,
     ):
         """Class method that runs inference on the given batch for a given flow.
 
@@ -184,6 +190,8 @@ class FlowLauncher(MultiThreadedAPILauncher):
         :type keys_to_write: Optional[List[str]]
         :param n_independent_samples: the number of times to independently repeat the same inference for a given sample. Default: 1
         :type n_independent_samples: Optional[int]
+        :param cl: A CoLink instance. (used for calls of ProxyFlows)
+        :type cl: CL.CoLink
         :return: The batch with the inference outputs added to it.
         :rtype: List[dict]
         """
@@ -201,6 +209,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
                     fault_tolerant_mode=fault_tolerant_mode,
                     n_batch_retries=n_batch_retries,
                     wait_time_between_retries=wait_time_between_retries,
+                    cl=cl
                 )
 
                 inference_outputs.append(output_message)
@@ -229,6 +238,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
         flow_with_interfaces: Dict[str, Any],
         data: Union[Dict, List[Dict]],
         path_to_output_file: Optional[str] = None,
+        cl: CL.CoLink = None,
     ) -> Tuple[List[dict]]:
         """Class method that takes a flow and runs inference on the given data (no multithreading) and no need to instantiate the class.
 
@@ -238,6 +248,8 @@ class FlowLauncher(MultiThreadedAPILauncher):
         :type data: Union[Dict, List[Dict]]
         :param path_to_output_file: A path to a file to write the outputs to.
         :type path_to_output_file: Optional[str], optional
+        :param cl: A CoLink instance. (used for calls of ProxyFlows)
+        :type cl: CL.CoLink
         :return: A tuple containing the full outputs and the human-readable outputs.
         :rtype: Tuple[List[dict]]
         """
@@ -259,6 +271,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
             batch=data,
             path_to_output_file=path_to_output_file,
             keys_to_write=keys_to_write,
+            cl = cl,
         )
         full_outputs = [{key: sample[key] for key in keys_to_write} for sample in data]
         human_readable_outputs = [sample["human_readable_outputs"] for sample in data]

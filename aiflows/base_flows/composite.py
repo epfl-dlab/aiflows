@@ -84,7 +84,7 @@ class CompositeFlow(Flow, ABC):
         input_message = self._package_input_message(payload=payload, dst_flow=flow)
 
         # ~~~ Execute the call ~~~
-        output_message = flow(input_message)
+        output_message = flow(input_message,cl = self.cl)
 
         # ~~~ Logs the output message to history ~~~
         self._log_message(output_message)
@@ -125,7 +125,8 @@ class CompositeFlow(Flow, ABC):
             if subflow_config["_target_"].startswith("."):
                 cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
                 subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
-
+            
+            subflow_config["task_id"] = config["task_id"]
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             flow_obj.flow_config["name"] = subflow_name
             subflows[subflow_name] = flow_obj

@@ -15,8 +15,9 @@ subflows_config:
     name: "ReverseNumberFirst"
     description: "A flow that takes in a number and reverses it."
     usage_type: "ProxyFlow"
-    participant_user_id: 035a7b13dbbabb98803c1b97d5e0d2684e5e3c02ff9e32d3f2ae57335c569497f0
-    participant_role: "flow-server"
+    remote_participant:
+        user_id: 03d6fb9daf949b1a3f4dc8ff5d77ad3d431886100ed8b97eb7925759ee0e50a3fb
+        role: "flow-server"
   second_reverse_flow:
     _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
     name: "ReverseNumberSecond"

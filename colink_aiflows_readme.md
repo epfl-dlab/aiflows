@@ -34,7 +34,7 @@ Example script:
     cd examples/Remote_and_Proxy_Flows/
     python user_exchange.py
     ```
-    This will print out 2 `user_jwt` tokens. Copy and paste the token of `user 1` it in `examples/Remote_and_Proxy_Flows/sequential_proxy.yaml` to the `participant_user_id` field:
+    This will print out 2 `user_jwt` tokens. Copy and paste the token of `user 1` it in `examples/Remote_and_Proxy_Flows/sequential_proxy.yaml` to the `participant_user_id` field, also define the role of the participant (needs to match the name of handle function):
     ```yaml
     ...
     ...
@@ -45,7 +45,9 @@ Example script:
         name: "ReverseNumberFirst"
         description: "A flow that takes in a number and reverses it."
         usage_type: "ProxyFlow"
-        participant_user_id: #Paste the token of user 1 here
+        remote_participant:
+            user_id: 02be74f33ebbc6e3f9fde54557e2f111c5f69d24259ddce67dbff4d0c214fe4f41
+            role: "flow-server"
     ...
     ...
     ```

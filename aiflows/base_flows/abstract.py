@@ -18,13 +18,14 @@ from aiflows.messages import (
     UpdateMessage_FullReset,
     OutputMessage,
 )
-from aiflows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs
+from aiflows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs, quick_load
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from ..utils.general_helpers import try_except_decorator
 import colink as CL
 import pickle
-
+import hydra
+import time
 log = logging.get_logger(__name__)
 
 
@@ -45,9 +46,17 @@ class Flow(ABC):
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
+    remote_participant: CL.Participant
 
     # Parameters that are given default values if not provided by the user
     __default_flow_config = {
+        "usage_type": "LocalFlow",  # The type of the flow. Can be "LocalFlow" or "ProxyFlow"
+        "remote_participant":
+            {
+                "_target_": "colink.Participant",
+                "user_id": None,  # The user id of the participant in the ProxyFlow (only used if usage_type is "ProxyFlow")
+                "role": None,  # The role of the participant in the ProxyFlow (only used if usage_type is "ProxyFlow")   
+            },
         "private_keys": [],  # keys that will not be logged if they appear in a message
         "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
         "keys_to_ignore_for_hash_flow_state": ["name", "description", "api_keys", "api_information", "private_keys"],
@@ -59,16 +68,20 @@ class Flow(ABC):
     def __init__(
         self,
         flow_config: Dict[str, Any],
+        remote_participant: CL.Participant = None,
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
-        flow_config =  self._validate_flow_usage_type(flow_config)
         self.flow_config = flow_config
         self.cache = FlowCache()
+        self.remote_participant = remote_participant
+        
+        # if self.cl is not None:
+        #     self.cl.set_task_id(self.flow_config["task_id"])
+        
         self._validate_flow_config(flow_config)
         
-
         self.set_up_flow_state()
 
         if log.getEffectiveLevel() == logging.DEBUG:
@@ -99,38 +112,9 @@ class Flow(ABC):
         if overrides is None:
             overrides = {}
         config = cls.get_config(**overrides)
-
+                      
         return cls.instantiate_from_config(config)
     
-    @classmethod
-    def _validate_flow_usage_type(cls,flow_config):
-        if "usage_type" not in flow_config:
-            flow_config["usage_type"] = "LocalFlow"
-        
-        #Validate Flow usage
-        if flow_config["usage_type"] not in cls.VALID_FLOW_USAGE_TYPES:
-            raise ValueError(
-                "Invalid atomic type: {}. Valid atomic types are: {}".format(
-                    flow_config["usage_type"], cls.VALID_FLOW_USAGE_TYPES
-                )
-            )
-            
-        if flow_config["usage_type"] == "ProxyFlow":
-            
-            if "participant_user_id" not in flow_config:
-                raise ValueError(
-                    "ProxyFlow must have participant_user_id in flow_config"
-                )
-            if "participant_role" not in flow_config:
-                raise ValueError(
-                    "ProxyFlow must have participant_role in flow_config"
-                )
-                
-            flow_config["remote_participant"] = CL.Participant(
-                user_id=flow_config["participant_user_id"], role=flow_config["participant_role"]
-            )
-        return flow_config
-
     @classmethod
     def _validate_flow_config(cls, flow_config: Dict[str, Any]):
         """Validates the flow config to ensure that it contains all the required keys.
@@ -139,7 +123,14 @@ class Flow(ABC):
         :type flow_config: Dict[str, Any]
         :raises ValueError: If the flow config does not contain all the required keys
         """
-        
+        #Validate Flow usage
+        if flow_config["usage_type"] not in cls.VALID_FLOW_USAGE_TYPES:
+            raise ValueError(
+                "Invalid atomic type: {}. Valid atomic types are: {}".format(
+                    flow_config["usage_type"], cls.VALID_FLOW_USAGE_TYPES
+                )
+            )
+                    
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
 
@@ -196,7 +187,26 @@ class Flow(ABC):
 
         # return cls.config_class(**overrides)
         return config
-
+    
+    @classmethod
+    def _set_up_proxy_flow(cls,flow_config):
+        """ Sets up the proxy flow. This method is called when the flow is instantiated
+        
+        :param flow_config: The flow config
+        :type flow_config: Dict[str, Any]
+        :return: The kwargs for the flow
+        :rtype: Dict[str, Any]
+        """
+        kwargs = {}
+        
+        if flow_config["usage_type"] == "ProxyFlow":
+            kwargs["remote_participant"] = hydra.utils.instantiate(flow_config["remote_participant"], _convert_="partial")
+        
+        else:
+            kwargs["remote_participant"] = None
+        
+        return kwargs
+        
     @classmethod
     def instantiate_from_config(cls, config):
         """Instantiates the flow from the given config.
@@ -206,7 +216,12 @@ class Flow(ABC):
         :return: The instantiated flow
         :rtype: aiflows.flow.Flow
         """
-        kwargs = {"flow_config": copy.deepcopy(config)}
+        flow_config = copy.deepcopy(config)
+        
+        kwargs = {"flow_config": flow_config}
+        
+        kwargs.update(cls._set_up_proxy_flow(flow_config))
+        
         return cls(**kwargs)
 
     @classmethod
@@ -224,6 +239,14 @@ class Flow(ABC):
         """Sets up the flow state. This method is called when the flow is instantiated, and when the flow is reset."""
         self.flow_state = {}
         self.history = FlowHistory()
+        
+    def get_flow_state(self):
+        """Returns the flow state.
+
+        :return: The flow state
+        :rtype: Dict[str, Any]
+        """
+        return self.flow_state
 
     def reset(self, full_reset: bool, recursive: bool, src_flow: Optional[Union["Flow", str]] = "Launcher"):
         """
@@ -508,17 +531,45 @@ class Flow(ABC):
         
         log.debug("Running flow in proxy mode...")
         
-        # ASSUME colink object is injected
-        self.cl = self.flow_config["cl"]
-        
         print("Sending to remote flow...")
-        self.cl.send_variable(
-            "flow_input", pickle.dumps(input_data), [self.flow_config["remote_participant"]]
+        input_data["id"] = -1
+        self.cl.remote_storage_create(
+            providers = [self.remote_participant.user_id],
+            key = "flow_input",
+            payload = pickle.dumps(input_data),
+            is_public = False,
+        )
+        print("waiting one second...")
+
+        print("finished waiting")
+        input_data["id"] = 0
+        self.cl.remote_storage_update(
+            providers = [self.remote_participant.user_id],
+            key = "flow_input",
+            payload = pickle.dumps(input_data),
+            is_public = False,
         )
 
-        log.debug("Waiting for response...")
+        print("finished waiting")
+        input_data["id"] = 1
+        self.cl.remote_storage_update(
+            providers = [self.remote_participant.user_id],
+            key = "flow_input",
+            payload = pickle.dumps(input_data),
+            is_public = False,
+        )
+     
+        print("finished waiting")
+        input_data["id"] = 2
+        self.cl.remote_storage_update(
+            providers = [self.remote_participant.user_id],
+            key = "flow_input",
+            payload = pickle.dumps(input_data),
+            is_public = False,
+        )
+        print("Waiting for response...")
         # wait for response
-        receive_data = self.cl.recv_variable("flow_output", self.flow_config["remote_participant"])
+        receive_data = self.cl.recv_variable("flow_output", self.remote_participant)
         
         #Is there somehow the need to delete the variable we sent ???
         
@@ -548,14 +599,19 @@ class Flow(ABC):
     
 
     @try_except_decorator
-    def __call__(self, input_message: InputMessage):
+    def __call__(self, input_message: InputMessage, cl: CL.CoLink=None):
         """Calls the flow on the given input message.
 
         :param input_message: The input message to run the flow on
         :type input_message: InputMessage
+        :param cl: The CoLink instance (only used for ProxyFlow, if none are set, the flow will run in local mode and the cl is ignored)
+        :type cl: CL.CoLink
         :return: The output message of the flow
         :rtype: OutputMessage
         """
+        
+        self.cl = cl
+        
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
