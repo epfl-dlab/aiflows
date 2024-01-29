@@ -16,21 +16,40 @@ from reverse_number_atomic import ReverseNumberAtomicFlow
 
 # logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
 
+def get_next_update(subscriber):
+    message = CL.SubscriptionMessage().FromString(subscriber.get_next())
+    while message.change_type != "update":
+        message = CL.SubscriptionMessage().FromString(subscriber.get_next())
 
+    unpickled_payload = pickle.loads(message.payload)
+    input_data = unpickled_payload["data"]
+    state = unpickled_payload["state"]
+    return input_data,state
 
-def run_flow(data):
-    root_dir = "."
-    cfg_path = os.path.join(root_dir, "reverseNumberAtomic.yaml")
-    cfg = read_yaml_file(cfg_path)
-
+def send_data_to_remote(cl: CL,flow: AtomicFlow, participant: CL.Participant, output_data: Dict[str, Any]):
     
-    flow = ReverseNumberAtomicFlow.instantiate_from_default_config(**cfg)
+    state = flow.__getstate__(ignore_proxy_info=True)
+    flow_output = {"data": output_data, "state": state}
     
-    input_message = InputMessage.build(data_dict=data, src_flow="TBD", dst_flow=flow.name)
-        
+    cl.remote_storage_update(
+        providers = [participant.user_id],
+        key = "flow_output",
+        payload = pickle.dumps(flow_output),
+        is_public = False,
+    )
+
+def instantiate_flow(state):
+    flow_config = state["flow_config"]
+    flow = ReverseNumberAtomicFlow.instantiate_from_default_config(**flow_config)
+    flow.__setflowstate__(state)
+    breakpoint()
+    return flow
+
+def run_flow(flow,input_data):
+
+    input_message = InputMessage.build(data_dict=input_data, src_flow="TBD", dst_flow=flow.name)
     
     flow_output_data = flow(input_message)
-      
     print("Output: ", flow_output_data)
     
     return flow_output_data.data["output_data"]
@@ -44,38 +63,28 @@ def run_receiver(cl: CoLink, param: bytes, participants: List[CL.Participant]):
 
     print("Invoked receiver ", cl.get_core_addr())
 
-    # queue_name = cl.subscribe(
-    #     "_remote_storage:private:{}:flow_input".format(participants[0].user_id),
-    #     None,
-    # )
-    # subscriber = cl.new_subscriber(queue_name)
-    
-    # print("queue_name", queue_name)
 
-    max_iters = byte_to_int(param)
-    
-
-    # data = cl.read_or_wait(
-    #     "_remote_storage:private:{}:flow_input".format(participants[0].user_id)
-    #     )
-    
-    queue_name = cl.subscribe(
+    flow_input_qname = cl.subscribe(
         "_remote_storage:private:{}:flow_input".format(participants[0].user_id),
         None,
     )
-    subscriber = cl.new_subscriber(queue_name)
     
-
-    print("max_iters", max_iters)
-    for i in range(4):
-        # Read input from initiator
-        print("Waiting for input...")
-        # update
-        if i >= 1:
-            data = subscriber.get_next()
-            message = CL.SubscriptionMessage().FromString(data)
-            print("new_message", pickle.loads(message.payload))
-            breakpoint()
+    flow_input_sub = cl.new_subscriber(flow_input_qname)
+    
+    cl.remote_storage_create(
+        providers = [participants[0].user_id],
+        key = "flow_output",
+        payload = "",
+        is_public = False,
+    )
+    
+    print("Waiting for input...")
+    
+    input_data,state = get_next_update(flow_input_sub)
+    flow = instantiate_flow(state)
+    output = run_flow(flow,input_data=input_data)
+    
+    send_data_to_remote(cl,flow, participants[0], output)
         # receive_data = subscriber.get_next()
    
         #flow_input = pickle.loads(data)
@@ -85,10 +94,10 @@ def run_receiver(cl: CoLink, param: bytes, participants: List[CL.Participant]):
         #flow_input["id"] = 0
 
         # Run Flow
-        #output = run_flow(flow_input)
+        #
         # Return output
         #cl.send_variable("flow_output", pickle.dumps(output), [participants[0]])
-        print("SENT OUTPUT", i)
+  
 
 # python flow_initiator.py --addr http://127.0.0.1:2021 --jwt $(sed -n "2,2p" ./jwts.txt) --vt-public-addr 127.0.0.1
 if __name__ == "__main__":

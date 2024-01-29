@@ -9,7 +9,7 @@ from colink import (
 
 if __name__ == "__main__":
     addr = "http://127.0.0.1:2021"
-    core_jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJob3N0IiwidXNlcl9pZCI6IjAyYjU4MTNmOWU1MGJlNDlhM2FmYzA2NWNiNjQ5NmQ1NjMyN2I4YzcwY2ZmODU5MWE4OTk5MjgwNTQ5YThjZTgzZCIsImV4cCI6MTcwODg2NzQ0NH0.XBUCG8y7pP5QeNEf2nJou0bym8kpj_BnBF84FFtviPA"
+    core_jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJob3N0IiwidXNlcl9pZCI6IjAyYjU4MTNmOWU1MGJlNDlhM2FmYzA2NWNiNjQ5NmQ1NjMyN2I4YzcwY2ZmODU5MWE4OTk5MjgwNTQ5YThjZTgzZCIsImV4cCI6MTcwOTIwNDIxN30.mAFhA0vPB1IeU2jbXsiAeO-yVLhkdNYeMKdP2WDJLMY"
 
     expiration_timestamp = get_time_stamp() + 86400 * 31
 

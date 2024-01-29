@@ -76,7 +76,7 @@ class Flow(ABC):
         self.flow_config = flow_config
         self.cache = FlowCache()
         self.remote_participant = remote_participant
-        
+        self.created_proxy_flow_entries = False
         # if self.cl is not None:
         #     self.cl.set_task_id(self.flow_config["task_id"])
         
@@ -322,17 +322,31 @@ class Flow(ABC):
             )
             return self._log_message(state_update_message)
 
-    def __getstate__(self):
+    def __getstate__(self, ignore_proxy_info=False):
         """Used by the caching mechanism such that the flow can be returned to the same state using the cache"""
+        flow_config = copy.deepcopy(self.flow_config)
+        flow_state = copy.deepcopy(self.flow_state)
+        if ignore_proxy_info:
+            flow_config.pop("usage_type")
+            flow_config.pop("remote_participant")
+        
         return {
-            "flow_config": self.flow_config,
-            "flow_state": self.flow_state,
+            "flow_config": flow_config,
+            "flow_state": flow_state,
         }
 
     def __setstate__(self, state):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
-        self.flow_config = state["flow_config"]
+        self.__setflowstate__(state)
+        self.__setflowconfig__(state)
+
+    def __setflowstate__(self, state):
+        """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
         self.flow_state = state["flow_state"]
+        
+    def __setflowconfig__(self, state):
+        """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
+        self.flow_config = state["flow_config"]
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
@@ -531,32 +545,51 @@ class Flow(ABC):
         
         log.debug("Running flow in proxy mode...")
         
+        
+        if not self.created_proxy_flow_entries:
+            self.cl.remote_storage_create(
+                providers = [self.remote_participant.user_id],
+                key = "flow_input",
+                payload = "",
+                is_public = False,
+            )
+                        
+            flow_input_qname = self.cl.subscribe(
+                "_remote_storage:private:{}:flow_output".format(self.remote_participant.user_id),
+                None,
+            )
+            
+            self.flow_output_sub = self.cl.new_subscriber(flow_input_qname)
+            
+            self.created_proxy_flow_input_entry = True
+        
+        state = self.__getstate__(ignore_proxy_info=True)
+        flow_input = {"data": input_data, "state": state}
+        
         print("Sending to remote flow...")
-        input_data["id"] = -1
-        self.cl.remote_storage_create(
-            providers = [self.remote_participant.user_id],
-            key = "flow_input",
-            payload = pickle.dumps(input_data),
-            is_public = False,
-        )
-        print("waiting one second...")
 
         self.cl.remote_storage_update(
             providers = [self.remote_participant.user_id],
             key = "flow_input",
-            payload = pickle.dumps(input_data),
+            payload = pickle.dumps(flow_input),
             is_public = False,
         )
 
         print("Waiting for response...")
         # wait for response
-        receive_data = self.cl.recv_variable("flow_output", self.remote_participant)
-        
-        #Is there somehow the need to delete the variable we sent ???
-        
-        response = pickle.loads(receive_data)
 
-        return response
+        message = CL.SubscriptionMessage().FromString(self.flow_output_sub.get_next())
+        while message.change_type != "update":
+            message = CL.SubscriptionMessage().FromString(self.flow_output_sub.get_next())
+        
+        unpickled_payload = pickle.loads(message.payload)
+        output_data = unpickled_payload["data"]
+        state = unpickled_payload["state"]
+        self.__setflowstate__(state)
+        breakpoint()
+        #Is there somehow the need to delete the variable we sent ???
+
+        return output_data
     
     def _run_method(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Runs the flow in local mode.
