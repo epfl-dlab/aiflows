@@ -541,8 +541,6 @@ class Flow(ABC):
         )
         print("waiting one second...")
 
-        print("finished waiting")
-        input_data["id"] = 0
         self.cl.remote_storage_update(
             providers = [self.remote_participant.user_id],
             key = "flow_input",
@@ -550,23 +548,6 @@ class Flow(ABC):
             is_public = False,
         )
 
-        print("finished waiting")
-        input_data["id"] = 1
-        self.cl.remote_storage_update(
-            providers = [self.remote_participant.user_id],
-            key = "flow_input",
-            payload = pickle.dumps(input_data),
-            is_public = False,
-        )
-     
-        print("finished waiting")
-        input_data["id"] = 2
-        self.cl.remote_storage_update(
-            providers = [self.remote_participant.user_id],
-            key = "flow_input",
-            payload = pickle.dumps(input_data),
-            is_public = False,
-        )
         print("Waiting for response...")
         # wait for response
         receive_data = self.cl.recv_variable("flow_output", self.remote_participant)
