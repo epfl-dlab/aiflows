@@ -586,7 +586,6 @@ class Flow(ABC):
         output_data = unpickled_payload["data"]
         state = unpickled_payload["state"]
         self.__setflowstate__(state)
-        breakpoint()
         #Is there somehow the need to delete the variable we sent ???
 
         return output_data
