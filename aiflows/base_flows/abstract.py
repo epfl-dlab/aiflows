@@ -549,13 +549,13 @@ class Flow(ABC):
         if not self.created_proxy_flow_entries:
             self.cl.remote_storage_create(
                 providers = [self.remote_participant.user_id],
-                key = "flow_input",
+                key = "flow_data",
                 payload = "",
                 is_public = False,
             )
                         
             flow_input_qname = self.cl.subscribe(
-                "_remote_storage:private:{}:flow_output".format(self.remote_participant.user_id),
+                "_remote_storage:private:{}:flow_data".format(self.remote_participant.user_id),
                 None,
             )
             
@@ -570,7 +570,7 @@ class Flow(ABC):
 
         self.cl.remote_storage_update(
             providers = [self.remote_participant.user_id],
-            key = "flow_input",
+            key = "flow_data",
             payload = pickle.dumps(flow_input),
             is_public = False,
         )
@@ -586,7 +586,6 @@ class Flow(ABC):
         output_data = unpickled_payload["data"]
         state = unpickled_payload["state"]
         self.__setflowstate__(state)
-        #Is there somehow the need to delete the variable we sent ???
 
         return output_data
     
