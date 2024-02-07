@@ -6,11 +6,14 @@ flow:
     colink_info:
         cl:
             _target_: colink.CoLink
-            jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyMjY5YTNhZTYyZTBjMmU3OTQ2N2ZkOWQyNzJjODYwYzdhNDNlZmUwNDgzZThkOTAwYWYyMDI4Y2ZiYzA5ZDhhOCIsImV4cCI6MTcwOTk5NzM3Mn0.G-ginTuHXUy1TLIQGjN8XfPafX4vghaDnPwZb74sid8
+            jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyNjk1NWI0ZGE2YjBlOThhYTBmZjg5NzZkYzJmODk2NDVjOTQyZDI2NzM3NTAwMzg5MjU1NDgzNzgwZTA4ZjNhYiIsImV4cCI6MTcxMDAwNDY5N30.4Zfq9C6Z1lWWAyJFFtUCR6OVn15LXwUYAnt0P_RsCxk
+
 
 #jwt here
             coreaddr: http://127.0.0.1:2021
 
-        load_incoming_states: False
+        load_incoming_states: True
     backend:
         api_infos: ???
+
+    init_human_message_prompt_template: null

@@ -384,19 +384,25 @@ class Flow(ABC):
             "flow_state": flow_state,
         }
 
-    def __setstate__(self, state,ignore_colink_info=False):
+    def __setstate__(self, state,ignore_colink_info=False, safe_mode=False):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
         if ignore_colink_info:
             colink_info = self.flow_config["colink_info"]
             assert colink_info is not None, "colink_info should never be None"
             state["flow_config"]["colink_info"] = colink_info
         
-        self.__setflowstate__(state)
+        self.__setflowstate__(state, safe_mode=safe_mode)
         self.__setflowconfig__(state)
 
-    def __setflowstate__(self, state):
+    def __setflowstate__(self, state,safe_mode=False):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
-        self.flow_state = state["flow_state"]
+        
+        if not safe_mode:
+            self.flow_state = state["flow_state"]
+        
+        else:
+            self.set_up_flow_state()
+            self.flow_state = {**self.flow_state, **state["flow_state"]}
         
     def __setflowconfig__(self, state):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
@@ -684,9 +690,8 @@ class Flow(ABC):
             # has to come from the flow itself (not the Proxy flow calling it)
             if self.flow_config["colink_info"]["load_incoming_states"]:
                 #assuming state is ALWAYS sent
-                self.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
-            
-            
+                # self.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
+                self.__setflowstate__(colink_meta_data["state"],safe_mode=True)
             
             output_msg = self(input_msg)
             

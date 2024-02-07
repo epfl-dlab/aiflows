@@ -5,12 +5,12 @@ description: "A flow that proxies a remote flow."
 colink_info:
     cl:
         _target_: colink.CoLink
-        jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyNjVkYjYyYTk4Nzk0ZWQ4Nzg0YjM0MzA2NGRlYTMxYjU5YjljOTk0OTA1ZTUxMmRhMDFmYmYxZjVlMzg3NmE5NSIsImV4cCI6MTcwOTk5NzM3Mn0.rN8tNjmAuJ0JiteW6YA6_gLMzs2Ty1Hgtb6KiFRAE2k
+        jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyZGJmNGQwNDRlZjZmZmNiMTMyZjdjYTY4Mzc3ZGMwZTU3M2ViNjE2YjkwZjdjZDg2MzlhOTIzNWY4MjE3ZmY4ZCIsImV4cCI6MTcxMDAwNDY5N30.1rU1maTxp11-EGtUyjwB_RQzSBA58s-wdG8x8fbR9YM
 
 #jwt here
         coreaddr: "http://127.0.0.1:2021"
     
-    remote_participant_id: 02269a3ae62e0c2e79467fd9d272c860c7a43efe0483e8d900af2028cfbc09d8a8 #id here
+    remote_participant_id: 026955b4da6b0e98aa0ff8976dc2f89645c942d26737500389255483780e08f3ab #id here
     remote_participant_flow_queue: RemoteFlow:ChatFlowServer:input_queue:1 #queue name here
 
 
