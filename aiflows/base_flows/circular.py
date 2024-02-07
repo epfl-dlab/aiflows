@@ -24,26 +24,14 @@ class TopologyNode:
     :type output_interface: List[aiflows.data_transformations.DataTransformation]
     :param reset: Whether to reset the node's flow
     :type reset: bool
-    :param action: The action of the node (only for QueueFlows)
-    :type action: str
-    :param participant: The participant role involved in the action (only for QueueFlows)
-    :type participant: str
     """
 
     def __init__(
-        self, goal,
-        input_interface,
-        flow: Flow,
-        output_interface: List[DataTransformation],
-        reset: bool,
-        action: str = None,
-        participants: List[str] = None,
+        self, goal, input_interface, flow: Flow, output_interface: List[DataTransformation], reset: bool
     ) -> None:
         self.goal = goal
         self.input_interface = input_interface
         self.flow = flow
-        self.action = action
-        self.participants = participants
         self.output_interface = output_interface
         self.reset = reset
 
@@ -151,12 +139,6 @@ class CircularFlow(CompositeFlow):
             flow = self.subflows[flow_name]
             reset = topo_config.get("reset", False)
             input_interface = topo_config.get("input_interface", None)
-            action = topo_config.get("action", None)
-            participants = topo_config.get("participants", None)
-            
-            if action == "pull_from_queue" and len(participants) != 1:
-                raise ValueError(f"action 'pull_from_queue' requires exactly one participant, got {len(participants)}")
-            
             if input_interface is not None:
                 # first search _input_msg_payload_builder_registry
                 if input_interface["_target_"].startswith("."):
@@ -192,8 +174,6 @@ class CircularFlow(CompositeFlow):
                     flow=flow,
                     output_interface=output_interface,
                     reset=reset,
-                    action=action,
-                    participants=participants,
                 )
             )
 
@@ -254,16 +234,12 @@ class CircularFlow(CompositeFlow):
                 input_interface = node.input_interface
                 current_flow = node.flow
                 output_interface = node.output_interface
-                action = node.action
-                participants = node.participants
 
                 output_message, output_data = self._call_flow_from_state(
                     goal=node.goal,
                     input_interface=input_interface,
                     flow=current_flow,
                     output_interface=output_interface,
-                    action=action,
-                    participants=participants,
                 )
 
                 self._state_update_dict(update_data=output_data)

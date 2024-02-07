@@ -62,8 +62,6 @@ class CompositeFlow(Flow, ABC):
         input_interface,
         flow,
         output_interface,
-        action: str = None,
-        participants: List[str] = None,
     ):
         """A helper function that calls a given flow by extracting the input data from the state of the current flow.
 
@@ -82,42 +80,17 @@ class CompositeFlow(Flow, ABC):
 
         if input_interface is not None:
             payload = input_interface(goal=f"[Input] {goal}", data_dict=self.flow_state, src_flow=self, dst_flow=flow)
-            
-        #add actions and participants info to the payload for QueueFlow
-        if action is not None:
-            
-            if payload.get("meta_data",None) and payload["meta_data"].get("action",None):
-                raise ValueError("key 'meta_data.action' is reserved for the action of the flow")
-            
-            if payload.get("meta_data",None) and payload["meta_data"].get("participants",None):
-                raise ValueError("key 'meta_data.participants' is reserved for the participants of the flow")
-            
-            if payload.get("meta_data",None) is None:
-                payload["meta_data"] = {"action": action, "participants": participants}
-                
-            else:
-                payload["meta_data"]["action"] = action
-                payload["meta_data"]["participants"] = participants
 
         input_message = self._package_input_message(payload=payload, dst_flow=flow)
 
         # ~~~ Execute the call ~~~
-        output_message = flow(input_message,cl = self.cl)
+        output_message = flow(input_message)
 
         # ~~~ Logs the output message to history ~~~
         self._log_message(output_message)
 
         # ~~~ Process the output ~~~
         output_data = copy.deepcopy(output_message.data["output_data"])
-        
-        #remove actions and participants info from the output for QueueFlow
-        if action is not None:
-            if output_data.get("meta_data",None) and output_data["meta_data"].get("action",None):
-                del output_data["meta_data"]["action"]
-            
-            if output_data.get("meta_data",None) and output_data["meta_data"].get("participants",None):
-                del output_data["meta_data"]["participants"]
-        
         if output_interface is not None:
             output_data = output_interface(goal=f"[Output] {goal}", data_dict=output_data, src_flow=flow, dst_flow=self)
 
@@ -152,8 +125,7 @@ class CompositeFlow(Flow, ABC):
             if subflow_config["_target_"].startswith("."):
                 cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
                 subflow_config["_target_"] = cls_parent_module + subflow_config["_target_"]
-            
-            subflow_config["task_id"] = config["task_id"]
+
             flow_obj = hydra.utils.instantiate(subflow_config, _convert_="partial", _recursive_=False)
             flow_obj.flow_config["name"] = subflow_name
             subflows[subflow_name] = flow_obj

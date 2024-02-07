@@ -22,6 +22,7 @@ from aiflows.utils.general_helpers import recursive_dictionary_update, nested_ke
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from ..utils.general_helpers import try_except_decorator
+from ..utils.colink_helpers import get_next_update_message, create_subscriber
 import colink as CL
 import pickle
 import hydra
@@ -39,24 +40,28 @@ class Flow(ABC):
 
     # The required parameters that the user must provide in the config when instantiating a flow
     REQUIRED_KEYS_CONFIG = ["name", "description"]
-    VALID_FLOW_USAGE_TYPES = ["LocalFlow", "ProxyFlow"]
 
     SUPPORTS_CACHING = False
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
     history: FlowHistory
-    remote_participant: CL.Participant
+    cl: CL.CoLink
+    local_proxy_invocations: Dict[str,Any] = {}
 
     # Parameters that are given default values if not provided by the user
     __default_flow_config = {
-        "usage_type": "LocalFlow",  # The type of the flow. Can be "LocalFlow" or "ProxyFlow"
-        "remote_participant":
-            {
-                "_target_": "colink.Participant",
-                "user_id": None,  # The user id of the participant in the ProxyFlow (only used if usage_type is "ProxyFlow")
-                "role": None,  # The role of the participant in the ProxyFlow (only used if usage_type is "ProxyFlow")   
-            },
+        "colink_info": {
+            "cl": 
+                {
+                    "_target_": "colink.CoLink",
+                    "jwt": None,
+                    "coreaddr": None
+                },
+            "remote_participant_id": None,
+            "remote_participant_flow_queue": None,
+            "load_incoming_states": False     
+        },
         "private_keys": [],  # keys that will not be logged if they appear in a message
         "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
         "keys_to_ignore_for_hash_flow_state": ["name", "description", "api_keys", "api_information", "private_keys"],
@@ -68,19 +73,24 @@ class Flow(ABC):
     def __init__(
         self,
         flow_config: Dict[str, Any],
-        remote_participant: CL.Participant = None,
+        cl: CL.CoLink = None,
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
         self.flow_config = flow_config
         self.cache = FlowCache()
-        self.remote_participant = remote_participant
+        
+        self.cl = cl if cl is not None else self._set_up_colink()
+
         self.created_proxy_flow_entries = False
         # if self.cl is not None:
         #     self.cl.set_task_id(self.flow_config["task_id"])
         
         self._validate_flow_config(flow_config)
+        
+        
+        self._determine_flow_type_and_set_up()
         
         self.set_up_flow_state()
 
@@ -89,6 +99,57 @@ class Flow(ABC):
                 f"Flow {self.flow_config.get('name', 'unknown_name')} instantiated with the following parameters:"
             )
             print_config_tree(self.flow_config)
+            
+    def _make_queue_name(self,queue_name):
+        queue_name_prefix = f"{self.flow_type}:{self.flow_config['name']}:{queue_name}"
+        
+        if queue_name_prefix not in Flow.local_proxy_invocations:
+            Flow.local_proxy_invocations[queue_name_prefix] = 0
+        
+        Flow.local_proxy_invocations[queue_name_prefix] += 1
+        
+        queue_number = Flow.local_proxy_invocations[queue_name_prefix]
+
+        return f"{queue_name_prefix}:{queue_number}"  
+            
+    def _determine_flow_type_and_set_up(self):
+                
+        if self.cl is None:
+            self.flow_type = "LocalFlow"
+        
+        else:
+            self.flow_type = "RemoteFlow"
+            self.input_queue_name = self._make_queue_name(queue_name="input_queue")
+            self.input_queue_subscriber = create_subscriber(self.cl,self.input_queue_name)
+        
+        colink_info = self.flow_config["colink_info"]
+        
+        if colink_info["remote_participant_id"] is not None:
+            self.flow_type = "ProxyFlow"
+            self.local_invocation = (
+                CL.decode_jwt_without_validation(self.cl.jwt) == colink_info["remote_participant_id"]
+            )
+            
+            #TODO: let's make this name always the same (so that the user doesn't have to specify it)
+            self.remote_participant_flow_queue = colink_info["remote_participant_flow_queue"] 
+            
+            if self.local_invocation:
+                self.response_queue_name = self._make_queue_name(queue_name="response_queue")
+                                
+                self.response_subscriber = create_subscriber(self.cl,self.response_queue_name)
+            
+            else:
+                self.participants = [
+                    CL.Participant(
+                        user_id=CL.decode_jwt_without_validation(self.cl.jwt).user_id,
+                        role="initiator",
+                    ),
+                    CL.Participant(
+                        user_id= colink_info["remote_participant_id"],
+                        role="target-flow",
+                    ),
+                ]
+            
 
     @property
     def name(self):
@@ -123,13 +184,7 @@ class Flow(ABC):
         :type flow_config: Dict[str, Any]
         :raises ValueError: If the flow config does not contain all the required keys
         """
-        #Validate Flow usage
-        if flow_config["usage_type"] not in cls.VALID_FLOW_USAGE_TYPES:
-            raise ValueError(
-                "Invalid atomic type: {}. Valid atomic types are: {}".format(
-                    flow_config["usage_type"], cls.VALID_FLOW_USAGE_TYPES
-                )
-            )
+
                     
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
             raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
@@ -188,24 +243,21 @@ class Flow(ABC):
         # return cls.config_class(**overrides)
         return config
     
-    @classmethod
-    def _set_up_proxy_flow(cls,flow_config):
-        """ Sets up the proxy flow. This method is called when the flow is instantiated
+    def _set_up_colink(self):
+        """ Sets up the colink flow object.
         
-        :param flow_config: The flow config
-        :type flow_config: Dict[str, Any]
-        :return: The kwargs for the flow
-        :rtype: Dict[str, Any]
+        :rtype: CL.CoLink
         """
-        kwargs = {}
         
-        if flow_config["usage_type"] == "ProxyFlow":
-            kwargs["remote_participant"] = hydra.utils.instantiate(flow_config["remote_participant"], _convert_="partial")
+        colink_info = self.flow_config["colink_info"]
+
+        if colink_info["cl"]["coreaddr"] is not None and colink_info["cl"]["jwt"] is not None:
+            return hydra.utils.instantiate(colink_info["cl"])
         
         else:
-            kwargs["remote_participant"] = None
+            return None
         
-        return kwargs
+
         
     @classmethod
     def instantiate_from_config(cls, config):
@@ -219,8 +271,6 @@ class Flow(ABC):
         flow_config = copy.deepcopy(config)
         
         kwargs = {"flow_config": flow_config}
-        
-        kwargs.update(cls._set_up_proxy_flow(flow_config))
         
         return cls(**kwargs)
 
@@ -322,21 +372,25 @@ class Flow(ABC):
             )
             return self._log_message(state_update_message)
 
-    def __getstate__(self, ignore_proxy_info=False):
+    def __getstate__(self, ignore_colink_info=False):
         """Used by the caching mechanism such that the flow can be returned to the same state using the cache"""
         flow_config = copy.deepcopy(self.flow_config)
         flow_state = copy.deepcopy(self.flow_state)
-        if ignore_proxy_info:
-            flow_config.pop("usage_type")
-            flow_config.pop("remote_participant")
+        if ignore_colink_info:
+            flow_config.pop("colink_info")
         
         return {
             "flow_config": flow_config,
             "flow_state": flow_state,
         }
 
-    def __setstate__(self, state):
+    def __setstate__(self, state,ignore_colink_info=False):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
+        if ignore_colink_info:
+            colink_info = self.flow_config["colink_info"]
+            assert colink_info is not None, "colink_info should never be None"
+            state["flow_config"]["colink_info"] = colink_info
+        
         self.__setflowstate__(state)
         self.__setflowconfig__(state)
 
@@ -545,63 +599,66 @@ class Flow(ABC):
         
         log.debug("Running flow in proxy mode...")
         
+        if "meta_data" not in input_data:
+            input_data["colink_meta_data"] = {}
         
-        if not self.created_proxy_flow_entries:
-            self.cl.remote_storage_create(
-                providers = [self.remote_participant.user_id],
-                key = "flow_data",
-                payload = "",
-                is_public = False,
-            )
-                        
-            flow_input_qname = self.cl.subscribe(
-                "_remote_storage:private:{}:flow_data".format(self.remote_participant.user_id),
-                None,
-            )
-            
-            self.flow_output_sub = self.cl.new_subscriber(flow_input_qname)
-            
-            self.created_proxy_flow_input_entry = True
+        if self.local_invocation:
+            input_data["colink_meta_data"]["response_queue_name"] = self.response_queue_name
+        input_data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
         
-        state = self.__getstate__(ignore_proxy_info=True)
-        flow_input = {"data": input_data, "state": state}
-        
-        print("Sending to remote flow...")
-
-        self.cl.remote_storage_update(
-            providers = [self.remote_participant.user_id],
-            key = "flow_data",
-            payload = pickle.dumps(flow_input),
-            is_public = False,
+        input_msg = InputMessage.build(
+            data_dict=input_data,
+            src_flow="SimpleProxyFlow",
+            dst_flow=self.flow_config["colink_info"]["remote_participant_id"] + ":" + self.remote_participant_flow_queue,
         )
-
-        print("Waiting for response...")
-        # wait for response
-
-        message = CL.SubscriptionMessage().FromString(self.flow_output_sub.get_next())
-        while message.change_type != "update":
-            message = CL.SubscriptionMessage().FromString(self.flow_output_sub.get_next())
         
-        unpickled_payload = pickle.loads(message.payload)
-        output_data = unpickled_payload["data"]
-        state = unpickled_payload["state"]
-        self.__setflowstate__(state)
-
-        return output_data
+        self._log_message(input_msg)
+             
+        if self.local_invocation:
+            
+            self.cl.update_entry(self.remote_participant_flow_queue, pickle.dumps(input_msg))
+            
+            output_msg = get_next_update_message(self.response_subscriber)
+            
+        else:
+            task_id = self.cl.run_task(
+                "simple-invoke",
+                pickle.dumps(self.remote_participant_flow_queue),
+                self.participants,
+                False,
+            )
+            
+            self.cl.create_entry(
+                f"simple-invoke-init:{self.remote_participant_flow_queue}:{task_id}:input_msg",
+                pickle.dumps(input_msg),
+            )
+            
+            output_msg = self.cl.read_or_wait(
+                f"simple-invoke-init:{self.remote_participant_flow_queue}:{task_id}:output_msg",
+            )
+            
+            output_msg = pickle.loads(output_msg)
+        
+        # assuming right now we are always sending the sate. Otherwise, this will fail
+        state = output_msg.data.pop("colink_meta_data")["state"]
+        self.__setstate__(state,ignore_colink_info=True)
+        
+        return output_msg.data
     
-    def _run_method(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def _run_method(self, input_data: Dict[str,Any]) -> Dict[str, Any]:
         """Runs the flow in local mode.
 
-        :param input_data: The input data to run the flow on
-        :type input_data: Dict[str, Any]
+        :param input_message: The input message to run the flow on
+        :type input_meassage: InputMessage
         :return: The output data of the flow
         :rtype: Dict[str, Any]
         """
         
         if self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching:
+            log.debug("call from cache")
             response = self.__get_from_cache(input_data)
             
-        elif self.flow_config["usage_type"] == "ProxyFlow":
+        elif self.flow_type == "ProxyFlow":
             response = self.run_proxy(input_data)
         
         else:          
@@ -609,9 +666,39 @@ class Flow(ABC):
                 
         return response
     
-
+    def serve(self):
+        """ Enables the flow to serve remote requests.  """
+        
+        assert self.flow_type != "LocalFlow", "You can't serve a local flow (it must have a CoLink instance)"
+        log.info(f"Started Serving {self.flow_config['name']}. Input queue name is: {self.input_queue_name}")
+        #doing while true right now (TODO: Consider having it set up with an event loop)
+        while True:
+            input_msg = get_next_update_message(self.input_queue_subscriber)
+            
+            colink_meta_data = input_msg.data.pop("colink_meta_data")
+            
+            #Note: atm, this is the queue of protocol operator. The proxyFlow's queue is being overwritten there
+            response_queue_name = colink_meta_data["response_queue_name"] 
+            
+            #Some thoughts here: I think it's important to have decision of whether to load state or not
+            # has to come from the flow itself (not the Proxy flow calling it)
+            if self.flow_config["colink_info"]["load_incoming_states"]:
+                #assuming state is ALWAYS sent
+                self.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
+            
+            
+            
+            output_msg = self(input_msg)
+            
+            if "meta_data" not in output_msg.data:
+                output_msg.data["colink_meta_data"] = {}
+        
+            output_msg.data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
+            
+            self.cl.update_entry(response_queue_name, pickle.dumps(output_msg))
+        
     @try_except_decorator
-    def __call__(self, input_message: InputMessage, cl: CL.CoLink=None):
+    def __call__(self, input_message: InputMessage):
         """Calls the flow on the given input message.
 
         :param input_message: The input message to run the flow on
@@ -621,9 +708,7 @@ class Flow(ABC):
         :return: The output message of the flow
         :rtype: OutputMessage
         """
-        
-        self.cl = cl
-        
+                
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 

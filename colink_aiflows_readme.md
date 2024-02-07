@@ -34,40 +34,62 @@ Example script:
     cd examples/Remote_and_Proxy_Flows/
     python user_exchange.py
     ```
-    This will print out 2 `user_jwt` tokens. Copy and paste the token of `user 1` it in `examples/Remote_and_Proxy_Flows/sequential_proxy.yaml` to the `participant_user_id` field, also define the role of the participant (needs to match the name of handle function):
+    This will print out 2 `user_jwt` tokens. Copy and paste the token of `user 1` in `examples/Remote_and_Proxy_Flows/proxy-demo.yaml` to the `remote_participant_id` field, and the the first line (jwt token of user 0) of `examples/Remote_and_Proxy_Flows/jwts.txt` to the `jwt` field.
     ```yaml
     ...
     ...
-    # configuration of subflows
-    subflows_config:
-    first_reverse_flow:
-        _target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
-        name: "ReverseNumberFirst"
-        description: "A flow that takes in a number and reverses it."
-        usage_type: "ProxyFlow"
-        remote_participant:
-            user_id: 02be74f33ebbc6e3f9fde54557e2f111c5f69d24259ddce67dbff4d0c214fe4f41
-            role: "flow-server"
+    colink_info:
+    cl:
+        _target_: colink.CoLink
+        jwt: #paste the jwt of user 0 here
+        coreaddr: "http://127.0.0.1:2021"
+    
+    remote_participant_id:  #remote participant user id here
+    remote_participant_flow_queue: RemoteFlow:ChatFlowServer:input_queue:1 #queue name here
+
     ...
     ...
     ```
-3. Start the "flow initiator":
+    Finally, copy and paste the second line (jwt token of user 1) of `examples/Remote_and_Proxy_Flows/jwts.txt` to the `jwt` field of `examples/Remote_and_Proxy_Flows/chatflowserver.yaml`:
+    ```yaml
+    ...
+    description: "A flow that answers questions remotely."
+    colink_info:
+        cl:
+            _target_: colink.CoLink
+            jwt: #jwt here
+            coreaddr: http://127.0.0.1:2021
+
+        load_incoming_states: False
+
+    ...
+        
+    ```
+
+3. Start the Persistent Flow:
   ```bash
   conda activate coflows
-  python flow_initiator.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt) --vt-public-addr 127.0.0.1
+  python flow-server.py 
   ```
 
-4. In another shell, start the "flow server":
+4. In another shell, start the "worker nodes" of the Persistent Flow:
   ```bash
   conda activate coflows
   cd examples/Remote_and_Proxy_Flows/
-  python flow_server.py --addr http://127.0.0.1:2021 --jwt $(sed -n "2,2p" ./jwts.txt) --vt-public-addr 127.0.0.1
+  python simple-invoke-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "2,2p" ./jwts.txt) --vt-public-addr 127.0.0.1
   ```
 
-5. Finally, in a new shell run `reverse_number/user-launch-flow.py`:
+5. In another shell, start the "worker nodes" of the ProxyFlow:
   ```bash
   conda activate coflows
   cd examples/Remote_and_Proxy_Flows/
-  python user-launch-flow.py
+  python simple-invoke-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt) --vt-public-addr 127.0.0.1
+  ```
+
+6. Finally, run the proxy flow:
+  ```bash
+  conda activate coflows
+  cd examples/Remote_and_Proxy_Flows/
+  python proxyflow_run.py 
   ```
 

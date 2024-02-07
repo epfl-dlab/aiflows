@@ -1,0 +1,16 @@
+
+flow:
+    _target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+    name: "ChatFlowServer"
+    description: "A flow that answers questions remotely."
+    colink_info:
+        cl:
+            _target_: colink.CoLink
+            jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyMjY5YTNhZTYyZTBjMmU3OTQ2N2ZkOWQyNzJjODYwYzdhNDNlZmUwNDgzZThkOTAwYWYyMDI4Y2ZiYzA5ZDhhOCIsImV4cCI6MTcwOTk5NzM3Mn0.G-ginTuHXUy1TLIQGjN8XfPafX4vghaDnPwZb74sid8
+
+#jwt here
+            coreaddr: http://127.0.0.1:2021
+
+        load_incoming_states: False
+    backend:
+        api_infos: ???

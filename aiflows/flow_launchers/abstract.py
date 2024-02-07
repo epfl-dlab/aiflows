@@ -9,34 +9,30 @@ from aiflows.utils import general_helpers
 from typing import Any, List, Dict, Optional, Iterable
 
 from aiflows.utils import logging
-import colink as CL
+
 log = logging.get_logger(__name__)
 
 
 class BaseLauncher(ABC):
     """A base class for creating a model launcher."""
 
-    def predict(self, batch: Iterable[Dict], cl: CL.CoLink = None) -> List[Dict]:
+    def predict(self, batch: Iterable[Dict]) -> List[Dict]:
         """Runs inference for the data provided in the batch. It returns a list of dictionaries containing the predictions. (Not Implemented for BaseLauncher)
 
         :param batch: An iterable of dictionaries containing the data for each sample to run inference on.
         :type batch: Iterable[Dict]
-        :param cl: A CoLink instance. (used for calls of ProxyFlows)
-        :type cl: CL.CoLink
         :return: A list of dictionaries containing the predictions.
         :rtype: List[Dict]
         """
         raise NotImplementedError("Not implemented")
 
-    def predict_dataloader(self, dataloader: Iterable, path_to_cache: Optional[str] = None, cl: CL.CoLink = None):
+    def predict_dataloader(self, dataloader: Iterable, path_to_cache: Optional[str] = None):
         """Runs inference for the data provided in the dataloader. (Not Implemented for BaseLauncher)
 
         :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
         :type dataloader: Iterable
         :param path_to_cache: A path to a cache file containing existing predictions to use as a starting point.
         :type path_to_cache: Optional[str], optional
-        :param cl: A CoLink instance. (used for calls of ProxyFlows)
-        :type cl: CL.CoLink
         """
         raise NotImplementedError("Not implemented")
 
@@ -120,15 +116,13 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
         self._resource_IDs = _resource_IDs
         self.existing_predictions_file = os.path.join(predictions_dir, "predictions_existing.jsonl")
 
-    def predict_dataloader(self, dataloader: Iterable[dict], flows_with_interfaces: List[Dict[str, Any]],cl: CL.CoLink = None) -> None:
+    def predict_dataloader(self, dataloader: Iterable[dict], flows_with_interfaces: List[Dict[str, Any]]) -> None:
         """
         Runs inference for the data provided in the dataloader.
         It writes the results to output files selected from the output_dir attributes.
 
         :param dataloader: An iterable of dictionaries containing the data for each sample to run inference on.
         :param flows_with_interfaces(List[Dict]): A list of dictionaries containing a flow instance, and an input and output interface.
-        :param cl: A CoLink instance. (used for calls of ProxyFlows)
-        :type cl: CL.CoLink
         """
         self.flows = flows_with_interfaces
 
@@ -154,7 +148,7 @@ class MultiThreadedAPILauncher(BaseLauncher, ABC):
                 futures = []
 
                 for sample in dataloader:
-                    futures.append(executor.submit(self.predict, batch=[sample], cl=cl))
+                    futures.append(executor.submit(self.predict, batch=[sample]))
 
                 for future in as_completed(futures):
                     c = c + 1
