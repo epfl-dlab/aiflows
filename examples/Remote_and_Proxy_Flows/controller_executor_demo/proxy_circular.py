@@ -8,13 +8,9 @@ from aiflows.flow_launchers import FlowLauncher
 logging.set_verbosity_debug() 
 
 if __name__ == "__main__":
-    api_information = [
-        ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))
-    ]
-    
-    
+        
     root_dir = "."
-    cfg_path = os.path.join(root_dir, "proxy-demo.yaml")
+    cfg_path = os.path.join(root_dir, "proxy_circular.yaml")
     cfg = read_yaml_file(cfg_path)
     # ~~~ Instantiate the Flow ~~~
     flow_with_interfaces = {
@@ -23,7 +19,7 @@ if __name__ == "__main__":
      # ~~~ Get the data ~~~
     data = {
         "id": 0,
-        "query": "Where is the capital of Switzerland ?",
+        "goal": "Where is the capital of Switzerland ?",
     }
 
     _, outputs = FlowLauncher.launch(

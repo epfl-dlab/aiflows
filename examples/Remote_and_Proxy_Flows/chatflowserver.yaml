@@ -6,7 +6,9 @@ flow:
     colink_info:
         cl:
             _target_: colink.CoLink
-            jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyNjk1NWI0ZGE2YjBlOThhYTBmZjg5NzZkYzJmODk2NDVjOTQyZDI2NzM3NTAwMzg5MjU1NDgzNzgwZTA4ZjNhYiIsImV4cCI6MTcxMDAwNDY5N30.4Zfq9C6Z1lWWAyJFFtUCR6OVn15LXwUYAnt0P_RsCxk
+            jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAzZDI2MjRkMjI0YzcyODEzMWE3NDMyYjE2MWM3YjdkNWRkZTA1MTAyYmU3ODVmN2U0NTU4MTgzYjI0NDY0ODEwNiIsImV4cCI6MTcxMDA3ODQ1N30.F6R8kTepsXujDH8suKcUXyQhxNgnIKalETvYJKGCIhg
+
+
 
 
 #jwt here

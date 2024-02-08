@@ -77,10 +77,8 @@ class CompositeFlow(Flow, ABC):
         :rtype: Tuple[OutputMessage, Dict[str, Any]]
         """
         # ~~~ Prepare the data for the call ~~~
-
         if input_interface is not None:
             payload = input_interface(goal=f"[Input] {goal}", data_dict=self.flow_state, src_flow=self, dst_flow=flow)
-
         input_message = self._package_input_message(payload=payload, dst_flow=flow)
 
         # ~~~ Execute the call ~~~

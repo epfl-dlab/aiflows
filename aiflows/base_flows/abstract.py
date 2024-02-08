@@ -21,8 +21,8 @@ from aiflows.messages import (
 from aiflows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs, quick_load
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
-from ..utils.general_helpers import try_except_decorator
-from ..utils.colink_helpers import get_next_update_message, create_subscriber
+from aiflows.utils.general_helpers import try_except_decorator
+from aiflows.utils.colink_helpers import get_next_update_message, create_subscriber
 import colink as CL
 import pickle
 import hydra
@@ -127,7 +127,7 @@ class Flow(ABC):
         if colink_info["remote_participant_id"] is not None:
             self.flow_type = "ProxyFlow"
             self.local_invocation = (
-                CL.decode_jwt_without_validation(self.cl.jwt) == colink_info["remote_participant_id"]
+                CL.decode_jwt_without_validation(self.cl.jwt).user_id == colink_info["remote_participant_id"]
             )
             
             #TODO: let's make this name always the same (so that the user doesn't have to specify it)
@@ -407,6 +407,10 @@ class Flow(ABC):
     def __setflowconfig__(self, state):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
         self.flow_config = state["flow_config"]
+        
+        #hacky for the moment, but possibly overwrite enamble cache para
+        if self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching and not self.SUPPORTS_CACHING:
+            self.flow_config["enable_cache"] = False
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
@@ -610,6 +614,7 @@ class Flow(ABC):
         
         if self.local_invocation:
             input_data["colink_meta_data"]["response_queue_name"] = self.response_queue_name
+            
         input_data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
         
         input_msg = InputMessage.build(
@@ -619,7 +624,6 @@ class Flow(ABC):
         )
         
         self._log_message(input_msg)
-             
         if self.local_invocation:
             
             self.cl.update_entry(self.remote_participant_flow_queue, pickle.dumps(input_msg))
@@ -649,7 +653,7 @@ class Flow(ABC):
         state = output_msg.data.pop("colink_meta_data")["state"]
         self.__setstate__(state,ignore_colink_info=True)
         
-        return output_msg.data
+        return output_msg.data["output_data"]
     
     def _run_method(self, input_data: Dict[str,Any]) -> Dict[str, Any]:
         """Runs the flow in local mode.
@@ -695,7 +699,7 @@ class Flow(ABC):
             
             output_msg = self(input_msg)
             
-            if "meta_data" not in output_msg.data:
+            if "colink_meta_data" not in output_msg.data:
                 output_msg.data["colink_meta_data"] = {}
         
             output_msg.data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
