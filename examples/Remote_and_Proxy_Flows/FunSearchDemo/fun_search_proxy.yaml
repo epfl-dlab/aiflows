@@ -1,0 +1,40 @@
+name: FunSearchFlow
+description: "A flow implementing FunSearch Asynchronous Search"
+
+
+colink_info:
+  cl:
+    jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAzZjMzOTMxNDRlNjg3NDAyNTA4ZTliNmVmNDQwM2Y2ZDYzNzdiMDE2NTg5MTg4MWI3ZjUwNGIzNWU0NWM2MzhmZiIsImV4cCI6MTcxMDE2NTA3MX0.LcaZMhDUDn--CG_GgSgNQCrI2SIi9stAmKWOk-vBMPY
+
+    coreaddr: http://127.0.0.1:2021
+  remote_participant_id: 02328f69b08a1458fd86d94a06920f78d5a1f086aef5b9e05473b09bf0479d0159
+  remote_participant_flow_queue: FunSearchInputQueue
+  load_incoming_states: false
+  input_queue_name: None
+
+enable_cache: false
+
+### Subflows specification
+subflows_config:
+  SamplerFlow:
+    backend:
+      api_infos: ???
+  EvaluatorFlow:
+    py_file: ???
+    function_to_run_name: evaluate
+    test_inputs: 
+      test_1: 
+        n: 3
+      test_2:
+        n: 4
+      test_3:
+        n: 5
+      test_4:
+        n: 6
+      test_5:
+        n: 7
+      test_6:
+        n: 8
+  ProgramDBFlow:
+    evaluate_function: ???
+    evaluate_file_full_content: ???

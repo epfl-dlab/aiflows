@@ -1,0 +1,74 @@
+input_interface:
+  - "header"
+  - "code"
+  - "island_id"
+ouput_interface:
+  - "api_output"
+  - "island_id"
+
+
+_target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+backend:
+  api_infos: ???
+  temperature: 1.0
+previous_messages:
+  last_k: 1
+  first_k: 1
+system_message_prompt_template:
+  template: |2-
+    
+    Role: You are an expert coder and algorithm designer who provides solutions.
+
+
+    Goal: Write evolve functions that optimize the score of an evaluation function (provided). Aim to achieve higher scores than previous functions. Write a new function that optimizes the evaluation function and scores better than the given functions. Develop non-trivial functions and actual algorithms.
+
+
+    Resources:
+
+    You will be given code related to evolve and functions.
+    You will be given a few functions attempting to optimize the evaluation function.
+    The function you're evolving (the last one passed) is the only one you have to write. Make sure to include only nested functions or recursive calls.
+    
+    
+    Naming:
+
+    Evaluation function is named {{evaluate_name}}.
+    Evolve functions have a naming structure similar to: {{evolve_name}}_v.
+
+
+    Important Constraints:
+
+    Only write one evolve function solution: Write only the uncompleted function given to you (i.e., only {{evolve_name}}_v{i}, where {i} is the function with the largest number in the prompt, and i is at most {{artifacts_per_prompt}}). Stop writing once you're done with your first solution.
+    Output must be a function that is AST parsable: Write code only within functions. No textual comments, code blocks, or explanations. Provide only Python code encapsulated in a single function. Your output should be parsable by the AST Python library. Do not include starting or ending comments like "Here's an improved version."
+    Follow the naming structure: Keep the function name as it is in the input.
+    Keep the same function format: Maintain the same input and output format in your solution.
+    Self-contained solution: You can't call other functions (only recursive calls or calls to nested functions).
+    Do not use the evaluate function in the solution: Avoid using the evaluate function in your solution.
+    
+  partial_variables:
+    evaluate_name: ???
+    evolve_name: ???
+    artifacts_per_prompt: ???
+
+
+init_human_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    functions for evaluation:
+    {{header}}
+
+    function to evolve and to evaluate:
+    {{code}}
+  input_variables: ["header","code"]
+  partial_variables: {}
+
+human_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    full code:
+    {{header}}
+
+    function to evolve and to evaluate:
+    {{code}}
+  input_variables: ["header","code"]
+  partial_variables: {}

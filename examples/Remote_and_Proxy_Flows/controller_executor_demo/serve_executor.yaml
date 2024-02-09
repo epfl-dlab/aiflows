@@ -5,17 +5,9 @@ flow:
         cl:
             _target_: colink.CoLink
             jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAzZjczZmJjNTgzOTQ5MWVlZTAzNTc4ZGFmZjBjYzM0ZjY2ODM2MDFhYWUzY2M1N2Y0YWQyMjJmYzJmYzgzM2ZmMyIsImV4cCI6MTcxMDA5MDEwN30.blBIkt4V9T10sXYHH6r1nDE8sn1Azf4Xr3QMnTqtWmo
-
-
-
-
-
 #jwt here
             coreaddr: http://127.0.0.1:2021
-
         load_incoming_states: True
-    
-    
     subflows_config:
       wiki_search:
         _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config

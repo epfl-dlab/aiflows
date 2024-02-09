@@ -60,7 +60,11 @@ class Flow(ABC):
                 },
             "remote_participant_id": None,
             "remote_participant_flow_queue": None,
-            "load_incoming_states": False     
+            "load_incoming_states": False,
+            "input_queue_name": None,
+            "wait_for_response": True,
+            "response_queue_name": None,
+            
         },
         "private_keys": [],  # keys that will not be logged if they appear in a message
         "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
@@ -113,16 +117,17 @@ class Flow(ABC):
         return f"{queue_name_prefix}:{queue_number}"  
             
     def _determine_flow_type_and_set_up(self):
-                
+        
+        colink_info = self.flow_config["colink_info"]
+        
         if self.cl is None:
             self.flow_type = "LocalFlow"
         
         else:
             self.flow_type = "RemoteFlow"
-            self.input_queue_name = self._make_queue_name(queue_name="input_queue")
+            self.input_queue_name = colink_info["input_queue_name"] #self._make_queue_name(queue_name="input_queue")
             self.input_queue_subscriber = create_subscriber(self.cl,self.input_queue_name)
         
-        colink_info = self.flow_config["colink_info"]
         
         if colink_info["remote_participant_id"] is not None:
             self.flow_type = "ProxyFlow"
@@ -134,7 +139,7 @@ class Flow(ABC):
             self.remote_participant_flow_queue = colink_info["remote_participant_flow_queue"] 
             
             if self.local_invocation:
-                self.response_queue_name = self._make_queue_name(queue_name="response_queue")
+                self.response_queue_name =  colink_info["response_queue_name"] if  colink_info["response_queue_name"]  is not None else self._make_queue_name(queue_name="response_queue")
                                 
                 self.response_subscriber = create_subscriber(self.cl,self.response_queue_name)
             
@@ -628,7 +633,15 @@ class Flow(ABC):
             
             self.cl.update_entry(self.remote_participant_flow_queue, pickle.dumps(input_msg))
             
-            output_msg = get_next_update_message(self.response_subscriber)
+            if self.flow_config["colink_info"]["wait_for_response"]:
+                output_msg = get_next_update_message(self.response_subscriber)
+
+            else:
+                output_msg = self._package_output_message(
+                    input_message=input_msg,
+                    response={"message_sent": True},
+                    raw_response=None,
+                )
             
         else:
             task_id = self.cl.run_task(
@@ -649,9 +662,10 @@ class Flow(ABC):
             
             output_msg = pickle.loads(output_msg)
         
-        # assuming right now we are always sending the sate. Otherwise, this will fail
-        state = output_msg.data.pop("colink_meta_data")["state"]
-        self.__setstate__(state,ignore_colink_info=True)
+        if self.flow_config["colink_info"]["wait_for_response"]:
+            # assuming right now we are always sending the sate. Otherwise, this will fail
+            state = output_msg.data.pop("colink_meta_data")["state"]
+            self.__setstate__(state,ignore_colink_info=True)
         
         return output_msg.data["output_data"]
     

@@ -1,0 +1,9 @@
+colink_info:
+  cl:
+    _target_: "colink.CoLink"
+    jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyMzI4ZjY5YjA4YTE0NThmZDg2ZDk0YTA2OTIwZjc4ZDVhMWYwODZhZWY1YjllMDU0NzNiMDliZjA0NzlkMDE1OSIsImV4cCI6MTcxMDE2NTA3MX0.6tMBaehfE4rSapgYbqJQG7O0JXLul1VpDVux5Rzd3XM
+    coreaddr: http://127.0.0.1:2021
+  remote_participant_id: None
+  remote_participant_flow_queue: None
+  load_incoming_states: false
+  input_queue_name: None

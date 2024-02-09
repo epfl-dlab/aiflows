@@ -3,9 +3,67 @@ from aiflows.base_flows import Flow
 import colink as CL
 import pickle
 from typing import List, Dict, Callable
-from aiflows.utils.colink_helpers import get_next_update_message
+from aiflows.utils.colink_helpers import get_next_update_message, create_subscriber
 
+def ephemeral_serve(colink_info, create_flow: Callable, pipeToSelf= False):
+    
 
+    ## colink info should have parameters similar to this
+    # colink_info= {
+    #         "cl": 
+    #             {
+    #                 "_target_": "colink.CoLink",
+    #                 "jwt": None,
+    #                 "coreaddr": None
+    #             },
+    #         "remote_participant_id": None,
+    #         "remote_participant_flow_queue": None,
+    #         "load_incoming_states": False,
+    #          "input_queue_name": None,
+    # }
+    
+    # ~~~ Create flow ~~~
+    cl = hydra.utils.instantiate(colink_info["cl"], _recursive_=False, _convert_="partial")
+
+    subscriber = create_subscriber(cl, colink_info["input_queue_name"])
+    
+    #First Time in the loop, instantiate the flow
+    input_msg = get_next_update_message(subscriber)
+    
+    colink_meta_data = input_msg.data.pop("colink_meta_data")
+    response_queue_name = colink_meta_data["response_queue_name"]
+    flow = create_flow(colink_meta_data["state"]["flow_config"])
+    flow.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
+    
+    # ~~~ Serve ~~~
+    while True:
+        
+
+        output_msg = flow(input_msg)
+        
+        if not pipeToSelf:
+            if "colink_meta_data" not in output_msg.data:
+                output_msg.data["colink_meta_data"] = {}
+
+            output_msg.data["colink_meta_data"]["state"] = flow.__getstate__(ignore_colink_info=True)
+        
+            if "output_data" in output_msg.data:
+                data = output_msg.data.pop("output_data")
+                output_msg.data.update(data)
+                        
+            # output_msg.data["colink_meta_data"]["response_queue_name"] = colink_info["input_queue_name"]
+            cl.update_entry(response_queue_name, pickle.dumps(output_msg))
+            
+        input_msg = get_next_update_message(subscriber)
+        
+        colink_meta_data = input_msg.data.pop("colink_meta_data")
+               
+        if not pipeToSelf:
+            response_queue_name = colink_meta_data["response_queue_name"]
+        
+        if colink_info["load_incoming_states"]:
+            flow.__setflowstate__(colink_meta_data["state"],safe_mode=True)
+        
 def get_simple_invoke_protocol(name, ephemeral_flow_create: Callable = None):
     
     use_ephemeral_flow = ephemeral_flow_create is not None
@@ -92,4 +150,3 @@ def get_simple_invoke_protocol(name, ephemeral_flow_create: Callable = None):
         cl.send_variable("output_msg", pickle.dumps(output_msg), [participants[0]])
     
     return pop
-
