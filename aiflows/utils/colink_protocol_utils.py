@@ -64,10 +64,8 @@ def ephemeral_serve(colink_info, create_flow: Callable, pipeToSelf= False):
         if colink_info["load_incoming_states"]:
             flow.__setflowstate__(colink_meta_data["state"],safe_mode=True)
         
-def get_simple_invoke_protocol(name, ephemeral_flow_create: Callable = None):
-    
-    use_ephemeral_flow = ephemeral_flow_create is not None
-    
+def get_simple_invoke_protocol(name):
+        
     pop = CL.ProtocolOperator(name)
     @pop.handle("simple-invoke:initiator")
     def run_simpleinvoke_initiator(
@@ -111,14 +109,14 @@ def get_simple_invoke_protocol(name, ephemeral_flow_create: Callable = None):
         print("Target flow queue:", target_flow_queue)
         print("participants are", participants)
         
-        if not use_ephemeral_flow:
+        # if not use_ephemeral_flow:
             # ~~~ Setup response queue ~~~
-            response_queue_name = f"simple-invoke-serve:{target_flow_queue}:{cl.get_task_id()}"
-            response_queue = cl.subscribe(
-                response_queue_name,
-                None,
-            )
-            response_subscriber = cl.new_subscriber(response_queue)
+        response_queue_name = f"simple-invoke-serve:{target_flow_queue}:{cl.get_task_id()}"
+        response_queue = cl.subscribe(
+            response_queue_name,
+            None,
+        )
+        response_subscriber = cl.new_subscriber(response_queue)
 
         # ~~~ Get input from initiator ~~~
         print("Receiving input from initiator worker...")
@@ -127,23 +125,24 @@ def get_simple_invoke_protocol(name, ephemeral_flow_create: Callable = None):
         input_msg = pickle.loads(input_msg_b)
         print("Input data",input_msg.data)
         
-        if not use_ephemeral_flow:
+        # if not use_ephemeral_flow:
             # ~~~ Invoke target flow ~~~
-            print("Pushing to", target_flow_queue)
-            input_msg.data["colink_meta_data"]["response_queue_name"] = response_queue_name
-            cl.update_entry(target_flow_queue, pickle.dumps(input_msg))
+        print("Pushing to", target_flow_queue)
+        input_msg.data["colink_meta_data"]["response_queue_name"] = response_queue_name
+        cl.update_entry(target_flow_queue, pickle.dumps(input_msg))
 
-            # ~~~ Read output ~~~
-            output_msg = get_next_update_message(response_subscriber)
+        # ~~~ Read output ~~~
+        output_msg = get_next_update_message(response_subscriber)
+           
+        #depricating for demo and possibly forever
+        # else:        
+        #     flow = ephemeral_flow_create()
             
-        else:        
-            flow = ephemeral_flow_create()
+        #     output_msg = flow(input_msg)
+        #     if "meta_data" not in output_msg.data:
+        #         output_msg.data["colink_meta_data"] = {}
             
-            output_msg = flow(input_msg)
-            if "meta_data" not in output_msg.data:
-                output_msg.data["colink_meta_data"] = {}
-            
-            output_msg.data["colink_meta_data"]["state"] = flow.__getstate__(ignore_colink_info=True)
+        #     output_msg.data["colink_meta_data"]["state"] = flow.__getstate__(ignore_colink_info=True)
 
         # ~~~ Return output to parent ~~~
         print("Relaying output to initiator...")

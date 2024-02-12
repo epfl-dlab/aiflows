@@ -613,14 +613,14 @@ class Flow(ABC):
         """
         
         log.debug("Running flow in proxy mode...")
-        
-        if "meta_data" not in input_data:
-            input_data["colink_meta_data"] = {}
-        
+
         if self.local_invocation:
-            input_data["colink_meta_data"]["response_queue_name"] = self.response_queue_name
-            
-        input_data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
+            #Sort of hacky for the moment
+            if "reply_to" not in input_data:
+                input_data["reply_to"] = self.response_queue_name
+          
+        #commenting for demo  
+        # input_data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
         
         input_msg = InputMessage.build(
             data_dict=input_data,
@@ -664,8 +664,11 @@ class Flow(ABC):
         
         if self.flow_config["colink_info"]["wait_for_response"]:
             # assuming right now we are always sending the sate. Otherwise, this will fail
-            state = output_msg.data.pop("colink_meta_data")["state"]
-            self.__setstate__(state,ignore_colink_info=True)
+            
+            #commenting for demo 
+            pass
+            #state = output_msg.data.pop("colink_meta_data")["state"]
+            #self.__setstate__(state,ignore_colink_info=True)
         
         return output_msg.data["output_data"]
     
@@ -689,36 +692,37 @@ class Flow(ABC):
             response = self.run(input_data)
                 
         return response
-    
-    def serve(self):
-        """ Enables the flow to serve remote requests.  """
+   
+    ## DEPRICATING THIS FOR DEMO. AND probably forever 
+    # def serve(self):
+    #     """ Enables the flow to serve remote requests.  """
         
-        assert self.flow_type != "LocalFlow", "You can't serve a local flow (it must have a CoLink instance)"
-        log.info(f"Started Serving {self.flow_config['name']}. Input queue name is: {self.input_queue_name}")
-        #doing while true right now (TODO: Consider having it set up with an event loop)
-        while True:
-            input_msg = get_next_update_message(self.input_queue_subscriber)
+    #     assert self.flow_type != "LocalFlow", "You can't serve a local flow (it must have a CoLink instance)"
+    #     log.info(f"Started Serving {self.flow_config['name']}. Input queue name is: {self.input_queue_name}")
+    #     #doing while true right now (TODO: Consider having it set up with an event loop)
+    #     while True:
+    #         input_msg = get_next_update_message(self.input_queue_subscriber)
             
-            colink_meta_data = input_msg.data.pop("colink_meta_data")
+    #         colink_meta_data = input_msg.data.pop("colink_meta_data")
             
-            #Note: atm, this is the queue of protocol operator. The proxyFlow's queue is being overwritten there
-            response_queue_name = colink_meta_data["response_queue_name"] 
+    #         #Note: atm, this is the queue of protocol operator. The proxyFlow's queue is being overwritten there
+    #         response_queue_name = colink_meta_data["response_queue_name"] 
             
-            #Some thoughts here: I think it's important to have decision of whether to load state or not
-            # has to come from the flow itself (not the Proxy flow calling it)
-            if self.flow_config["colink_info"]["load_incoming_states"]:
-                #assuming state is ALWAYS sent
-                # self.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
-                self.__setflowstate__(colink_meta_data["state"],safe_mode=True)
+    #         #Some thoughts here: I think it's important to have decision of whether to load state or not
+    #         # has to come from the flow itself (not the Proxy flow calling it)
+    #         if self.flow_config["colink_info"]["load_incoming_states"]:
+    #             #assuming state is ALWAYS sent
+    #             # self.__setstate__(colink_meta_data["state"],ignore_colink_info=True)
+    #             self.__setflowstate__(colink_meta_data["state"],safe_mode=True)
             
-            output_msg = self(input_msg)
+    #         output_msg = self(input_msg)
             
-            if "colink_meta_data" not in output_msg.data:
-                output_msg.data["colink_meta_data"] = {}
+    #         if "colink_meta_data" not in output_msg.data:
+    #             output_msg.data["colink_meta_data"] = {}
         
-            output_msg.data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
+    #         output_msg.data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
             
-            self.cl.update_entry(response_queue_name, pickle.dumps(output_msg))
+    #         self.cl.update_entry(response_queue_name, pickle.dumps(output_msg))
         
     @try_except_decorator
     def __call__(self, input_message: InputMessage):
