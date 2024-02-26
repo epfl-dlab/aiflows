@@ -7,7 +7,7 @@ from aiflows.utils.general_helpers import read_yaml_file
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Dispatch flow worker")
+    parser = argparse.ArgumentParser(description="CoFlows Demo program")
 
     env_addr = os.getenv("COLINK_CORE_ADDR")
     env_jwt = os.getenv("COLINK_JWT")
@@ -25,12 +25,6 @@ def parse_args():
         default=env_jwt,
         required=env_jwt is None,
         help="Your JWT issued by the CoLink server.",
-    )
-    parser.add_argument(
-        "--keep_alive",
-        type=bool,
-        default=False,
-        help="Keep alive when disconnected from colink server.",
     )
 
     args = parser.parse_args()
