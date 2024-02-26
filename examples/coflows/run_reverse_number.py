@@ -37,7 +37,7 @@ def parse_args():
     return vars(args)
 
 
-FLOW_MODULES_PATH = "./flow_modules/aiflows/"
+FLOW_MODULES_PATH = "./"
 
 if __name__ == "__main__":
     args = parse_args()

@@ -1,0 +1,12 @@
+name: "ReverseNumber"
+description: "A flow that takes in a number and reverses it."
+_target_: ReverseNumberFlowModule.ReverseNumberAtomicFlow.instantiate_from_default_config
+
+input_interface:
+  _target_: aiflows.interfaces.KeyInterface
+  keys_to_select: ["number"]
+
+output_interface: # Connector between the Flow's output and the caller
+  _target_: aiflows.interfaces.KeyInterface
+  keys_to_rename:
+    output_number: "reversed_number" # Rename the output_number to reversed_number
