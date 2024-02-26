@@ -23,6 +23,7 @@ from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from aiflows.utils.general_helpers import try_except_decorator
 from aiflows.utils.colink_helpers import get_next_update_message, create_subscriber
+from aiflows.utils.coflows_utils import push_to_flow, FlowFuture
 import colink as CL
 import pickle
 import hydra
@@ -724,6 +725,56 @@ class Flow(ABC):
             
     #         self.cl.update_entry(response_queue_name, pickle.dumps(output_msg))
         
+
+    def set_colink(self, cl, recursive=True):
+        self.cl = cl
+        if recursive and hasattr(self, "subflows"):
+            for _, flow in self.subflows.items():
+                flow.set_colink(cl)
+
+    def tell(self, input_data: Dict[str, Any]):
+        message = {
+            "reply_data": {"mode": "no_reply"},
+            "data_dict": input_data,
+            "src_flow": self.flow_config["name"],
+            "dst_flow": self.flow_config["flow_type"],
+        }
+        push_to_flow(
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+        )
+
+    def ask_pipe(self, input_data: Dict[str, Any], parent_flow_ref: str):
+        message = {
+            "reply_data": {
+                "mode": "push",
+                "user_id": self.cl.get_user_id(),
+                "flow_ref": parent_flow_ref,
+            },
+            "data_dict": input_data,
+            "src_flow": self.flow_config["name"],
+            "dst_flow": self.flow_config["flow_type"],
+        }
+        push_to_flow(
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+        )
+
+    def ask(self, input_data: Dict[str, Any]) -> FlowFuture:
+        message = {
+            "reply_data": {
+                "mode": "storage",
+                "user_id": self.cl.get_user_id(),
+            },
+            "data_dict": input_data,
+            "src_flow": self.flow_config["name"],
+            "dst_flow": self.flow_config["flow_type"],
+        }
+        msg_id = push_to_flow(
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+        )
+
+        return FlowFuture(self.cl, msg_id)
+
+
     @try_except_decorator
     def __call__(self, input_message: InputMessage):
         """Calls the flow on the given input message.
