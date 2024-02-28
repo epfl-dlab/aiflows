@@ -36,29 +36,33 @@ if __name__ == "__main__":
     args = parse_args()
     cl = serve_utils.start_colink_component("Reverse Number Demo", args)
 
-    # ~~~ Serve ReverseNumberAtomic ~~~
-    reverse_number_atomic_default_config_path = os.path.join(
-        FLOW_MODULES_PATH, "ReverseNumberFlowModule/ReverseNumberAtomicFlow.yaml"
-    )
-    reverse_number_atomic_default_config = read_yaml_file(
-        reverse_number_atomic_default_config_path
-    )
-    serve_utils.serve_flow(
-        cl=cl,
-        flow_type="ReverseNumberAtomicFlow_served",
-        default_config=reverse_number_atomic_default_config,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch",
-    )
+    # # ~~~ Serve ReverseNumberAtomic ~~~
+    # reverse_number_atomic_default_config_path = os.path.join(
+    #     FLOW_MODULES_PATH, "ReverseNumberFlowModule/ReverseNumberAtomicFlow.yaml"
+    # )
+    # reverse_number_atomic_default_config = read_yaml_file(
+    #     reverse_number_atomic_default_config_path
+    # )
+    # serve_utils.serve_flow(
+    #     cl=cl,
+    #     flow_type="ReverseNumberAtomicFlow_served",
+    #     default_config=reverse_number_atomic_default_config,
+    #     default_state=None,
+    #     default_dispatch_point="coflows_dispatch",
+    # )
 
-    # ~~~ Serve ReverseNumberSequential ~~~
+    #~~~ Serve ReverseNumberSequential  and its subflows~~~
     reverse_number_sequential_default_config_path = os.path.join(
-        FLOW_MODULES_PATH, "ReverseNumberFlowModule/ReverseNumberSequentialFlow.yaml"
+        FLOW_MODULES_PATH, "ReverseNumberFlowModule/ReverseNumberSequentialFlow2.yaml"
     )
+#    # ~~~ alternatively ~~~~
+#     reverse_number_sequential_default_config_path = os.path.join(
+#         FLOW_MODULES_PATH, "ReverseNumberFlowModule/ReverseNumberSequentialFlow.yaml"
+#     )
     reverse_number_sequential_default_config = read_yaml_file(
         reverse_number_sequential_default_config_path
     )
-    serve_utils.serve_flow(
+    serve_utils.recursive_serve_flow(
         cl=cl,
         flow_type="ReverseNumberSequentialFlow_served",
         default_config=reverse_number_sequential_default_config,

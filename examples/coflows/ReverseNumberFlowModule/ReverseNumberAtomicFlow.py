@@ -11,7 +11,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
 
     # Customize the logic within this function as needed for your specific flow requirements.
     def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-        print("Called ReverseNumberAtomic")
+        print("Called ReverseNumberAtomic", "\n", "state", self.flow_state)
         input_number = input_data["number"]
         output_number = int(str(input_number)[::-1])
         response = {"output_number": output_number}

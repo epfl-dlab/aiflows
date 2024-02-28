@@ -547,52 +547,7 @@ class Flow(ABC):
             response = self.run(input_data)  
         
         return response
-   
-    # def serve(self,override_cl = None, flow_type=None, default_dispatch_point="coflows_dispatch",recursive = True):
-    #     """ Enables the flow to serve remote requests.  """
-        
-    #     if override_cl is not None:
-    #         self.cl = override_cl
-    #         self.flow_config["colink_info"]["cl"] = {
-    #             "jwt": self.cl.jwt,
-    #             "coreaddr": self.cl.core_addr
-    #         }
-        
-    #     assert self.cl is not None, "The flow is not connected to a colink instance"
-        
-    #     if flow_type is None:
-    #         flow_type = self.flow_config["flow_type"]
-        
-    #     state = self.__getstate__(ignore_colink_info=True)
-        
-    #     log.debug(f"Setting up serving {flow_type}...")
-        
-    #     served = serve_utils.serve_flow(
-    #         cl = self.cl,
-    #         flow_type = flow_type,
-    #         default_config=state["flow_config"],
-    #         default_state=state["flow_state"],
-    #         default_dispatch_point=default_dispatch_point
-    #     )
-        
-    #     if served:
-    #         log.debug(f"{flow_type} is now being served.")
-            
-    #     else:
-    #         log.debug(f"{flow_type} is already being served, no changes made.")
-            
-        
-    #     if recursive and hasattr(self,"subflows"):
-    #         log.debug(f"Setting up serving for subflows of {flow_type}...")
-    #         for _, flow in self.subflows.items():
-    #             user_id = flow.flow_config.get("user_id","local")
-    #             subflow_type = flow.flow_config.get("flow_type",f'{flow.flow_config["name"]}_served')
-    #             if user_id == "local":
-    #                 flow.set_colink(cl=self.cl, recursive = False)
-    #                 flow.serve(flow_type=subflow_type, default_dispatch_point=default_dispatch_point,recursive = recursive)
-                    
-    #     log.debug(f"Finished setting up serving for {flow_type}.")
-            
+              
     def set_colink(self, cl, recursive=True):
         self.cl = cl
         if recursive and hasattr(self, "subflows"):

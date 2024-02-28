@@ -74,7 +74,7 @@ def create_flow(
         config = recursive_dictionary_update(config, config_overrides)
     flow = hydra.utils.instantiate(config, _recursive_=False, _convert_="partial")
     if state is not None:
-        flow.__setflowstate__(state, safe_mode=True)
+        flow.__setflowstate__({"flow_state": state}, safe_mode=True)
     return flow
 
 
@@ -148,13 +148,6 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
             cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
         )
         
-        ### NICKY: I Refactored this because I included reply data in the input message class
-        ###        and the default of the reply data is {"mode": "no_reply"}
-        # if "reply_data" not in input_msg:
-        #     input_msg["reply_data"] = {"mode": "no_reply"}
-        # reply_data = input_msg.pop("reply_data")
-        
-        # reply_data["input_msg_id"] = message_id
         input_msg.reply_data["input_msg_id"] = message_id
 
         output_msg = flow(input_msg)
