@@ -2,7 +2,6 @@ import argparse
 import os
 
 from aiflows.utils import serve_utils
-from aiflows.utils.coflows_utils import ask_flow
 from aiflows.utils.general_helpers import read_yaml_file
 
 
@@ -69,7 +68,7 @@ if __name__ == "__main__":
 
     # ~~~ Mount ReverseNumberSequential --> will recursively mount two ReverseNumberAtomic flows ~~~
     config_overrides = None
-    flow_ref = serve_utils.recursive_mount(
+    proxy_flow = serve_utils.recursive_mount(
         cl=cl,
         client_id="local",
         flow_type="ReverseNumberSequentialFlow_served",
@@ -78,7 +77,11 @@ if __name__ == "__main__":
         dispatch_point_override=None,
     )
 
-    print("Pushing to...", flow_ref)
+    print("Pushing to...", proxy_flow)
 
+    
     input_data = {"id": 0, "number": 1234}
-    print(ask_flow(cl, "local", flow_ref, input_data).get())
+    
+    input_message = proxy_flow._package_input_message(payload=input_data, dst_flow=proxy_flow)
+    
+    print(proxy_flow.ask(input_message).get())

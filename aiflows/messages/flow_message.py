@@ -31,13 +31,14 @@ class InputMessage(Message):
         data_dict: Dict[str, Any],
         src_flow: str,
         dst_flow: str,
+        reply_data: Dict[str, Any] = {"mode": "no_reply"},
         created_by: str = None,
         private_keys: List[str] = None,
     ):
 
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
-
+        self.reply_data = reply_data
         self.src_flow = src_flow
         self.dst_flow = dst_flow
 
@@ -63,6 +64,7 @@ class InputMessage(Message):
         # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
         src_flow: str,
         dst_flow: str,
+        reply_data: Dict[str, Any] = {"mode": "no_reply"},
         private_keys: Optional[List[str]] = None,
         created_by: Optional[str] = None,
     ) -> "InputMessage":
@@ -86,7 +88,12 @@ class InputMessage(Message):
             created_by = src_flow
 
         input_message = InputMessage(
-            data_dict=data_dict, src_flow=src_flow, dst_flow=dst_flow, created_by=created_by, private_keys=private_keys
+            data_dict=data_dict,
+            src_flow=src_flow,
+            dst_flow=dst_flow,
+            created_by=created_by,
+            private_keys=private_keys,
+            reply_data = reply_data
         )
 
         return input_message

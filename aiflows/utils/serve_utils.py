@@ -3,7 +3,7 @@ import grpc
 import uuid
 import json
 from termcolor import colored
-
+from copy import deepcopy
 import colink as CL
 from colink import CoLink
 
@@ -11,7 +11,7 @@ from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
 from aiflows.utils.coflows_utils import coflows_serialize, coflows_deserialize
-
+from aiflows.base_flows import AtomicFlow
 
 COFLOWS_PATH = "flows"
 MOUNT_ARGS_TRANSFER_PATH = "mount_tasks"
@@ -24,6 +24,7 @@ def serve_flow(
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
+    recursive: bool = True,
 ) -> bool:
     """
     Serves the specified flow type by creating necessary entries in CoLink storage.
@@ -32,6 +33,8 @@ def serve_flow(
     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
     :rtype: bool
     """
+    
+    ##First check if the flow is already being served
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     serve_entry = cl.read_entry(f"{serve_entry_path}:init")
     if serve_entry is not None:
@@ -39,6 +42,38 @@ def serve_flow(
             f"{flow_type} is already being served. Found serve entry at path {serve_entry_path}"
         )
         return False
+    
+    # # if there's recursive serving, serve subflows first
+    # if recursive and "subflows_config" in default_config:
+    #     subflow_states = default_state.get("subflows_states", None) if default_state is not None else None
+    #     for subflow, subflow_config in default_config["subflows_config"].items():
+    #         # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
+    #         is_proxy = \
+    #             subflow_config["_target_"].startswith("aiflows.base_flows.AtomicFlow.") or \
+    #             subflow_config["_target_"].startswith("aiflows.AtomicFlow.") or \
+    #             subflow_config["_target_"].startswith("aiflows.base_flows.Flow.") or \
+    #             subflow_config["_target_"].startswith("aiflows.Flow.")
+            
+    #         needs_serving = not is_proxy and subflow_config.get("user_id", "local") == "local"
+    #         #if the flow is not a proxy, we must serve it and then make it become a proxy in the default_config
+    #         if needs_serving:
+    #             #This is ok because name is a required field in the config
+    #             #note that if you don't specify the flow type, I'll assume it's the name of the flow + _served
+    #             subflow_type = subflow_config.get("flow_type", f'{subflow_config["name"]}_served')
+    #             subflow_default_state = 
+    #             started_serving = serve_flow(
+    #                 cl = cl,
+    #                 flow_type=subflow_type,
+    #                 default_config=deepcopy(subflow_config),
+    #                 default_state=None if default_state is None else default_state.pop(subflow, None),
+    #                 default_dispatch_point=default_dispatch_point,
+    #                 recursive=recursive
+    #             )
+    #             #Change the subflow_config of flow to proxy
+    #             subflow_config["_target_"] = f'aiflows.base_flows.AtomicFlow'
+    #             subflow_config["user_id"] = "local"
+    #             subflow_config["flow_type"] = subflow_type
+    # breakpoint()
 
     try:
         cl.create_entry(
@@ -63,6 +98,9 @@ def serve_flow(
                 f"{serve_entry_path}:default_dispatch_point",
                 default_dispatch_point,
             )
+    
+    
+                
 
     except grpc.RpcError:
         return False
@@ -89,12 +127,12 @@ def mount(
     config_overrides: Dict[str, Any] = None,
     initial_state: Dict[str, Any] = None,
     dispatch_point_override: str = None,
-) -> uuid.UUID:
+) -> AtomicFlow:
     """
     Mounts a new instance of the specified flow type by creating necessary entries in CoLink storage.
 
     :return: unique flow reference string
-    :rtype: uuid.UUID
+    :rtype: aiflows.base_flows.AtomicFlow
     """
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     if cl.read_entry(f"{serve_entry_path}:init") is None:
@@ -141,7 +179,25 @@ def mount(
         raise e
 
     print(f"Mounted {flow_ref} at {mount_path}")
-    return str(flow_ref)
+    
+    name = "ProxyFlow" if "name" not in config_overrides else f'Proxy_{config_overrides["name"]}'
+    description = "Proxy Flow " if "description" not in config_overrides else f'Proxy of {config_overrides["description"]}'
+    
+    proxy_overrides = {
+        "name": name,
+        "description": description,
+        "user_id": client_id,
+        "flow_ref": str(flow_ref),
+        "flow_type": flow_type
+    }
+    
+    proxy_flow = AtomicFlow.instantiate_from_default_config(
+        **proxy_overrides
+    )
+    
+    proxy_flow.set_colink(cl)
+    
+    return proxy_flow
 
 
 def recursive_mount(
@@ -151,7 +207,7 @@ def recursive_mount(
     config_overrides: Dict[str, Any] = None,
     initial_state: Dict[str, Any] = None,
     dispatch_point_override: str = None,
-) -> uuid.UUID:
+) -> AtomicFlow:
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     if cl.read_entry(f"{serve_entry_path}:init") is None:
         print(
@@ -185,7 +241,7 @@ def recursive_mount(
                 subflow_config_overrides = subflow_config["config_overrides"]
 
             if user_id == "local":
-                flow_ref = recursive_mount(
+                proxy = recursive_mount(
                     cl, user_id, subflow_type, subflow_config_overrides
                 )
 
@@ -196,7 +252,7 @@ def recursive_mount(
                 if subflow_key not in config_overrides["subflows_config"]:
                     config_overrides["subflows_config"][subflow_key] = {}
 
-                config_overrides["subflows_config"][subflow_key]["flow_ref"] = flow_ref
+                config_overrides["subflows_config"][subflow_key]["flow_ref"] = proxy.flow_config["flow_ref"]
             else:
                 if user_id not in mount_initiator_args:
                     mount_initiator_args[user_id] = []
@@ -231,7 +287,7 @@ def recursive_mount(
 
                 config_overrides["subflows_config"][subflow_key]["flow_ref"] = flow_ref
 
-    flow_ref = mount(
+    proxy_flow = mount(
         cl,
         client_id,
         flow_type,
@@ -239,7 +295,8 @@ def recursive_mount(
         initial_state,
         dispatch_point_override,
     )
-    return flow_ref
+
+    return proxy_flow
 
 
 def start_colink_component(component_name: str, args):

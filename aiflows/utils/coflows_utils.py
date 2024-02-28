@@ -2,6 +2,7 @@ from typing import Any
 import uuid
 import json
 import colink as CL
+import pickle
 
 PUSH_ARGS_TRANSFER_PATH = "push_tasks"
 
@@ -15,14 +16,20 @@ class FlowFuture:
         """
         Non-blocking read, returns None if there is no response yet.
         """
-        return coflows_deserialize(self.cl.read_entry(self.colink_storage_key))
+        return pickle.loads(self.cl.read_entry(self.colink_storage_key))
 
-    def get(self):
+    def get(self, output_data_only=True):
         """
         Blocking read, creates colink queue in background and subscribes to it.
         Probably shouldn't create queue and should have timeout.
         """
-        return coflows_deserialize(self.cl.read_or_wait(self.colink_storage_key))
+        
+        message = pickle.loads(self.cl.read_or_wait(self.colink_storage_key))
+        
+        if output_data_only:
+            return message.data["output_data"]
+        
+        return message
 
 
 def push_to_flow(cl, target_user_id, target_flow_ref, message):
@@ -48,7 +55,7 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message):
     push_msg_id = uuid.uuid4()
     cl.create_entry(
         f"{PUSH_ARGS_TRANSFER_PATH}:{push_msg_id}:msg",
-        coflows_serialize(message),
+        pickle.dumps(message),
     )
 
     push_param = {
@@ -58,21 +65,20 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message):
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
     return push_msg_id
 
+#NICKY: Possibly depricating
+# def ask_flow(cl, target_user_id, target_flow_ref, input_data):
+#     message = {
+#         "reply_data": {
+#             "mode": "storage",
+#             "user_id": cl.get_user_id(),
+#         },
+#         "data_dict": input_data,
+#         "src_flow": "User",
+#         "dst_flow": target_flow_ref,
+#     }
+#     msg_id = push_to_flow(cl, target_user_id, target_flow_ref, message)
 
-def ask_flow(cl, target_user_id, target_flow_ref, input_data):
-    message = {
-        "reply_data": {
-            "mode": "storage",
-            "user_id": cl.get_user_id(),
-        },
-        "data_dict": input_data,
-        "src_flow": "User",
-        "dst_flow": target_flow_ref,
-    }
-    msg_id = push_to_flow(cl, target_user_id, target_flow_ref, message)
-
-    return FlowFuture(cl, msg_id)
-
+#     return FlowFuture(cl, msg_id)
 
 def coflows_serialize(data: Any) -> bytes:
     json_str = json.dumps(data)

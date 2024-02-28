@@ -22,13 +22,11 @@ from aiflows.utils.general_helpers import recursive_dictionary_update, nested_ke
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
 from aiflows.utils.general_helpers import try_except_decorator
-from aiflows.utils.colink_helpers import get_next_update_message, create_subscriber
 from aiflows.utils.coflows_utils import push_to_flow, FlowFuture
 import colink as CL
 import pickle
 import hydra
 import time
-from aiflows.utils import serve_utils
 log = logging.get_logger(__name__)
 
 
@@ -53,21 +51,6 @@ class Flow(ABC):
 
     # Parameters that are given default values if not provided by the user
     __default_flow_config = {
-        "colink_info": {
-            "cl": 
-                {
-                    "_target_": "colink.CoLink",
-                    "jwt": None,
-                    "coreaddr": None
-                },
-            "remote_participant_id": None,
-            "remote_participant_flow_queue": None,
-            "load_incoming_states": False,
-            "input_queue_name": None,
-            "wait_for_response": True,
-            "response_queue_name": None,
-            
-        },
         "private_keys": [],  # keys that will not be logged if they appear in a message
         "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
         "keys_to_ignore_for_hash_flow_state": ["name", "description", "api_keys", "api_information", "private_keys"],
@@ -87,11 +70,9 @@ class Flow(ABC):
         self.flow_config = flow_config
         self.cache = FlowCache()
         
-        self.cl = cl if cl is not None else self._set_up_colink()
+        self.cl = cl
 
         self.created_proxy_flow_entries = False
-        # if self.cl is not None:
-        #     self.cl.set_task_id(self.flow_config["task_id"])
         
         self._validate_flow_config(flow_config)
         
@@ -323,25 +304,19 @@ class Flow(ABC):
             )
             return self._log_message(state_update_message)
 
-    def __getstate__(self, ignore_colink_info=False):
+    def __getstate__(self):
         """Used by the caching mechanism such that the flow can be returned to the same state using the cache"""
         flow_config = copy.deepcopy(self.flow_config)
         flow_state = copy.deepcopy(self.flow_state)
-        if ignore_colink_info:
-            flow_config.pop("colink_info")
         
         return {
             "flow_config": flow_config,
             "flow_state": flow_state,
         }
 
-    def __setstate__(self, state,ignore_colink_info=False, safe_mode=False):
+    def __setstate__(self, state, safe_mode=False):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
-        if ignore_colink_info:
-            colink_info = self.flow_config["colink_info"]
-            assert colink_info is not None, "colink_info should never be None"
-            state["flow_config"]["colink_info"] = colink_info
-        
+ 
         self.__setflowstate__(state, safe_mode=safe_mode)
         self.__setflowconfig__(state)
 
@@ -422,16 +397,21 @@ class Flow(ABC):
                 raise KeyError(f"Key {key} not found in the flow state or the class namespace.")
         return data
 
-    def _package_input_message(self, payload: Dict[str, Any], dst_flow: "Flow"):
+    def _package_input_message(self,
+                               payload: Dict[str, Any],
+                               dst_flow: str,
+                               reply_data: Dict[str, Any] = {"mode": "no_reply"}):
         """Packages the given payload into an InputMessage.
 
         :param payload: The payload to package
         :type payload: Dict[str, Any]
         :param dst_flow: The destination flow
         :type dst_flow: Flow
+        :type reply_data: information about for the flow who processes the message on how and who to reply to (for distributed calls)
         :return: The packaged input message
         :rtype: InputMessage
         """
+        
         private_keys = dst_flow.flow_config["private_keys"]
 
         src_flow = self.flow_config["name"]
@@ -448,6 +428,7 @@ class Flow(ABC):
             private_keys=private_keys,
             src_flow=src_flow,
             dst_flow=dst_flow,
+            reply_data=reply_data,
             created_by=self.name,
         )
         return msg
@@ -548,77 +529,7 @@ class Flow(ABC):
             log.debug(f"Cached key: f{cache_key_hash}")
 
         return response
-   
-    #TODO: PROBABLY CAN DEPRICATE 
-    # def run_proxy(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
-    #     """Runs the flow in proxy mode.
-
-    #     :param input_data: The input data to run the flow on
-    #     :type input_data: Dict[str, Any]
-    #     :return: The output data of the flow
-    #     :rtype: Dict[str, Any]
-    #     """
-        
-    #     log.debug("Running flow in proxy mode...")
-
-    #     if self.local_invocation:
-    #         #Sort of hacky for the moment
-    #         if "reply_to" not in input_data:
-    #             input_data["reply_to"] = self.response_queue_name
-          
-    #     #commenting for demo  
-    #     # input_data["colink_meta_data"]["state"] = self.__getstate__(ignore_colink_info=True)
-        
-    #     input_msg = InputMessage.build(
-    #         data_dict=input_data,
-    #         src_flow="SimpleProxyFlow",
-    #         dst_flow=self.flow_config["colink_info"]["remote_participant_id"] + ":" + self.remote_participant_flow_queue,
-    #     )
-        
-    #     self._log_message(input_msg)
-    #     if self.local_invocation:
-            
-    #         self.cl.update_entry(self.remote_participant_flow_queue, pickle.dumps(input_msg))
-            
-    #         if self.flow_config["colink_info"]["wait_for_response"]:
-    #             output_msg = get_next_update_message(self.response_subscriber)
-
-    #         else:
-    #             output_msg = self._package_output_message(
-    #                 input_message=input_msg,
-    #                 response={"message_sent": True},
-    #                 raw_response=None,
-    #             )
-            
-    #     else:
-    #         task_id = self.cl.run_task(
-    #             "simple-invoke",
-    #             pickle.dumps(self.remote_participant_flow_queue),
-    #             self.participants,
-    #             False,
-    #         )
-            
-    #         self.cl.create_entry(
-    #             f"simple-invoke-init:{self.remote_participant_flow_queue}:{task_id}:input_msg",
-    #             pickle.dumps(input_msg),
-    #         )
-            
-    #         output_msg = self.cl.read_or_wait(
-    #             f"simple-invoke-init:{self.remote_participant_flow_queue}:{task_id}:output_msg",
-    #         )
-            
-    #         output_msg = pickle.loads(output_msg)
-        
-    #     if self.flow_config["colink_info"]["wait_for_response"]:
-    #         # assuming right now we are always sending the sate. Otherwise, this will fail
-            
-    #         #commenting for demo 
-    #         pass
-    #         #state = output_msg.data.pop("colink_meta_data")["state"]
-    #         #self.__setstate__(state,ignore_colink_info=True)
-        
-    #     return output_msg.data["output_data"]
-    
+     
     def _run_method(self, input_data: Dict[str,Any]) -> Dict[str, Any]:
         """Runs the flow in local mode.
 
@@ -632,61 +543,55 @@ class Flow(ABC):
             log.debug("call from cache")
             response = self.__get_from_cache(input_data)
           
-        #TODO: PROBABLY CAN DEPRICATE  
-        # elif self.flow_type == "ProxyFlow":
-        #     response = self.run_proxy(input_data)
-        
-        # else:          
-        #     response = self.run(input_data)
-        
-        response = self.run(input_data)  
+        else:
+            response = self.run(input_data)  
         
         return response
    
-    def serve(self,override_cl = None, flow_type=None, default_dispatch_point="coflows_dispatch",recursive = True):
-        """ Enables the flow to serve remote requests.  """
+    # def serve(self,override_cl = None, flow_type=None, default_dispatch_point="coflows_dispatch",recursive = True):
+    #     """ Enables the flow to serve remote requests.  """
         
-        if override_cl is not None:
-            self.cl = override_cl
-            self.flow_config["colink_info"]["cl"] = {
-                "jwt": self.cl.jwt,
-                "coreaddr": self.cl.core_addr
-            }
+    #     if override_cl is not None:
+    #         self.cl = override_cl
+    #         self.flow_config["colink_info"]["cl"] = {
+    #             "jwt": self.cl.jwt,
+    #             "coreaddr": self.cl.core_addr
+    #         }
         
-        assert self.cl is not None, "The flow is not connected to a colink instance"
+    #     assert self.cl is not None, "The flow is not connected to a colink instance"
         
-        if flow_type is None:
-            flow_type = self.flow_config["flow_type"]
+    #     if flow_type is None:
+    #         flow_type = self.flow_config["flow_type"]
         
-        state = self.__getstate__(ignore_colink_info=True)
+    #     state = self.__getstate__(ignore_colink_info=True)
         
-        log.debug(f"Setting up serving {flow_type}...")
+    #     log.debug(f"Setting up serving {flow_type}...")
         
-        served = serve_utils.serve_flow(
-            cl = self.cl,
-            flow_type = flow_type,
-            default_config=state["flow_config"],
-            default_state=state["flow_state"],
-            default_dispatch_point=default_dispatch_point
-        )
+    #     served = serve_utils.serve_flow(
+    #         cl = self.cl,
+    #         flow_type = flow_type,
+    #         default_config=state["flow_config"],
+    #         default_state=state["flow_state"],
+    #         default_dispatch_point=default_dispatch_point
+    #     )
         
-        if served:
-            log.debug(f"{flow_type} is now being served.")
+    #     if served:
+    #         log.debug(f"{flow_type} is now being served.")
             
-        else:
-            log.debug(f"{flow_type} is already being served, no changes made.")
+    #     else:
+    #         log.debug(f"{flow_type} is already being served, no changes made.")
             
         
-        if recursive and hasattr(self,"subflows"):
-            log.debug(f"Setting up serving for subflows of {flow_type}...")
-            for _, flow in self.subflows.items():
-                user_id = flow.flow_config.get("user_id","local")
-                subflow_type = flow.flow_config.get("flow_type",f'{flow.flow_config["name"]}_served')
-                if user_id == "local":
-                    flow.set_colink(cl=self.cl, recursive = False)
-                    flow.serve(flow_type=subflow_type, default_dispatch_point=default_dispatch_point,recursive = recursive)
+    #     if recursive and hasattr(self,"subflows"):
+    #         log.debug(f"Setting up serving for subflows of {flow_type}...")
+    #         for _, flow in self.subflows.items():
+    #             user_id = flow.flow_config.get("user_id","local")
+    #             subflow_type = flow.flow_config.get("flow_type",f'{flow.flow_config["name"]}_served')
+    #             if user_id == "local":
+    #                 flow.set_colink(cl=self.cl, recursive = False)
+    #                 flow.serve(flow_type=subflow_type, default_dispatch_point=default_dispatch_point,recursive = recursive)
                     
-        log.debug(f"Finished setting up serving for {flow_type}.")
+    #     log.debug(f"Finished setting up serving for {flow_type}.")
             
     def set_colink(self, cl, recursive=True):
         self.cl = cl
@@ -694,45 +599,68 @@ class Flow(ABC):
             for _, flow in self.subflows.items():
                 flow.set_colink(cl)
 
-    def tell(self, input_data: Dict[str, Any]):
-        message = {
-            "reply_data": {"mode": "no_reply"},
-            "data_dict": input_data,
-            "src_flow": self.flow_config["name"],
-            "dst_flow": self.flow_config["flow_type"],
-        }
+    @try_except_decorator
+    def tell(self, input_message: InputMessage):
+        self._log_message(input_message)
+        
+        message = InputMessage(
+            data_dict=input_message.data,
+            src_flow=self.flow_config["name"],
+            dst_flow=self.flow_config["flow_ref"],
+            reply_data={"mode": "no_reply"},
+            private_keys=input_message.private_keys,
+        ) 
+ 
         push_to_flow(
             self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
         )
+        
+        self._post_call_hook()
 
-    def ask_pipe(self, input_data: Dict[str, Any], parent_flow_ref: str):
-        message = {
-            "reply_data": {
+    @try_except_decorator
+    def ask_pipe(self, input_message: InputMessage, parent_flow_ref: str):
+        
+        self._log_message(input_message)
+        
+        message = InputMessage(
+            data_dict=input_message.data,
+            src_flow=self.flow_config["name"],
+            dst_flow=self.flow_config["flow_ref"],
+            reply_data={
                 "mode": "push",
                 "user_id": self.cl.get_user_id(),
                 "flow_ref": parent_flow_ref,
             },
-            "data_dict": input_data,
-            "src_flow": self.flow_config["name"],
-            "dst_flow": self.flow_config["flow_type"],
-        }
+            private_keys=input_message.private_keys,
+        )
+        
         push_to_flow(
             self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
         )
+        
+        self._post_call_hook()
+        
+    @try_except_decorator
+    def ask(self, input_message: InputMessage) -> FlowFuture:
+        
+        self._log_message(input_message)
 
-    def ask(self, input_data: Dict[str, Any]) -> FlowFuture:
-        message = {
-            "reply_data": {
+        message = InputMessage(
+            data_dict=input_message.data,
+            src_flow=self.flow_config["name"],
+            dst_flow=self.flow_config["flow_ref"],
+            reply_data={
                 "mode": "storage",
                 "user_id": self.cl.get_user_id(),
             },
-            "data_dict": input_data,
-            "src_flow": self.flow_config["name"],
-            "dst_flow": self.flow_config["flow_type"],
-        }
+            private_keys=input_message.private_keys,
+        )
+        
         msg_id = push_to_flow(
             self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
         )
+        
+        self._post_call_hook()
 
         return FlowFuture(self.cl, msg_id)
 
@@ -742,8 +670,6 @@ class Flow(ABC):
 
         :param input_message: The input message to run the flow on
         :type input_message: InputMessage
-        :param cl: The CoLink instance (only used for ProxyFlow, if none are set, the flow will run in local mode and the cl is ignored)
-        :type cl: CL.CoLink
         :return: The output message of the flow
         :rtype: OutputMessage
         """

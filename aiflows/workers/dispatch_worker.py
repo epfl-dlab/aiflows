@@ -7,7 +7,7 @@ import hydra
 import colink as CL
 from colink import CoLink
 from colink import ProtocolOperator
-
+import pickle
 from aiflows.messages import InputMessage
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
@@ -89,18 +89,12 @@ def dispatch_response(cl, output_message, reply_data):
         print("no_reply mode")
         return
 
-    message = {
-        "data_dict": output_message.get_output_data(),
-        "src_flow": output_message.src_flow,
-        "dst_flow": output_message.dst_flow,
-    }
-
     if reply_mode == "push":
         push_to_flow(
             cl=cl,
             target_user_id=reply_data["user_id"],
             target_flow_ref=reply_data["flow_ref"],
-            message=message,
+            message=output_message,
         )
     elif reply_mode == "storage":
         user_id = reply_data["user_id"]
@@ -108,12 +102,12 @@ def dispatch_response(cl, output_message, reply_data):
         colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{input_msg_id}:response"
         if user_id == cl.get_user_id():
             # local
-            cl.create_entry(colink_storage_key, coflows_serialize(message))
+            cl.create_entry(colink_storage_key, pickle.dumps(output_message))
         else:
             cl.remote_storage_create(
                 [user_id],
                 colink_storage_key,
-                coflows_serialize(message),
+                pickle.dumps(output_message),
                 False,
             )
     else:
@@ -150,23 +144,23 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     flow.set_colink(cl)
 
     for message_id in dispatch_task["message_ids"]:
-        input_msg = coflows_deserialize(
+        input_msg = pickle.loads(
             cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
         )
-        if "reply_data" not in input_msg:
-            input_msg["reply_data"] = {"mode": "no_reply"}
-        reply_data = input_msg.pop("reply_data")
-        reply_data["input_msg_id"] = message_id
+        
+        ### NICKY: I Refactored this because I included reply data in the input message class
+        ###        and the default of the reply data is {"mode": "no_reply"}
+        # if "reply_data" not in input_msg:
+        #     input_msg["reply_data"] = {"mode": "no_reply"}
+        # reply_data = input_msg.pop("reply_data")
+        
+        # reply_data["input_msg_id"] = message_id
+        input_msg.reply_data["input_msg_id"] = message_id
 
-        input_flow_msg = InputMessage.build(
-            data_dict=input_msg["data_dict"],
-            src_flow=input_msg["src_flow"],
-            dst_flow=input_msg["dst_flow"],
-        )
-        output_msg = flow(input_flow_msg)
-        dispatch_response(cl, output_msg, reply_data)
+        output_msg = flow(input_msg)
+        dispatch_response(cl, output_msg, input_msg.reply_data)
 
-    new_state = flow.__getstate__(ignore_colink_info=True)
+    new_state = flow.__getstate__()
     cl.update_entry(f"{mount_path}:state", coflows_serialize(new_state))
 
 

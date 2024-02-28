@@ -1,6 +1,6 @@
 import copy
 from abc import ABC
-from typing import List, Dict, Optional, Any
+from typing import List, Dict, Optional, Any,Union
 
 import hydra
 
@@ -55,7 +55,49 @@ class CompositeFlow(Flow, ABC):
             subflows=cls._set_up_subflows(flow_config),
             flow_config=flow_config,
         )
-
+        
+    def ask_subflow(self, subflow: Union[str, Flow], data: Dict[str, Any]):
+        
+        assert isinstance(subflow, str) or isinstance(subflow, Flow), \
+            "subflow must be a string (then name of the flow) or a Flow object"
+        
+        if isinstance(subflow, str):
+            flow_name = subflow
+            subflow = self._get_subflow(flow_name)
+            assert subflow is not None, f"Subflow with name {flow_name} not found"
+            
+        msg = self._package_input_message(payload=data, dst_flow=subflow)
+        
+        return subflow.ask(msg)
+    
+    def tell_subflow(self, subflow: Union[str, Flow], data: Dict[str, Any]):
+        
+        assert isinstance(subflow, str) or isinstance(subflow, Flow), \
+            "subflow must be a string (then name of the flow) or a Flow object"
+        
+        if isinstance(subflow, str):
+            flow_name = subflow
+            subflow = self._get_subflow(flow_name)
+            assert subflow is not None, f"Subflow with name {flow_name} not found"
+            
+        msg = self._package_input_message(payload=data, dst_flow=subflow)
+        
+        subflow.tell(msg)
+        
+    def ask_pipe_subflow(self, subflow: Union[str, Flow], data: Dict[str, Any]):
+        
+        assert isinstance(subflow, str) or isinstance(subflow, Flow), \
+            "subflow must be a string (then name of the flow) or a Flow object"
+        
+        if isinstance(subflow, str):
+            flow_name = subflow
+            subflow = self._get_subflow(flow_name)
+            assert subflow is not None, f"Subflow with name {flow_name} not found"
+            
+        msg = self._package_input_message(payload=data, dst_flow=subflow)
+        
+        subflow.ask_pipe(msg, parent_flow_ref=self.flow_config["flow_ref"])
+    
     def _call_flow_from_state(
         self,
         goal: str,
