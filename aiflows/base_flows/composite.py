@@ -98,44 +98,6 @@ class CompositeFlow(Flow, ABC):
         
         subflow.ask_pipe(msg, parent_flow_ref=self.flow_config["flow_ref"])
     
-    def _call_flow_from_state(
-        self,
-        goal: str,
-        input_interface,
-        flow,
-        output_interface,
-    ):
-        """A helper function that calls a given flow by extracting the input data from the state of the current flow.
-
-        :param goal: The goal of the flow's call
-        :type goal: str
-        :param input_interface: The input interface of the flow
-        :type input_interface: Callable
-        :param flow: The flow to call
-        :type flow: Flow
-        :param output_interface: The output interface of the flow
-        :type output_interface: Callable
-        :return: The output message and the output data
-        :rtype: Tuple[OutputMessage, Dict[str, Any]]
-        """
-        # ~~~ Prepare the data for the call ~~~
-        if input_interface is not None:
-            payload = input_interface(goal=f"[Input] {goal}", data_dict=self.flow_state, src_flow=self, dst_flow=flow)
-        input_message = self._package_input_message(payload=payload, dst_flow=flow)
-
-        # ~~~ Execute the call ~~~
-        output_message = flow(input_message)
-
-        # ~~~ Logs the output message to history ~~~
-        self._log_message(output_message)
-
-        # ~~~ Process the output ~~~
-        output_data = copy.deepcopy(output_message.data["output_data"])
-        if output_interface is not None:
-            output_data = output_interface(goal=f"[Output] {goal}", data_dict=output_data, src_flow=flow, dst_flow=self)
-
-        return output_message, output_data
-
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
         """Returns the sub-flow with the given name
 

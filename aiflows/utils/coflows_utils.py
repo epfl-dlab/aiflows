@@ -65,21 +65,6 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message):
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
     return push_msg_id
 
-#NICKY: Possibly depricating
-# def ask_flow(cl, target_user_id, target_flow_ref, input_data):
-#     message = {
-#         "reply_data": {
-#             "mode": "storage",
-#             "user_id": cl.get_user_id(),
-#         },
-#         "data_dict": input_data,
-#         "src_flow": "User",
-#         "dst_flow": target_flow_ref,
-#     }
-#     msg_id = push_to_flow(cl, target_user_id, target_flow_ref, message)
-
-#     return FlowFuture(cl, msg_id)
-
 def coflows_serialize(data: Any) -> bytes:
     json_str = json.dumps(data)
     return json_str.encode("utf-8")

@@ -3,7 +3,7 @@ import os
 
 from aiflows.utils import serve_utils
 from aiflows.utils.general_helpers import read_yaml_file
-
+from aiflows.messages import InputMessage
 
 def parse_args():
     parser = argparse.ArgumentParser(description="CoFlows Demo program")
@@ -82,6 +82,10 @@ if __name__ == "__main__":
     
     input_data = {"id": 0, "number": 1234}
     
-    input_message = proxy_flow._package_input_message(payload=input_data, dst_flow=proxy_flow)
+    input_message = InputMessage(
+        data_dict= input_data,
+        src_flow="Coflow team",
+        dst_flow=proxy_flow,
+    )
     
     print(proxy_flow.ask(input_message).get())
