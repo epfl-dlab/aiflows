@@ -94,7 +94,7 @@ def instantiate_remote_flow( subscriptions , participants):
 
 def run_flow(flow,input_data,cl):
 
-    input_message = InputMessage.build(data_dict=input_data, src_flow="TBD", dst_flow=flow.name)
+    input_message = InputMessage.build(data=input_data, src_flow="TBD", dst_flow=flow.name)
     
     flow_output_data = flow(input_message,cl=cl)
     print("Output: ", flow_output_data)

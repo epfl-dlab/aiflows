@@ -1,8 +1,9 @@
 from typing import Any
 import uuid
-import json
+
 import colink as CL
-import pickle
+from aiflows.messages import Message,OutputMessage
+from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 
 PUSH_ARGS_TRANSFER_PATH = "push_tasks"
 
@@ -16,7 +17,7 @@ class FlowFuture:
         """
         Non-blocking read, returns None if there is no response yet.
         """
-        return pickle.loads(self.cl.read_entry(self.colink_storage_key))
+        return OutputMessage.deserialize(self.cl.read_entry(self.colink_storage_key))
 
     def get(self, output_data_only=True):
         """
@@ -24,7 +25,7 @@ class FlowFuture:
         Probably shouldn't create queue and should have timeout.
         """
         
-        message = pickle.loads(self.cl.read_or_wait(self.colink_storage_key))
+        message = OutputMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
         
         if output_data_only:
             return message.data["output_data"]
@@ -32,7 +33,7 @@ class FlowFuture:
         return message
 
 
-def push_to_flow(cl, target_user_id, target_flow_ref, message):
+def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):
     if target_user_id == "local" or target_user_id == cl.get_user_id():
         participants = [
             CL.Participant(
@@ -55,7 +56,7 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message):
     push_msg_id = uuid.uuid4()
     cl.create_entry(
         f"{PUSH_ARGS_TRANSFER_PATH}:{push_msg_id}:msg",
-        pickle.dumps(message),
+        message.serialize(),
     )
 
     push_param = {
@@ -65,13 +66,4 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message):
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
     return push_msg_id
 
-def coflows_serialize(data: Any) -> bytes:
-    json_str = json.dumps(data)
-    return json_str.encode("utf-8")
 
-
-def coflows_deserialize(encoded_data: bytes) -> Any:
-    if encoded_data is None:
-        return None
-    json_str = encoded_data.decode("utf-8")
-    return json.loads(json_str)

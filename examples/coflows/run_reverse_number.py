@@ -62,6 +62,7 @@ if __name__ == "__main__":
     reverse_number_sequential_default_config = read_yaml_file(
         reverse_number_sequential_default_config_path
     )
+    
     serve_utils.recursive_serve_flow(
         cl=cl,
         flow_type="ReverseNumberSequentialFlow_served",
@@ -87,7 +88,7 @@ if __name__ == "__main__":
     input_data = {"id": 0, "number": 1234}
     
     input_message = InputMessage(
-        data_dict= input_data,
+        data= input_data,
         src_flow="Coflow team",
         dst_flow=proxy_flow,
     )

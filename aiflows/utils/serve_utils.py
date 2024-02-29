@@ -10,7 +10,7 @@ from colink import CoLink
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
-from aiflows.utils.coflows_utils import coflows_serialize, coflows_deserialize
+from aiflows.utils.io_utils import coflows_serialize, coflows_deserialize
 from aiflows.base_flows import AtomicFlow
 
 COFLOWS_PATH = "flows"
@@ -69,9 +69,6 @@ def serve_flow(
                 default_dispatch_point,
             )
     
-    
-                
-
     except grpc.RpcError:
         return False
 
@@ -97,11 +94,8 @@ def recursive_serve_flow(
         for subflow, subflow_config in default_config["subflows_config"].items():
             # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
             #TODO: Check if this is sufficient
-            is_proxy = \
-                subflow_config["_target_"].startswith("aiflows.base_flows.AtomicFlow.") or \
-                subflow_config["_target_"].startswith("aiflows.base_flows.Flow.")
-            
-            needs_serving = not is_proxy and subflow_config.get("user_id", "local") == "local"
+         
+            needs_serving = subflow_config.get("user_id", "local") == "local"
             #if the flow is not a proxy, we must serve it and then make it become a proxy in the default_config
             if needs_serving:
                 #This is ok because name is a required field in the config

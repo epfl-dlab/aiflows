@@ -7,7 +7,6 @@ import hydra
 import colink as CL
 from colink import CoLink
 from colink import ProtocolOperator
-import pickle
 from aiflows.messages import InputMessage
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
@@ -16,10 +15,9 @@ from aiflows.utils.coflows_utils import push_to_flow, PUSH_ARGS_TRANSFER_PATH
 from aiflows.utils.serve_utils import (
     COFLOWS_PATH,
     INSTANCE_METADATA_PATH,
-    coflows_deserialize,
-    coflows_serialize,
     start_colink_component,
 )
+from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 
 
 def parse_args():
@@ -102,12 +100,12 @@ def dispatch_response(cl, output_message, reply_data):
         colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{input_msg_id}:response"
         if user_id == cl.get_user_id():
             # local
-            cl.create_entry(colink_storage_key, pickle.dumps(output_message))
+            cl.create_entry(colink_storage_key, output_message.serialize())
         else:
             cl.remote_storage_create(
                 [user_id],
                 colink_storage_key,
-                pickle.dumps(output_message),
+                output_message.serialize(),
                 False,
             )
     else:
@@ -144,7 +142,7 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     flow.set_colink(cl)
 
     for message_id in dispatch_task["message_ids"]:
-        input_msg = pickle.loads(
+        input_msg = InputMessage.deserialize(
             cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
         )
         

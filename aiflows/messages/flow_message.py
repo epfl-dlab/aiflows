@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from typing import List, Any, Dict, Optional
+from typing import List, Any, Dict, Optional,Union
 import colorama
-
 from aiflows.messages import Message
-
+from aiflows.utils.io_utils import coflows_deserialize
 colorama.init()
 
 
@@ -14,8 +13,8 @@ colorama.init()
 class InputMessage(Message):
     """This class represents an input message that is passed from one flow to another.
 
-    :param data_dict: The data content of the message
-    :type data_dict: Dict[str, Any]
+    :param dict: The data content of the message
+    :type dict: Dict[str, Any]
     :param src_flow: The name of the flow that created the message
     :type src_flow: str
     :param dst_flow: The name of the flow that should receive the message
@@ -28,7 +27,7 @@ class InputMessage(Message):
 
     def __init__(
         self,
-        data_dict: Dict[str, Any],
+        data: Dict[str, Any],
         src_flow: str,
         dst_flow: str,
         reply_data: Dict[str, Any] = {"mode": "no_reply"},
@@ -37,7 +36,7 @@ class InputMessage(Message):
     ):
 
         created_by = src_flow if created_by is None else created_by
-        super().__init__(data=data_dict, created_by=created_by, private_keys=private_keys)
+        super().__init__(data=data, created_by=created_by, private_keys=private_keys)
         self.reply_data = reply_data
         self.src_flow = src_flow
         self.dst_flow = dst_flow
@@ -60,7 +59,7 @@ class InputMessage(Message):
 
     @staticmethod
     def build(
-        data_dict: Dict[str, Any],
+        data: Dict[str, Any],
         # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
         src_flow: str,
         dst_flow: str,
@@ -70,8 +69,8 @@ class InputMessage(Message):
     ) -> "InputMessage":
         """Static method that builds an InputMessage object.
 
-        :param data_dict: The data content of the message
-        :type data_dict: Dict[str, Any]
+        :param data: The data content of the message
+        :type data: Dict[str, Any]
         :param src_flow: The name of the flow that created the message
         :type src_flow: str
         :param dst_flow: The name of the flow that should receive the message
@@ -88,7 +87,7 @@ class InputMessage(Message):
             created_by = src_flow
 
         input_message = InputMessage(
-            data_dict=data_dict,
+            data=data,
             src_flow=src_flow,
             dst_flow=dst_flow,
             created_by=created_by,
@@ -249,7 +248,7 @@ class OutputMessage(Message):
         raw_response: Optional[Dict[str, Any]],
         # missing_output_keys: List[str],
         input_message_id: str,
-        history: "FlowHistory",
+        history: Union["FlowHistory",list],
         created_by: str,
         **kwargs,
     ):
@@ -264,7 +263,7 @@ class OutputMessage(Message):
         if raw_response is not None:
             self.data["raw_response"] = raw_response
         self.data["output_data"] = output_data
-        self.history = history.to_list()
+        self.history = history if isinstance(history, list) else history.to_list() 
 
     def to_string(self):
         """Returns a string representation of the message.
@@ -279,7 +278,6 @@ class OutputMessage(Message):
             f"\n{colorama.Fore.BLUE} ~~~ OutputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n"
             f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
         )
-
         return message
 
     def get_output_data(self):
@@ -289,3 +287,25 @@ class OutputMessage(Message):
         :rtype: Dict[str, Any]
         """
         return self.data["output_data"]
+    
+    @classmethod
+    def deserialize(cls, encoded_data: bytes):
+        
+        d = coflows_deserialize(encoded_data)
+        args = \
+            {
+                "src_flow": d["src_flow"],
+                "dst_flow": d["dst_flow"],
+                "input_message_id": d["input_message_id"],
+                "history": d["history"],
+                "output_data": d["data"]["output_data"],
+                "raw_response": d["data"].get("raw_response",None),
+                "created_by": d["created_by"],
+            }
+        kwargs = {"private_keys": d.get("private_keys",None)}
+        msg = cls(**args,**kwargs)
+        msg.message_id = d["message_id"]
+        msg.created_at = d["created_at"]
+        assert msg.message_type == d["message_type"],"Message type mismatch"
+        return msg
+        

@@ -22,11 +22,10 @@ import time
 from typing import List
 from utils import (
     start_colink_component,
-    coflows_deserialize,
-    coflows_serialize,
     recursive_mount,
     MOUNT_ARGS_TRANSFER_PATH,
 )
+from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 
 
 def parse_args():

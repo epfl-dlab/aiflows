@@ -24,9 +24,8 @@ from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARA
 from aiflows.utils.general_helpers import try_except_decorator
 from aiflows.utils.coflows_utils import push_to_flow, FlowFuture
 import colink as CL
-import pickle
 import hydra
-import time
+
 log = logging.get_logger(__name__)
 
 
@@ -424,7 +423,7 @@ class Flow(ABC):
 
         # ~~~ Create the message ~~~
         msg = InputMessage(
-            data_dict=copy.deepcopy(payload),
+            data=copy.deepcopy(payload),
             private_keys=private_keys,
             src_flow=src_flow,
             dst_flow=dst_flow,
@@ -559,7 +558,7 @@ class Flow(ABC):
         self._log_message(input_message)
         
         message = InputMessage(
-            data_dict=input_message.data,
+            data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
             reply_data={"mode": "no_reply"},
@@ -578,7 +577,7 @@ class Flow(ABC):
         self._log_message(input_message)
         
         message = InputMessage(
-            data_dict=input_message.data,
+            data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
             reply_data={
@@ -601,7 +600,7 @@ class Flow(ABC):
         self._log_message(input_message)
 
         message = InputMessage(
-            data_dict=input_message.data,
+            data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
             reply_data={

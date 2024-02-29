@@ -95,7 +95,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
         while _attempt_idx <= n_batch_retries:
             _error = None
             try:
-                input_message = InputMessage.build(data_dict=input_data_dict, src_flow="Launcher", dst_flow=flow.name)
+                input_message = InputMessage.build(data=input_data_dict, src_flow="Launcher", dst_flow=flow.name)
 
                 output_message = flow(input_message)
                 output_data = output_message.data["output_data"]

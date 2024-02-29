@@ -66,7 +66,7 @@ class KeyInterface(ABC):
         if keys_to_delete:
             self.transformations.append(KeyDelete(keys_to_delete))
 
-    def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
         r"""Applies the all transformations to the given data dictionary.
 
         :param goal: The goal of the flow
@@ -82,9 +82,6 @@ class KeyInterface(ABC):
         :rtype: Dict[str, Any]
         """
         data_dict = copy.deepcopy(data_dict)
-        kwargs["goal"] = goal
-        kwargs["src_flow"] = src_flow
-        kwargs["dst_flow"] = dst_flow
         # print(f"src_flow: {src_flow.name}, dst_flow: {dst_flow.name}")
         for transformation in self.transformations:
             # print(f"before transformation: {transformation}, data_dict: {data_dict}")

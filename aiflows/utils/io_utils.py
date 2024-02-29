@@ -1,7 +1,7 @@
 import os
 import pickle
-
-
+import json
+from typing import Any
 def load_pickle(pickle_path: str):
     """Loads data from a pickle file.
 
@@ -37,3 +37,15 @@ def recursive_json_serialize(obj):
         return recursive_json_serialize(obj.to_json())
     else:
         return obj
+
+
+def coflows_serialize(data: Any) -> bytes:
+    json_str = json.dumps(data)
+    return json_str.encode("utf-8")
+
+
+def coflows_deserialize(encoded_data: bytes) -> Any:
+    if encoded_data is None:
+        return None
+    json_str = encoded_data.decode("utf-8")
+    return json.loads(json_str)
