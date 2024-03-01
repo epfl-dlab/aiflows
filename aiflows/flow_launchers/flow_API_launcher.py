@@ -9,7 +9,7 @@ import hydra
 from omegaconf import DictConfig
 from aiflows.base_flows import Flow
 from aiflows.flow_launchers import MultiThreadedAPILauncher
-from aiflows.messages import InputMessage
+from aiflows.messages import FlowMessage
 from aiflows.interfaces.abstract import Interface
 from aiflows.utils import logging
 
@@ -80,7 +80,7 @@ class FlowLauncher(MultiThreadedAPILauncher):
 
         if input_interface is not None:
             input_data_dict = input_interface(
-                goal="[Input] Run Flow from the Launcher.", data_dict=sample, src_flow=None, dst_flow=flow
+                data_dict=sample
             )
         else:
             input_data_dict = sample
@@ -95,14 +95,19 @@ class FlowLauncher(MultiThreadedAPILauncher):
         while _attempt_idx <= n_batch_retries:
             _error = None
             try:
-                input_message = InputMessage.build(data=input_data_dict, src_flow="Launcher", dst_flow=flow.name)
+                input_message = FlowMessage(
+                    src_flow="Launcher",
+                    dst_flow=flow.name,
+                    is_input_msg=True,
+                    data=input_data_dict,
+                )
 
                 output_message = flow(input_message)
                 output_data = output_message.data["output_data"]
 
                 if output_interface is not None:
                     output_data = output_interface(
-                        goal="[Output] Run Flow from the Launcher.", data_dict=output_data, src_flow=flow, dst_flow=None
+                        data_dict=output_data
                     )
                 break
             except Exception as e:

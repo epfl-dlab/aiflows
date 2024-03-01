@@ -12,11 +12,10 @@ from ..utils import logging
 from aiflows.history import FlowHistory
 from aiflows.messages import (
     Message,
-    InputMessage,
+    FlowMessage,
     UpdateMessage_Generic,
     UpdateMessage_NamespaceReset,
     UpdateMessage_FullReset,
-    OutputMessage,
 )
 from aiflows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs, quick_load
 from aiflows.utils.rich_utils import print_config_tree
@@ -400,7 +399,7 @@ class Flow(ABC):
                                payload: Dict[str, Any],
                                dst_flow: str,
                                reply_data: Dict[str, Any] = {"mode": "no_reply"}):
-        """Packages the given payload into an InputMessage.
+        """Packages the given payload into an FlowMessage.
 
         :param payload: The payload to package
         :type payload: Dict[str, Any]
@@ -408,7 +407,7 @@ class Flow(ABC):
         :type dst_flow: Flow
         :type reply_data: information about for the flow who processes the message on how and who to reply to (for distributed calls)
         :return: The packaged input message
-        :rtype: InputMessage
+        :rtype: FlowMessage
         """
         
         private_keys = dst_flow.flow_config["private_keys"]
@@ -422,9 +421,10 @@ class Flow(ABC):
         ), "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
 
         # ~~~ Create the message ~~~
-        msg = InputMessage(
+        msg = FlowMessage(
             data=copy.deepcopy(payload),
             private_keys=private_keys,
+            is_input_msg=True,
             src_flow=src_flow,
             dst_flow=dst_flow,
             reply_data=reply_data,
@@ -433,27 +433,27 @@ class Flow(ABC):
         return msg
 
     def _package_output_message(
-        self, input_message: InputMessage, response: Dict[str, Any], raw_response: Dict[str, Any]
+        self, input_message: FlowMessage, response: Dict[str, Any]
     ):
-        """Packages the given response into an OutputMessage.
+        """Packages the given response into an FlowMessage.
 
         :param input_message: The input message that was used to generate the response
-        :type input_message: InputMessage
+        :type input_message: FlowMessage
         :param response: The response to package
         :type response: Dict[str, Any]
         :param raw_response: The raw response to package
         :type raw_response: Dict[str, Any]
         :return: The packaged output message
-        :rtype: OutputMessage
+        :rtype: FlowMessage
         """
         output_data = copy.deepcopy(response)
 
-        return OutputMessage(
+        return FlowMessage(
             created_by=self.flow_config["name"],
             src_flow=self.flow_config["name"],
             dst_flow=input_message.src_flow,
-            output_data=output_data,
-            raw_response=raw_response,
+            is_input_msg=False,
+            data=output_data,
             input_message_id=input_message.message_id,
             history=self.history,
         )
@@ -533,7 +533,7 @@ class Flow(ABC):
         """Runs the flow in local mode.
 
         :param input_message: The input message to run the flow on
-        :type input_meassage: InputMessage
+        :type input_meassage: FlowMessage
         :return: The output data of the flow
         :rtype: Dict[str, Any]
         """
@@ -554,17 +554,17 @@ class Flow(ABC):
                 flow.set_colink(cl)
 
     @try_except_decorator
-    def tell(self, input_message: InputMessage):
+    def tell(self, input_message: FlowMessage):
         self._log_message(input_message)
-        
-        message = InputMessage(
+         
+        message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
+            is_input_msg=True,
             reply_data={"mode": "no_reply"},
             private_keys=input_message.private_keys,
         ) 
- 
         push_to_flow(
             self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
         )
@@ -572,14 +572,15 @@ class Flow(ABC):
         self._post_call_hook()
 
     @try_except_decorator
-    def ask_pipe(self, input_message: InputMessage, parent_flow_ref: str):
+    def ask_pipe(self, input_message: FlowMessage, parent_flow_ref: str):
         
         self._log_message(input_message)
         
-        message = InputMessage(
+        message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
+            is_input_msg=True,
             reply_data={
                 "mode": "push",
                 "user_id": self.cl.get_user_id(),
@@ -595,14 +596,15 @@ class Flow(ABC):
         self._post_call_hook()
         
     @try_except_decorator
-    def ask(self, input_message: InputMessage) -> FlowFuture:
+    def ask(self, input_message: FlowMessage) -> FlowFuture:
         
         self._log_message(input_message)
 
-        message = InputMessage(
+        message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
             dst_flow=self.flow_config["flow_ref"],
+            is_input_msg=True,
             reply_data={
                 "mode": "storage",
                 "user_id": self.cl.get_user_id(),
@@ -619,13 +621,13 @@ class Flow(ABC):
         return FlowFuture(self.cl, msg_id)
 
     @try_except_decorator
-    def __call__(self, input_message: InputMessage):
+    def __call__(self, input_message: FlowMessage):
         """Calls the flow on the given input message.
 
         :param input_message: The input message to run the flow on
-        :type input_message: InputMessage
+        :type input_message: FlowMessage
         :return: The output message of the flow
-        :rtype: OutputMessage
+        :rtype: FlowMessage
         """
                 
         # ~~~ check and log input ~~~
@@ -639,7 +641,6 @@ class Flow(ABC):
         output_message = self._package_output_message(
             input_message=input_message,
             response=response,
-            raw_response=None,
         )
 
         self._post_call_hook()

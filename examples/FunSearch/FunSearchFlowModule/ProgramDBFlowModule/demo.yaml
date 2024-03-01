@@ -1,0 +1,8 @@
+input_interface:  # Connector between the "input data" and the Flow
+  #your input interface here
+output_interface:  # Connector between the Flow's output and the caller
+  #your output interface here
+
+flow:  # Overrides the for the flow config
+  #_target_: Your target here
+  #your flow overrides here

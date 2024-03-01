@@ -7,7 +7,7 @@ import hydra
 import colink as CL
 from colink import CoLink
 from colink import ProtocolOperator
-from aiflows.messages import InputMessage
+from aiflows.messages import FlowMessage
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
@@ -18,7 +18,7 @@ from aiflows.utils.serve_utils import (
     start_colink_component,
 )
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-
+import pickle
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Dispatch flow worker")
@@ -68,11 +68,14 @@ def create_flow(
     config_overrides: Dict[str, Any] = None,
     state: Dict[str, Any] = None,
 ):
+    curr_dir = os.getcwd()
+    os.chdir(sys.path[-1])
     if config_overrides is not None:
         config = recursive_dictionary_update(config, config_overrides)
     flow = hydra.utils.instantiate(config, _recursive_=False, _convert_="partial")
     if state is not None:
         flow.__setflowstate__({"flow_state": state}, safe_mode=True)
+    os.chdir(curr_dir)
     return flow
 
 
@@ -114,16 +117,16 @@ def dispatch_response(cl, output_message, reply_data):
 
 def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Participant]):
     dispatch_task = coflows_deserialize(param)
-    print("\nDispatch worker Task: " + str(dispatch_task))
-
+    print("\nDispatch worker Task: " + str(dispatch_task), end=" ")
     flow_ref = dispatch_task["flow_id"]
-
+    
     # metadata should be in engine queues datastructure
     # metadata should be given in public param by scheduler
     instance_metadata = coflows_deserialize(
         cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_ref}")
     )
     flow_type = instance_metadata["flow_type"]
+    print(f"on flow_type: {flow_type}, flow_ref: {flow_ref}")
     user_id = instance_metadata["user_id"]
     client_id = "local" if user_id == cl.get_user_id() else user_id
 
@@ -136,13 +139,16 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     config_overrides = coflows_deserialize(
         cl.read_entry(f"{mount_path}:config_overrides")
     )
-    state = coflows_deserialize(cl.read_entry(f"{mount_path}:state"))
+    state = coflows_deserialize(cl.read_entry(f"{mount_path}:state"),use_pickle=True)
 
     flow = create_flow(default_config, config_overrides, state)
     flow.set_colink(cl)
 
     for message_id in dispatch_task["message_ids"]:
-        input_msg = InputMessage.deserialize(
+        
+        
+        
+        input_msg = FlowMessage.deserialize(
             cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
         )
         
@@ -151,8 +157,8 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
         output_msg = flow(input_msg)
         dispatch_response(cl, output_msg, input_msg.reply_data)
 
-    new_state = flow.__getstate__()
-    cl.update_entry(f"{mount_path}:state", coflows_serialize(new_state))
+    new_state = flow.__getstate__()["flow_state"]
+    cl.update_entry(f"{mount_path}:state", coflows_serialize(new_state,use_pickle=True))
 
 
 # python dispatch-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)
@@ -161,7 +167,6 @@ if __name__ == "__main__":
     cl = start_colink_component("Dispatch worker", args)
 
     sys.path.append(args["flow_modules_base_path"])
-
     pop = ProtocolOperator(__name__)
 
     proto_role = args["dispatch_point"] + ":local"

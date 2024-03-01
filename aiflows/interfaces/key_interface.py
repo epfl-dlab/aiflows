@@ -35,9 +35,13 @@ class KeyInterface(ABC):
         """
         transforms = []
         if len(transformations) > 0:
-            for config in transformations:
-                transforms.append(hydra.utils.instantiate(config, _convert_="partial"))
-
+            for transf in transformations:
+                #Not very pretty but this would fail if the transformation is not a hydra config and if
+                #we except than I'm assuming it's a callable (function or class..)
+                try:
+                    transforms.append(hydra.utils.instantiate(transf, _convert_="partial"))
+                except:
+                    transforms.append(transf)
         return transforms
 
     def __init__(

@@ -8,95 +8,40 @@ colorama.init()
 
 # ToDo: When logging the "\n" in the nested messages is not mapped to a new line which makes it hard to debug. Fix that.
 
-
 @dataclass
-class InputMessage(Message):
-    """This class represents an input message that is passed from one flow to another.
-
-    :param dict: The data content of the message
-    :type dict: Dict[str, Any]
-    :param src_flow: The name of the flow that created the message
-    :type src_flow: str
-    :param dst_flow: The name of the flow that should receive the message
-    :type dst_flow: str
-    :param created_by: The name of the flow that created the message
-    :type created_by: str
-    :param private_keys: A list of private keys that should not be serialized or logged
-    :type private_keys: List[str], optional
-    """
-
+class FlowMessage(Message):
+    
     def __init__(
         self,
         data: Dict[str, Any],
         src_flow: str,
         dst_flow: str,
-        reply_data: Dict[str, Any] = {"mode": "no_reply"},
-        created_by: str = None,
-        private_keys: List[str] = None,
+        is_input_msg: bool,
+        reply_data: Optional[Dict[str, Any]] = {"mode": "no_reply"},
+        created_by: Optional[str] = None,
+        private_keys: Optional[List[str]] = None,
+        input_message_id: Optional[str] = None,
+        history: Optional[Union["FlowHistory",list]] = None,
     ):
-
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data, created_by=created_by, private_keys=private_keys)
         self.reply_data = reply_data
         self.src_flow = src_flow
         self.dst_flow = dst_flow
-
+        self.input_message_id = self.message_id if input_message_id is None else input_message_id
+        self.history = history if isinstance(history, list) or history is None else history.to_list() 
+        self.is_input_msg = is_input_msg
+        
     def to_string(self):
-        """Returns a string representation of the message.
-
-        :return: The string representation of the message.
-        :rtype: str
-        """
         src_flow = self.src_flow
         dst_flow = self.dst_flow
-
+        display_msg_name = "InputMessage" if self.is_input_msg else "OutputMessage"
         message = (
-            f"\n{colorama.Fore.GREEN} ~~~ InputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n"
+            f"\n{colorama.Fore.GREEN} ~~~ {display_msg_name}: `{src_flow}` --> `{dst_flow}` ~~~\n"
             f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
         )
 
         return message
-
-    @staticmethod
-    def build(
-        data: Dict[str, Any],
-        # ToDo: What does this offer over the constructor? If nothing, remove it and update the launcher.
-        src_flow: str,
-        dst_flow: str,
-        reply_data: Dict[str, Any] = {"mode": "no_reply"},
-        private_keys: Optional[List[str]] = None,
-        created_by: Optional[str] = None,
-    ) -> "InputMessage":
-        """Static method that builds an InputMessage object.
-
-        :param data: The data content of the message
-        :type data: Dict[str, Any]
-        :param src_flow: The name of the flow that created the message
-        :type src_flow: str
-        :param dst_flow: The name of the flow that should receive the message
-        :type dst_flow: str
-        :param created_by: The name of the flow that created the message
-        :type created_by: str
-        :param private_keys: A list of private keys that should not be serialized or logged
-        :type private_keys: List[str], optional
-        :return: The built InputMessage object
-        :rtype: InputMessage
-        """
-
-        if created_by is None:
-            created_by = src_flow
-
-        input_message = InputMessage(
-            data=data,
-            src_flow=src_flow,
-            dst_flow=dst_flow,
-            created_by=created_by,
-            private_keys=private_keys,
-            reply_data = reply_data
-        )
-
-        return input_message
-
 
 @dataclass
 class UpdateMessage_Generic(Message):
@@ -216,96 +161,4 @@ class UpdateMessage_FullReset(Message):
         )
 
         return message
-
-
-@dataclass
-class OutputMessage(Message):
-    r"""This class represents an output message that is passed from one flow to another.
-
-    :param src_flow: The name of the flow that created the message
-    :type src_flow: str
-    :param dst_flow: The name of the flow that should receive the message
-    :type dst_flow: str
-    :param output_data: The data content of the message
-    :type output_data: Dict[str, Any]
-    :param raw_response: The raw response of the message
-    :type raw_response: Dict[str, Any]
-    :param input_message_id: The unique identification of the input message
-    :type input_message_id: str
-    :param history: The history of the flow
-    :type history: FlowHistory
-    :param created_by: The name of the flow that created the message
-    :type created_by: str
-    :param \**kwargs: arguments that are passed to the Message constructor
-    """
-
-    def __init__(
-        self,
-        src_flow: str,
-        dst_flow: str,
-        # output_keys: List[str],
-        output_data: Dict[str, Any],
-        raw_response: Optional[Dict[str, Any]],
-        # missing_output_keys: List[str],
-        input_message_id: str,
-        history: Union["FlowHistory",list],
-        created_by: str,
-        **kwargs,
-    ):
-        super().__init__(data={}, created_by=created_by, **kwargs)
-
-        self.src_flow = src_flow
-        self.dst_flow = dst_flow
-        self.input_message_id = input_message_id
-        # self.data["output_keys"] = output_keys
-        # if missing_output_keys:
-        #     self.data["missing_output_keys"] = missing_output_keys
-        if raw_response is not None:
-            self.data["raw_response"] = raw_response
-        self.data["output_data"] = output_data
-        self.history = history if isinstance(history, list) else history.to_list() 
-
-    def to_string(self):
-        """Returns a string representation of the message.
-
-        :return: The string representation of the message.
-        :rtype: str
-        """
-        src_flow = self.src_flow
-        dst_flow = self.dst_flow
-
-        message = (
-            f"\n{colorama.Fore.BLUE} ~~~ OutputMessage: `{src_flow}` --> `{dst_flow}` ~~~\n"
-            f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
-        )
-        return message
-
-    def get_output_data(self):
-        """Returns the output data of the message.
-
-        :return: The output data of the message.
-        :rtype: Dict[str, Any]
-        """
-        return self.data["output_data"]
-    
-    @classmethod
-    def deserialize(cls, encoded_data: bytes):
-        
-        d = coflows_deserialize(encoded_data)
-        args = \
-            {
-                "src_flow": d["src_flow"],
-                "dst_flow": d["dst_flow"],
-                "input_message_id": d["input_message_id"],
-                "history": d["history"],
-                "output_data": d["data"]["output_data"],
-                "raw_response": d["data"].get("raw_response",None),
-                "created_by": d["created_by"],
-            }
-        kwargs = {"private_keys": d.get("private_keys",None)}
-        msg = cls(**args,**kwargs)
-        msg.message_id = d["message_id"]
-        msg.created_at = d["created_at"]
-        assert msg.message_type == d["message_type"],"Message type mismatch"
-        return msg
         

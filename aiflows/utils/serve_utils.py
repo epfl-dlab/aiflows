@@ -6,7 +6,7 @@ from termcolor import colored
 from copy import deepcopy
 import colink as CL
 from colink import CoLink
-
+import pickle
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
@@ -60,7 +60,7 @@ def serve_flow(
         if default_state is not None:
             cl.create_entry(
                 f"{serve_entry_path}:default_state",
-                coflows_serialize(default_state),
+                coflows_serialize(default_state,use_pickle=True),
             )
 
         if default_dispatch_point is not None:
@@ -120,7 +120,8 @@ def recursive_serve_flow(
                 subflow_config["user_id"] = "local"
                 subflow_config["flow_type"] = subflow_type
                 
-                    
+    
+             
     serving_succesful = serve_flow(
         cl = cl,
         flow_type = flow_type,
@@ -182,8 +183,10 @@ def mount(
             initial_state \
             if initial_state is not None \
             else coflows_deserialize(
-                cl.read_entry(f'{serve_entry_path}:default_state')
+                cl.read_entry(f'{serve_entry_path}:default_state'),
+                use_pickle=True
             )
+            
         if initial_state is not None:
             cl.create_entry(
                 f"{mount_path}:state",

@@ -1,0 +1,21 @@
+#default configuration of your flow (if needed) goes here
+_target_: flow_modules.aiflows.FunSearchFlowModule.ProgramDBFlow.instantiate_from_default_config
+input_interface:
+  - "operation"
+output_interface:
+  - "retrieved"
+
+name: ProgramDBFlow
+description: A flow that saves programs in a database of islands
+artifact_to_evolve_name: solve_function 
+evaluate_function: ???
+evaluate_file_full_content: ???
+num_islands: 3
+reset_period : 14400 #4 hours in seconds
+artifacts_per_prompt: 2
+temperature: 0.1
+temperature_period: 30000
+sample_with_replacement:  False
+portion_of_islands_to_reset:  0.5
+template:
+  preface: ""
