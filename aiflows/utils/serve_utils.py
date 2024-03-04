@@ -13,14 +13,17 @@ from aiflows.utils.general_helpers import (
 from aiflows.utils.io_utils import coflows_serialize, coflows_deserialize
 from aiflows.base_flows import AtomicFlow
 
-COFLOWS_PATH = "flows"
-MOUNT_ARGS_TRANSFER_PATH = "mount_tasks"
-INSTANCE_METADATA_PATH = "instance_metadata"  # should remove after extending engine
+from aiflows.utils.constants import (
+    COFLOWS_PATH,
+    MOUNT_ARGS_TRANSFER_PATH,
+    INSTANCE_METADATA_PATH,
+)
 
 
 def serve_flow(
     cl: CoLink,
     flow_type: str,
+    serving_mode: str = "statefull",
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
@@ -32,10 +35,10 @@ def serve_flow(
     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
     :rtype: bool
     """
-    
+
     if default_state is None and default_config is not None:
         default_state = default_config.get("init_state", None)
-    
+
     ##First check if the flow is already being served
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     serve_entry = cl.read_entry(f"{serve_entry_path}:init")
@@ -44,7 +47,7 @@ def serve_flow(
             f"{flow_type} is already being served. Found serve entry at path {serve_entry_path}"
         )
         return False
-    
+
     try:
         cl.create_entry(
             f"{serve_entry_path}:init", coflows_serialize(f"init {flow_type}")
@@ -60,7 +63,7 @@ def serve_flow(
         if default_state is not None:
             cl.create_entry(
                 f"{serve_entry_path}:default_state",
-                coflows_serialize(default_state,use_pickle=True),
+                coflows_serialize(default_state, use_pickle=True),
             )
 
         if default_dispatch_point is not None:
@@ -68,7 +71,7 @@ def serve_flow(
                 f"{serve_entry_path}:default_dispatch_point",
                 default_dispatch_point,
             )
-    
+
     except grpc.RpcError:
         return False
 
@@ -79,55 +82,66 @@ def serve_flow(
 def recursive_serve_flow(
     cl: CoLink,
     flow_type: str,
+    serving_mode="statefull",
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
 ) -> bool:
-    
     ##### CODE SNIPPET FOR RECURSIVE SERVING ######
     ## NOTE: This hasn't been tested a lot
-    
-    
+
+    # TODO: check if already served
+
+    # if serving_mode == "stateless":
+    #     ...
+    # elif serving_mode == "singleton":
+    #     ...
+    # elif serving_mode == "statefull":
+    #     ...
+    # else:
+    #     print("WARNING: Serving mode unknown - flow wasn't served.")
+
     # if there's recursive serving, serve subflows first
     if "subflows_config" in default_config:
-        
         for subflow, subflow_config in default_config["subflows_config"].items():
             # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
-            #TODO: Check if this is sufficient
-         
+            # TODO: Check if this is sufficient
+
             needs_serving = subflow_config.get("user_id", "local") == "local"
-            #if the flow is not a proxy, we must serve it and then make it become a proxy in the default_config
+            # if the flow is not a proxy, we must serve it and then make it become a proxy in the default_config
             if needs_serving:
-                #This is ok because name is a required field in the config
-                #note that if you don't specify the flow type, I'll assume it's the name of the subflow + _served
-                #This means that if you don't specify the flow type, 2 subflows of the same class will be served at 2 different locations (won't share state)
+                # This is ok because name is a required field in the config
+                # note that if you don't specify the flow type, I'll assume it's the name of the subflow + _served
+                # This means that if you don't specify the flow type, 2 subflows of the same class will be served at 2 different locations (won't share state)
                 # If you want to share state, you must specify the flow type
-                subflow_type = subflow_config.get("flow_type", f'{subflow}_served')
+                subflow_type = subflow_config.get("flow_type", f"{subflow}_served")
                 subflow_default_state = subflow_config.get("init_state", None)
-                #serve_flow returns false when an error occurs or if a flow is already served... (shouldn't we distinguish these cases?)
-                #I would almost fail here if the error here
-                #whereas if the flow is already serving that's great, nothing to be done
-                #Which is why I called the output serving succesful
+                # serve_flow returns false when an error occurs or if a flow is already served... (shouldn't we distinguish these cases?)
+                # I would almost fail here if the error here
+                # whereas if the flow is already serving that's great, nothing to be done
+                # Which is why I called the output serving succesful
                 serving_succesful = recursive_serve_flow(
-                    cl = cl,
+                    cl=cl,
                     flow_type=subflow_type,
+                    # TODO: shouldn't this be read from yaml file of subflow (find it in flow_modules directory)
                     default_config=deepcopy(subflow_config),
                     default_state=subflow_default_state,
                     default_dispatch_point=default_dispatch_point,
                 )
-                #Change the subflow_config of flow to proxy
-                subflow_config["_target_"] = f'aiflows.base_flows.AtomicFlow.instantiate_from_default_config'
+                # Change the subflow_config of flow to proxy
+                subflow_config[
+                    "_target_"
+                ] = f"aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
                 subflow_config["user_id"] = "local"
                 subflow_config["flow_type"] = subflow_type
-                
-    
-             
+
     serving_succesful = serve_flow(
-        cl = cl,
-        flow_type = flow_type,
-        default_config = default_config,
-        default_state = default_state,
-        default_dispatch_point = default_dispatch_point,
+        cl=cl,
+        flow_type=flow_type,
+        serving_mode=serving_mode,
+        default_config=default_config,
+        default_state=default_state,
+        default_dispatch_point=default_dispatch_point,
     )
     return serving_succesful
 
@@ -153,6 +167,8 @@ def mount(
         )
         return False
 
+    # if served flow is singleton, return existing flow_ref
+
     flow_ref = uuid.uuid4()
     mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_ref}"
 
@@ -176,23 +192,23 @@ def mount(
         )
 
         serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-        
-        #If user set an initial state, keep it.
+
+        # If user set an initial state, keep it.
         # Otherwise take the default one initialized when started serving
-        initial_state = \
-            initial_state \
-            if initial_state is not None \
+        initial_state = (
+            initial_state
+            if initial_state is not None
             else coflows_deserialize(
-                cl.read_entry(f'{serve_entry_path}:default_state'),
-                use_pickle=True
+                cl.read_entry(f"{serve_entry_path}:default_state"), use_pickle=True
             )
-            
+        )
+
         if initial_state is not None:
             cl.create_entry(
                 f"{mount_path}:state",
-                coflows_serialize(initial_state),
+                coflows_serialize(initial_state, use_pickle=True),
             )
-            
+
         if dispatch_point_override is not None:
             cl.create_entry(
                 f"{mount_path}:dispatch_point_override",
@@ -203,25 +219,23 @@ def mount(
         raise e
 
     print(f"Mounted {flow_ref} at {mount_path}")
-    
+
     ##TODO: Maybe we want to add all the info to the proxy, let's see
-    name = f'Proxy_{flow_type}'
-    description = f'Proxy of {flow_type}'
-    
+    name = f"Proxy_{flow_type}"
+    description = f"Proxy of {flow_type}"
+
     proxy_overrides = {
         "name": name,
         "description": description,
         "user_id": client_id,
         "flow_ref": str(flow_ref),
-        "flow_type": flow_type
+        "flow_type": flow_type,
     }
-    
-    proxy_flow = AtomicFlow.instantiate_from_default_config(
-        **proxy_overrides
-    )
-    
+
+    proxy_flow = AtomicFlow.instantiate_from_default_config(**proxy_overrides)
+
     proxy_flow.set_colink(cl)
-    
+
     return proxy_flow
 
 
@@ -244,7 +258,7 @@ def recursive_mount(
 
     if config_overrides is not None:
         config = recursive_dictionary_update(config, config_overrides)
-        
+
     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
     mount_initiator_args = {}
     # user_id -> [(subflow_key, subflow_type, subflow_config_overrides)]
@@ -277,7 +291,9 @@ def recursive_mount(
                 if subflow_key not in config_overrides["subflows_config"]:
                     config_overrides["subflows_config"][subflow_key] = {}
 
-                config_overrides["subflows_config"][subflow_key]["flow_ref"] = proxy.flow_config["flow_ref"]
+                config_overrides["subflows_config"][subflow_key][
+                    "flow_ref"
+                ] = proxy.flow_config["flow_ref"]
             else:
                 if user_id not in mount_initiator_args:
                     mount_initiator_args[user_id] = []

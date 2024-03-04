@@ -3,6 +3,8 @@ import sys
 import argparse
 from typing import List, Dict, Any
 import hydra
+import pickle
+import json
 
 import colink as CL
 from colink import CoLink
@@ -18,7 +20,8 @@ from aiflows.utils.serve_utils import (
     start_colink_component,
 )
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-import pickle
+from aiflows.utils.constants import DEFAULT_DISPATCH_POINT, FLOW_MODULES_BASE_PATH
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Dispatch flow worker")
@@ -43,13 +46,13 @@ def parse_args():
     parser.add_argument(
         "--flow_modules_base_path",
         type=str,
-        default=".",
+        default=FLOW_MODULES_BASE_PATH,
         help="Path to directory that contains the flow_modules directory.",
     )
     parser.add_argument(
         "--dispatch_point",
         type=str,
-        default=os.getenv("DEFAULT_DISPATCH_POINT", "coflows_dispatch"),
+        default=DEFAULT_DISPATCH_POINT,
         help="Dispatch point to which the workers will subscribe to.",
     )
     parser.add_argument(
@@ -117,21 +120,24 @@ def dispatch_response(cl, output_message, reply_data):
 
 def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Participant]):
     dispatch_task = coflows_deserialize(param)
-    print("\nDispatch worker Task: " + str(dispatch_task), end=" ")
-    flow_ref = dispatch_task["flow_id"]
-    
-    # metadata should be in engine queues datastructure
-    # metadata should be given in public param by scheduler
-    instance_metadata = coflows_deserialize(
-        cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_ref}")
+    print(
+        f"\nDispatch worker Task:{json.dumps(dispatch_task, indent=4)}",
     )
+    flow_id = dispatch_task["flow_id"]
+
+    # metadata can be in engine queues datastructure
+    # metadata can be given in public param by scheduler
+    instance_metadata = coflows_deserialize(
+        cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_id}")
+    )
+
     flow_type = instance_metadata["flow_type"]
-    print(f"on flow_type: {flow_type}, flow_ref: {flow_ref}")
+    print(f"flow_type: {flow_type}\nflow_id:{flow_id}\n")
+
     user_id = instance_metadata["user_id"]
     client_id = "local" if user_id == cl.get_user_id() else user_id
-
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-    mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_ref}"
+    mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_id}"
 
     default_config = coflows_deserialize(
         cl.read_entry(f"{serve_entry_path}:default_config")
@@ -139,26 +145,40 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     config_overrides = coflows_deserialize(
         cl.read_entry(f"{mount_path}:config_overrides")
     )
-    state = coflows_deserialize(cl.read_entry(f"{mount_path}:state"),use_pickle=True)
+    state = coflows_deserialize(cl.read_entry(f"{mount_path}:state"), use_pickle=True)
 
     flow = create_flow(default_config, config_overrides, state)
     flow.set_colink(cl)
 
     for message_id in dispatch_task["message_ids"]:
-        
-        
-        
         input_msg = FlowMessage.deserialize(
             cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
         )
-        
+
         input_msg.reply_data["input_msg_id"] = message_id
 
         output_msg = flow(input_msg)
         dispatch_response(cl, output_msg, input_msg.reply_data)
 
     new_state = flow.__getstate__()["flow_state"]
-    cl.update_entry(f"{mount_path}:state", coflows_serialize(new_state,use_pickle=True))
+    cl.update_entry(
+        f"{mount_path}:state", coflows_serialize(new_state, use_pickle=True)
+    )
+
+
+def run_dispatch_worker_thread(
+    cl,
+    dispatch_point=DEFAULT_DISPATCH_POINT,
+    flow_modules_base_path=FLOW_MODULES_BASE_PATH,
+):
+    sys.path.append(flow_modules_base_path)
+    pop = ProtocolOperator(__name__)
+
+    proto_role = f"{dispatch_point}:local"
+    pop.mapping[proto_role] = dispatch_task_handler
+
+    pop.run_attach(cl=cl)
+    print("Dispatch worker started in attached thread.")
 
 
 # python dispatch-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)
@@ -173,10 +193,9 @@ if __name__ == "__main__":
     pop.mapping[proto_role] = dispatch_task_handler
 
     print("Dispatch worker started.")
-    vt_public_addr = "127.0.0.1"  # HACK
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr=vt_public_addr,
+        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )
