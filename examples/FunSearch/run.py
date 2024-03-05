@@ -5,6 +5,7 @@ from aiflows.utils.general_helpers import read_yaml_file, quick_load
 from aiflows.base_flows import AtomicFlow
 from aiflows.flow_launchers import FlowLauncher
 from aiflows.utils.general_helpers import quick_load
+from aiflows.workers import run_dispatch_worker_thread
 from aiflows.messages import FlowMessage
 import argparse
 logging.set_verbosity_debug()
@@ -214,6 +215,9 @@ if __name__ == "__main__":
         dispatch_point_override=None,
     )
     
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
     
     serve_utils.recursive_serve_flow(
         cl=cl,

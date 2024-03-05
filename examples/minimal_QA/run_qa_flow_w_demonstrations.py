@@ -64,6 +64,10 @@ if __name__ == "__main__":
     
     quick_load_api_keys(cfg, api_information, key="api_infos")
     
+    #in case you haven't started the dispatch worker thread, uncomment
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    
     proxy_flow = serve_utils.recursive_mount(
         cl=cl,
         client_id="local",

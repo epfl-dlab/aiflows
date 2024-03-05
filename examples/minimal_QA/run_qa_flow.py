@@ -22,7 +22,7 @@ from aiflows import flow_verse
 
 # ~~~ Load Flow dependecies from FlowVerse ~~~
 dependencies = [
-    {"url": "aiflows/ChatFlowModule", "revision": "297c90d08087d9ff3139521f11d1a48d7dc63ed4"},
+    {"url": "aiflows/ChatFlowModule", "revision": "main"},
 ]
 flow_verse.sync_dependencies(dependencies)
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     )
     
     #in case you haven't started the dispatch worker thread, uncomment
-    #run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
     
     # put api information in config (done like this for privacy reasons)
     quick_load_api_keys(cfg, api_information, key="api_infos")

@@ -60,8 +60,8 @@ if __name__ == "__main__":
     )
     
     #in case you haven't started the dispatch worker thread, uncomment the 2 lines
-    #run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
-    #run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
 
     quick_load_api_keys(cfg, api_information, key="api_infos")
 
