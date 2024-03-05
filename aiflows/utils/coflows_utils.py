@@ -8,13 +8,16 @@ from aiflows.utils.constants import (
     PUSH_ARGS_TRANSFER_PATH,
     COFLOWS_PATH,
 )
+from typing import Callable
 
 
 class FlowFuture:
     def __init__(self, cl, msg_id):
         self.cl = cl
         self.colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{msg_id}:response"
-
+        self.output_interface = lambda data_dict,**kwargs: data_dict
+        
+        
     def try_get_message(self):
         """
         Non-blocking read, returns None if there is no response yet.
@@ -32,12 +35,15 @@ class FlowFuture:
         """
 
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
-
+        message.data = self.output_interface(message.data)
         return message
 
     def get_data(self):
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
-        return message.data
+        return self.output_interface(message.data)
+    
+    def set_output_interface(self, ouput_interface: Callable):
+        self.output_interface = ouput_interface
 
 
 def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):

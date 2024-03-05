@@ -10,13 +10,15 @@ import pickle
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
+from copy import deepcopy
 from aiflows.utils.io_utils import coflows_serialize, coflows_deserialize
 from aiflows.base_flows import AtomicFlow
-
+import hydra
 from aiflows.utils.constants import (
     COFLOWS_PATH,
     MOUNT_ARGS_TRANSFER_PATH,
     INSTANCE_METADATA_PATH,
+    INSTANTIATION_METHODS
 )
 
 
@@ -35,10 +37,16 @@ def serve_flow(
     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
     :rtype: bool
     """
+    target = default_config["_target_"]
+    if target.split(".")[-1] in INSTANTIATION_METHODS:
+        target = ".".join(target.split(".")[:-1])
+    
+    flow_class = hydra.utils.get_class(target)
+    default_config = flow_class.get_config(**deepcopy(default_config))
 
     if default_state is None and default_config is not None:
         default_state = default_config.get("init_state", None)
-
+    
     ##First check if the flow is already being served
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     serve_entry = cl.read_entry(f"{serve_entry_path}:init")
@@ -101,9 +109,23 @@ def recursive_serve_flow(
     # else:
     #     print("WARNING: Serving mode unknown - flow wasn't served.")
 
-    # if there's recursive serving, serve subflows first
-    if "subflows_config" in default_config:
-        for subflow, subflow_config in default_config["subflows_config"].items():
+    #expand default config to full default_config
+
+
+    #ugly hack to get class but not sure how else to do if 
+    target = default_config["_target_"]
+    
+    
+    if target.split(".")[-1] in INSTANTIATION_METHODS:
+        target = ".".join(target.split(".")[:-1])
+    
+    flow_class = hydra.utils.get_class(target)
+    flow_full_config = flow_class.get_config(**deepcopy(default_config))
+
+
+    # if there's recursive serving, serve subflows first    
+    if "subflows_config" in flow_full_config:
+        for subflow, subflow_config in flow_full_config["subflows_config"].items():
             # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
             # TODO: Check if this is sufficient
 
@@ -120,20 +142,42 @@ def recursive_serve_flow(
                 # I would almost fail here if the error here
                 # whereas if the flow is already serving that's great, nothing to be done
                 # Which is why I called the output serving succesful
+                
+                subflow_target = subflow_config["_target_"]
+                
+                
+                if subflow_target.split(".")[-1] in INSTANTIATION_METHODS:
+                    subflow_target = ".".join(subflow_target.split(".")[:-1])
+                
+                subflow_class = hydra.utils.get_class(subflow_target)
+                
+                #Mauro suggestion: serve the default configuration all the time for subflows (mount overrieds stuff)
+                subflow_cfg = subflow_class.get_config()
+                subflow_cfg["_target_"] = subflow_config["_target_"]
                 serving_succesful = recursive_serve_flow(
                     cl=cl,
                     flow_type=subflow_type,
                     # TODO: shouldn't this be read from yaml file of subflow (find it in flow_modules directory)
-                    default_config=deepcopy(subflow_config),
+                    default_config=subflow_cfg,
                     default_state=subflow_default_state,
                     default_dispatch_point=default_dispatch_point,
                 )
+                
                 # Change the subflow_config of flow to proxy
-                subflow_config[
+                #Quite ugly, but what am I supposed to do?
+                
+                if subflow not in default_config["subflows_config"]:
+                    default_config["subflows_config"][subflow] = {}
+                    
+                default_config["subflows_config"][subflow][
                     "_target_"
                 ] = f"aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
-                subflow_config["user_id"] = "local"
-                subflow_config["flow_type"] = subflow_type
+                default_config["subflows_config"][subflow]["user_id"] = "local"
+                default_config["subflows_config"][subflow]["flow_type"] = subflow_type
+                if "name" not in default_config["subflows_config"][subflow]:
+                    default_config["subflows_config"][subflow]["name"] = subflow_cfg["name"]
+                if "description" not in subflow_config:
+                    default_config["subflows_config"][subflow]["description"] = subflow_cfg["description"]
 
     serving_succesful = serve_flow(
         cl=cl,
@@ -275,10 +319,15 @@ def recursive_mount(
             user_id = subflow_config["user_id"]
             subflow_type = subflow_config["flow_type"]
 
-            subflow_config_overrides = None
-            if "config_overrides" in subflow_config:
-                subflow_config_overrides = subflow_config["config_overrides"]
+            #TODO: Check if you this deprication is approved
+            # subflow_config_overrides = None
+            # if "config_overrides" in subflow_config:
+            #     subflow_config_overrides = subflow_config["config_overrides"]
 
+            #And replace with this
+            subflow_config_overrides = deepcopy(subflow_config)
+            subflow_config_overrides.pop("_target_",None)
+            
             if user_id == "local":
                 proxy = recursive_mount(
                     cl, user_id, subflow_type, subflow_config_overrides

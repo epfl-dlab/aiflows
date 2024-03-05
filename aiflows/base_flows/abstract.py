@@ -410,12 +410,10 @@ class Flow(ABC):
         :rtype: FlowMessage
         """
         
-        private_keys = dst_flow.flow_config["private_keys"]
+        private_keys = self.flow_config["private_keys"]
 
         src_flow = self.flow_config["name"]
-        if isinstance(dst_flow, Flow):
-            dst_flow = dst_flow.flow_config["name"]
-
+  
         assert (
             len(set(["src_flow", "dst_flow"]).intersection(set(payload.keys()))) == 0
         ), "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
@@ -599,7 +597,6 @@ class Flow(ABC):
     def ask(self, input_message: FlowMessage) -> FlowFuture:
         
         self._log_message(input_message)
-
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],

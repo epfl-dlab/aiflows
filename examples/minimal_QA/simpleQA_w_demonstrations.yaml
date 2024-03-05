@@ -1,0 +1,73 @@
+_target_: flow_modules.aiflows.ChatWithDemonstrationsFlowModule.ChatWithDemonstrationsFlow.instantiate_from_default_config
+name: "SimpleQA_Flow_with_Demonstrations"
+description: "A sequential flow that answers questions with demonstrations"
+
+input_interface: # Connector between the "input data" and the Flow
+  - "questions"
+output_interface: # Connector between the Flow's output and the caller
+  - "answer"
+
+subflows_config:
+  demonstration_flow:
+    _target_: flow_modules.aiflows.ChatWithDemonstrationsFlowModule.DemonstrationsAtomicFlow.instantiate_from_default_config
+    data: 
+      - query_data:
+          query: "What is the capital of Turkey?"
+        response_data:
+          response: "Istambul, my sir."
+      - query_data:
+          query: "what is the capital of Germany?"
+        response_data:
+          response: "Berlin, my sir."
+    query_prompt_template:
+      template: |2-
+        Answer the following question: {{query}}
+      input_variables:
+        - "query"
+    response_prompt_template:
+      template: |2-
+        {{response}}
+      input_variables:
+        - response
+
+  chat_flow:
+    _target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+    name: "SimpleQA_Flow"
+    # ~~~ Input interface specification ~~~
+    input_interface_non_initialized:
+      - "question"
+
+    # ~~~ backend model parameters ~~
+    backend:
+      _target_: aiflows.backends.llm_lite.LiteLLMBackend
+      api_infos: ???
+      model_name:
+        openai: "gpt-3.5-turbo"
+        azure: "azure/gpt-4"
+
+      # ~~~ generation_parameters ~~
+      n: 1
+      max_tokens: 3000
+      temperature: 0.3
+
+      top_p: 0.2
+      frequency_penalty: 0
+      presence_penalty: 0
+
+    n_api_retries: 6
+    wait_time_between_retries: 20
+
+    # ~~~ Prompt specification ~~~
+    system_message_prompt_template:
+      _target_: aiflows.prompt_template.JinjaPrompt
+      template: |2-
+        You are a helpful chatbot that truthfully answers questions. Answer in a similar way to your previous replies.
+      input_variables: []
+      partial_variables: {}
+
+    init_human_message_prompt_template:
+      _target_: aiflows.prompt_template.JinjaPrompt
+      template: |2-
+        Answer the following question: {{question}}
+      input_variables: ["question"]
+      partial_variables: {}

@@ -272,7 +272,7 @@ if __name__ == "__main__":
     time.sleep(10)
 
     input_message = FlowMessage(
-        data= {"operation": "get_best_programs_per_island", "artifact": dummy_solution},
+        data= {"operation": "get_best_programs_per_island"},
         src_flow="Coflow team",
         dst_flow=evaluator_proxy_flow,
         is_input_msg=True
