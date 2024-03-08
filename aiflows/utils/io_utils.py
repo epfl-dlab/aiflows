@@ -54,8 +54,8 @@ def coflows_deserialize(encoded_data: bytes, use_pickle=False) -> Any:
         return None
     if use_pickle:
         return pickle.loads(encoded_data)
-    json_str = encoded_data.decode("utf-8")
     try:
+        json_str = encoded_data.decode("utf-8")
         return json.loads(json_str)
-    except json.JSONDecodeError:
-        return json_str
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return encoded_data

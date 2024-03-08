@@ -3,8 +3,6 @@ import sys
 import argparse
 from typing import List, Dict, Any
 import hydra
-import pickle
-import json
 
 import colink as CL
 from colink import CoLink
@@ -15,12 +13,11 @@ from aiflows.utils.general_helpers import (
 )
 from aiflows.utils.coflows_utils import push_to_flow, PUSH_ARGS_TRANSFER_PATH
 from aiflows.utils.serve_utils import (
-    COFLOWS_PATH,
-    INSTANCE_METADATA_PATH,
     start_colink_component,
+    get_instance_metadata
 )
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-from aiflows.utils.constants import DEFAULT_DISPATCH_POINT, FLOW_MODULES_BASE_PATH
+from aiflows.utils.constants import DEFAULT_DISPATCH_POINT, FLOW_MODULES_BASE_PATH, COFLOWS_PATH
 
 
 def parse_args():
@@ -125,9 +122,25 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     # metadata can be in engine queues datastructure
     # metadata can be given in public param by scheduler
-    instance_metadata = coflows_deserialize(
-        cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_id}")
-    )
+    instance_metadata = get_instance_metadata(cl, flow_id)
+
+    if instance_metadata is None:
+        print(f"Unknown flow instance {flow_id}.")
+
+        # send empty responses
+        for message_id in dispatch_task["message_ids"]:
+            input_msg = FlowMessage.deserialize(
+                cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
+            )
+            output_msg = FlowMessage(
+                data={},
+                src_flow=f"{cl.get_user_id()}:dispatch_worker",
+                dst_flow=input_msg.src_flow,
+                is_input_msg=False,
+            )
+            input_msg.reply_data["input_msg_id"] = message_id
+            dispatch_response(cl, output_msg, input_msg.reply_data)
+        return
 
     flow_type = instance_metadata["flow_type"]
     message_ids = dispatch_task["message_ids"]

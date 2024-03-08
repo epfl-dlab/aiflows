@@ -79,10 +79,3 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):
     }
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
     return push_msg_id
-
-
-def start_colink_server() -> CoLink:
-    InstantRegistry()
-    cl = InstantServer().get_colink().switch_to_generated_user()
-    cl.start_protocol_operator("coflows_scheduler", cl.get_user_id(), False)
-    return cl

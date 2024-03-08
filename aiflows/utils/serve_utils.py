@@ -13,69 +13,90 @@ from aiflows.utils.general_helpers import (
 from copy import deepcopy
 from aiflows.utils.io_utils import coflows_serialize, coflows_deserialize
 from aiflows.base_flows import AtomicFlow
+from aiflows.utils import colink_utils
 import hydra
 from aiflows.utils.constants import (
     COFLOWS_PATH,
     MOUNT_ARGS_TRANSFER_PATH,
     INSTANCE_METADATA_PATH,
-    INSTANTIATION_METHODS
+    INSTANTIATION_METHODS,
+    SERVE_MODES,
 )
+
+
+def is_flow_served(cl: CoLink, flow_type: str) -> bool:
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+
+    served = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:init"))
+    if served == 1:
+        return True
+    return False
 
 
 def serve_flow(
     cl: CoLink,
     flow_type: str,
-    serving_mode: str = "statefull",
+    serve_mode: str = "statefull",
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
 ) -> bool:
     """
-    Serves the specified flow type by creating necessary entries in CoLink storage.
-    After serving, users can create new instances of the served flow type via the mount operation.
+    Serves the flow config under the identifier flow_type.
+    After serving, users can get an instance of the served flow via the get_instance operation.
 
     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
     :rtype: bool
     """
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+
+    if is_flow_served(cl, flow_type):
+        print(
+            f"{flow_type} is already being served at {serve_entry_path}"
+        )
+        return False
+
+    if serve_mode not in SERVE_MODES:
+        print(
+            f"Invalid serve_mode '{serve_mode}'. Use one of {', '.join(SERVE_MODES)}"
+        )
+        return False
+
+    # TODO validate config
     target = default_config["_target_"]
     if target.split(".")[-1] in INSTANTIATION_METHODS:
         target = ".".join(target.split(".")[:-1])
-    
+
     flow_class = hydra.utils.get_class(target)
     default_config = flow_class.get_config(**deepcopy(default_config))
 
     if default_state is None and default_config is not None:
         default_state = default_config.get("init_state", None)
-    
-    ##First check if the flow is already being served
-    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-    serve_entry = cl.read_entry(f"{serve_entry_path}:init")
-    if serve_entry is not None:
-        print(
-            f"{flow_type} is already being served. Found serve entry at path {serve_entry_path}"
-        )
-        return False
 
+    # serve
     try:
-        cl.create_entry(
-            f"{serve_entry_path}:init", coflows_serialize(f"init {flow_type}")
+        cl.update_entry(
+            f"{serve_entry_path}:init", coflows_serialize(1)
+        )
+        cl.update_entry(
+            f"{serve_entry_path}:serve_mode", coflows_serialize(serve_mode)
         )
 
         if default_config is not None:
-            cl.create_entry(
+            cl.update_entry(
                 f"{serve_entry_path}:default_config",
                 coflows_serialize(default_config),
             )
 
-        # probably remove this default_state
+        # maybe remove default_state altogether
         if default_state is not None:
-            cl.create_entry(
+            cl.update_entry(
                 f"{serve_entry_path}:default_state",
                 coflows_serialize(default_state, use_pickle=True),
             )
 
         if default_dispatch_point is not None:
-            cl.create_entry(
+            cl.update_entry(
                 f"{serve_entry_path}:default_dispatch_point",
                 default_dispatch_point,
             )
@@ -87,6 +108,90 @@ def serve_flow(
     return True
 
 
+def delete_served_flow(cl: CoLink, flow_type: str):
+    """
+    Deletes all colink entries associated with given flow_type. This includes deleting all instances of this flow_type.
+    """
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+
+    try:
+        # delete associated instance metadata
+        mount_users_keys = cl.read_keys(
+            prefix=f"{cl.get_user_id()}::{serve_entry_path}:mounts", include_history=False
+        )
+        for storage_entry in mount_users_keys:
+            mount_keys = cl.read_keys(prefix=storage_entry.key_path.split("@")[0], include_history=False)
+            for mount_key_path in mount_keys:
+                instance_id = str(mount_key_path).split("::")[1].split("@")[0].split(":")[-1]
+                try:
+                    cl.delete_entry(f"{INSTANCE_METADATA_PATH}:{instance_id}")
+                    print(f"Deleted flow instance {instance_id}")
+                    # TODO delete mailbox in scheduler
+                except grpc.RpcError:
+                    print(f"WARNING: flow {instance_id} is mounted but it's metadata doesn't exist.")
+                    continue
+
+        colink_utils.delete_entries_on_path(cl, serve_entry_path)
+        print(f"Stopped serving at {serve_entry_path}")
+    except grpc.RpcError as e:
+        print(f"Received RPC exception: code={e.code()} message={e.details()}")
+
+
+def unserve_flow(cl: CoLink, flow_type: str):
+    """
+    Unserves flow - users will no longer be able to get instances of this flow_type. All live instances of this flow_type remain alive.
+    """
+    if not is_flow_served(cl, flow_type):
+        print(f"{flow_type} wasn't being served.")
+        return
+
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    try:
+        cl.update_entry(
+            f"{serve_entry_path}:init", coflows_serialize(0)
+        )
+    except grpc.RpcError as e:
+        print(f"Received RPC exception: code={e.code()} message={e.details()}")
+        return
+
+    print(f"{flow_type} has been unserved.")
+
+
+def get_instance_metadata(cl: CoLink, flow_id: str):
+    instance_metadata = coflows_deserialize(
+        cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_id}")
+    )
+
+    return instance_metadata
+
+
+def delete_flow_instance(cl: CoLink, flow_id: str):
+    """
+    Deletes all colink entries associated with flow instance.
+    """
+    instance_metadata = get_instance_metadata(cl, flow_id)
+    if instance_metadata is None:
+        print(f"Metadata for {flow_id} doesn't exist.")
+        return
+    flow_type = instance_metadata["flow_type"]
+    user_id = instance_metadata["user_id"]
+    client_id = "local" if user_id == cl.get_user_id() else user_id
+
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_id}"
+    metadata_path = f"{INSTANCE_METADATA_PATH}:{flow_id}"
+
+    colink_utils.delete_entries_on_path(cl, mount_path)
+    colink_utils.delete_entries_on_path(cl, metadata_path)
+    print(f"Deleted flow instance {flow_id}.")
+
+    # TODO delete mailbox in scheduler
+
+def recursive_delete_flow_instance(cl: CoLink, flow_id: str):
+    # this is "recursive unmount"
+    # TODO
+    ...
+
 def recursive_serve_flow(
     cl: CoLink,
     flow_type: str,
@@ -95,35 +200,19 @@ def recursive_serve_flow(
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
 ) -> bool:
-    ##### CODE SNIPPET FOR RECURSIVE SERVING ######
-    ## NOTE: This hasn't been tested a lot
 
-    # TODO: check if already served
+    # expand default config to full default_config
 
-    # if serving_mode == "stateless":
-    #     ...
-    # elif serving_mode == "singleton":
-    #     ...
-    # elif serving_mode == "statefull":
-    #     ...
-    # else:
-    #     print("WARNING: Serving mode unknown - flow wasn't served.")
-
-    #expand default config to full default_config
-
-
-    #ugly hack to get class but not sure how else to do if 
+    # ugly hack to get class but not sure how else to do if
     target = default_config["_target_"]
-    
-    
+
     if target.split(".")[-1] in INSTANTIATION_METHODS:
         target = ".".join(target.split(".")[:-1])
-    
+
     flow_class = hydra.utils.get_class(target)
     flow_full_config = flow_class.get_config(**deepcopy(default_config))
 
-
-    # if there's recursive serving, serve subflows first    
+    # if there's recursive serving, serve subflows first
     if "subflows_config" in flow_full_config:
         for subflow, subflow_config in flow_full_config["subflows_config"].items():
             # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
@@ -142,16 +231,15 @@ def recursive_serve_flow(
                 # I would almost fail here if the error here
                 # whereas if the flow is already serving that's great, nothing to be done
                 # Which is why I called the output serving succesful
-                
+
                 subflow_target = subflow_config["_target_"]
-                
-                
+
                 if subflow_target.split(".")[-1] in INSTANTIATION_METHODS:
                     subflow_target = ".".join(subflow_target.split(".")[:-1])
-                
+
                 subflow_class = hydra.utils.get_class(subflow_target)
-                
-                #Mauro suggestion: serve the default configuration all the time for subflows (mount overrieds stuff)
+
+                # Mauro suggestion: serve the default configuration all the time for subflows (mount overrieds stuff)
                 subflow_cfg = subflow_class.get_config()
                 subflow_cfg["_target_"] = subflow_config["_target_"]
                 serving_succesful = recursive_serve_flow(
@@ -162,22 +250,26 @@ def recursive_serve_flow(
                     default_state=subflow_default_state,
                     default_dispatch_point=default_dispatch_point,
                 )
-                
+
                 # Change the subflow_config of flow to proxy
-                #Quite ugly, but what am I supposed to do?
-                
+                # Quite ugly, but what am I supposed to do?
+
                 if subflow not in default_config["subflows_config"]:
                     default_config["subflows_config"][subflow] = {}
-                    
+
                 default_config["subflows_config"][subflow][
                     "_target_"
                 ] = f"aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
                 default_config["subflows_config"][subflow]["user_id"] = "local"
                 default_config["subflows_config"][subflow]["flow_type"] = subflow_type
                 if "name" not in default_config["subflows_config"][subflow]:
-                    default_config["subflows_config"][subflow]["name"] = subflow_cfg["name"]
+                    default_config["subflows_config"][subflow]["name"] = subflow_cfg[
+                        "name"
+                    ]
                 if "description" not in subflow_config:
-                    default_config["subflows_config"][subflow]["description"] = subflow_cfg["description"]
+                    default_config["subflows_config"][subflow][
+                        "description"
+                    ] = subflow_cfg["description"]
 
     serving_succesful = serve_flow(
         cl=cl,
@@ -205,11 +297,11 @@ def mount(
     :rtype: aiflows.base_flows.AtomicFlow
     """
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-    if cl.read_entry(f"{serve_entry_path}:init") is None:
+    if not is_flow_served(cl, flow_type):
         print(
-            f"{flow_type} is not being served. No entry found at path {serve_entry_path}:init"
+            f"Can't create instance - {flow_type} is not being served."
         )
-        return False
+        return None
 
     # if served flow is singleton, return existing flow_ref
 
@@ -292,11 +384,11 @@ def recursive_mount(
     dispatch_point_override: str = None,
 ) -> AtomicFlow:
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-    if cl.read_entry(f"{serve_entry_path}:init") is None:
+    if not is_flow_served(cl, flow_type):
         print(
-            f"{flow_type} is not being served. No entry found at path {serve_entry_path}:init"
+            f"Can't create instance - {flow_type} is not being served."
         )
-        return False
+        return None
 
     config = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:default_config"))
 
@@ -319,19 +411,23 @@ def recursive_mount(
             user_id = subflow_config["user_id"]
             subflow_type = subflow_config["flow_type"]
 
-            #TODO: Check if you this deprication is approved
+            # TODO: Check if you this deprication is approved
             # subflow_config_overrides = None
             # if "config_overrides" in subflow_config:
             #     subflow_config_overrides = subflow_config["config_overrides"]
 
-            #And replace with this
+            # And replace with this
             subflow_config_overrides = deepcopy(subflow_config)
-            subflow_config_overrides.pop("_target_",None)
-            
+            subflow_config_overrides.pop("_target_", None)
+
             if user_id == "local":
                 proxy = recursive_mount(
                     cl, user_id, subflow_type, subflow_config_overrides
                 )
+                if proxy is None:
+                    print("WARNING: can't create subflow. Some instances might have been created, while others didn't.")
+                    # TODO delete all other created instances
+                    return None
 
                 if config_overrides is None:
                     config_overrides = {}
