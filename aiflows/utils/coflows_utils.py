@@ -79,3 +79,39 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):
     }
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
     return push_msg_id
+
+
+def dispatch_response(cl, output_message, reply_data):
+    if "mode" not in reply_data:
+        print("WARNING: dispatch response mode unknown.")
+        return
+
+    reply_mode = reply_data["mode"]
+
+    if reply_mode == "no_reply":
+        print("no_reply mode")
+        return
+
+    if reply_mode == "push":
+        push_to_flow(
+            cl=cl,
+            target_user_id=reply_data["user_id"],
+            target_flow_ref=reply_data["flow_ref"],
+            message=output_message,
+        )
+    elif reply_mode == "storage":
+        user_id = reply_data["user_id"]
+        input_msg_id = reply_data["input_msg_id"]
+        colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{input_msg_id}:response"
+        if user_id == cl.get_user_id():
+            # local
+            cl.create_entry(colink_storage_key, output_message.serialize())
+        else:
+            cl.remote_storage_create(
+                [user_id],
+                colink_storage_key,
+                output_message.serialize(),
+                False,
+            )
+    else:
+        print("WARNING: dispatch response mode unknown.")

@@ -1,6 +1,7 @@
 import copy
 from abc import ABC
-from typing import Dict, Any, List
+from typing import Dict, Any, List,Union
+from aiflows.messages import FlowMessage
 
 import hydra
 
@@ -70,7 +71,7 @@ class KeyInterface(ABC):
         if keys_to_delete:
             self.transformations.append(KeyDelete(keys_to_delete))
 
-    def __call__(self, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    def __call__(self, data: Union[FlowMessage, Dict[str,Any]], **kwargs) -> Union[FlowMessage, Dict[str,Any]]:
         r"""Applies the all transformations to the given data dictionary.
 
         :param goal: The goal of the flow
@@ -79,12 +80,18 @@ class KeyInterface(ABC):
         :type src_flow: str
         :param dst_flow: The destination flow
         :type dst_flow: str
-        :param data_dict: The data dictionary to apply the transformations to
+        :param data: The data dictionary or message to apply the transformations to
         :type data_dict: Dict[str, Any]
         :param \**kwargs: Arbitrary keyword arguments (arguments that are passed to the transformations)
-        :return: The transformed data dictionary
-        :rtype: Dict[str, Any]
+        :return: The transformed data dictionary or message
+        :rtype:  Union[FlowMessage, Dict[str,Any]
         """
+        
+        if isinstance(data, FlowMessage):
+            data_dict = data.data
+        else:
+            data_dict = data
+        
         data_dict = copy.deepcopy(data_dict)
         # print(f"src_flow: {src_flow.name}, dst_flow: {dst_flow.name}")
         for transformation in self.transformations:
@@ -92,4 +99,10 @@ class KeyInterface(ABC):
             data_dict = transformation(data_dict=data_dict, **kwargs)
             # print(f"after transformation: {transformation}, data_dict: {data_dict}")
 
+        if isinstance(data, FlowMessage):
+            data.data = data_dict
+            return data
+        
         return data_dict
+        
+

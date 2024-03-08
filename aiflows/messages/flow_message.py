@@ -14,14 +14,12 @@ class FlowMessage(Message):
     def __init__(
         self,
         data: Dict[str, Any],
-        src_flow: str,
-        dst_flow: str,
-        is_input_msg: bool,
+        src_flow: str = "unknown",
+        dst_flow: str = "unknown",
         reply_data: Optional[Dict[str, Any]] = {"mode": "no_reply"},
         created_by: Optional[str] = None,
         private_keys: Optional[List[str]] = None,
         input_message_id: Optional[str] = None,
-        history: Optional[Union["FlowHistory",list]] = None,
     ):
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data, created_by=created_by, private_keys=private_keys)
@@ -29,13 +27,11 @@ class FlowMessage(Message):
         self.src_flow = src_flow
         self.dst_flow = dst_flow
         self.input_message_id = self.message_id if input_message_id is None else input_message_id
-        self.history = history if isinstance(history, list) or history is None else history.to_list() 
-        self.is_input_msg = is_input_msg
         
     def to_string(self):
         src_flow = self.src_flow
         dst_flow = self.dst_flow
-        display_msg_name = "InputMessage" if self.is_input_msg else "OutputMessage"
+        display_msg_name = "FlowMessage"
         message = (
             f"\n{colorama.Fore.GREEN} ~~~ {display_msg_name}: `{src_flow}` --> `{dst_flow}` ~~~\n"
             f"{colorama.Fore.WHITE}{self.__str__()}{colorama.Style.RESET_ALL}"
