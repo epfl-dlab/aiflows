@@ -36,10 +36,10 @@ def is_flow_served(cl: CoLink, flow_type: str) -> bool:
 def serve_flow(
     cl: CoLink,
     flow_type: str,
-    serve_mode: str = "statefull",
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
+    serve_mode: str = "statefull",
 ) -> bool:
     """
     Serves the flow config under the identifier flow_type.

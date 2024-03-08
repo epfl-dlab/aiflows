@@ -675,6 +675,5 @@ class Flow(ABC):
     def type(cls):
         raise NotImplementedError
 
-
-    
-    
+    def get_instance_id(self):
+        return self.flow_config["flow_ref"]
