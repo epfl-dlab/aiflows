@@ -120,9 +120,7 @@ def dispatch_response(cl, output_message, reply_data):
 
 def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Participant]):
     dispatch_task = coflows_deserialize(param)
-    print(
-        f"\nDispatch worker Task:{json.dumps(dispatch_task, indent=4)}",
-    )
+    print("\n~~~ Dispatch task ~~~")
     flow_id = dispatch_task["flow_id"]
 
     # metadata can be in engine queues datastructure
@@ -132,7 +130,11 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     )
 
     flow_type = instance_metadata["flow_type"]
-    print(f"flow_type: {flow_type}\nflow_id:{flow_id}\n")
+    message_ids = dispatch_task["message_ids"]
+
+    print(f"flow_type: {flow_type}")
+    print(f"flow_id: {flow_id}")
+    print(f"message_ids: {message_ids}\n")
 
     user_id = instance_metadata["user_id"]
     client_id = "local" if user_id == cl.get_user_id() else user_id
