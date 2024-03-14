@@ -60,7 +60,7 @@ class ReverseNumberSequentialFlow(CompositeFlow):
             
             #TODO: Call the second flow and requests a reply to be sent back to the input queue
             self.subflows["second_reverse_flow"].get_reply(
-                input_message,
+                message,
                 self.get_instance_id()
             )
         
