@@ -5,7 +5,6 @@ import hydra.utils
 from aiflows import logging
 from aiflows.datasets import OutputsDataset
 from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
-from aiflows.flow_launchers import FlowLauncher
 
 CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache

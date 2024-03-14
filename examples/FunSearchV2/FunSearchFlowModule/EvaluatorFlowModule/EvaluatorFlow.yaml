@@ -1,0 +1,18 @@
+_target_: flow_modules.aiflows.FunSearchFlowModule.EvaluatorFlow.instantiate_from_default_config
+name: EvaluatorFlow
+description: A flow that evaluates code on tests
+
+input_interface:
+  - "artifact"
+output_interface:
+  - "scores_per_test"
+
+py_file: ???
+function_to_run_name: ???
+test_inputs: 
+  test_1: null
+  test_2: null
+timeout_seconds: 10
+run_error_score: -100
+use_test_input_as_key: false
+    

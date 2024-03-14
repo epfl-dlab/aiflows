@@ -1,79 +1,85 @@
+"""A simple script to run a Flow that can be used for development and debugging."""
+
 import os
 
 import hydra
 
 import aiflows
-from aiflows.flow_launchers import FlowLauncher
 from aiflows.backends.api_info import ApiInfo
 from aiflows.utils.general_helpers import read_yaml_file, quick_load_api_keys
 
 from aiflows import logging
 from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
+
 from aiflows.utils import serve_utils
 from aiflows.workers import run_dispatch_worker_thread
 from aiflows.messages import FlowMessage
 from aiflows.interfaces import KeyInterface
+from aiflows.utils.colink_utils import start_colink_server
+from aiflows.workers import run_dispatch_worker_thread
+
 CACHING_PARAMETERS.do_caching = False  # Set to True in order to disable caching
 # clear_cache() # Uncomment this line to clear the cache
 
-logging.set_verbosity_debug()  # Uncomment this line to see verbose logs
+logging.set_verbosity_debug()
 
-from aiflows import flow_verse
 
 dependencies = [
-    {"url": "aiflows/VisionFlowModule", "revision": "main"},
+    {"url": "aiflows/VisionFlowModule", "revision": "coflows"}
 ]
+
+from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
-
 if __name__ == "__main__":
-    # ~~~ Set the API information ~~~
+    
+    #1. ~~~~~ Set up a colink server ~~~~
+    FLOW_MODULES_PATH = "./"
+    
+    cl = start_colink_server()
+
+
+    #2. ~~~~~Load flow config~~~~~~
+    root_dir = "."
+    cfg_path = os.path.join(root_dir, "VisionQA.yaml")
+    cfg = read_yaml_file(cfg_path)
+    
+    #2.1 ~~~ Set the API information ~~~
     # OpenAI backend
-
-    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
-
+    api_information = [ApiInfo(backend_used="openai",
+                              api_key = os.getenv("OPENAI_API_KEY"))]
     # # Azure backend
     # api_information = ApiInfo(backend_used = "azure",
     #                           api_base = os.getenv("AZURE_API_BASE"),
     #                           api_key = os.getenv("AZURE_OPENAI_KEY"),
     #                           api_version =  os.getenv("AZURE_API_VERSION") )
     
-    FLOW_MODULES_PATH = "./"
     
-    jwt = os.getenv("COLINK_JWT")
-    addr = os.getenv("LOCAL_COLINK_ADDRESS")
+    quick_load_api_keys(cfg, api_information, key="api_infos")
+
     
-    cl = serve_utils.start_colink_component(
-        "Reverse Number Demo",
-        {"jwt": jwt, "addr": addr}
-    )
-
-    root_dir = "."
-    cfg_path = os.path.join(root_dir, "visionQA.yaml")
-    cfg = read_yaml_file(cfg_path)
-
+    #3. ~~~~ Serve The Flow ~~~~
     serve_utils.recursive_serve_flow(
         cl = cl,
-        flow_type="simpleQA_served",
+        flow_type="VisionQA",
         default_config=cfg,
         default_state=None,
-        default_dispatch_point="coflows_dispatch",
+        default_dispatch_point="coflows_dispatch"
     )
     
-    #in case you haven't started the dispatch worker thread, uncomment
+    #4. ~~~~~Start A Worker Thread~~~~~
     run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
-    
-    # put api information in config (done like this for privacy reasons)
-    quick_load_api_keys(cfg, api_information, key="api_infos")
-    
+
+    #5. ~~~~~Mount the flow and get its proxy~~~~~~
     proxy_flow = serve_utils.recursive_mount(
         cl=cl,
         client_id="local",
-        flow_type="simpleQA_served",
-        config_overrides=cfg,
+        flow_type="VisionQA",
+        config_overrides=None,
         initial_state=None,
         dispatch_point_override=None,
     )   
     
+    #6. ~~~ Get the data ~~~
     url_image = {
         "type": "url",
         "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg",
@@ -86,8 +92,6 @@ if __name__ == "__main__":
         "start_frame": 0,
         "end_frame": None,
     }
-
-    # ~~~ Get the data ~~~
     # data = {"id": 0, "question": "What are in these images? Is there any difference between them?",  "data": {"images": [url_image,local_image]}}  # This can be a list of samples
     data = {
         "id": 0,
@@ -98,14 +102,38 @@ if __name__ == "__main__":
     #         "question": "These are frames from a video that I want to upload. Generate a compelling description that I can upload along with the video.",
     #         "data": {"video": video}}  # This can be a list of samples
 
-    # ~~~ Run inference ~~~
+   
+    
+    #option1: use the FlowMessage class
     input_message = FlowMessage(
-        data= data,
-        src_flow="Coflows team",
-        dst_flow=proxy_flow,
-        is_input_msg=True
+        data=data,
     )
+
+    #option2: use the proxy_flow
+    #input_message = proxy_flow.package_input_message(data = data)
     
-    future = proxy_flow.ask(input_message)
+    #7. ~~~ Run inference ~~~
+    future = proxy_flow.get_reply_future(input_message)
     
-    print(future.get_data())
+    #uncomment this line if you would like to get the full message back
+    #reply_message = future.get_message()
+    reply_data = future.get_data()
+    
+    # ~~~ Print the output ~~~
+    print("~~~~~~Reply~~~~~~")
+    print(reply_data)
+    
+    
+    #8. ~~~~ (Optional) apply output interface on reply ~~~~
+    # output_interface = KeyInterface(
+    #     keys_to_rename={"api_output": "answer"},
+    # )
+    # print("Output: ", output_interface(reply_data))
+    
+    
+    #9. ~~~~~Optional: Unserve Flow~~~~~~
+    # serve_utils.delete_served_flow(cl, "FlowModule")
+
+
+
+

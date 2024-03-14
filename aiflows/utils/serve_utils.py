@@ -195,7 +195,7 @@ def recursive_delete_flow_instance(cl: CoLink, flow_id: str):
 def recursive_serve_flow(
     cl: CoLink,
     flow_type: str,
-    serving_mode="statefull",
+    serve_mode="statefull",
     default_config: Dict[str, Any] = None,
     default_state: Dict[str, Any] = None,
     default_dispatch_point: str = None,
@@ -274,7 +274,7 @@ def recursive_serve_flow(
     serving_succesful = serve_flow(
         cl=cl,
         flow_type=flow_type,
-        serving_mode=serving_mode,
+        serve_mode=serve_mode,
         default_config=default_config,
         default_state=default_state,
         default_dispatch_point=default_dispatch_point,

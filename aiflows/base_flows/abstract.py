@@ -92,7 +92,6 @@ class Flow(ABC):
     @classmethod
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
         """
-        This method is called by the FlowLauncher to build the flow.
 
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
@@ -375,7 +374,7 @@ class Flow(ABC):
                 raise KeyError(f"Key {key} not found in the flow state or the class namespace.")
         return data
 
-    def _package_input_message(self,
+    def package_input_message(self,
                                data: Dict[str, Any],
                                dst_flow: str = "unknown",
                                reply_data: Dict[str, Any] = {"mode": "no_reply"}):
@@ -405,8 +404,8 @@ class Flow(ABC):
         )
         return msg
 
-    def _package_output_message(
-        self, input_message: FlowMessage, response: Dict[str, Any]
+    def package_output_message(
+        self, input_message: FlowMessage, response: Union[Dict[str, Any], FlowMessage]
     ):
         """Packages the given response into an FlowMessage.
 
@@ -419,13 +418,20 @@ class Flow(ABC):
         :return: The packaged output message
         :rtype: FlowMessage
         """
-        output_data = copy.deepcopy(response)
+        
+        
+        if isinstance(response, FlowMessage):
+            output_data =  copy.deepcopy(response.data)
+        
+        else:
+            output_data = copy.deepcopy(response)
 
         return FlowMessage(
             created_by=self.flow_config["name"],
             src_flow=self.flow_config["name"],
             dst_flow=input_message.src_flow,
             data=output_data,
+            reply_data=input_message.reply_data,
             input_message_id=input_message.message_id,
         )
 
@@ -436,6 +442,7 @@ class Flow(ABC):
         :type input_message: FlowMessage
         """
         raise NotImplementedError
+    
 
     def __get_from_cache(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         """Gets the response from the cache if it exists. If it does not exist, runs the flow and caches the response.
@@ -512,106 +519,6 @@ class Flow(ABC):
         #else:
         self.run(input_message)  
         
- 
-    def set_colink(self, cl, recursive=True):
-        self.cl = cl
-        if recursive and hasattr(self, "subflows"):
-            for _, flow in self.subflows.items():
-                flow.set_colink(cl)
-                
-    @try_except_decorator
-    def reply(self,message: FlowMessage, to: FlowMessage):
-        """Replies to the given message with the given response.
-
-        :param message: The message we're replying with
-        :type message: FlowMessage
-        :param to: The message we're replying to
-        :type to: FlowMessage
-        """
-        self._log_message(message)
-        
-        msg = FlowMessage(
-           data = message.data,
-           src_flow=self.flow_config["name"],
-           dst_flow=to.src_flow,
-           reply_data=message.reply_data, 
-           created_by=self.flow_config["name"],
-           input_message_id=to.message_id,
-        )
-    
-        dispatch_response(self.cl, msg, to.reply_data)
-
-        self._post_call_hook()
-
-    @try_except_decorator
-    def tell(self, input_message: FlowMessage):
-        self._log_message(input_message)
-         
-        message = FlowMessage(
-            data=input_message.data,
-            src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
-            reply_data={"mode": "no_reply"},
-            private_keys=input_message.private_keys,
-            created_by=self.flow_config["name"],
-            input_message_id=input_message.message_id,
-        ) 
-        push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
-        )
-        
-        self._post_call_hook()
-
-    @try_except_decorator
-    def ask_pipe(self, input_message: FlowMessage, parent_flow_ref: str):
-        
-        self._log_message(input_message)
-        
-        message = FlowMessage(
-            data=input_message.data,
-            src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
-            reply_data={
-                "mode": "push",
-                "user_id": self.cl.get_user_id(),
-                "flow_ref": parent_flow_ref,
-            },
-            private_keys=input_message.private_keys,
-            created_by=self.flow_config["name"],
-            input_message_id=input_message.message_id,
-        )
-        
-        push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
-        )
-        
-        self._post_call_hook()
-        
-    @try_except_decorator
-    def ask(self, input_message: FlowMessage) -> FlowFuture:
-        
-        self._log_message(input_message)
-        message = FlowMessage(
-            data=input_message.data,
-            src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
-            reply_data={
-                "mode": "storage",
-                "user_id": self.cl.get_user_id(),
-            },
-            private_keys=input_message.private_keys,
-            created_by=self.flow_config["name"],
-            input_message_id=input_message.message_id,
-        )
-        
-        msg_id = push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
-        )
-        
-        self._post_call_hook()
-
-        return FlowFuture(self.cl, msg_id)
-
     @try_except_decorator
     def __call__(self, input_message: FlowMessage):
         """Calls the flow on the given input message.
@@ -629,14 +536,95 @@ class Flow(ABC):
 
         #TODO: DEpricate
         # # ~~~ Package output message ~~~
-        # output_message = self._package_output_message(
+        # output_message = self.package_output_message(
         #     input_message=input_message,
         #     response=response,
         # )
 
         self._post_call_hook()
 
+        
+ 
+    def set_colink(self, cl, recursive=True):
+        self.cl = cl
+        if recursive and hasattr(self, "subflows"):
+            for _, flow in self.subflows.items():
+                flow.set_colink(cl)
+    
+                
+    @try_except_decorator
+    def send_message(self, message: FlowMessage, is_reply: bool = False):
+        
+        self._log_message(message)
+     
+        if is_reply:
+            dispatch_response(self.cl, message, message.reply_data)
+            
+        else:
+            push_to_flow(
+                self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            )
+        
+        self._post_call_hook()
+        
+    @try_except_decorator
+    def get_reply(self,message , parent_instance_id):
+        
+        self._log_message(message)
+        
+        reply_data= \
+            {
+                "mode": "push",
+                "user_id": self.cl.get_user_id(),
+                "flow_ref": parent_instance_id,
+            }
+     
+        message = FlowMessage(
+            data=message.data,
+            src_flow=self.flow_config["name"],
+            dst_flow=self.flow_config["flow_ref"],
+            reply_data=reply_data,
+            private_keys=message.private_keys,
+            created_by=self.flow_config["name"],
+            input_message_id=message.message_id,
+        )
+        
+        msg_id = push_to_flow(
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+        )
+        
+        self._post_call_hook()
 
+        return FlowFuture(self.cl, msg_id)
+        
+    @try_except_decorator
+    def get_reply_future(self, input_message):
+        self._log_message(input_message)
+        
+        reply_data= \
+            {
+                "mode": "storage",
+                "user_id": self.cl.get_user_id(),
+            }
+        
+        message = FlowMessage(
+            data=input_message.data,
+            src_flow=self.flow_config["name"],
+            dst_flow=self.flow_config["flow_ref"],
+            reply_data= reply_data,
+            private_keys=input_message.private_keys,
+            created_by=self.flow_config["name"],
+            input_message_id=input_message.message_id,
+        )
+        
+        msg_id = push_to_flow(
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+        )
+        
+        self._post_call_hook()
+
+        return FlowFuture(self.cl, msg_id)
+    
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
         if self.flow_config["clear_flow_namespace_on_run_end"]:
