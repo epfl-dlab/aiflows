@@ -562,7 +562,7 @@ class Flow(ABC):
             
         else:
             push_to_flow(
-                self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+                self.cl, self.flow_config["user_id"], self.get_instance_id(), message
             )
         
         self._post_call_hook()
@@ -582,7 +582,7 @@ class Flow(ABC):
         message = FlowMessage(
             data=message.data,
             src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
+            dst_flow=self.get_instance_id(),
             reply_data=reply_data,
             private_keys=message.private_keys,
             created_by=self.flow_config["name"],
@@ -590,7 +590,7 @@ class Flow(ABC):
         )
         
         msg_id = push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            self.cl, self.flow_config["user_id"], self.get_instance_id(), message
         )
         
         self._post_call_hook()
@@ -610,7 +610,7 @@ class Flow(ABC):
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
+            dst_flow=self.get_instance_id(),
             reply_data= reply_data,
             private_keys=input_message.private_keys,
             created_by=self.flow_config["name"],
@@ -618,7 +618,7 @@ class Flow(ABC):
         )
         
         msg_id = push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            self.cl, self.flow_config["user_id"], self.get_instance_id(), message
         )
         
         self._post_call_hook()

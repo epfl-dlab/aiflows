@@ -47,9 +47,7 @@ class ReverseNumberAtomicFlow(AtomicFlow):
             reply,
             is_reply=True,
         )
-        
-        return response
-
+    
 
 if __name__ == "__main__":
     #1. ~~~~~ Set up a colink server ~~~~
