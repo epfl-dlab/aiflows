@@ -28,10 +28,10 @@ from aiflows.utils.constants import (
 
 
 class FlowInstanceException(Exception):
-    def __init__(self, flow_endpoint, user_id, message="Error"):
+    def __init__(self, flow_endpoint, user_id, message=""):
         self.flow_endpoint = (flow_endpoint,)
         self.user_id = user_id
-        self.message = f"Failed to get flow instance at {flow_endpoint} served by user {user_id}.\nMessage:{message}"
+        self.message = f"Failed to get flow instance at {flow_endpoint} served by user {user_id}.\nMessage: {message}"
         super().__init__(self.message)
 
 
@@ -47,7 +47,6 @@ class FlowMountRequest:
 
 def is_flow_served(cl: CoLink, flow_type: str) -> bool:
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-
     served = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:init"))
     if served == 1:
         return True
@@ -427,18 +426,23 @@ def _get_local_flow_instance(
             prefix=f"{cl.get_user_id()}::{serve_entry_path}:mounts",
             include_history=False,
         )
-        if len(client_keys) > 0:
-            client_id_full_path = str(client_keys[0].key_path).split("@")[0]
+        for client_key in client_keys:
+            client_id_full_path = str(client_key.key_path).split("@")[0]
+            client_id = str(client_key.key_path).split("@")[0].split(":")[-1]
             instance_keys = cl.read_keys(
                 prefix=client_id_full_path,
                 include_history=False,
             )
-            if len(instance_keys) > 0:
-                instance_id = (
-                    str(instance_keys[0].key_path).split("@")[0].split(":")[-1]
+            for instance_key in instance_keys:
+                instance_id = str(instance_key.key_path).split("@")[0].split(":")[-1]
+                instance_init = coflows_deserialize(
+                    cl.read_entry(
+                        f"{serve_entry_path}:mounts:{client_id}:{instance_id}:init"
+                    )
                 )
-                print("Fetched singleton", instance_id)
-                return instance_id
+                if instance_init == 1:
+                    print("Fetched singleton", instance_id)
+                    return instance_id
 
     # recursively create new instance
     flow_class_name = coflows_deserialize(
@@ -475,7 +479,7 @@ def _get_local_flow_instance(
             ] = "aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
             config["subflows_config"][subflow_key]["flow_id"] = flow_id
 
-    print("Creating new flow instance with config:\n", json.dumps(config, indent=4))
+    # print("Creating new flow instance with config:\n", json.dumps(config, indent=4))
     flow_id = mount(
         cl,
         client_id,
