@@ -11,5 +11,11 @@ class ReverseNumberAtomicFlow(AtomicFlow):
         input_number = input_message.data["number"]
         output_number = int(str(input_number)[::-1])
         response_data = {"output_number": output_number}
-        response = self._package_output_message(input_message, response_data)
-        self.reply(response, input_message)
+        reply = self.package_output_message(
+            input_message=input_message,
+            response=response_data,
+        )
+        self.send_message(
+            reply,
+            is_reply=True,
+        )

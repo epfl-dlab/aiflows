@@ -33,7 +33,9 @@ dependencies = [
     "jinja2==3.1.2",
     "mock==5.0.2",
     "rich==12.6.0",
-    "litellm==1.0.0"
+    "litellm==1.0.0",
+    "colink==0.3.5",
+    "termcolor==2.4.0",
 ]
 
 [project.urls]

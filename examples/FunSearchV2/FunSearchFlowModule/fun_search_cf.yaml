@@ -1,0 +1,29 @@
+name: FunSearchFlow
+description: "A flow implementing FunSearch Asynchronous Search"
+
+### Subflows specification
+subflows_config:
+  SamplerFlow:
+    _target_: flow_modules.SamplerFlowModule.SamplerFlow.instantiate_from_default_config
+    enable_cache: false
+
+
+  EvaluatorFlow:
+    _target_: flow_modules.EvaluatorFlowModule.EvaluatorFlow.instantiate_from_default_config
+    run_error_score: ???
+    py_file: ???
+    function_to_run_name: ???
+    test_inputs: ???
+    timeout_seconds: 10
+    use_test_input_as_key: ???
+    enable_cache: false
+
+  ProgramDBFlow:
+    _target_: flow_modules.ProgramDBFlowModule.ProgramDBFlow.instantiate_from_default_config
+    enable_cache: false
+    evaluate_function: ???
+    evaluate_file_full_content: ???
+    artifact_to_evolve_name: solve_function
+    num_islands: 3
+    template:
+      preface: ""

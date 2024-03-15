@@ -1,0 +1,33 @@
+name: FunSearchFlow
+description: "A flow implementing FunSearch Asynchronous Search"
+_target_: flow_modules.aiflows.FunSearchFlowModule.FunSearch.instantiate_from_default_config
+
+### Subflows specification
+subflows_config:
+  SamplerFlow:
+    enable_cache: false
+    _target_: flow_modules.aiflows.FunSearchFlowModule.SamplerFlow.instantiate_from_default_config
+    name: "Sampler Flow"
+    description: "A flow that queries an LLM model to generate prompts"
+    subflows_config:
+      Sampler:
+        backend:
+          api_infos: ???
+        system_message_prompt_template:
+          partial_variables: ???
+
+      ProgramDB:
+        flow_ref: ???
+  
+
+  EvaluatorFlow:
+    enable_cache: false
+    _target_: flow_modules.aiflows.FunSearchFlowModule.EvaluatorFlow.instantiate_from_default_config
+    name: "A flow that evaluates code on tests"
+    description: "A flow that evaluates code on tests"
+
+  ProgramDBFlow:
+    enable_cache: false
+    _target_: flow_modules.aiflows.FunSearchFlowModule.ProgramDBFlow.instantiate_from_default_config
+    name: "ProgramDB"
+    description: "A flow that registers samples and evaluations in a database"
