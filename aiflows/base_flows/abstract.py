@@ -550,31 +550,31 @@ class Flow(ABC):
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
+            dst_flow=self.flow_config["flow_id"],
             reply_data={"mode": "no_reply"},
             private_keys=input_message.private_keys,
             created_by=self.flow_config["name"],
             input_message_id=input_message.message_id,
         ) 
         push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_id"], message
         )
         
         self._post_call_hook()
 
     @try_except_decorator
-    def ask_pipe(self, input_message: FlowMessage, parent_flow_ref: str):
+    def ask_pipe(self, input_message: FlowMessage, parent_flow_id: str):
         
         self._log_message(input_message)
         
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
+            dst_flow=self.flow_config["flow_id"],
             reply_data={
                 "mode": "push",
                 "user_id": self.cl.get_user_id(),
-                "flow_ref": parent_flow_ref,
+                "flow_id": parent_flow_id,
             },
             private_keys=input_message.private_keys,
             created_by=self.flow_config["name"],
@@ -582,7 +582,7 @@ class Flow(ABC):
         )
         
         push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_id"], message
         )
         
         self._post_call_hook()
@@ -594,7 +594,7 @@ class Flow(ABC):
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
-            dst_flow=self.flow_config["flow_ref"],
+            dst_flow=self.flow_config["flow_id"],
             reply_data={
                 "mode": "storage",
                 "user_id": self.cl.get_user_id(),
@@ -605,7 +605,7 @@ class Flow(ABC):
         )
         
         msg_id = push_to_flow(
-            self.cl, self.flow_config["user_id"], self.flow_config["flow_ref"], message
+            self.cl, self.flow_config["user_id"], self.flow_config["flow_id"], message
         )
         
         self._post_call_hook()
@@ -669,4 +669,4 @@ class Flow(ABC):
         raise NotImplementedError
 
     def get_instance_id(self):
-        return self.flow_config["flow_ref"]
+        return self.flow_config["flow_id"]

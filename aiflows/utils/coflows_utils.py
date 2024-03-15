@@ -16,9 +16,8 @@ class FlowFuture:
     def __init__(self, cl, msg_id):
         self.cl = cl
         self.colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{msg_id}:response"
-        self.output_interface = lambda data_dict,**kwargs: data_dict
-        
-        
+        self.output_interface = lambda data_dict, **kwargs: data_dict
+
     def try_get_message(self):
         """
         Non-blocking read, returns None if there is no response yet.
@@ -42,12 +41,12 @@ class FlowFuture:
     def get_data(self):
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
         return self.output_interface(message.data)
-    
+
     def set_output_interface(self, ouput_interface: Callable):
         self.output_interface = ouput_interface
 
 
-def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):
+def push_to_flow(cl, target_user_id, target_flow_id, message: Message):
     if target_user_id == "local" or target_user_id == cl.get_user_id():
         participants = [
             CL.Participant(
@@ -74,7 +73,7 @@ def push_to_flow(cl, target_user_id, target_flow_ref, message: Message):
     )
 
     push_param = {
-        "flow_id": target_flow_ref,
+        "flow_id": target_flow_id,  # NOTE scheduler reads this
         "message_id": str(push_msg_id),
     }
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
@@ -96,7 +95,7 @@ def dispatch_response(cl, output_message, reply_data):
         push_to_flow(
             cl=cl,
             target_user_id=reply_data["user_id"],
-            target_flow_ref=reply_data["flow_ref"],
+            target_flow_id=reply_data["flow_id"],
             message=output_message,
         )
     elif reply_mode == "storage":

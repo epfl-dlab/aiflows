@@ -3,6 +3,7 @@ import sys
 import argparse
 from typing import List, Dict, Any
 import hydra
+import json
 
 import colink as CL
 from colink import CoLink
@@ -11,13 +12,21 @@ from aiflows.messages import FlowMessage
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
-from aiflows.utils.coflows_utils import push_to_flow, PUSH_ARGS_TRANSFER_PATH,dispatch_response
+from aiflows.utils.coflows_utils import (
+    push_to_flow,
+    PUSH_ARGS_TRANSFER_PATH,
+    dispatch_response,
+)
 from aiflows.utils.serve_utils import (
     start_colink_component,
-    get_instance_metadata
+    _get_local_flow_instance_metadata,
 )
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-from aiflows.utils.constants import DEFAULT_DISPATCH_POINT, FLOW_MODULES_BASE_PATH, COFLOWS_PATH
+from aiflows.utils.constants import (
+    DEFAULT_DISPATCH_POINT,
+    FLOW_MODULES_BASE_PATH,
+    COFLOWS_PATH,
+)
 
 
 def parse_args():
@@ -68,14 +77,15 @@ def create_flow(
     config_overrides: Dict[str, Any] = None,
     state: Dict[str, Any] = None,
 ):
-    curr_dir = os.getcwd()
-    os.chdir(sys.path[-1])
+    # curr_dir = os.getcwd()
+    # os.chdir(sys.path[-1])
     if config_overrides is not None:
         config = recursive_dictionary_update(config, config_overrides)
+    # print("Creating flow with config:", json.dumps(config, indent=4))
     flow = hydra.utils.instantiate(config, _recursive_=False, _convert_="partial")
     if state is not None:
         flow.__setflowstate__({"flow_state": state}, safe_mode=True)
-    os.chdir(curr_dir)
+    # os.chdir(curr_dir)
     return flow
 
 
@@ -86,8 +96,7 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     # metadata can be in engine queues datastructure
     # metadata can be given in public param by scheduler
-    instance_metadata = get_instance_metadata(cl, flow_id)
-
+    instance_metadata = _get_local_flow_instance_metadata(cl, flow_id)
     if instance_metadata is None:
         print(f"Unknown flow instance {flow_id}.")
 
@@ -97,10 +106,9 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
                 cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
             )
             output_msg = FlowMessage(
-                data={},
+                data={"error": "Unknown flow instance!"},
                 src_flow=f"{cl.get_user_id()}:dispatch_worker",
                 dst_flow=input_msg.src_flow,
-                is_input_msg=False,
             )
             input_msg.reply_data["input_msg_id"] = message_id
             dispatch_response(cl, output_msg, input_msg.reply_data)
@@ -108,25 +116,39 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     flow_type = instance_metadata["flow_type"]
     message_ids = dispatch_task["message_ids"]
+    user_id = instance_metadata["user_id"]  # of user who mounted flow
+    client_id = "local" if user_id == cl.get_user_id() else user_id
+
+    # get serve data
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    parallel_dispatch = coflows_deserialize(
+        cl.read_entry(f"{serve_entry_path}:parallel_dispatch")
+    )
+    # default_config = coflows_deserialize(
+    #     cl.read_entry(f"{serve_entry_path}:default_config")
+    # )
 
     print(f"flow_type: {flow_type}")
     print(f"flow_id: {flow_id}")
-    print(f"message_ids: {message_ids}\n")
+    print(f"message_ids: {message_ids}")
+    print(f"parallel_dispatch: {parallel_dispatch}\n")
 
-    user_id = instance_metadata["user_id"]
-    client_id = "local" if user_id == cl.get_user_id() else user_id
-    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    config_overrides = None
+    state = None
+
+    # get instance data
     mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_id}"
-
-    default_config = coflows_deserialize(
-        cl.read_entry(f"{serve_entry_path}:default_config")
-    )
     config_overrides = coflows_deserialize(
         cl.read_entry(f"{mount_path}:config_overrides")
     )
     state = coflows_deserialize(cl.read_entry(f"{mount_path}:state"), use_pickle=True)
 
-    flow = create_flow(default_config, config_overrides, state)
+    if config_overrides is None:
+        print("ERROR: no config to load flow.")
+        return
+
+    # TODO would be better to have pickled flow in colink storage
+    flow = create_flow(None, config_overrides, state)
     flow.set_colink(cl)
 
     for message_id in dispatch_task["message_ids"]:
@@ -138,10 +160,11 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
         flow(input_msg)
 
-    new_state = flow.__getstate__()["flow_state"]
-    cl.update_entry(
-        f"{mount_path}:state", coflows_serialize(new_state, use_pickle=True)
-    )
+    if not parallel_dispatch:
+        new_state = flow.__getstate__()["flow_state"]
+        cl.update_entry(
+            f"{mount_path}:state", coflows_serialize(new_state, use_pickle=True)
+        )
 
 
 def run_dispatch_worker_thread(
@@ -149,7 +172,7 @@ def run_dispatch_worker_thread(
     dispatch_point=DEFAULT_DISPATCH_POINT,
     flow_modules_base_path=FLOW_MODULES_BASE_PATH,
 ):
-    sys.path.append(flow_modules_base_path)
+    # sys.path.append(flow_modules_base_path)
     pop = ProtocolOperator(__name__)
 
     proto_role = f"{dispatch_point}:local"
@@ -157,6 +180,17 @@ def run_dispatch_worker_thread(
 
     pop.run_attach(cl=cl)
     print("Dispatch worker started in attached thread.")
+    print(f"dispatch_point: {dispatch_point}")
+
+
+def run_dispatch_worker_threads(
+    cl,
+    num_workers,
+    dispatch_point=DEFAULT_DISPATCH_POINT,
+    flow_modules_base_path=FLOW_MODULES_BASE_PATH,
+):
+    for i in range(num_workers):
+        run_dispatch_worker_thread(cl, dispatch_point, flow_modules_base_path)
 
 
 # python dispatch-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)
