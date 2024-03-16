@@ -268,10 +268,18 @@ def mount(
 def _get_remote_flow_instances(
     cl: CoLink,
     mount_initiator_args
-    # user_id --> List((flow_key, flow_type, cfg_overrides))
+    # user_id --> List((flow_key, flow_endpoint, cfg_overrides))
 ) -> Dict[str, str]:  # flow_key -> flow_id
+    assert len(mount_initiator_args) > 0
     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
     for k, v in mount_initiator_args.items():
+        if len(k) < 5:  # HACK need to validate that user_id is not e.g. ???
+            # (5 for local)
+            raise FlowInstanceException(
+                flow_endpoint=v[0][1],
+                user_id=k,
+                message=f"ERROR: Invalid participant id {k}",
+            )
         participants.append(CL.Participant(user_id=k, role="receiver"))
 
     mount_id = str(uuid.uuid4())
@@ -289,6 +297,9 @@ def _get_remote_flow_instances(
     flow_ids = coflows_deserialize(
         cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_ids")
     )  # subflow_keys should be unique
+
+    # NOTE flow_ids might contain empty values if mount failed remotely
+    # check aiflows.workers.mount_worker.mount_receiver_handler
 
     return flow_ids
 
@@ -341,15 +352,19 @@ def _get_collaborative_subflow_instances(
         subflow_config_overrides.pop("flow_endpoint", None)
 
         if user_id == "local":
-            flow_id = _get_local_flow_instance(
-                cl=cl,
-                client_id=client_id,
-                flow_endpoint=subflow_endpoint,
-                config_overrides=subflow_config_overrides,
-                initial_state=None,  # TODO should we allow caller to override this
-                dispatch_point_override=None,
-            )
-            subflow_ids[subflow_key] = flow_id
+            try:
+                flow_id = _get_local_flow_instance(
+                    cl=cl,
+                    client_id=client_id,
+                    flow_endpoint=subflow_endpoint,
+                    config_overrides=subflow_config_overrides,
+                    initial_state=None,  # TODO should we allow caller to override this
+                    dispatch_point_override=None,
+                )
+                subflow_ids[subflow_key] = flow_id
+            except Exception:
+                subflow_ids[subflow_key] = ""
+                # NOTE also check aiflows.workers.mount_worker.mount_receiver_handler
         else:
             if user_id not in mount_initiator_args:
                 mount_initiator_args[user_id] = []
@@ -375,6 +390,7 @@ def _get_local_flow_instance(
 ) -> str:
     """
     Gets an instance of a flow being served at flow_endpoint. Returns id of the flow instance.
+    Throws FlowInstanceException.
 
     :param cl:
     :type cl: CoLink
@@ -451,8 +467,17 @@ def _get_local_flow_instance(
         subflow_ids = _get_collaborative_subflow_instances(
             cl, client_id, config["subflows_config"]
         )
+        # NOTE subflow_ids might contain empty values if mount failed
+        # check aiflows.workers.mount_worker.mount_receiver_handler
 
         for subflow_key, flow_id in subflow_ids.items():
+            if flow_id == "":
+                raise FlowInstanceException(
+                    flow_endpoint=flow_endpoint,
+                    user_id=config["subflows_config"][subflow_key]["user_id"],
+                    message=f"Can't get instance of subflow {subflow_key}.",
+                )
+
             config["subflows_config"][subflow_key][
                 "_target_"
             ] = "aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
@@ -509,8 +534,16 @@ def get_flow_instance(
     else:
         flow_id = _get_remote_flow_instances(
             cl=cl,
-            mount_args={user_id: ("my_flow", flow_endpoint, config_overrides)},
+            mount_initiator_args={
+                user_id: [("my_flow", flow_endpoint, config_overrides)]
+            },
         )["my_flow"]
+        if flow_id == "":
+            raise FlowInstanceException(
+                flow_endpoint=flow_endpoint,
+                user_id=user_id,
+                message=f"Failed to get remote instance at {flow_endpoint} hosted by user {user_id}",
+            )
 
     proxy_overrides = {
         "name": f"Proxy_{flow_endpoint}",

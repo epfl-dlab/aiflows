@@ -18,6 +18,9 @@ class FlowFuture:
         self.colink_storage_key = f"{message_path.rpartition(':')[0]}:response"
         self.output_interface = lambda data_dict, **kwargs: data_dict
 
+    def __str__(self):
+        return f"FlowFuture(user_id={self.cl.get_user_id()}, colink_storage_key='{self.colink_storage_key}')"
+
     def try_get_message(self):
         """
         Non-blocking read, returns None if there is no response yet.
@@ -33,7 +36,6 @@ class FlowFuture:
         Blocking read, creates colink queue in background and subscribes to it.
         Probably shouldn't create queue and should have timeout.
         """
-
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
         message.data = self.output_interface(message.data)
         return message
@@ -100,18 +102,35 @@ def dispatch_response(cl, output_message, reply_data):
             message=output_message,
         )
     elif reply_mode == "storage":
+        # TODO we can probably reuse push_to_flow for this
         user_id = reply_data["user_id"]
         message_path = reply_data["input_msg_path"]
         colink_storage_key = f"{message_path.rpartition(':')[0]}:response"
+
         if user_id == cl.get_user_id():
             # local
             cl.create_entry(colink_storage_key, output_message.serialize())
         else:
-            cl.remote_storage_create(
-                [user_id],
+            participants = [
+                CL.Participant(
+                    user_id=cl.get_user_id(),
+                    role="initiator",
+                ),
+                CL.Participant(
+                    user_id=reply_data["user_id"],
+                    role="receiver",
+                ),
+            ]
+            cl.create_entry(
                 colink_storage_key,
                 output_message.serialize(),
-                False,
+            )
+            push_param = {  # NOTE scheduler reads this
+                "flow_id": "storage",
+                "message_id": colink_storage_key,
+            }
+            cl.run_task(
+                "coflows_push", coflows_serialize(push_param), participants, True
             )
     else:
         print("WARNING: dispatch response mode unknown.")

@@ -96,15 +96,19 @@ def mount_receiver_handler(
 
     flow_ids = {}
     for flow_key, flow_endpoint, config_overrides in my_mount_tasks:
-        flow_id = serve_utils._get_local_flow_instance(
-            cl=cl,
-            client_id=participants[0].user_id,
-            flow_endpoint=flow_endpoint,
-            config_overrides=config_overrides,
-            initial_state=None,
-            dispatch_point_override=None,
-        )
-        flow_ids[flow_key] = flow_id
+        try:
+            flow_id = serve_utils._get_local_flow_instance(
+                cl=cl,
+                client_id=participants[0].user_id,
+                flow_endpoint=flow_endpoint,
+                config_overrides=config_overrides,
+                initial_state=None,
+                dispatch_point_override=None,
+            )
+            flow_ids[flow_key] = flow_id
+        except Exception:
+            flow_ids[flow_key] = ""
+            # TODO {"status": "ERROR", "flow_id": flow_id}
 
     cl.send_variable(
         "mount_completions", coflows_serialize(flow_ids), [participants[0]]

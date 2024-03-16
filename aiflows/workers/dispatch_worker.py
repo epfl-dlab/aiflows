@@ -100,6 +100,9 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     if instance_metadata is None:
         print(f"Unknown flow instance {flow_id}.")
 
+        if flow_id == "storage":  # HACK remove this when push worker handles storage
+            return
+
         # send empty responses
         for message_path in dispatch_task["message_ids"]:
             input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
