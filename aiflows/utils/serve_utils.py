@@ -286,11 +286,11 @@ def _get_remote_flow_instances(
 
     cl.wait_task(task_id)
 
-    flow_refs = coflows_deserialize(
-        cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_refs")
+    flow_ids = coflows_deserialize(
+        cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_ids")
     )  # subflow_keys should be unique
 
-    return flow_refs
+    return flow_ids
 
 
 def _get_collaborative_subflow_instances(

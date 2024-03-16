@@ -65,7 +65,7 @@ def mount_initiator_handler(
         cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:mount_args")
     )
 
-    flow_refs = {}
+    flow_ids = {}
     for participant in participants[1:]:
         user_mount_tasks = mount_args[participant.user_id]
         # [(subflow_key, subflow_type, subflow_config_overrides)]
@@ -76,12 +76,13 @@ def mount_initiator_handler(
     for participant in participants[1:]:
         user_mount_completions = coflows_deserialize(
             cl.recv_variable("mount_completions", participant)
-        )  # Dict: subflow_key -> flow_ref
-        flow_refs.update(user_mount_completions)
+        )  # Dict: subflow_key -> flow_id
+        flow_ids.update(user_mount_completions)
 
+    print("Received subflow ids:", json.dumps(flow_ids, indent=4))
     cl.create_entry(
-        f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_refs",
-        coflows_serialize(flow_refs),
+        f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_ids",
+        coflows_serialize(flow_ids),
     )
 
 
