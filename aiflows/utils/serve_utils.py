@@ -35,16 +35,6 @@ class FlowInstanceException(Exception):
         super().__init__(self.message)
 
 
-class FlowMountRequest:
-    def __init__(self, flow_key, user_id, flow_type):
-        self.flow_key = flow_key
-        self.user_id = user_id
-        self.flow_type = flow_type
-
-    def get_participant(self):
-        return CL.Participant(user_id=self.user_id, role="receiver")
-
-
 def is_flow_served(cl: CoLink, flow_type: str) -> bool:
     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
     served = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:init"))
@@ -223,6 +213,7 @@ def mount(
     flow_id = uuid.uuid4()
     mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_id}"
 
+    # inject self flow_id in config
     if config_overrides is None:
         config_overrides = {}
     config_overrides["flow_id"] = str(flow_id)
@@ -272,32 +263,23 @@ def mount(
     print(f"Mounted {flow_id} at {mount_path}")
 
     return flow_id
-    # proxy_overrides = {
-    #     "name": f"Proxy_{flow_endpoint}",
-    #     "description": f"Proxy of {flow_endpoint}",
-    #     "user_id": client_id,
-    #     "flow_id": str(flow_id),
-    #     "flow_type": flow_endpoint,
-    # }
-    # proxy_flow = AtomicFlow.instantiate_from_default_config(**proxy_overrides)
-    # proxy_flow.set_colink(cl)
-    # return proxy_flow
 
 
 def _get_remote_flow_instances(
     cl: CoLink,
-    mount_initiator_args: Dict[(str, List[FlowMountRequest])],
+    mount_initiator_args
     # user_id --> List((flow_key, flow_type, cfg_overrides))
 ) -> Dict[str, str]:  # flow_key -> flow_id
     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
     for k, v in mount_initiator_args.items():
         participants.append(CL.Participant(user_id=k, role="receiver"))
 
-    mount_id = uuid.uuid4()
+    mount_id = str(uuid.uuid4())
     cl.create_entry(
         f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:mount_args",
         coflows_serialize(mount_initiator_args),
     )
+
     task_id = cl.run_task(
         "coflows_mount", coflows_serialize(mount_id), participants, True
     )
@@ -339,7 +321,7 @@ def _get_collaborative_subflow_instances(
     """
     subflow_ids = {}  # subflow_key --> flow_id
     mount_initiator_args = {}
-    # user_id -> [(subflow_key, subflow_type, subflow_config_overrides)]
+    # user_id -> [(subflow_key, subflow_endpoint, subflow_config_overrides)]
 
     for subflow_key, subflow_config in subflows_config.items():
         if "flow_id" in subflow_config:
@@ -349,6 +331,7 @@ def _get_collaborative_subflow_instances(
             continue
 
         user_id = subflow_config["user_id"]
+        user_id = "local" if user_id == cl.get_user_id() else user_id
         subflow_endpoint = subflow_config["flow_endpoint"]
 
         subflow_config_overrides = deepcopy(subflow_config)
@@ -371,17 +354,12 @@ def _get_collaborative_subflow_instances(
             if user_id not in mount_initiator_args:
                 mount_initiator_args[user_id] = []
             mount_initiator_args[user_id].append(
-                FlowMountRequest(
-                    subflow_key, subflow_endpoint, subflow_config_overrides
-                )
+                (subflow_key, subflow_endpoint, subflow_config_overrides)
             )
 
     if len(mount_initiator_args) > 0:
         subflow_ids.update(
-            **_get_remote_flow_instances(
-                cl=cl,
-                mount_args=mount_initiator_args,
-            )
+            _get_remote_flow_instances(cl=cl, mount_initiator_args=mount_initiator_args)
         )
 
     return subflow_ids
@@ -422,6 +400,7 @@ def _get_local_flow_instance(
     is_singleton = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:singleton"))
 
     if is_singleton:
+        # return first mount that has init = 1
         client_keys = cl.read_keys(
             prefix=f"{cl.get_user_id()}::{serve_entry_path}:mounts",
             include_history=False,

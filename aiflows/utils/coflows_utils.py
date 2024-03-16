@@ -13,9 +13,9 @@ from typing import Callable
 
 
 class FlowFuture:
-    def __init__(self, cl, msg_id):
+    def __init__(self, cl, message_path):
         self.cl = cl
-        self.colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{msg_id}:response"
+        self.colink_storage_key = f"{message_path.rpartition(':')[0]}:response"
         self.output_interface = lambda data_dict, **kwargs: data_dict
 
     def try_get_message(self):
@@ -67,17 +67,18 @@ def push_to_flow(cl, target_user_id, target_flow_id, message: Message):
         ]
 
     push_msg_id = uuid.uuid4()
+    push_msg_path = f"{PUSH_ARGS_TRANSFER_PATH}:{push_msg_id}:msg"
     cl.create_entry(
-        f"{PUSH_ARGS_TRANSFER_PATH}:{push_msg_id}:msg",
+        push_msg_path,
         message.serialize(),
     )
 
-    push_param = {
-        "flow_id": target_flow_id,  # NOTE scheduler reads this
-        "message_id": str(push_msg_id),
+    push_param = {  # NOTE scheduler reads this
+        "flow_id": target_flow_id,
+        "message_id": push_msg_path,  # TODO return back to just id, need to change push worker
     }
     cl.run_task("coflows_push", coflows_serialize(push_param), participants, True)
-    return push_msg_id
+    return push_msg_path
 
 
 def dispatch_response(cl, output_message, reply_data):
@@ -100,8 +101,8 @@ def dispatch_response(cl, output_message, reply_data):
         )
     elif reply_mode == "storage":
         user_id = reply_data["user_id"]
-        input_msg_id = reply_data["input_msg_id"]
-        colink_storage_key = f"{PUSH_ARGS_TRANSFER_PATH}:{input_msg_id}:response"
+        message_path = reply_data["input_msg_path"]
+        colink_storage_key = f"{message_path.rpartition(':')[0]}:response"
         if user_id == cl.get_user_id():
             # local
             cl.create_entry(colink_storage_key, output_message.serialize())

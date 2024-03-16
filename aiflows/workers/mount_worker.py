@@ -20,11 +20,8 @@ import colink as CL
 import time
 
 from typing import List
-from utils import (
-    start_colink_component,
-    recursive_mount,
-    MOUNT_ARGS_TRANSFER_PATH,
-)
+from aiflows.utils import serve_utils
+from aiflows.utils.constants import MOUNT_ARGS_TRANSFER_PATH
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 
 
@@ -59,13 +56,10 @@ def parse_args():
     return vars(args)
 
 
-pop = ProtocolOperator(__name__)
-
-
-@pop.handle("mount:initiator")
 def mount_initiator_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
+    print("\n~~~ Mount Initiator Task ~~~")
     mount_id = coflows_deserialize(param)
     mount_args = coflows_deserialize(
         cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:mount_args")
@@ -81,7 +75,7 @@ def mount_initiator_handler(
 
     for participant in participants[1:]:
         user_mount_completions = coflows_deserialize(
-            cl.recv_variables("mount_completions", participant)
+            cl.recv_variable("mount_completions", participant)
         )  # Dict: subflow_key -> flow_ref
         flow_refs.update(user_mount_completions)
 
@@ -91,40 +85,56 @@ def mount_initiator_handler(
     )
 
 
-@pop.handle("mount:receiver")
 def mount_receiver_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
+    print("\n~~~ Mount Receiver Task ~~~")
     my_mount_tasks = coflows_deserialize(
-        cl.recv_variables("mount_tasks", participants[0])
+        cl.recv_variable("mount_tasks", participants[0])
     )
 
-    flow_refs = {}
-    for flow_key, flow_type, config_overrides in my_mount_tasks:
-        flow_ref = recursive_mount(
+    flow_ids = {}
+    for flow_key, flow_endpoint, config_overrides in my_mount_tasks:
+        flow_id = serve_utils._get_local_flow_instance(
             cl=cl,
             client_id=participants[0].user_id,
-            flow_type=flow_type,
+            flow_endpoint=flow_endpoint,
             config_overrides=config_overrides,
-            initial_state=None,  # ??
-            dispatch_point_override=None,  # ??
+            initial_state=None,
+            dispatch_point_override=None,
         )
-        flow_refs[flow_key] = flow_ref
+        flow_ids[flow_key] = flow_id
 
     cl.send_variable(
-        "mount_completions", coflows_serialize(flow_refs), [participants[0]]
+        "mount_completions", coflows_serialize(flow_ids), [participants[0]]
     )
+
+
+def run_mount_worker_thread(
+    cl,
+):
+    pop = ProtocolOperator(__name__)
+
+    pop.mapping["coflows_mount:initiator"] = mount_initiator_handler
+    pop.mapping["coflows_mount:receiver"] = mount_receiver_handler
+
+    pop.run_attach(cl=cl)
+    print("Mount worker started in attached thread for user ", cl.get_user_id())
 
 
 # python mount-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)
 if __name__ == "__main__":
     args = parse_args()
-    cl = start_colink_component("Mount worker", args)
+    cl = serve_utils.start_colink_component("Mount worker", args)
 
-    vt_public_addr = "127.0.0.1"  # HACK
+    pop = ProtocolOperator(__name__)
+    pop.mapping["coflows_mount:initiator"] = mount_initiator_handler
+    pop.mapping["coflows_mount:receiver"] = mount_receiver_handler
+
+    print("Mount worker started.")
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr=vt_public_addr,
+        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )

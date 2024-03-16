@@ -101,21 +101,19 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
         print(f"Unknown flow instance {flow_id}.")
 
         # send empty responses
-        for message_id in dispatch_task["message_ids"]:
-            input_msg = FlowMessage.deserialize(
-                cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
-            )
+        for message_path in dispatch_task["message_ids"]:
+            input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
             output_msg = FlowMessage(
                 data={"error": "Unknown flow instance!"},
                 src_flow=f"{cl.get_user_id()}:dispatch_worker",
                 dst_flow=input_msg.src_flow,
             )
-            input_msg.reply_data["input_msg_id"] = message_id
+            input_msg.reply_data["input_msg_path"] = message_path
             dispatch_response(cl, output_msg, input_msg.reply_data)
         return
 
     flow_type = instance_metadata["flow_type"]
-    message_ids = dispatch_task["message_ids"]
+    message_paths = dispatch_task["message_ids"]
     user_id = instance_metadata["user_id"]  # of user who mounted flow
     client_id = "local" if user_id == cl.get_user_id() else user_id
 
@@ -130,7 +128,7 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     print(f"flow_type: {flow_type}")
     print(f"flow_id: {flow_id}")
-    print(f"message_ids: {message_ids}")
+    print(f"message_paths: {message_paths}")
     print(f"parallel_dispatch: {parallel_dispatch}\n")
 
     config_overrides = None
@@ -151,12 +149,10 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
     flow = create_flow(None, config_overrides, state)
     flow.set_colink(cl)
 
-    for message_id in dispatch_task["message_ids"]:
-        input_msg = FlowMessage.deserialize(
-            cl.read_entry(f"{PUSH_ARGS_TRANSFER_PATH}:{message_id}:msg")
-        )
+    for message_path in dispatch_task["message_ids"]:
+        input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
 
-        input_msg.reply_data["input_msg_id"] = message_id
+        input_msg.reply_data["input_msg_path"] = message_path
 
         flow(input_msg)
 

@@ -589,13 +589,13 @@ class Flow(ABC):
             input_message_id=message.message_id,
         )
         
-        msg_id = push_to_flow(
+        message_path = push_to_flow(
             self.cl, self.flow_config["user_id"], self.get_instance_id(), message
         )
         
         self._post_call_hook()
 
-        return FlowFuture(self.cl, msg_id)
+        return FlowFuture(self.cl, message_path)
         
     @try_except_decorator
     def get_reply_future(self, input_message):
@@ -617,13 +617,13 @@ class Flow(ABC):
             input_message_id=input_message.message_id,
         )
         
-        msg_id = push_to_flow(
+        message_path = push_to_flow(
             self.cl, self.flow_config["user_id"], self.get_instance_id(), message
         )
         
         self._post_call_hook()
 
-        return FlowFuture(self.cl, msg_id)
+        return FlowFuture(self.cl, message_path)
     
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
