@@ -20,7 +20,7 @@ from aiflows.utils import colink_utils
 import hydra
 from aiflows.utils.constants import (
     COFLOWS_PATH,
-    MOUNT_ARGS_TRANSFER_PATH,
+    GET_INSTANCE_CALLS_TRANSFER_PATH,
     INSTANCE_METADATA_PATH,
     INSTANTIATION_METHODS,
     DEFAULT_DISPATCH_POINT,
@@ -267,41 +267,42 @@ def mount(
 
 def _get_remote_flow_instances(
     cl: CoLink,
-    mount_initiator_args
-    # user_id --> List((flow_key, flow_endpoint, cfg_overrides))
-) -> Dict[str, str]:  # flow_key -> flow_id
-    assert len(mount_initiator_args) > 0
+    get_instance_calls,  # user_id --> List((flow_key, flow_endpoint, cfg_overrides))
+) -> Dict[str, Any]:
+    assert len(get_instance_calls) > 0
+
     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
-    for k, v in mount_initiator_args.items():
-        if len(k) < 5:  # HACK need to validate that user_id is not e.g. ???
-            # (5 for local)
+    for k, v in get_instance_calls.items():
+        if len(k) < 5:
+            # HACK need to validate that user_id is not e.g. ??? (5 for 'local')
             raise FlowInstanceException(
                 flow_endpoint=v[0][1],
                 user_id=k,
-                message=f"ERROR: Invalid participant id {k}",
+                message=f"Invalid participant id {k}",
             )
         participants.append(CL.Participant(user_id=k, role="receiver"))
 
-    mount_id = str(uuid.uuid4())
+    request_id = str(uuid.uuid4())
     cl.create_entry(
-        f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:mount_args",
-        coflows_serialize(mount_initiator_args),
+        f"{GET_INSTANCE_CALLS_TRANSFER_PATH}:{request_id}:get_instance_calls",
+        coflows_serialize(get_instance_calls),
     )
 
     task_id = cl.run_task(
-        "coflows_mount", coflows_serialize(mount_id), participants, True
-    )
+        "coflows_get_instances", coflows_serialize(request_id), participants, True
+    )  # may throw grpc exception if user is unknown or unresponsive
+    # TODO should we wrap it into FlowInstanceException ?
 
     cl.wait_task(task_id)
 
-    flow_ids = coflows_deserialize(
-        cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_ids")
+    get_instances_results = coflows_deserialize(
+        cl.read_entry(
+            f"{GET_INSTANCE_CALLS_TRANSFER_PATH}:{request_id}:get_instances_results"
+        )
     )  # subflow_keys should be unique
-
-    # NOTE flow_ids might contain empty values if mount failed remotely
     # check aiflows.workers.mount_worker.mount_receiver_handler
 
-    return flow_ids
+    return get_instances_results
 
 
 def _get_collaborative_subflow_instances(
@@ -330,8 +331,8 @@ def _get_collaborative_subflow_instances(
     :return: dictionary mapping subflow keys to flow ids
     :rtype: Dict[str, str]
     """
-    subflow_ids = {}  # subflow_key --> flow_id
-    mount_initiator_args = {}
+    get_instances_results = {}  # subflow_key --> Dict
+    get_instance_calls = {}
     # user_id -> [(subflow_key, subflow_endpoint, subflow_config_overrides)]
 
     for subflow_key, subflow_config in subflows_config.items():
@@ -361,23 +362,31 @@ def _get_collaborative_subflow_instances(
                     initial_state=None,  # TODO should we allow caller to override this
                     dispatch_point_override=None,
                 )
-                subflow_ids[subflow_key] = flow_id
-            except Exception:
-                subflow_ids[subflow_key] = ""
+                get_instances_results[subflow_key] = {
+                    "flow_id": flow_id,
+                    "successful": True,
+                    "message": "Fetched local flow instance.",
+                }
+            except FlowInstanceException as e:
+                get_instances_results[subflow_key] = {
+                    "flow_id": "",
+                    "successful": False,
+                    "message": e.message,
+                }
                 # NOTE also check aiflows.workers.mount_worker.mount_receiver_handler
         else:
-            if user_id not in mount_initiator_args:
-                mount_initiator_args[user_id] = []
-            mount_initiator_args[user_id].append(
+            if user_id not in get_instance_calls:
+                get_instance_calls[user_id] = []
+            get_instance_calls[user_id].append(
                 (subflow_key, subflow_endpoint, subflow_config_overrides)
             )
 
-    if len(mount_initiator_args) > 0:
-        subflow_ids.update(
-            _get_remote_flow_instances(cl=cl, mount_initiator_args=mount_initiator_args)
+    if len(get_instance_calls) > 0:
+        get_instances_results.update(
+            _get_remote_flow_instances(cl=cl, get_instance_calls=get_instance_calls)
         )
 
-    return subflow_ids
+    return get_instances_results
 
 
 def _get_local_flow_instance(
@@ -464,24 +473,26 @@ def _get_local_flow_instance(
 
     # TODO this can be carefully moved to CompositeFlow._set_up_subflows()
     if "subflows_config" in config:
-        subflow_ids = _get_collaborative_subflow_instances(
+        get_instances_results = _get_collaborative_subflow_instances(
             cl, client_id, config["subflows_config"]
         )
-        # NOTE subflow_ids might contain empty values if mount failed
-        # check aiflows.workers.mount_worker.mount_receiver_handler
+        # also check aiflows.workers.mount_worker.mount_receiver_handler
 
-        for subflow_key, flow_id in subflow_ids.items():
-            if flow_id == "":
+        for subflow_key, get_instance_result in get_instances_results.items():
+            if get_instance_result["successful"] is False:
+                message = get_instance_result["message"]
                 raise FlowInstanceException(
                     flow_endpoint=flow_endpoint,
-                    user_id=config["subflows_config"][subflow_key]["user_id"],
-                    message=f"Can't get instance of subflow {subflow_key}.",
+                    user_id=cl.get_user_id(),
+                    message=f"Failed to get instance of subflow {subflow_key}.\n{message}",
                 )
 
             config["subflows_config"][subflow_key][
                 "_target_"
             ] = "aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
-            config["subflows_config"][subflow_key]["flow_id"] = flow_id
+            config["subflows_config"][subflow_key]["flow_id"] = get_instance_result[
+                "flow_id"
+            ]
 
     # print("Creating new flow instance with config:\n", json.dumps(config, indent=4))
     flow_id = mount(
@@ -521,29 +532,36 @@ def get_flow_instance(
     :rtype: aiflows.base_flows.AtomicFlow
     """
     user_id = "local" if user_id == cl.get_user_id() else user_id
-
-    if user_id == "local":
-        flow_id = _get_local_flow_instance(
-            cl=cl,
-            client_id="local",
-            flow_endpoint=flow_endpoint,
-            config_overrides=config_overrides,
-            initial_state=initial_state,
-            dispatch_point_override=dispatch_point_override,
-        )
-    else:
-        flow_id = _get_remote_flow_instances(
-            cl=cl,
-            mount_initiator_args={
-                user_id: [("my_flow", flow_endpoint, config_overrides)]
-            },
-        )["my_flow"]
-        if flow_id == "":
-            raise FlowInstanceException(
+    try:
+        if user_id == "local":
+            flow_id = _get_local_flow_instance(
+                cl=cl,
+                client_id="local",
                 flow_endpoint=flow_endpoint,
-                user_id=user_id,
-                message=f"Failed to get remote instance at {flow_endpoint} hosted by user {user_id}",
+                config_overrides=config_overrides,
+                initial_state=initial_state,
+                dispatch_point_override=dispatch_point_override,
             )
+        else:
+            get_results = _get_remote_flow_instances(
+                cl=cl,
+                get_instance_calls={
+                    user_id: [("my_flow", flow_endpoint, config_overrides)]
+                },
+            )["my_flow"]
+            if get_results["successful"] is False:
+                raise FlowInstanceException(
+                    flow_endpoint=flow_endpoint,
+                    user_id=user_id,
+                    message=get_results["message"],
+                )
+            flow_id = get_results["flow_id"]
+    except grpc.RpcError as e:
+        raise FlowInstanceException(
+            flow_endpoint,
+            user_id,
+            message=f"Received RPC exception: code={e.code()} message={e.details()}",
+        )
 
     proxy_overrides = {
         "name": f"Proxy_{flow_endpoint}",
@@ -750,118 +768,3 @@ def start_colink_component(component_name: str, args):
 #         default_dispatch_point=default_dispatch_point,
 #     )
 #     return serving_succesful
-
-
-# # recursive_mount_instance
-# def recursive_mount(
-#     cl: CoLink,
-#     client_id: str,
-#     flow_class_name: str,
-#     config_overrides: Dict[str, Any] = None,
-#     initial_state: Dict[str, Any] = None,
-#     dispatch_point_override: str = None,
-# ) -> AtomicFlow:
-#     """
-#     Mounts a new instance of the specified flow type by creating necessary entries in CoLink storage.
-#     Recursively mounts local and remote subflows.
-
-#     :return: proxy flow object
-#     :rtype: aiflows.base_flows.AtomicFlow
-#     """
-#     if not is_flow_served(cl, flow_class_name):
-#         print(f"Can't create instance - {flow_class_name} is not being served.")
-#         return None
-
-#     flow_class = hydra.utils.get_class(flow_class_name)
-#     config = flow_class.get_config(config_overrides)
-
-#     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
-#     mount_initiator_args = {}
-#     # user_id -> [(subflow_key, subflow_type, subflow_config_overrides)]
-
-#     if "subflows_config" in config:
-#         for subflow_key, subflow_config in config["subflows_config"].items():
-#             if "flow_ref" in subflow_config:
-#                 # subflow already mounted
-#                 continue
-
-#             if "user_id" not in subflow_config or "flow_type" not in subflow_config:
-#                 continue
-
-#             user_id = subflow_config["user_id"]
-#             subflow_type = subflow_config["flow_type"]
-
-#             # TODO: Check if you this deprication is approved
-#             # subflow_config_overrides = None
-#             # if "config_overrides" in subflow_config:
-#             #     subflow_config_overrides = subflow_config["config_overrides"]
-
-#             # And replace with this
-#             subflow_config_overrides = deepcopy(subflow_config)
-#             subflow_config_overrides.pop("_target_", None)
-
-#             if user_id == "local":
-#                 proxy = recursive_mount(
-#                     cl, user_id, subflow_type, subflow_config_overrides
-#                 )
-#                 if proxy is None:
-#                     print(
-#                         "WARNING: can't create subflow. Some instances might have been created, while others didn't."
-#                     )
-#                     # TODO delete all other created instances
-#                     return None
-
-#                 if config_overrides is None:
-#                     config_overrides = {}
-#                 if "subflows_config" not in config_overrides:
-#                     config_overrides["subflows_config"] = {}
-#                 if subflow_key not in config_overrides["subflows_config"]:
-#                     config_overrides["subflows_config"][subflow_key] = {}
-
-#                 config_overrides["subflows_config"][subflow_key][
-#                     "flow_ref"
-#                 ] = proxy.flow_config["flow_ref"]
-#             else:
-#                 if user_id not in mount_initiator_args:
-#                     mount_initiator_args[user_id] = []
-#                     participants.append(
-#                         CL.Participant(user_id=user_id, role="receiver")
-#                     )
-
-#                 mount_initiator_args[user_id].append(
-#                     (subflow_key, subflow_type, subflow_config_overrides)
-#                 )
-
-#         if len(participants) > 1:
-#             mount_id = uuid.uuid4()
-#             cl.create_entry(
-#                 f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:mount_args",
-#                 coflows_serialize(mount_initiator_args),
-#             )
-#             task_id = cl.run_task(
-#                 "coflows_mount", coflows_serialize(mount_id), participants, True
-#             )
-
-#             cl.wait_task(task_id)
-
-#             flow_refs = coflows_deserialize(
-#                 cl.read_entry(f"{MOUNT_ARGS_TRANSFER_PATH}:{mount_id}:flow_refs")
-#             )  # subflow_keys should be unique
-#             for subflow_key, flow_ref in flow_refs.items():
-#                 if "subflows_config" not in config_overrides:
-#                     config_overrides["subflows_config"] = {}
-#                 if subflow_key not in config_overrides["subflows_config"]:
-#                     config_overrides["subflows_config"][subflow_key] = {}
-
-#                 config_overrides["subflows_config"][subflow_key]["flow_ref"] = flow_ref
-
-#     proxy_flow = mount(
-#         cl,
-#         client_id,
-#         flow_class_name,
-#         config_overrides,
-#         initial_state,
-#         dispatch_point_override,
-#     )
-
-#     return proxy_flow

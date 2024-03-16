@@ -1,5 +1,5 @@
 COFLOWS_PATH = "flows"
-MOUNT_ARGS_TRANSFER_PATH = "mount_tasks"
+GET_INSTANCE_CALLS_TRANSFER_PATH = "get_instance_tasks"
 INSTANCE_METADATA_PATH = "instance_metadata"  # maybe remove after extending engine
 PUSH_ARGS_TRANSFER_PATH = "push_tasks"
 FLOW_MODULES_BASE_PATH = ""
