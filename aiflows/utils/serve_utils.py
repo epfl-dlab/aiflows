@@ -35,8 +35,8 @@ class FlowInstanceException(Exception):
         super().__init__(self.message)
 
 
-def is_flow_served(cl: CoLink, flow_type: str) -> bool:
-    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+def is_flow_served(cl: CoLink, flow_endpoint: str) -> bool:
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
     served = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:init"))
     if served == 1:
         return True
@@ -74,7 +74,7 @@ def serve_flow(
         cl.update_entry(
             f"{serve_entry_path}:default_dispatch_point",
             dispatch_point,
-            # NOTE: if we do coflows_serialize here, scheduler reads it with double quotation marks - breaks it.
+            # NOTE if we do coflows_serialize here, scheduler reads it with double quotation marks - breaks it.
         )
         cl.update_entry(
             f"{serve_entry_path}:singleton",
@@ -82,7 +82,8 @@ def serve_flow(
         )
         cl.update_entry(
             f"{serve_entry_path}:parallel_dispatch",
-            coflows_serialize(parallel_dispatch),
+            parallel_dispatch,
+            # NOTE scheduler reads this as a bit
         )
 
     except grpc.RpcError as e:
@@ -168,11 +169,11 @@ def delete_flow_instance(cl: CoLink, flow_id: str):
     if instance_metadata is None:
         print(f"Metadata for {flow_id} doesn't exist.")
         return
-    flow_type = instance_metadata["flow_type"]
+    flow_endpoint = instance_metadata["flow_endpoint"]
     client_id = instance_metadata["user_id"]
     client_id = "local" if client_id == cl.get_user_id() else client_id
 
-    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
     mount_path = f"{serve_entry_path}:mounts:{client_id}:{flow_id}"
     metadata_path = f"{INSTANCE_METADATA_PATH}:{flow_id}"
 
@@ -222,7 +223,7 @@ def mount(
         cl.create_entry(f"{mount_path}:init", coflows_serialize(1))
         # TODO should actual dispatch_point also be inside metadata
         # NOTE scheduler uses this metadata
-        instance_metadata = {"flow_type": flow_endpoint, "user_id": client_id}
+        instance_metadata = {"flow_endpoint": flow_endpoint, "user_id": client_id}
         cl.create_entry(
             f"{INSTANCE_METADATA_PATH}:{flow_id}", coflows_serialize(instance_metadata)
         )  # This can be added to engine queues data structure along with dispatch_point
@@ -568,7 +569,7 @@ def get_flow_instance(
         "description": f"Proxy of {flow_endpoint}",
         "user_id": user_id,
         "flow_id": str(flow_id),
-        "flow_type": flow_endpoint,
+        "flow_endpoint": flow_endpoint,
     }
     proxy_flow = AtomicFlow.instantiate_from_default_config(**proxy_overrides)
     proxy_flow.set_colink(cl)

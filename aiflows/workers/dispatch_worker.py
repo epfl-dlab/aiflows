@@ -115,21 +115,25 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
             dispatch_response(cl, output_msg, input_msg.reply_data)
         return
 
-    flow_type = instance_metadata["flow_type"]
+    flow_endpoint = instance_metadata["flow_endpoint"]
     message_paths = dispatch_task["message_ids"]
     user_id = instance_metadata["user_id"]  # of user who mounted flow
     client_id = "local" if user_id == cl.get_user_id() else user_id
 
     # get serve data
-    serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
-    parallel_dispatch = coflows_deserialize(
-        cl.read_entry(f"{serve_entry_path}:parallel_dispatch")
+    serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
+    parallel_dispatch = bool(
+        int.from_bytes(
+            cl.read_entry(f"{serve_entry_path}:parallel_dispatch"),
+            byteorder="little",
+            signed=True,
+        )
     )
     # default_config = coflows_deserialize(
     #     cl.read_entry(f"{serve_entry_path}:default_config")
     # )
 
-    print(f"flow_type: {flow_type}")
+    print(f"flow_endpoint: {flow_endpoint}")
     print(f"flow_id: {flow_id}")
     print(f"message_paths: {message_paths}")
     print(f"parallel_dispatch: {parallel_dispatch}\n")
