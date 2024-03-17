@@ -77,10 +77,9 @@ def create_flow(
     config_overrides: Dict[str, Any] = None,
     state: Dict[str, Any] = None,
 ):
-    # curr_dir = os.getcwd()
-    # os.chdir(sys.path[-1])
     if config_overrides is not None:
         config = recursive_dictionary_update(config, config_overrides)
+
     # print("Creating flow with config:", json.dumps(config, indent=4))
     flow = hydra.utils.instantiate(config, _recursive_=False, _convert_="partial")
     if state is not None:
@@ -135,6 +134,7 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     print(f"flow_endpoint: {flow_endpoint}")
     print(f"flow_id: {flow_id}")
+    print(f"owner_id: {user_id}")
     print(f"message_paths: {message_paths}")
     print(f"parallel_dispatch: {parallel_dispatch}\n")
 
@@ -158,10 +158,15 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
 
     for message_path in dispatch_task["message_ids"]:
         input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
+        print(f"Input message source: {input_msg.src_flow}")
 
         input_msg.reply_data["input_msg_path"] = message_path
 
-        flow(input_msg)
+        try:
+            flow(input_msg)
+        except Exception as e:
+            print(f"Error executing flow: {e}")
+            return
 
     if not parallel_dispatch:
         new_state = flow.__getstate__()["flow_state"]
