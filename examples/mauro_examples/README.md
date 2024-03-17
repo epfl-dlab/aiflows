@@ -1,5 +1,14 @@
 # Decentralized Flows
 
+This directory contains notebook examples on how to run flows with colink.
+Notebooks are self-sufficient, i.e. you don't need to run any background processes unless explicitly mentioned in the notebook.
+
+Recommended order for going through notebooks:
+1. ReverseNumber
+2. ReverseNumber-multiuser
+3. ChatFlow-languages
+4. InteractiveChatFlow
+
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Concepts](#concepts)
@@ -15,10 +24,10 @@
 
 ### Dispatch Engine
 Image
-#### Dispatch mode
-Sequential and Parallel.
 #### Dispatch points
-#### Scheduler4
+#### Parallel Dispatch
+Sequential and Parallel.
+#### Scheduler
 #### Workers
 
 
