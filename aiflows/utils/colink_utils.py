@@ -1,3 +1,4 @@
+from typing import List
 from colink import CoLink, InstantServer, InstantRegistry
 from aiflows.utils.io_utils import coflows_deserialize
 from aiflows.utils.constants import (
@@ -11,6 +12,17 @@ def start_colink_server() -> CoLink:
     cl = InstantServer().get_colink().switch_to_generated_user()
     cl.start_protocol_operator("coflows_scheduler", cl.get_user_id(), False)
     return cl
+
+
+def start_colink_server_with_users(num_users: int = 1) -> List[CoLink]:
+    InstantRegistry()
+    is0 = InstantServer()
+    colinks = []
+    for i in range(num_users):
+        cl = is0.get_colink().switch_to_generated_user()
+        cl.start_protocol_operator("coflows_scheduler", cl.get_user_id(), False)
+        colinks.append(cl)
+    return colinks
 
 
 def recursive_print_keys(cl: CoLink, path, print_values=False, indent=0):

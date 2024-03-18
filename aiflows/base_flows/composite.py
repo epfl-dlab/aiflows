@@ -96,7 +96,7 @@ class CompositeFlow(Flow, ABC):
         
         msg = self._package_input_message(payload=data, dst_flow=flow_name)
         
-        subflow.ask_pipe(msg, parent_flow_ref=self.flow_config["flow_ref"])
+        subflow.ask_pipe(msg, parent_flow_id=self.flow_config["flow_id"])
     
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
         """Returns the sub-flow with the given name
