@@ -433,6 +433,7 @@ class Flow(ABC):
             data=output_data,
             reply_data=input_message.reply_data,
             input_message_id=input_message.message_id,
+            is_reply=True
         )
 
     def run(self, input_message: FlowMessage) -> None:
@@ -553,11 +554,11 @@ class Flow(ABC):
     
                 
     @try_except_decorator
-    def send_message(self, message: FlowMessage, is_reply: bool = False):
+    def send_message(self, message: FlowMessage):
         
         self._log_message(message)
      
-        if is_reply:
+        if message.is_reply:
             dispatch_response(self.cl, message, message.reply_data)
             
         else:

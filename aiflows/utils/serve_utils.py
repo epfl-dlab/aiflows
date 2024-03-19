@@ -477,10 +477,7 @@ def _get_local_flow_instance(
     flow_class = hydra.utils.get_class(flow_class_name)
     config = flow_class.get_config(**deepcopy(config_overrides))
 
-    # TODO should this be done here? probably NO - should be done in run.py
-    api_info = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
-    quick_load_api_keys(config, api_info, key="api_infos")
-
+    
     # TODO create flow object and store its pickle
     # flow_obj = flow_class.instantiate_from_default_config(cl, config_overrides)
     # flow_obj.mount() # pickles itself and saves to storage
