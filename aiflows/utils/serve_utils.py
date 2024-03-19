@@ -93,7 +93,7 @@ def serve_flow(
     print(f"Started serving {flow_class_name} at {serve_entry_path}.")
     print(f"dispatch_point: {dispatch_point}")
     print(f"parallel_dispatch: {parallel_dispatch}")
-    print(f"singleton: {singleton}")
+    print(f"singleton: {singleton}\n")
     return True
 
 
@@ -338,9 +338,23 @@ def _get_collaborative_subflow_instances(
 
     for subflow_key, subflow_config in subflows_config.items():
         if "flow_id" in subflow_config:
+            # already have instance
             continue
 
-        if "user_id" not in subflow_config or "flow_endpoint" not in subflow_config:
+        if "user_id" not in subflow_config:
+            get_instances_results[subflow_key] = {
+                "flow_id": "",
+                "successful": False,
+                "message": f"Subflow {subflow_key} missing user_id in config.",
+            }
+            continue
+
+        if "flow_endpoint" not in subflow_config:
+            get_instances_results[subflow_key] = {
+                "flow_id": "",
+                "successful": False,
+                "message": f"Subflow {subflow_key} missing flow_endpoint in config.",
+            }
             continue
 
         user_id = subflow_config["user_id"]
@@ -348,7 +362,7 @@ def _get_collaborative_subflow_instances(
         subflow_endpoint = subflow_config["flow_endpoint"]
 
         subflow_config_overrides = deepcopy(subflow_config)
-        # TODO maybe these should be in a single subdict
+        # TODO should we remove this?
         subflow_config_overrides.pop("_target_", None)
         subflow_config_overrides.pop("user_id", None)
         subflow_config_overrides.pop("flow_endpoint", None)
@@ -495,7 +509,6 @@ def _get_local_flow_instance(
                 "flow_id"
             ]
 
-    # print("Creating new flow instance with config:\n", json.dumps(config, indent=4))
     flow_id = mount(
         cl,
         client_id,
@@ -600,172 +613,58 @@ def start_colink_component(component_name: str, args):
     return cl
 
 
-# def serve_flow(
-#     cl: CoLink,
-#     flow_type: str,
-#     default_config: Dict[str, Any] = None,
-#     default_state: Dict[str, Any] = None,
-#     default_dispatch_point: str = DEFAULT_DISPATCH_POINT,
-#     singleton: bool = False,
-#     parallel_dispatch: bool = False,
-# ) -> bool:
-#     """
-#     Serves the flow config under the identifier flow_type.
-#     After serving, users can get an instance of the served flow via the get_instance operation.
+def recursive_serve_flow(
+    cl: CoLink,
+    flow_class_name: str,
+    flow_endpoint: str,
+    dispatch_point: str = DEFAULT_DISPATCH_POINT,
+    parallel_dispatch: bool = False,
+    singleton: bool = False,
+) -> bool:
+    flow_class = hydra.utils.get_class(flow_class_name)
+    flow_config = flow_class.get_config()
 
-#     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
-#     :rtype: bool
-#     """
-#     serve_entry_path = f"{COFLOWS_PATH}:{flow_type}"
+    if "subflows_config" in flow_config:
+        for subflow, subflow_config in flow_config["subflows_config"].items():
+            needs_serving = subflow_config.get("user_id", "local") == "local"
+            if not needs_serving:
+                continue
 
-#     if is_flow_served(cl, flow_type):
-#         print(f"{flow_type} is already being served at {serve_entry_path}")
-#         return False
+            subflow_endpoint = subflow_config.get("flow_endpoint", None)
+            if subflow_endpoint is None:
+                print(
+                    f"Failed to serve subflow {subflow}: missing subflow_endpoint in config."
+                )
+                return False
+            if is_flow_served(cl, subflow_endpoint):
+                print(f"Subflow {subflow} already served.")
+                continue
 
-#     # if dispatch_mode not in DISPATCH_MODES:
-#     #     print(
-#     #         f"Invalid dispatch_mode '{dispatch_mode}'. Use one of {', '.join(DISPATCH_MODES)}"
-#     #     )
-#     #     return False
+            subflow_class_name = subflow_config.get("flow_class_name", None)
+            if subflow_class_name is None:
+                print(
+                    f"Failed to serve subflow {subflow}: missing flow_class_name in config."
+                )
+                return False
 
-#     # NOTE depricating for now
-#     # if default_state is None and default_config is not None:
-#     #     default_state = default_config.get("init_state", None)
+            subflow_dispatch_point = subflow_config.get(
+                "dispatch_point", DEFAULT_DISPATCH_POINT
+            )
+            subflow_parallel_dispatch = subflow_config.get("parallel_dispatch", False)
+            subflow_singleton = subflow_config.get("singleton", False)
 
-#     # serve
-#     try:
-#         cl.update_entry(f"{serve_entry_path}:init", coflows_serialize(1))
-#         cl.update_entry(
-#             f"{serve_entry_path}:default_dispatch_point",
-#             default_dispatch_point,
-#         )
-#         cl.update_entry(
-#             f"{serve_entry_path}:parallel_dispatch",
-#             coflows_serialize(parallel_dispatch),
-#         )
+            subflow_served = recursive_serve_flow(
+                cl,
+                subflow_class_name,
+                subflow_endpoint,
+                subflow_dispatch_point,
+                subflow_parallel_dispatch,
+                subflow_singleton,
+            )
+            if not subflow_served:
+                print(f"Failed to serve subflow {subflow}.")
+                return False
 
-#         if default_config is not None:
-#             # TODO what if target is not given
-#             target = default_config["_target_"]
-#             if target.split(".")[-1] in INSTANTIATION_METHODS:
-#                 target = ".".join(target.split(".")[:-1])
-
-#             flow_class = hydra.utils.get_class(target)
-#             default_config = flow_class.get_config(**deepcopy(default_config))
-#             cl.update_entry(
-#                 f"{serve_entry_path}:default_config",
-#                 coflows_serialize(default_config),
-#             )
-
-#         if default_state is not None:
-#             cl.update_entry(
-#                 f"{serve_entry_path}:default_state",
-#                 coflows_serialize(default_state, use_pickle=True),
-#             )
-
-#         # if serve_mode == "stateless":
-#         #     flow_id = f"{flow_type}_stateless"
-#         #     instance_metadata = {
-#         #         "flow_type": flow_type,
-#         #         "user_id": "local",
-#         #         "serve_mode": "stateless",
-#         #     }
-#         #     cl.create_entry(
-#         #         f"{INSTANCE_METADATA_PATH}:{flow_id}",
-#         #         coflows_serialize(instance_metadata),
-#         #     )
-
-#     except grpc.RpcError:
-#         return False
-
-#     print(f"Started serving at {serve_entry_path}.")
-#     return True
-
-
-# def recursive_serve_flow(
-#     cl: CoLink,
-#     flow_type: str,
-#     serving_mode="statefull",
-#     default_config: Dict[str, Any] = None,
-#     default_state: Dict[str, Any] = None,
-#     default_dispatch_point: str = None,
-# ) -> bool:
-#     # expand default config to full default_config
-
-#     # ugly hack to get class but not sure how else to do if
-#     target = default_config["_target_"]
-
-#     if target.split(".")[-1] in INSTANTIATION_METHODS:
-#         target = ".".join(target.split(".")[:-1])
-
-#     flow_class = hydra.utils.get_class(target)
-#     flow_full_config = flow_class.get_config(**deepcopy(default_config))
-
-#     # if there's recursive serving, serve subflows first
-#     if "subflows_config" in flow_full_config:
-#         for subflow, subflow_config in flow_full_config["subflows_config"].items():
-#             # A flow is proxy if it's type is AtomicFlow or Flow (since no run method is implemented in these classes)
-#             # TODO: Check if this is sufficient
-
-#             needs_serving = subflow_config.get("user_id", "local") == "local"
-#             # if the flow is not a proxy, we must serve it and then make it become a proxy in the default_config
-#             if needs_serving:
-#                 # This is ok because name is a required field in the config
-#                 # note that if you don't specify the flow type, I'll assume it's the name of the subflow + _served
-#                 # This means that if you don't specify the flow type, 2 subflows of the same class will be served at 2 different locations (won't share state)
-#                 # If you want to share state, you must specify the flow type
-#                 subflow_type = subflow_config.get("flow_type", f"{subflow}_served")
-#                 subflow_default_state = subflow_config.get("init_state", None)
-#                 # serve_flow returns false when an error occurs or if a flow is already served... (shouldn't we distinguish these cases?)
-#                 # I would almost fail here if the error here
-#                 # whereas if the flow is already serving that's great, nothing to be done
-#                 # Which is why I called the output serving succesful
-
-#                 subflow_target = subflow_config["_target_"]
-
-#                 if subflow_target.split(".")[-1] in INSTANTIATION_METHODS:
-#                     subflow_target = ".".join(subflow_target.split(".")[:-1])
-
-#                 subflow_class = hydra.utils.get_class(subflow_target)
-
-#                 # Mauro suggestion: serve the default configuration all the time for subflows (mount overrieds stuff)
-#                 subflow_cfg = subflow_class.get_config()
-#                 subflow_cfg["_target_"] = subflow_config["_target_"]
-#                 serving_succesful = recursive_serve_flow(
-#                     cl=cl,
-#                     flow_type=subflow_type,
-#                     # TODO: shouldn't this be read from yaml file of subflow (find it in flow_modules directory)
-#                     default_config=subflow_cfg,
-#                     default_state=subflow_default_state,
-#                     default_dispatch_point=default_dispatch_point,
-#                 )
-
-#                 # Change the subflow_config of flow to proxy
-#                 # Quite ugly, but what am I supposed to do?
-
-#                 if subflow not in default_config["subflows_config"]:
-#                     default_config["subflows_config"][subflow] = {}
-
-#                 default_config["subflows_config"][subflow][
-#                     "_target_"
-#                 ] = f"aiflows.base_flows.AtomicFlow.instantiate_from_default_config"
-#                 default_config["subflows_config"][subflow]["user_id"] = "local"
-#                 default_config["subflows_config"][subflow]["flow_type"] = subflow_type
-#                 if "name" not in default_config["subflows_config"][subflow]:
-#                     default_config["subflows_config"][subflow]["name"] = subflow_cfg[
-#                         "name"
-#                     ]
-#                 if "description" not in subflow_config:
-#                     default_config["subflows_config"][subflow][
-#                         "description"
-#                     ] = subflow_cfg["description"]
-
-#     serving_succesful = serve_flow(
-#         cl=cl,
-#         flow_type=flow_type,
-#         serving_mode=serving_mode,
-#         default_config=default_config,
-#         default_state=default_state,
-#         default_dispatch_point=default_dispatch_point,
-#     )
-#     return serving_succesful
+    return serve_flow(
+        cl, flow_class_name, flow_endpoint, dispatch_point, parallel_dispatch, singleton
+    )

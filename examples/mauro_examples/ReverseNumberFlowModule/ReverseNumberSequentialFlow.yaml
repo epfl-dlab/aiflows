@@ -12,12 +12,23 @@ output_interface:
 #configuration of subflows
 subflows_config:
   first_reverse_flow:
+    # for get_instance & recursive_serve
     user_id: local
     flow_endpoint: reverse_number_atomic
+
+    # for recursive_serve
+    flow_class_name: ReverseNumberFlowModule.ReverseNumberAtomicFlow
+    singleton:  True
+
+    # get_instance gives everything else as overrides when creating subflow
     name: "ReverseNumberFirst"
     description: "A flow that takes in a number and reverses it."
   second_reverse_flow:
     user_id: local
     flow_endpoint: reverse_number_atomic
+
+    # not needed for this example since we will already serve at reverse_number_atomic when processing first_reverse_flow
+    flow_class_name: ReverseNumberFlowModule.ReverseNumberAtomicFlow
+
     name: "ReverseNumberSecond"
     description: "A flow that takes in a number and reverses it AGAIN."
