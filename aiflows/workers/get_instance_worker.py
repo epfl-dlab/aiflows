@@ -69,6 +69,7 @@ def get_instances_initiator_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
     print("\n~~~ get_instances initiator ~~~")
+    print(f"task_id = {cl.get_task_id()}")
     request_id = coflows_deserialize(param)
     get_instance_calls = coflows_deserialize(
         cl.read_entry(
@@ -103,6 +104,7 @@ def get_instances_receiver_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
     print("\n~~~ serving get_instances request ~~~")
+    print(f"task_id = {cl.get_task_id()}")
     get_instance_calls = coflows_deserialize(
         cl.recv_variable("user_get_instance_calls", participants[0])
     )
@@ -167,6 +169,5 @@ if __name__ == "__main__":
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )

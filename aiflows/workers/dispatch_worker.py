@@ -216,6 +216,5 @@ if __name__ == "__main__":
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )
