@@ -49,6 +49,6 @@ class ReverseNumberSequentialFlow(CompositeFlow):
             reply = self.package_output_message(
                 input_message=self.flow_state["initial_message"], response=message.data
             )
-            self.send_message(reply, is_reply=True)
+            self.send_message(reply)
 
         self.flow_state["current_call"] = self.get_next_call[curr_call]

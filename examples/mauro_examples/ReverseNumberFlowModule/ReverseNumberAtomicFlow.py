@@ -19,5 +19,4 @@ class ReverseNumberAtomicFlow(AtomicFlow):
         )
         self.send_message(
             reply,
-            is_reply=True,
         )
