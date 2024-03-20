@@ -133,6 +133,21 @@ def delete_flow_endpoint(cl: CoLink, flow_endpoint: str):
         print(f"Received RPC exception: code={e.code()} message={e.details()}")
 
 
+def delete_all_flow_endpoints(cl: CoLink):
+    """
+    Deletes all flow endpoints. This includes deleting all flow instances.
+    """
+    flow_endpoints = cl.read_keys(
+        prefix=f"{cl.get_user_id()}::{COFLOWS_PATH}",
+        include_history=False,
+    )
+    for flow_endpoint_key in flow_endpoints:
+        flow_endpoint = (
+            str(flow_endpoint_key).split("::")[1].split("@")[0].split(":")[-1]
+        )
+        delete_flow_endpoint(cl, flow_endpoint)
+
+
 def unserve_flow(cl: CoLink, flow_endpoint: str):
     """
     unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.
@@ -477,7 +492,6 @@ def _get_local_flow_instance(
     flow_class = hydra.utils.get_class(flow_class_name)
     config = flow_class.get_config(**deepcopy(config_overrides))
 
-    
     # TODO create flow object and store its pickle
     # flow_obj = flow_class.instantiate_from_default_config(cl, config_overrides)
     # flow_obj.mount() # pickles itself and saves to storage
