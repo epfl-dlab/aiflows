@@ -1,25 +1,12 @@
 import os, sys
-
-import colink as CL
-from colink import CoLink
-from colink import decode_jwt_without_validation
-
-from aiflows import flow_verse
-from aiflows.backends.api_info import ApiInfo
-
-import pickle
 import json
 import argparse
-
-
-from termcolor import colored
-
-from colink import CoLink, ProtocolOperator
-import colink as CL
-
-import time
-
+from threading import Thread
 from typing import List
+
+import colink as CL
+from colink import CoLink, ProtocolOperator
+
 from aiflows.utils import serve_utils
 from aiflows.utils.constants import (
     GET_INSTANCE_CALLS_TRANSFER_PATH,
@@ -69,6 +56,7 @@ def get_instances_initiator_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
     print("\n~~~ get_instances initiator ~~~")
+    print(f"task_id = {cl.get_task_id()}")
     request_id = coflows_deserialize(param)
     get_instance_calls = coflows_deserialize(
         cl.read_entry(
@@ -103,6 +91,7 @@ def get_instances_receiver_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
     print("\n~~~ serving get_instances request ~~~")
+    print(f"task_id = {cl.get_task_id()}")
     get_instance_calls = coflows_deserialize(
         cl.recv_variable("user_get_instance_calls", participants[0])
     )
@@ -146,7 +135,8 @@ def run_get_instance_worker_thread(
     pop.mapping["coflows_get_instances:initiator"] = get_instances_initiator_handler
     pop.mapping["coflows_get_instances:receiver"] = get_instances_receiver_handler
 
-    pop.run_attach(cl=cl)
+    thread = Thread(target=pop.run, args=(cl, False, None, True), daemon=True)
+    thread.start()
     print(
         "get_instances worker started in attached thread for user ",
         cl.get_user_id(),
@@ -167,6 +157,5 @@ if __name__ == "__main__":
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )

@@ -4,6 +4,7 @@ import argparse
 from typing import List, Dict, Any
 import hydra
 import json
+from threading import Thread
 
 import colink as CL
 from colink import CoLink
@@ -13,8 +14,6 @@ from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
 from aiflows.utils.coflows_utils import (
-    push_to_flow,
-    PUSH_ARGS_TRANSFER_PATH,
     dispatch_response,
 )
 from aiflows.utils.serve_utils import (
@@ -152,21 +151,21 @@ def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Partic
         print("ERROR: no config to load flow.")
         return
 
-    # TODO would be better to have pickled flow in colink storage
-    flow = create_flow(None, config_overrides, state)
-    flow.set_colink(cl)
+    try:
+        # TODO would be better to have pickled flow in colink storage
+        flow = create_flow(None, config_overrides, state)
+        flow.set_colink(cl)
 
-    for message_path in dispatch_task["message_ids"]:
-        input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
-        print(f"Input message source: {input_msg.src_flow}")
+        for message_path in dispatch_task["message_ids"]:
+            input_msg = FlowMessage.deserialize(cl.read_entry(message_path))
+            print(f"Input message source: {input_msg.src_flow}")
 
-        input_msg.reply_data["input_msg_path"] = message_path
-
-        try:
+            input_msg.reply_data["input_msg_path"] = message_path
             flow(input_msg)
-        except Exception as e:
-            print(f"Error executing flow: {e}")
-            return
+
+    except Exception as e:
+        print(f"Error executing flow: {e}")
+        return
 
     if not parallel_dispatch:
         new_state = flow.__getstate__()["flow_state"]
@@ -186,7 +185,8 @@ def run_dispatch_worker_thread(
     proto_role = f"{dispatch_point}:local"
     pop.mapping[proto_role] = dispatch_task_handler
 
-    pop.run_attach(cl=cl)
+    thread = Thread(target=pop.run, args=(cl, False, None, True), daemon=True)
+    thread.start()
     print("Dispatch worker started in attached thread.")
     print(f"dispatch_point: {dispatch_point}")
 
@@ -216,6 +216,5 @@ if __name__ == "__main__":
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],
-        vt_public_addr="127.0.0.1",  # HACK
         attached=False,
     )
