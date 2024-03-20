@@ -1,4 +1,4 @@
-import os
+import os, sys
 
 import colink as CL
 from colink import CoLink
@@ -21,7 +21,10 @@ import time
 
 from typing import List
 from aiflows.utils import serve_utils
-from aiflows.utils.constants import GET_INSTANCE_CALLS_TRANSFER_PATH
+from aiflows.utils.constants import (
+    GET_INSTANCE_CALLS_TRANSFER_PATH,
+    FLOW_MODULES_BASE_PATH,
+)
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 
 
@@ -44,6 +47,12 @@ def parse_args():
         default=env_jwt,
         required=env_jwt is None,
         help="Your JWT issued by the CoLink server.",
+    )
+    parser.add_argument(
+        "--flow_modules_base_path",
+        type=str,
+        default=FLOW_MODULES_BASE_PATH,
+        help="Path to directory that contains the flow_modules directory.",
     )
     parser.add_argument(
         "--keep_alive",
@@ -97,6 +106,7 @@ def get_instances_receiver_handler(
     get_instance_calls = coflows_deserialize(
         cl.recv_variable("user_get_instance_calls", participants[0])
     )
+    print("get_instance_calls:", get_instance_calls)
 
     get_instance_results = {}
     for flow_key, flow_endpoint, config_overrides in get_instance_calls:
@@ -148,6 +158,7 @@ if __name__ == "__main__":
     args = parse_args()
     cl = serve_utils.start_colink_component("get_instances worker", args)
 
+    sys.path.append(args["flow_modules_base_path"])
     pop = ProtocolOperator(__name__)
     pop.mapping["coflows_get_instances:initiator"] = get_instances_initiator_handler
     pop.mapping["coflows_get_instances:receiver"] = get_instances_receiver_handler
