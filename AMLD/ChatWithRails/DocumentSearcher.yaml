@@ -1,0 +1,18 @@
+name: Chroma Doc Searcher
+description: ChromaDB is a document store that uses vector embeddings to store and
+  retrieve documents
+_target_: DocumentSearcher.DocumentSearcher.instantiate_from_default_config
+backend:
+  _target_: aiflows.backends.llm_lite.LiteLLMBackend
+  api_infos: ???
+  model_name: ''
+input_interface:
+- operation
+- content
+output_interface:
+- retrieved
+paths_to_data:
+- ./data/paul_graham_essay.txt
+chunk_size: 300
+chunk_overlap: 0
+persist_directory: ./demo_db_dir
