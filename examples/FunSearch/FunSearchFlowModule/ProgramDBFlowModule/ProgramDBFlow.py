@@ -151,7 +151,6 @@ class ProgramDBFlow(AtomicFlow):
             "register_program",
             "get_prompt",
             "get_best_programs_per_island",
-            "register_evaluate_functions"
         ]
         
         if operation not in possible_operations:
@@ -187,6 +186,5 @@ class ProgramDBFlow(AtomicFlow):
                 response["retrieved"] = "Program failed to register"
         else:
             response["retrieved"] = self.get_best_programs()
-            
-        log.debug("at ouput --> response", response)
+        breakpoint()
         return response

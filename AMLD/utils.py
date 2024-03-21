@@ -30,6 +30,14 @@ def dict_to_yaml(dictionary, output_file):
     """
     # Convert dictionary to OmegaConf config object
     config = OmegaConf.create(dictionary)
+    
+    directory = os.path.dirname(output_file)
 
-    # Write the config object to the output YAML file
-    OmegaConf.save(config, output_file)
+    # Check if the directory exists
+    if not os.path.exists(directory):
+        # Create the directory if it doesn't exist
+        os.makedirs(directory)
+
+    #wirite file in yaml format
+    with open(output_file, 'w') as f:
+        OmegaConf.save(config, f.name)

@@ -1,8 +1,9 @@
 from aiflows.backends.api_info import ApiInfo
 import os
 from aiflows import logging
-from aiflows.utils.general_helpers import read_yaml_file, quick_load
+from aiflows.utils.general_helpers import read_yaml_file, quick_load_api_keys
 from aiflows.base_flows import AtomicFlow
+from aiflows.flow_launchers import FlowLauncher
 from aiflows.utils.general_helpers import quick_load
 from aiflows.workers import run_dispatch_worker_thread
 from aiflows.messages import FlowMessage
@@ -94,14 +95,8 @@ def get_config_from_path(root_dir, config_name):
 def get_configs(problem_id):
     tests,  problem_description = load_problem(problem_id)
     
-    root_dir = "./flow_modules/aiflows/FunSearchFlowModule/EvaluatorFlowModule"
-    evaluator_cfg = get_config_from_path(root_dir=root_dir, config_name="EvaluatorFlow.yaml")
-    
-    root_dir = "./flow_modules/aiflows/FunSearchFlowModule/ProgramDBFlowModule"
-    pdb_cfg = get_config_from_path(root_dir=root_dir, config_name="ProgramDBFlow.yaml")
-    
-    root_dir = "./flow_modules/aiflows/FunSearchFlowModule/SamplerFlowModule"
-    sampler_cfg = get_config_from_path(root_dir=root_dir, config_name="SamplerFlow.yaml")
+    path = os.path.join(".", "FunSearchFlowModule/FunSearchFlowModule/FunSearch.yaml")
+    funsearch_cfg = read_yaml_file(path)
        
     evaluate_function_file_path: str = "./cf_functions.py"
     evaluate_function_name: str = "evaluate"
@@ -114,9 +109,9 @@ def get_configs(problem_id):
     evaluate_file_full_content = f"\"\"\"{problem_description}\"\"\"\n\n" + evaluate_file_full_content
     
     #~~~~~ ProgramDBFlow Overrides ~~~~~~~~
-    pdb_cfg["evaluate_function"] = evaluate_function
-    pdb_cfg["evaluate_file_full_content"] = evaluate_file_full_content
-    pdb_cfg["artifact_to_evolve_name"] = evolve_function_name
+    funsearch_cfg["subflows_config"]["ProgramDBFlow"]["evaluate_function"] = evaluate_function
+    funsearch_cfg["subflows_config"]["ProgramDBFlow"]["evaluate_file_full_content"] = evaluate_file_full_content
+    funsearch_cfg["subflows_config"]["ProgramDBFlow"]["artifact_to_evolve_name"] = evolve_function_name
     
     if len(tests) > 0:
         first_test = tests["test_1"]
@@ -132,20 +127,18 @@ def get_configs(problem_id):
             f"\n    return 0.0\"\"\n"
     
     #~~~~~~~~~~Evaluator overrides~~~~~~~~~~~~
-    evaluator_cfg["py_file"] = evaluate_file_full_content
-    evaluator_cfg["run_error_score"] = -1
-    evaluator_cfg["function_to_run_name"] = evaluate_function_name
-    evaluator_cfg["test_inputs"] = tests
+    funsearch_cfg["subflows_config"]["EvaluatorFlow"]["py_file"] = evaluate_file_full_content
+    funsearch_cfg["subflows_config"]["EvaluatorFlow"]["run_error_score"] = -1
+    funsearch_cfg["subflows_config"]["EvaluatorFlow"]["function_to_run_name"] = evaluate_function_name
+    funsearch_cfg["subflows_config"]["EvaluatorFlow"]["test_inputs"] = tests
     #Hides test inputs from LLM (necessary for hidden tests. Makes same setup as in a real contest.)
-    evaluator_cfg["use_test_input_as_key"] = False
+    funsearch_cfg["subflows_config"]["EvaluatorFlow"]["use_test_input_as_key"] = False
    
-
     
     #~~~~~~~~~~Sampler overrides~~~~~~~~~~~~
-    api_infos = {"_target_": "aiflows.backends.api_info.ApiInfo", "backend_used": "openai", "api_key": os.getenv("OPENAI_API_KEY")}
-    
-    quick_load(sampler_cfg, item = api_infos, key = "api_infos")
-    sampler_cfg["subflows_config"]["Sampler"]["system_message_prompt_template"]["partial_variables"] = \
+    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
+    quick_load_api_keys(funsearch_cfg, api_information, key="api_infos")    
+    funsearch_cfg["subflows_config"]["SamplerFlow"]["subflows_config"]["Sampler"]["system_message_prompt_template"]["partial_variables"] = \
         {
             "evaluate_name": evaluate_function_name,
             "evolve_name": evolve_function_name,
@@ -153,41 +146,19 @@ def get_configs(problem_id):
         }
         
         
-    return pdb_cfg, evaluator_cfg, sampler_cfg, dummy_solution
-
-
-
-def parse_args():
-    parser = argparse.ArgumentParser(description="CoFlows Demo program")
-
-    env_addr = os.getenv("COLINK_CORE_ADDR")
-    env_jwt = os.getenv("COLINK_JWT")
-
-    parser.add_argument(
-        "--addr",
-        type=str,
-        default=env_addr,
-        required=env_addr is None,
-        help="CoLink server address.",
-    )
-    parser.add_argument(
-        "--jwt",
-        type=str,
-        default=env_jwt,
-        required=env_jwt is None,
-        help="Your JWT issued by the CoLink server.",
-    )
-
-    args = parser.parse_args()
-    return vars(args)
+    return funsearch_cfg, dummy_solution
 
 
 FLOW_MODULES_PATH = "./"
 
 
 if __name__ == "__main__":
-    args = parse_args()
-    cl = serve_utils.start_colink_component("Reverse Number Demo", args)
+    jwt = os.getenv("COLINK_JWT")
+    addr = os.getenv("LOCAL_COLINK_ADDRESS")
+    cl = serve_utils.start_colink_component(
+        "FunSearch",
+         {"jwt": jwt, "addr": addr}
+    )
     
     problem_id = "1789B" #put the problem id here
     
@@ -195,93 +166,99 @@ if __name__ == "__main__":
     if not os.path.exists("./data/codeforces.jsonl.gz"):
         download_codeforces_data("./data", "codeforces.jsonl.gz")
    
-    pdb_cfg, evaluator_cfg, sampler_cfg, dummy_solution = get_configs(problem_id)
+    funsearch_cfg, dummy_solution = get_configs(problem_id)
+    
+    
+    
+    #Serve Program Database and get its flow type explicitly
+    pdb_flow_type = funsearch_cfg["subflows_config"]["ProgramDBFlow"].get("flow_type", "ProgramDBFlow_served")
     serve_utils.recursive_serve_flow(
         cl=cl,
-        flow_type="ProgramDBFlow_served",
-        default_config=pdb_cfg,
+        flow_type=pdb_flow_type,
+        default_config=funsearch_cfg["subflows_config"]["ProgramDBFlow"],
         default_state=None,
         default_dispatch_point="coflows_dispatch",
     )
+    
+    #Serve the rest
+    serve_utils.recursive_serve_flow(
+        cl=cl,
+        flow_type="FunSearch_served",
+        default_config=funsearch_cfg,
+        default_state=None,
+        default_dispatch_point="coflows_dispatch",
+    )
+    
+    # run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    # run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    # run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
  
     config_overrides = None
+    #Mount ProgramDBFlow first to get it's flow ref
     pdb_proxy_flow = serve_utils.recursive_mount(
         cl=cl,
         client_id="local",
-        flow_type="ProgramDBFlow_served",
+        flow_type=pdb_flow_type,
         config_overrides=config_overrides,
         initial_state=None,
         dispatch_point_override=None,
     )
     
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    #add flow ref for PDB
+    pdb_flow_ref = pdb_proxy_flow.flow_config["flow_ref"]
+   
+    config_overrides = {
+        "subflows_config": {
+            "SamplerFlow": {
+                "subflows_config": {
+                    "ProgramDB": {
+                        "flow_ref": pdb_flow_ref
+                    }
+                }
+            },
+            "ProgramDBFlow": {
+                "flow_ref": pdb_flow_ref
+            }
+        },
+    }
     
-    serve_utils.recursive_serve_flow(
-        cl=cl,
-        flow_type="EvaluatorFlow_served",
-        default_config=evaluator_cfg,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch",
-    )
-    evaluator_cfg["subflows_config"]["ProgramDB"]["flow_ref"] = pdb_proxy_flow.flow_config["flow_ref"]
-    evaluator_proxy_flow = serve_utils.recursive_mount(
-        cl=cl,
-        client_id="local",
-        flow_type="EvaluatorFlow_served",
-        config_overrides=evaluator_cfg,
-        initial_state=None,
-        dispatch_point_override=None,
-    )
-    
-    
-    
-    serve_utils.recursive_serve_flow(
-        cl=cl,
-        flow_type="SamplerFlow_served",
-        default_config=sampler_cfg,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch",
-    )
-    sampler_cfg["subflows_config"]["Evaluator"]["flow_ref"] = evaluator_proxy_flow.flow_config["flow_ref"]
-    sampler_cfg["subflows_config"]["ProgramDB"]["flow_ref"] = pdb_proxy_flow.flow_config["flow_ref"]
-    
-    sampler_proxy_flow = serve_utils.recursive_mount(
+    funsearch_proxy = serve_utils.recursive_mount(
         cl=cl,
         client_id="local",
-        flow_type="SamplerFlow_served",
-        config_overrides=sampler_cfg,
+        flow_type="FunSearch_served",
+        config_overrides=config_overrides,
         initial_state=None,
         dispatch_point_override=None,
     )
     
     input_message = FlowMessage(
-        data= {"operation": "register_program", "artifact": dummy_solution},
+        data= {"artifact": dummy_solution, "forward_to": "EvaluatorFlow"},
         src_flow="Coflow team",
-        dst_flow=evaluator_proxy_flow,
+        dst_flow=funsearch_proxy.flow_config["name"],
         is_input_msg=True
     )
-    evaluator_proxy_flow.tell(input_message)
+    funsearch_proxy.tell(input_message)
     
     input_message = FlowMessage(
-        data= {"retrieved": False},
+        data= {"retrieved": False, "forward_to": "SamplerFlow"},
         src_flow="Coflow team",
-        dst_flow=sampler_proxy_flow,
+        dst_flow=funsearch_proxy.flow_config["name"],
         is_input_msg=True
     )
-    sampler_proxy_flow.tell(input_message)
     
-    time.sleep(10)
+    funsearch_proxy.tell(input_message)
+    wait_time = 180
+    print(f"Waiting {wait_time} seconds  before requesting result...")
+    time.sleep(wait_time)
 
     input_message = FlowMessage(
-        data= {"operation": "get_best_programs_per_island"},
+        data= {"operation": "get_best_programs_per_island", "forward_to": "ProgramDBFlow"},
         src_flow="Coflow team",
-        dst_flow=evaluator_proxy_flow,
+        dst_flow=funsearch_proxy.flow_config["name"],
         is_input_msg=True
     )
     
-    future = pdb_proxy_flow.ask(input_message)
-    
+    future = funsearch_proxy.ask(input_message)
+    print("waiting for response....")
     response = future.get_data()
     print(response)

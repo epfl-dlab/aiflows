@@ -540,7 +540,7 @@ def _get_local_flow_instance(
                     )
                 )
                 if instance_init == 1:
-                    log.info("Fetched singleton", instance_id)
+                    log.info(f'Fetched singleton {instance_id}')
                     return instance_id
 
     # recursively create new instance

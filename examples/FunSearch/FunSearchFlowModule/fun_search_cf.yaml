@@ -1,19 +1,12 @@
 name: FunSearchFlow
 description: "A flow implementing FunSearch Asynchronous Search"
 
-enable_cache: false
 ### Subflows specification
 subflows_config:
   SamplerFlow:
     _target_: flow_modules.SamplerFlowModule.SamplerFlow.instantiate_from_default_config
     enable_cache: false
-    backend:
-      api_infos: ????
-    system_message_prompt_template:
-      partial_variables:
-        artifacts_per_prompt: 2
-        evaluate_name: ???
-        evolve_name: ???
+
 
   EvaluatorFlow:
     _target_: flow_modules.EvaluatorFlowModule.EvaluatorFlow.instantiate_from_default_config

@@ -1,5 +1,6 @@
 _target_: flow_modules.aiflows.AutoGPTFlowModule.AutoGPTFlow.instantiate_from_default_config
 max_rounds: 30
+name: "AutoGPT"
 
 ### Subflows specification
 subflows_config:
@@ -34,17 +35,29 @@ subflows_config:
     previous_messages:
       last_k: 1
       first_k: 2
-
+  
+  HumanFeedback:
+    name: HumanFeedbackFlow
+    description: "A flow that requests feedback from a human."
 
   wiki_search:
     _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+  
   ddg_search:
     _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+    user_id: "local"
+    name: "DuckDuckGo"
+    description: "Query the search engine DuckDuckGo."
+    flow_endpoint: DuckDuckGo
+    flow_class_name: flow_modules.aiflows.LCToolFlowModule.LCToolFlow
     backend:
       _target_: langchain.tools.DuckDuckGoSearchRun
 
   #MemoryFlow Configuration
   Memory:
+    name: MemoryFlow
+    description: "A flow that stores and retrieves information from memory."
+    persist_directory: ./data/demo_db_dir
     backend:
       model_name: none
       api_infos: ???

@@ -1,4 +1,4 @@
-from aiflows.base_flows import CompositeFlow
+from aiflows.base_flows import AtomicFlow
 from typing import Dict, Any
 import os
 from aiflows.utils import logging
@@ -13,7 +13,7 @@ class TimeoutException(Exception):
 def timeout_handler(signum, frame):
     raise TimeoutException("Execution timed out")
 
-class EvaluatorFlow(CompositeFlow):
+class EvaluatorFlow(AtomicFlow):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -35,9 +35,9 @@ class EvaluatorFlow(CompositeFlow):
         select_island_id_with_default = lambda data_dict,**kwargs: {**data_dict,**{"island_id":  data_dict.get("island_id", None)}} 
         
         self.output_interface = KeyInterface(
-            keys_to_set= {"operation": "register_program"},
+            keys_to_set= {"operation": "register_program", "forward_to": "ProgramDBFlow"},
             additional_transformations= [select_island_id_with_default],
-            keys_to_select= ["artifact", "scores_per_test", "island_id", "operation"]
+            keys_to_select= ["artifact", "scores_per_test", "island_id", "operation","forward_to"]
         )
 
     
@@ -143,7 +143,5 @@ class EvaluatorFlow(CompositeFlow):
         response = {**input_data, **{"scores_per_test": scores_per_test}}
         
         response = self.output_interface(response)
-        
-        self.tell_subflow("ProgramDB", data=response)
-        
+        breakpoint()
         return response

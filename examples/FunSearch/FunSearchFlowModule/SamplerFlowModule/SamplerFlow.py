@@ -13,6 +13,11 @@ class SamplerFlow(CompositeFlow):
         self.make_request_for_data = KeyInterface(
             keys_to_set= {"operation": "get_prompt"},
         )
+                
+        self.forward_to_evaluator = KeyInterface(
+            keys_to_set={"forward_to": "EvaluatorFlow"},
+        )
+        
         self.output_interface = KeyInterface(
             keys_to_rename= {"api_output": "artifact"},
             keys_to_select= ["artifact","island_id"]
@@ -24,19 +29,17 @@ class SamplerFlow(CompositeFlow):
             
             data = input_data["retrieved"]
             
-            output = self.ask_subflow("Sampler", data = data).get_data()
-        
             #blocking because I don't want to oveload requests to PDB 
-            # and also because it's better when the next sample has more recent programs from the ProgramDB    
-            output = self.output_interface({**data,**output})
-            
-            
-            self.tell_subflow("Evaluator", data = output)
+            # and also because it's better when the next sample has more recent programs from the ProgramDB 
+            output = self.ask_subflow("Sampler", data = data).get_data()
+                    
         
+            output = self.forward_to_evaluator(self.output_interface({**data,**output}))
+            
         else:
-            output = {"api_ouput": "No data retrieved from the ProgramDB (No programs available yet)"}
+            #If no data is retrieved, then we crea
+            output = self.output_interface({"api_output": None, "island_id": None})
         
         self.ask_pipe_subflow("ProgramDB", data=self.make_request_for_data({}))
-        
-        
+        breakpoint()
         return output

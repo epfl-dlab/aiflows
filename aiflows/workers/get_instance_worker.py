@@ -90,7 +90,7 @@ def get_instances_initiator_handler(
         )  # Dict: subflow_key -> flow_id
         get_instances_results.update(user_get_instances_results)
 
-    log.info("Received subflow instances:", json.dumps(get_instances_results, indent=4))
+    log.info(f'Received subflow instances: {json.dumps(get_instances_results, indent=4)}')
     cl.create_entry(
         f"{GET_INSTANCE_CALLS_TRANSFER_PATH}:{request_id}:get_instances_results",
         coflows_serialize(get_instances_results),
@@ -114,7 +114,7 @@ def get_instances_receiver_handler(
     get_instance_calls = coflows_deserialize(
         cl.recv_variable("user_get_instance_calls", participants[0])
     )
-    log.info("get_instance_calls:", get_instance_calls)
+    log.info(f'get_instance_calls: {get_instance_calls}')
 
     get_instance_results = {}
     for flow_key, flow_endpoint, config_overrides in get_instance_calls:
@@ -162,8 +162,7 @@ def run_get_instance_worker_thread(
     thread = Thread(target=pop.run, args=(cl, False, None, True), daemon=True)
     thread.start()
     log.info(
-        "get_instances worker started in attached thread for user ",
-        cl.get_user_id(),
+        f'get_instances worker started in attached thread for user {cl.get_user_id()}',
     )
 
 

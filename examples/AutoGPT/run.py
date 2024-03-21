@@ -61,24 +61,26 @@ if __name__ == "__main__":
     #3. ~~~~ Serve The Flow ~~~~
     serve_utils.recursive_serve_flow(
         cl = cl,
-        flow_type="AutoGPT",
-        default_config=cfg,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch"
+        flow_class_name="flow_modules.aiflows.AutoGPTFlowModule.AutoGPTFlow",
+        flow_endpoint="AutoGPTFlow",
+    )
+    
+    serve_utils.serve_flow(
+        cl=cl,
+        flow_class_name="flow_modules.aiflows.LCToolFlowModule.LCToolFlow",
+        flow_endpoint="DuckDuckGo",
     )
     
     #4. ~~~~~Start A Worker Thread~~~~~
     run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
 
     #5. ~~~~~Mount the flow and get its proxy~~~~~~
-    proxy_flow = serve_utils.recursive_mount(
+    proxy_flow= serve_utils.get_flow_instance(
         cl=cl,
-        client_id="local",
-        flow_type="AutoGPT",
-        config_overrides=None,
-        initial_state=None,
-        dispatch_point_override=None,
-    )   
+        flow_endpoint="AutoGPTFlow",
+        user_id="local",
+        config_overrides = cfg
+    ) 
     
     #6. ~~~ Get the data ~~~
     data = {
@@ -86,14 +88,7 @@ if __name__ == "__main__":
         "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?",
     }
    
-    
-    #option1: use the FlowMessage class
-    input_message = FlowMessage(
-        data=data,
-    )
-
-    #option2: use the proxy_flow
-    #input_message = proxy_flow.package_input_message(data = data)
+    input_message = proxy_flow.package_input_message(data = data)
     
     #7. ~~~ Run inference ~~~
     future = proxy_flow.get_reply_future(input_message)
