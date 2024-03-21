@@ -34,15 +34,13 @@ class ReverseNumberSequentialFlow(CompositeFlow):
 
         if curr_call == "first_reverse_flow":
             self.flow_state["initial_message"] = input_message
-            self.subflows["first_reverse_flow"].get_reply(
-                input_message, self.flow_config["flow_id"]
-            )
+            self.subflows["first_reverse_flow"].get_reply(input_message)
 
         elif curr_call == "second_reverse_flow":
-            message = self.transformation_1(input_message)
-            self.subflows["first_reverse_flow"].get_reply(
-                message, self.get_instance_id()
+            message = self.package_input_message(
+                self.transformation_1(input_message).data
             )
+            self.subflows["second_reverse_flow"].get_reply(message)
 
         else:
             message = self.transformation_2(input_message)
