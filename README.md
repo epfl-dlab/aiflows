@@ -64,7 +64,7 @@ To develop the next-generation AI tools and at the same time maximally benefit f
 The library is compatible with Python 3.10+, with a preference for installation on versions 3.10 or 3.11. To install the library, use the following command:
 
 ```shell
-pip install aiflows
+pip install aiflows==0.1.7
 ```
 
 <details>
