@@ -20,6 +20,12 @@
     </a>
 </p>
 
+> 📢
+> Major update: In v1.0.0 we introduces the Flows engine which enables concurrent execution and peer-to-peer collaboration. Additionally, we redesign the developer experience such that you can build Flows leveraging these features as easily as possible.
+> 
+> We are still polishing some aspects of the developer experience, so share your feedback on [Discord](https://discord.gg/yFZkpD2HAh)! 
+
+
 🤖🌊 **aiFlows** embodies the [*Flows*](https://arxiv.org/abs/2308.01285) abstraction and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. In collaboration with [CoLink](https://github.com/CoLearn-Dev/colink-server-dev), it enables:
 
 - 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
@@ -66,20 +72,21 @@ The FlowVerse is continuously growing. To explore the currently available Flows,
 ## Why should I use aiFlows?
 AI is set to revolutionize the way we work. Our mission is to support AI researchers and to allow them to seamlessly share advancements with practitioners. This will establish a feedback loop, guiding progress toward beneficial directions while ensuring that everyone can freely access and benefit from the next-generation AI tools.
 
-#### As a researcher, you will benefit from:
+#### You will benefit from:
+
 - The ability to design, implement, and study arbitrarily complex interactions -- even interactions that require concurrent execution or remote collaboration
 - Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+
+#### Additionally, as a researcher, you will benefit from:
 - The ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
 - The ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
-#### As a practitioner, you will benefit from the:
-- The ability to design, implement, and study arbitrarily complex interactions -- even interactions that require or remote collaboration
-- Complete control and customizability (e.g., the tools, the specific Flows and the information they have access to, the choice of models and their deployment, etc.)
+#### Additionally, as practitioner, you will benefit from the:
 - The ability to readily reuse or build on top of Flows shared on the FlowVerse
 - The ability to readily give access to your Flows to others
 - Direct access to any advancements in the field.
 
-To develop the next-generation AI tools and at the same time maximally benefit from them, developers and researchers need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
+To develop the next-generation AI tools will need a principled abstraction that support concurrent execution and peer-to-peer remote collaboration. At the same time to maximally benefit from them, developers and researchers will need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
 # [Getting Started](./tutorials)
 
@@ -102,10 +109,6 @@ You can become a part of the project in a few ways:
 - use the library in your creative projects, push it to its limits, and share your feedback: the proof of the pudding is in the eating, and the best way to identify promising directions, as well as important missing features, is by experimenting
 - last but not least, ⭐ the repository and 📣 share aiFlows with your friends and colleagues; spread the word ❤️
 
-We will support the community in the best way we can but also lead by example. In the coming weeks, we will share:
-  - a roadmap for the library (FlowViz; FlowStudio; improve flexibility, developer experience, and support for concurrency, etc. -- feedback and help would be greatly appreciated!)
-  - write-ups outlining features, ideas, and our long-term vision for Flows -- we encourage you to pick up any of these and start working on them in whatever way you see fit
-  - a version of JARVIS -- your fully customizable open-source version of ChatGPT+(++), which we will continue building in public! We hope that this excites you as much as it excites us, and JARVIS will become one of those useful projects that will constantly push the boundaries of what's possible with Flows
 
 We have tried to find a way for anyone to benefit by contributing to the project. The <a href="https://epfl-dlab.github.io/aiflows/docs/built_with_sphinx/html/contributing_info/contribute_index.html">Contribution Guide</a> describes our envisioned workflows in more detail (we would love to hear your feedback on this -- the Discord [server](https://discord.gg/yFZkpD2HAh) already has a channel for it :)).
 
