@@ -91,7 +91,7 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
-        """
+        """ Instantiates the flow from the default config, with the given overrides applied.
 
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
@@ -214,8 +214,8 @@ class Flow(ABC):
         Reset the flow state. If recursive is True, reset all subflows as well.
 
         :param full_reset:  If True, remove all data in flow_state. If False, keep the data in flow_state.
-        :param recursive:
-        :param src_flow:
+        :param recursive: If True, reset all subflows as well.
+        :param src_flow: The flow that initiated the reset
         :return:
         """
 
@@ -334,15 +334,13 @@ class Flow(ABC):
 
     def get_interface_description(self):
         """Returns the input and output interface description of the flow."""
-        return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
+        return {"input": self.flow_config.get("input_interface",None), "output": self.flow_config.get("output_interface",None)}
 
     def _log_message(self, message: Message):
         """Logs the given message to the history of the flow.
 
         :param message: The message to log
         :type message: Message
-        :return: The message that was logged
-        :rtype: Message
         """
         log.debug(message.to_string())
         #TODO: Think about how we want to log messages
@@ -380,10 +378,10 @@ class Flow(ABC):
                                reply_data: Dict[str, Any] = {"mode": "no_reply"}):
         """Packages the given payload into an FlowMessage.
 
-        :param payload: The payload to package
-        :type payload: Dict[str, Any]
+        :param data: The data dictionary to package
+        :type data: Dict[str, Any]
         :param dst_flow: The destination flow
-        :type dst_flow: Flow
+        :type dst_flow: str
         :type reply_data: information about for the flow who processes the message on how and who to reply to (for distributed calls)
         :return: The packaged input message
         :rtype: FlowMessage
@@ -398,6 +396,7 @@ class Flow(ABC):
             data=copy.deepcopy(data),
             private_keys=private_keys,
             src_flow=src_flow,
+            src_flow_id=self.get_instance_id(),
             dst_flow=dst_flow,
             reply_data=reply_data,
             created_by=self.name,
@@ -413,8 +412,6 @@ class Flow(ABC):
         :type input_message: FlowMessage
         :param response: The response to package
         :type response: Dict[str, Any]
-        :param raw_response: The raw response to package
-        :type raw_response: Dict[str, Any]
         :return: The packaged output message
         :rtype: FlowMessage
         """
@@ -429,6 +426,7 @@ class Flow(ABC):
         return FlowMessage(
             created_by=self.flow_config["name"],
             src_flow=self.flow_config["name"],
+            src_flow_id=self.get_instance_id(),
             dst_flow=input_message.src_flow,
             data=output_data,
             reply_data=input_message.reply_data,
@@ -535,18 +533,18 @@ class Flow(ABC):
         
         self._run_method(input_message)
 
-        #TODO: DEpricate
-        # # ~~~ Package output message ~~~
-        # output_message = self.package_output_message(
-        #     input_message=input_message,
-        #     response=response,
-        # )
-
         self._post_call_hook()
 
         
  
     def set_colink(self, cl, recursive=True):
+        """ Sets the colink object for the flow and all its subflows.
+        
+        :param cl: The colink object to set
+        :type cl: CL.CoLink
+        :param recursive: Whether to set the colink for all subflows as well
+        :type recursive: bool
+        """
         self.cl = cl
         if recursive and hasattr(self, "subflows"):
             for _, flow in self.subflows.items():
@@ -555,6 +553,12 @@ class Flow(ABC):
                 
     @try_except_decorator
     def send_message(self, message: FlowMessage):
+        """ Sends the given message to a flow (specified in message.reply_data). 
+        If the message is a reply, it sends the message back to the flow that sent the original message.
+        
+        :param message: The message to send
+        :type message: FlowMessage
+        """
         
         self._log_message(message)
      
@@ -569,7 +573,13 @@ class Flow(ABC):
         self._post_call_hook()
         
     @try_except_decorator
-    def get_reply(self,message , parent_instance_id):
+    def get_reply(self,message):
+        """ Sends the given message to a flow (specified in message.reply_data) 
+        and expect it to reply in the input queue specified in parent_instance_id.
+        
+        :param message: The message to send
+        :type message: FlowMessage
+        """
         
         self._log_message(message)
         
@@ -577,12 +587,13 @@ class Flow(ABC):
             {
                 "mode": "push",
                 "user_id": self.cl.get_user_id(),
-                "flow_id": parent_instance_id,
+                "flow_id": message.src_flow_id,
             }
      
         message = FlowMessage(
             data=message.data,
             src_flow=self.flow_config["name"],
+            src_flow_id=message.src_flow_id,
             dst_flow=self.get_instance_id(),
             reply_data=reply_data,
             private_keys=message.private_keys,
@@ -595,11 +606,16 @@ class Flow(ABC):
         )
         
         self._post_call_hook()
-
-        return FlowFuture(self.cl, message_path)
         
     @try_except_decorator
     def get_reply_future(self, input_message):
+        """ Sends the given message to a flow (specified in message.reply_data) and returns a future that will contain the reply.
+        
+        :param input_message: The message to send
+        :type input_message: FlowMessage
+        :return: The future that will contain the reply
+        :rtype: FlowFuture
+        """
         self._log_message(input_message)
         
         reply_data= \
@@ -611,6 +627,7 @@ class Flow(ABC):
         message = FlowMessage(
             data=input_message.data,
             src_flow=self.flow_config["name"],
+            src_flow_id=input_message.src_flow_id,
             dst_flow=self.get_instance_id(),
             reply_data= reply_data,
             private_keys=input_message.private_keys,

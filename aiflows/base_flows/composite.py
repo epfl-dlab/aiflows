@@ -55,48 +55,6 @@ class CompositeFlow(Flow, ABC):
             subflows=cls._set_up_subflows(flow_config),
             flow_config=flow_config,
         )
-        
-    def ask_subflow(self, subflow: str, data: Dict[str, Any]):
-        
-        assert isinstance(subflow, str), \
-            "subflow must be a string (then name of the flow in subflow config) "
-        
-        
-        flow_name = subflow
-        subflow = self._get_subflow(flow_name)
-        assert subflow is not None, f"Subflow with name {flow_name} not found"
-        
-        msg = self._package_input_message(payload=data, dst_flow=flow_name)
-        
-        return subflow.ask(msg)
-    
-    def tell_subflow(self, subflow: str, data: Dict[str, Any]):
-        
-        assert isinstance(subflow, str), \
-            "subflow must be a string (then name of the flow in subflow config) "
-        
-        
-        flow_name = subflow
-        subflow = self._get_subflow(flow_name)
-        assert subflow is not None, f"Subflow with name {flow_name} not found"
-        
-        msg = self._package_input_message(payload=data, dst_flow=flow_name)
-        
-        subflow.tell(msg)
-        
-    def ask_pipe_subflow(self, subflow: str, data: Dict[str, Any]):
-        
-        assert isinstance(subflow, str), \
-            "subflow must be a string (then name of the flow in subflow config) "
-        
-        
-        flow_name = subflow
-        subflow = self._get_subflow(flow_name)
-        assert subflow is not None, f"Subflow with name {flow_name} not found"
-        
-        msg = self._package_input_message(payload=data, dst_flow=flow_name)
-        
-        subflow.ask_pipe(msg, parent_flow_id=self.flow_config["flow_id"])
     
     def _get_subflow(self, subflow_name: str) -> Optional[Flow]:
         """Returns the sub-flow with the given name

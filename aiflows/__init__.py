@@ -1,4 +1,4 @@
 from .flow_verse import loading
 from .utils import logging
 
-VERSION = "0.1.7"
+VERSION = "0.1.8.dev"

@@ -10,9 +10,12 @@ from aiflows.utils.constants import (
     INSTANCE_METADATA_PATH,
 )
 from typing import Callable
+from aiflows.utils import logging
+log = logging.get_logger(__name__)
 
 
 class FlowFuture:
+    """ A future object that represents a response from a flow. One can use this object to read the response from the flow."""
     def __init__(self, cl, message_path):
         self.cl = cl
         self.colink_storage_key = f"{message_path.rpartition(':')[0]}:response"
@@ -32,23 +35,34 @@ class FlowFuture:
         return message.data
 
     def get_message(self):
-        """
-        Blocking read, creates colink queue in background and subscribes to it.
-        Probably shouldn't create queue and should have timeout.
+        """ Blocking read of the future returns a message.
         """
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
         message.data = self.output_interface(message.data)
         return message
 
     def get_data(self):
+        """ Blocking read of the future returns a dictionary of the data."""
         message = FlowMessage.deserialize(self.cl.read_or_wait(self.colink_storage_key))
         return self.output_interface(message.data)
 
     def set_output_interface(self, ouput_interface: Callable):
+        """ Set the output interface for the future."""
         self.output_interface = ouput_interface
 
 
-def push_to_flow(cl, target_user_id, target_flow_id, message: Message):
+def push_to_flow(cl: CL.colink, target_user_id: str, target_flow_id: str, message: FlowMessage):
+    """ Pushes a message to a flow via colink
+    
+    :param cl: The colink object
+    :type cl: CL.colink
+    :param target_user_id: The user id of the flow we're pushing to
+    :type target_user_id: str
+    :param target_flow_id: The flow id of the flow we're pushing to
+    :type target_flow_id: str
+    :param message: The message to push
+    :type message: FlowMessage
+    """
     if target_user_id == "local" or target_user_id == cl.get_user_id():
         participants = [
             CL.Participant(
@@ -84,14 +98,23 @@ def push_to_flow(cl, target_user_id, target_flow_id, message: Message):
 
 
 def dispatch_response(cl, output_message, reply_data):
+    """ Dispatches a response message to the appropriate flow.
+    
+    :param cl: The colink object
+    :type cl: CL.Colink
+    :param output_message: The output message
+    :type output_message: FlowMessage
+    :param reply_data: The meta data describing how to reply
+    """
+    
     if "mode" not in reply_data:
-        print("WARNING: dispatch response mode unknown.")
+        log.warn("WARNING: dispatch response mode unknown.")
         return
 
     reply_mode = reply_data["mode"]
 
     if reply_mode == "no_reply":
-        print("no_reply mode")
+        log.info("no_reply mode")
         return
 
     if reply_mode == "push":
@@ -133,4 +156,4 @@ def dispatch_response(cl, output_message, reply_data):
                 "coflows_push", coflows_serialize(push_param), participants, True
             )
     else:
-        print("WARNING: dispatch response mode unknown.")
+        log.warn("WARNING: dispatch response mode unknown.")

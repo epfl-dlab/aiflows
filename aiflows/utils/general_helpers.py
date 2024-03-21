@@ -466,6 +466,15 @@ def find_replace_in_dict(cfg, key_to_find, new_value,current_path=""):
     return cfg
 
 def quick_load_api_keys(cfg, api_information: List[ApiInfo], key="api_infos"):
+    """ Recursively loads the api_information in a dictionary in any field where the key is the parameter key
+    
+    :param cfg: The dictionary to update
+    :type cfg: Dict[str, Any]
+    :param api_information: The api information to set
+    :type api_information: List[ApiInfo]
+    :param key: The key to use, defaults to 'api_infos'
+    :type key: str, optional
+    """
     api_info_cfg = [
         {
             "_target_": "aiflows.backends.api_info.ApiInfo",

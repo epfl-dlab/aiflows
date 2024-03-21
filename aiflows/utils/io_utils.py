@@ -42,6 +42,13 @@ def recursive_json_serialize(obj):
 
 
 def coflows_serialize(data: Any, use_pickle=False) -> bytes:
+    """ Serializes the given data.
+    
+    :param data: data to serialize
+    :type data: Any
+    :param use_pickle: whether to use pickle for serialization (default is False)
+    :type use_pickle: bool
+    """
     if use_pickle:
         return pickle.dumps(data)
 
@@ -50,6 +57,13 @@ def coflows_serialize(data: Any, use_pickle=False) -> bytes:
 
 
 def coflows_deserialize(encoded_data: bytes, use_pickle=False) -> Any:
+    """ Deserializes the given data.
+    
+    :param encoded_data: data to deserialize
+    :type encoded_data: bytes
+    :param use_pickle: whether to use pickle for deserialization (default is False)
+    :type use_pickle: bool
+    """
     if encoded_data is None:
         return None
     if use_pickle:

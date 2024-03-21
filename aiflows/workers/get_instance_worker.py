@@ -13,7 +13,8 @@ from aiflows.utils.constants import (
     FLOW_MODULES_BASE_PATH,
 )
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-
+from aiflows.utils import logging
+log = logging.get_logger(__name__)
 
 def parse_args():
     parser = argparse.ArgumentParser(description="get_instance worker")
@@ -55,8 +56,17 @@ def parse_args():
 def get_instances_initiator_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
-    print("\n~~~ get_instances initiator ~~~")
-    print(f"task_id = {cl.get_task_id()}")
+    """ Initiator handler for get_instances (for fetching flow instances from participants via colink)
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param param: parameters
+    :type param: bytes
+    :param participants: list of participants involved in task
+    :type participants: List[CL.Participant]
+    """
+    log.info("\n~~~ get_instances initiator ~~~")
+    log.info(f"task_id = {cl.get_task_id()}")
     request_id = coflows_deserialize(param)
     get_instance_calls = coflows_deserialize(
         cl.read_entry(
@@ -80,7 +90,7 @@ def get_instances_initiator_handler(
         )  # Dict: subflow_key -> flow_id
         get_instances_results.update(user_get_instances_results)
 
-    print("Received subflow instances:", json.dumps(get_instances_results, indent=4))
+    log.info("Received subflow instances:", json.dumps(get_instances_results, indent=4))
     cl.create_entry(
         f"{GET_INSTANCE_CALLS_TRANSFER_PATH}:{request_id}:get_instances_results",
         coflows_serialize(get_instances_results),
@@ -90,12 +100,21 @@ def get_instances_initiator_handler(
 def get_instances_receiver_handler(
     cl: CoLink, param: bytes, participants: List[CL.Participant]
 ):
-    print("\n~~~ serving get_instances request ~~~")
-    print(f"task_id = {cl.get_task_id()}")
+    """ Receiver handler for get_instances (for fetching flow instances from participants via colink)
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param param: parameters
+    :type param: bytes
+    :param participants: list of participants involved in task
+    :type participants: List[CL.Participant]
+    """
+    log.info("\n~~~ serving get_instances request ~~~")
+    log.info(f"task_id = {cl.get_task_id()}")
     get_instance_calls = coflows_deserialize(
         cl.recv_variable("user_get_instance_calls", participants[0])
     )
-    print("get_instance_calls:", get_instance_calls)
+    log.info("get_instance_calls:", get_instance_calls)
 
     get_instance_results = {}
     for flow_key, flow_endpoint, config_overrides in get_instance_calls:
@@ -130,6 +149,11 @@ def get_instances_receiver_handler(
 def run_get_instance_worker_thread(
     cl,
 ):
+    """ Runs get_instance worker in a thread.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    """
     pop = ProtocolOperator(__name__)
 
     pop.mapping["coflows_get_instances:initiator"] = get_instances_initiator_handler
@@ -137,7 +161,7 @@ def run_get_instance_worker_thread(
 
     thread = Thread(target=pop.run, args=(cl, False, None, True), daemon=True)
     thread.start()
-    print(
+    log.info(
         "get_instances worker started in attached thread for user ",
         cl.get_user_id(),
     )
@@ -153,7 +177,7 @@ if __name__ == "__main__":
     pop.mapping["coflows_get_instances:initiator"] = get_instances_initiator_handler
     pop.mapping["coflows_get_instances:receiver"] = get_instances_receiver_handler
 
-    print("get_instances worker started.")
+    log.info("get_instances worker started.")
     pop.run(
         cl=cl,
         keep_alive_when_disconnect=args["keep_alive"],

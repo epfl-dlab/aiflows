@@ -25,6 +25,9 @@ from aiflows.utils.constants import (
     INSTANTIATION_METHODS,
     DEFAULT_DISPATCH_POINT,
 )
+from aiflows.utils import logging
+
+log = logging.get_logger(__name__)
 
 
 class FlowInstanceException(Exception):
@@ -36,6 +39,15 @@ class FlowInstanceException(Exception):
 
 
 def is_flow_served(cl: CoLink, flow_endpoint: str) -> bool:
+    """ Returns True if the flow is being served at the given endpoint. 
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_endpoint: endpoint of the flow
+    :type flow_endpoint: str
+    :return: True if the flow is being served at the given endpoint
+    :rtype: bool
+    """
     serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
     served = coflows_deserialize(cl.read_entry(f"{serve_entry_path}:init"))
     if served == 1:
@@ -55,13 +67,24 @@ def serve_flow(
     """
     Serves the flow specified by flow_class_name at endpoint specified by flow_endpoint.
     After serving, users can get an instance of the served flow via the get_flow_instance operation.
-
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_class_name: name of the flow class (e.g. "aiflows.base_flows.AtomicFlow" or "flow_modules.my_flow.MyFlow")
+    :type flow_class_name: str
+    :param flow_endpoint: endpoint of the flow (the name under which the flow will be served). Users will use this endpoint to get instances of the flow.
+    :type flow_endpoint: str
+    :param dispatch_point: dispatch point for the flow
+    :type dispatch_point: str
+    :param parallel_dispatch: whether to use parallel dispatch for the flow. If True, multiple calls to the same flow instance can be done simultaneously (the flow is stateless).
+    :type parallel_dispatch: bool
+    :param singleton: whether to serve the flow as a singleton. If True, only one instance of the flow can be mounted. Users will all get the same instance.
     :return: True if the flow was successfully served; False if the flow is already served or an error occurred.
     :rtype: bool
     """
     serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
     if is_flow_served(cl, flow_endpoint):
-        print(f"Already serving at {serve_entry_path}")
+        log.info(f"Already serving at {serve_entry_path}")
         return False
 
     # serve
@@ -87,19 +110,23 @@ def serve_flow(
         )
 
     except grpc.RpcError as e:
-        print(f"Received RPC exception: code={e.code()} message={e.details()}")
+        log.info(f"Received RPC exception: code={e.code()} message={e.details()}")
         return False
 
-    print(f"Started serving {flow_class_name} at {serve_entry_path}.")
-    print(f"dispatch_point: {dispatch_point}")
-    print(f"parallel_dispatch: {parallel_dispatch}")
-    print(f"singleton: {singleton}\n")
+    log.info(f"Started serving {flow_class_name} at {serve_entry_path}.")
+    log.info(f"dispatch_point: {dispatch_point}")
+    log.info(f"parallel_dispatch: {parallel_dispatch}")
+    log.info(f"singleton: {singleton}\n")
     return True
 
 
 def delete_flow_endpoint(cl: CoLink, flow_endpoint: str):
-    """
-    Deletes all colink entries at given flow_endpoint. This includes deleting all instances of this flow.
+    """ Deletes all colink entries at given flow_endpoint. This includes deleting all instances of this flow.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_endpoint: endpoint of the flow
+    :type flow_endpoint: str
     """
     serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
 
@@ -119,23 +146,25 @@ def delete_flow_endpoint(cl: CoLink, flow_endpoint: str):
                 )
                 try:
                     cl.delete_entry(f"{INSTANCE_METADATA_PATH}:{instance_id}")
-                    print(f"Deleted flow instance {instance_id}")
+                    log.info(f"Deleted flow instance {instance_id}")
                     # TODO delete mailbox in scheduler
                 except grpc.RpcError:
-                    print(
+                    log.info(
                         f"WARNING: flow {instance_id} is mounted but it's metadata doesn't exist."
                     )
                     continue
 
         colink_utils.delete_entries_on_path(cl, serve_entry_path)
-        print(f"Stopped serving at {serve_entry_path}")
+        log.info(f"Stopped serving at {serve_entry_path}")
     except grpc.RpcError as e:
-        print(f"Received RPC exception: code={e.code()} message={e.details()}")
+        log.info(f"Received RPC exception: code={e.code()} message={e.details()}")
 
 
 def delete_all_flow_endpoints(cl: CoLink):
-    """
-    Deletes all flow endpoints. This includes deleting all flow instances.
+    """ Deletes all flow endpoints. This includes deleting all flow instances.
+    
+    :param cl: colink object
+    :type cl: CoLink
     """
     flow_endpoints = cl.read_keys(
         prefix=f"{cl.get_user_id()}::{COFLOWS_PATH}",
@@ -149,26 +178,36 @@ def delete_all_flow_endpoints(cl: CoLink):
 
 
 def unserve_flow(cl: CoLink, flow_endpoint: str):
-    """
-    unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.
+    """ unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_endpoint: endpoint of the flow
+    :type flow_endpoint: str
     """
     if not is_flow_served(cl, flow_endpoint):
-        print(f"{flow_endpoint} wasn't being served.")
+        log.info(f"{flow_endpoint} wasn't being served.")
         return
 
     serve_entry_path = f"{COFLOWS_PATH}:{flow_endpoint}"
     try:
         cl.update_entry(f"{serve_entry_path}:init", coflows_serialize(0))
     except grpc.RpcError as e:
-        print(f"Received RPC exception: code={e.code()} message={e.details()}")
+        log.info(f"Received RPC exception: code={e.code()} message={e.details()}")
         return
 
-    print(f"Stopped serving at {serve_entry_path}")
+    log.info(f"Stopped serving at {serve_entry_path}")
 
 
 def _get_local_flow_instance_metadata(cl: CoLink, flow_id: str):
-    """
-    Returns dict with metadata about specified local flow instance. This includes flow_endpoint and client_id.
+    """ Returns dict with metadata about specified local flow instance. This includes flow_endpoint and client_id.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_id: id of the flow instance
+    :type flow_id: str
+    :return: dict with metadata about specified local flow instance
+    :rtype: Dict[str, Any]
     """
     instance_metadata = coflows_deserialize(
         cl.read_entry(f"{INSTANCE_METADATA_PATH}:{flow_id}")
@@ -177,12 +216,18 @@ def _get_local_flow_instance_metadata(cl: CoLink, flow_id: str):
 
 
 def delete_flow_instance(cl: CoLink, flow_id: str):
-    """
-    Deletes all colink entries associated with flow instance.
+    """ Deletes all colink entries associated with flow instance.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param flow_id: id of the flow instance
+    :type flow_id: str
+    :return: dict with metadata about specified local flow instance
+    :rtype: Dict[str, Any]
     """
     instance_metadata = _get_local_flow_instance_metadata(cl, flow_id)
     if instance_metadata is None:
-        print(f"Metadata for {flow_id} doesn't exist.")
+        log.info(f"Metadata for {flow_id} doesn't exist.")
         return
     flow_endpoint = instance_metadata["flow_endpoint"]
     client_id = instance_metadata["user_id"]
@@ -194,7 +239,7 @@ def delete_flow_instance(cl: CoLink, flow_id: str):
 
     colink_utils.delete_entries_on_path(cl, mount_path)
     colink_utils.delete_entries_on_path(cl, metadata_path)
-    print(f"Deleted flow instance {flow_id}.")
+    log.info(f"Deleted flow instance {flow_id}.")
     # TODO delete mailbox in scheduler
 
 
@@ -212,8 +257,20 @@ def mount(
     initial_state: Dict[str, Any] = None,
     dispatch_point_override: str = None,
 ) -> AtomicFlow:
-    """
-    Mounts a new instance at the specified flow endpoint by creating necessary entries in CoLink storage.
+    """ Mounts a new instance at the specified flow endpoint by creating necessary entries in CoLink storage.
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param client_id: id of colink user making the request (also known as user_id)
+    :type client_id: str
+    :param flow_endpoint: endpoint of the flow
+    :type flow_endpoint: str
+    :param config_overrides: dictionary with config overrides for the flow instance
+    :type config_overrides: Dict[str, Any]
+    :param initial_state: initial state of the flow instance
+    :type initial_state: Dict[str, Any]
+    :param dispatch_point_override: overrides dispatch point for this instance
+    :type dispatch_point_override: Dict[str, Any]
 
     :return: proxy flow object
     :rtype: aiflows.base_flows.AtomicFlow
@@ -276,7 +333,7 @@ def mount(
             message=f"Received RPC exception: code={e.code()} message={e.details()}",
         )
 
-    print(f"Mounted {flow_id} at {mount_path}")
+    log.info(f"Mounted {flow_id} at {mount_path}")
 
     return flow_id
 
@@ -285,6 +342,14 @@ def _get_remote_flow_instances(
     cl: CoLink,
     get_instance_calls,  # user_id --> List((flow_key, flow_endpoint, cfg_overrides))
 ) -> Dict[str, Any]:
+    """ Gets instances of specified flows. User specifies flows by passing
+    
+    :param cl: colink object
+    :type cl: CoLink
+    :param get_instance_calls: dictionary mapping user ids to lists of tuples (flow_key, flow_endpoint, cfg_overrides)
+    :type get_instance_calls: Dict[str, List[Tuple[str, str, Dict[str, Any]]]]
+    :return: dictionary mapping flow keys to flow ids
+    """
     assert len(get_instance_calls) > 0
 
     participants = [CL.Participant(user_id=cl.get_user_id(), role="initiator")]
@@ -475,7 +540,7 @@ def _get_local_flow_instance(
                     )
                 )
                 if instance_init == 1:
-                    print("Fetched singleton", instance_id)
+                    log.info("Fetched singleton", instance_id)
                     return instance_id
 
     # recursively create new instance
@@ -602,7 +667,7 @@ def get_flow_instance(
 
 
 def start_colink_component(component_name: str, args):
-    print(
+    log.info(
         colored(
             r"""
          _    ________
@@ -613,14 +678,14 @@ def start_colink_component(component_name: str, args):
             "blue",
         )
     )
-    print(colored(f"{component_name}\n", "grey", attrs=["bold"]))
+    log.info(colored(f"{component_name}\n", "grey", attrs=["bold"]))
 
-    print(colored(json.dumps(args, indent=4), "white"))
-    print("\n")
+    log.info(colored(json.dumps(args, indent=4), "white"))
+    log.info("\n")
 
-    print("Connecting to colink server...")
+    log.info("Connecting to colink server...")
     cl = CoLink(args["addr"], args["jwt"])
-    print(f"Connected to {cl.get_core_addr()} as user {cl.get_user_id()}\n")
+    log.info(f"Connected to {cl.get_core_addr()} as user {cl.get_user_id()}\n")
     return cl
 
 
@@ -643,17 +708,17 @@ def recursive_serve_flow(
 
             subflow_endpoint = subflow_config.get("flow_endpoint", None)
             if subflow_endpoint is None:
-                print(
+                log.info(
                     f"Failed to serve subflow {subflow}: missing subflow_endpoint in config."
                 )
                 return False
             if is_flow_served(cl, subflow_endpoint):
-                print(f"Subflow {subflow} already served.")
+                log.info(f"Subflow {subflow} already served.")
                 continue
 
             subflow_class_name = subflow_config.get("flow_class_name", None)
             if subflow_class_name is None:
-                print(
+                log.info(
                     f"Failed to serve subflow {subflow}: missing flow_class_name in config."
                 )
                 return False
@@ -673,7 +738,7 @@ def recursive_serve_flow(
                 subflow_singleton,
             )
             if not subflow_served:
-                print(f"Failed to serve subflow {subflow}.")
+                log.info(f"Failed to serve subflow {subflow}.")
                 return False
 
     return serve_flow(

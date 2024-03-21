@@ -15,6 +15,7 @@ class FlowMessage(Message):
         self,
         data: Dict[str, Any],
         src_flow: str = "unknown",
+        src_flow_id: str = "unknown",
         dst_flow: str = "unknown",
         reply_data: Optional[Dict[str, Any]] = {"mode": "no_reply"},
         created_by: Optional[str] = None,
@@ -24,6 +25,7 @@ class FlowMessage(Message):
     ):
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data, created_by=created_by, private_keys=private_keys)
+        self.src_flow_id = src_flow_id
         self.reply_data = reply_data
         self.src_flow = src_flow
         self.dst_flow = dst_flow

@@ -86,11 +86,22 @@ class Message:
         return json.dumps(d, indent=4, default=str)
     
     def serialize(self):
+        """ Returns the serialized message
+        
+        :return: The serialized message
+        :rtype: bytes
+        """
         return coflows_serialize(self.to_dict())
 
     @classmethod
     def deserialize(cls, encoded_data: bytes):
+        """ Deserializes the encoded data into a message
         
+        :param encoded_data: The encoded message 
+        :type encoded_data: bytes
+        :return: The deserialized message
+        :rtype: Message
+        """
         d = coflows_deserialize(encoded_data)
             
         message_id = d.pop("message_id")

@@ -29,7 +29,7 @@ class KeyInterface(ABC):
     def _set_up_transformations(transformations: List):
         """Static method that instantiates a list of transformations with the hydra framework.
 
-        :param transformations: A list of transformations to instantiate (defined by a hydra configuration)
+        :param transformations: A list of transformations to instantiate
         :type transformations: List
         :return: A list of instantiated transformations
         :rtype: List
@@ -81,7 +81,7 @@ class KeyInterface(ABC):
         :param dst_flow: The destination flow
         :type dst_flow: str
         :param data: The data dictionary or message to apply the transformations to
-        :type data_dict: Dict[str, Any]
+        :type data: Union[FlowMessage, Dict[str,Any]]
         :param \**kwargs: Arbitrary keyword arguments (arguments that are passed to the transformations)
         :return: The transformed data dictionary or message
         :rtype:  Union[FlowMessage, Dict[str,Any]
