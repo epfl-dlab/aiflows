@@ -12,6 +12,7 @@ from colink import ProtocolOperator
 from aiflows.messages import FlowMessage
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
+    quick_load_api_keys,
 )
 from aiflows.utils.coflows_utils import (
     dispatch_response,
@@ -26,9 +27,12 @@ from aiflows.utils.constants import (
     FLOW_MODULES_BASE_PATH,
     COFLOWS_PATH,
 )
-
+from aiflows.backends.api_info import ApiInfo
 from aiflows.utils import logging
+
 log = logging.get_logger(__name__)
+
+worker_api_infos = None
 
 
 def parse_args():
@@ -79,8 +83,8 @@ def create_flow(
     config_overrides: Dict[str, Any] = None,
     state: Dict[str, Any] = None,
 ):
-    """ Creates a flow from the given config and state.
-    
+    """Creates a flow from the given config and state.
+
     :param config: flow config
     :type config: Dict[str, Any]
     :param config_overrides: flow config overrides
@@ -91,17 +95,19 @@ def create_flow(
     if config_overrides is not None:
         config = recursive_dictionary_update(config, config_overrides)
 
-    # print("Creating flow with config:", json.dumps(config, indent=4))
+    if worker_api_infos is not None:
+        quick_load_api_keys(config, worker_api_infos)
+
     flow = hydra.utils.instantiate(config, _recursive_=False, _convert_="partial")
     if state is not None:
         flow.__setflowstate__({"flow_state": state}, safe_mode=True)
-    # os.chdir(curr_dir)
+
     return flow
 
 
 def dispatch_task_handler(cl: CoLink, param: bytes, participants: List[CL.Participant]):
-    """ Dispatches a task to and runs the appropriate flow on a message.
-    
+    """Dispatches a task to and runs the appropriate flow on a message.
+
     :param cl: The colink object
     :type cl: CL.Colink
     :param param: The serialized dispatch task
@@ -199,9 +205,10 @@ def run_dispatch_worker_thread(
     cl,
     dispatch_point=DEFAULT_DISPATCH_POINT,
     flow_modules_base_path=FLOW_MODULES_BASE_PATH,
+    api_infos: List[ApiInfo] = None,
 ):
-    """ Runs a dispatch worker in a separate thread.
-    
+    """Runs a dispatch worker in a separate thread.
+
     :param cl: colink object
     :type cl: CoLink
     :param dispatch_point: dispatch point to which the workers will subscribe to
@@ -210,6 +217,8 @@ def run_dispatch_worker_thread(
     :type flow_modules_base_path: str
     """
     # sys.path.append(flow_modules_base_path)
+    global worker_api_infos
+    worker_api_infos = api_infos
     pop = ProtocolOperator(__name__)
 
     proto_role = f"{dispatch_point}:local"
@@ -227,8 +236,8 @@ def run_dispatch_worker_threads(
     dispatch_point=DEFAULT_DISPATCH_POINT,
     flow_modules_base_path=FLOW_MODULES_BASE_PATH,
 ):
-    """ Runs multiple dispatch workers in separate threads.
-    
+    """Runs multiple dispatch workers in separate threads.
+
     :param cl: colink object
     :type cl: CoLink
     :param num_workers: number of workers to run
