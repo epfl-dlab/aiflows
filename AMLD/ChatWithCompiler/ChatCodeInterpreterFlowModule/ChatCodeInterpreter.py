@@ -9,7 +9,7 @@ class ChatCodeInterpreter(CompositeFlow):
         super().__init__(**kwargs)
         self.input_interface_generate_reply = KeyInterface(
             keys_to_rename={"question": "prompt"},
-            keys_to_select=["code", "interpreter_output","code_runs"]
+            keys_to_select=["code", "interpreter_output"]
         )
         
         self.first_input_interface_coder = KeyInterface(
@@ -37,13 +37,12 @@ class ChatCodeInterpreter(CompositeFlow):
             return "Coder"
         
         elif previous_state == "Coder":
+            if self.flow_state["finish"]:
+                return "GenerateReply"
             return "Interpreter"
             
         elif previous_state == "Interpreter":
-            if self.flow_state["code_runs"]:
-                return "GenerateReply"
-            else:
-                return "Coder"
+            return "Coder"
         
         elif "GenerateReply":
             return None
@@ -62,15 +61,11 @@ class ChatCodeInterpreter(CompositeFlow):
             data = input_interface(self.flow_state),
             dst_flow = "Coder"
         )
-        
         self.subflows["Coder"].get_reply(
             message,
-            self.get_instance_id(),
         )
         
     def call_interpreter(self):
-        
-        
         
         input_interface = self.input_interface_interpreter
         
@@ -81,7 +76,6 @@ class ChatCodeInterpreter(CompositeFlow):
         
         self.subflows["Interpreter"].get_reply(
                 message,
-                self.get_instance_id(),
         )
         
     def generate_reply(self):
@@ -108,10 +102,10 @@ class ChatCodeInterpreter(CompositeFlow):
         elif previous_state == "Coder":
             self.flow_state["code"] = input_message.data["code"]
             self.flow_state["language_of_code"] = input_message.data["language_of_code"]
+            self.flow_state["finish"] = input_message.data["finish"]
         
         #case where our last call was to the safeguard
         elif previous_state == "Interpreter":
-            self.flow_state["code_runs"] = input_message.data["code_runs"]
             self.flow_state["interpreter_output"] = input_message.data["interpreter_output"]
 
    
@@ -130,6 +124,3 @@ class ChatCodeInterpreter(CompositeFlow):
             self.generate_reply()
         
         self.flow_state["previous_state"] = current_state if current_state != "GenerateReply" else None
-            
-        
-        
