@@ -39,8 +39,8 @@ class FlowInstanceException(Exception):
 
 
 def is_flow_served(cl: CoLink, flow_endpoint: str) -> bool:
-    """ Returns True if the flow is being served at the given endpoint. 
-    
+    """Returns True if the flow is being served at the given endpoint.
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_endpoint: endpoint of the flow
@@ -67,7 +67,7 @@ def serve_flow(
     """
     Serves the flow specified by flow_class_name at endpoint specified by flow_endpoint.
     After serving, users can get an instance of the served flow via the get_flow_instance operation.
-    
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_class_name: name of the flow class (e.g. "aiflows.base_flows.AtomicFlow" or "flow_modules.my_flow.MyFlow")
@@ -121,8 +121,8 @@ def serve_flow(
 
 
 def delete_flow_endpoint(cl: CoLink, flow_endpoint: str):
-    """ Deletes all colink entries at given flow_endpoint. This includes deleting all instances of this flow.
-    
+    """Deletes all colink entries at given flow_endpoint. This includes deleting all instances of this flow.
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_endpoint: endpoint of the flow
@@ -161,8 +161,8 @@ def delete_flow_endpoint(cl: CoLink, flow_endpoint: str):
 
 
 def delete_all_flow_endpoints(cl: CoLink):
-    """ Deletes all flow endpoints. This includes deleting all flow instances.
-    
+    """Deletes all flow endpoints. This includes deleting all flow instances.
+
     :param cl: colink object
     :type cl: CoLink
     """
@@ -178,8 +178,8 @@ def delete_all_flow_endpoints(cl: CoLink):
 
 
 def unserve_flow(cl: CoLink, flow_endpoint: str):
-    """ unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.
-    
+    """unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_endpoint: endpoint of the flow
@@ -200,8 +200,8 @@ def unserve_flow(cl: CoLink, flow_endpoint: str):
 
 
 def _get_local_flow_instance_metadata(cl: CoLink, flow_id: str):
-    """ Returns dict with metadata about specified local flow instance. This includes flow_endpoint and client_id.
-    
+    """Returns dict with metadata about specified local flow instance. This includes flow_endpoint and client_id.
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_id: id of the flow instance
@@ -216,8 +216,8 @@ def _get_local_flow_instance_metadata(cl: CoLink, flow_id: str):
 
 
 def delete_flow_instance(cl: CoLink, flow_id: str):
-    """ Deletes all colink entries associated with flow instance.
-    
+    """Deletes all colink entries associated with flow instance.
+
     :param cl: colink object
     :type cl: CoLink
     :param flow_id: id of the flow instance
@@ -257,8 +257,8 @@ def mount(
     initial_state: Dict[str, Any] = None,
     dispatch_point_override: str = None,
 ) -> AtomicFlow:
-    """ Mounts a new instance at the specified flow endpoint by creating necessary entries in CoLink storage.
-    
+    """Mounts a new instance at the specified flow endpoint by creating necessary entries in CoLink storage.
+
     :param cl: colink object
     :type cl: CoLink
     :param client_id: id of colink user making the request (also known as user_id)
@@ -342,8 +342,8 @@ def _get_remote_flow_instances(
     cl: CoLink,
     get_instance_calls,  # user_id --> List((flow_key, flow_endpoint, cfg_overrides))
 ) -> Dict[str, Any]:
-    """ Gets instances of specified flows. User specifies flows by passing
-    
+    """Gets instances of specified flows. User specifies flows by passing
+
     :param cl: colink object
     :type cl: CoLink
     :param get_instance_calls: dictionary mapping user ids to lists of tuples (flow_key, flow_endpoint, cfg_overrides)
@@ -540,7 +540,7 @@ def _get_local_flow_instance(
                     )
                 )
                 if instance_init == 1:
-                    log.info(f'Fetched singleton {instance_id}')
+                    log.info(f"Fetched singleton {instance_id}")
                     return instance_id
 
     # recursively create new instance
