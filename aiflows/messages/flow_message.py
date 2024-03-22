@@ -22,6 +22,7 @@ class FlowMessage(Message):
         private_keys: Optional[List[str]] = None,
         input_message_id: Optional[str] = None,
         is_reply: Optional[bool] = False,
+        user_id: Optional[str] = None,
     ):
         created_by = src_flow if created_by is None else created_by
         super().__init__(data=data, created_by=created_by, private_keys=private_keys)

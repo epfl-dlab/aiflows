@@ -390,7 +390,11 @@ class Flow(ABC):
         private_keys = self.flow_config["private_keys"]
 
         src_flow = self.flow_config["name"]
-  
+
+        if hasattr(self, "cl") and self.cl is not None:
+            user_id = self.cl.get_user_id()
+        else:
+            user_id = None
         # ~~~ Create the message ~~~
         msg = FlowMessage(
             data=copy.deepcopy(data),
@@ -400,6 +404,7 @@ class Flow(ABC):
             dst_flow=dst_flow,
             reply_data=reply_data,
             created_by=self.name,
+            user_id=user_id,
         )
         return msg
 
@@ -423,6 +428,11 @@ class Flow(ABC):
         else:
             output_data = copy.deepcopy(response)
 
+        if hasattr(self, "cl") and self.cl is not None:
+            user_id = self.cl.get_user_id()
+        else:
+            user_id = None
+        
         return FlowMessage(
             created_by=self.flow_config["name"],
             src_flow=self.flow_config["name"],
@@ -431,7 +441,8 @@ class Flow(ABC):
             data=output_data,
             reply_data=input_message.reply_data,
             input_message_id=input_message.message_id,
-            is_reply=True
+            is_reply=True,
+            user_id=user_id,
         )
 
     def run(self, input_message: FlowMessage) -> None:
