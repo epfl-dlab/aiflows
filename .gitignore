@@ -166,7 +166,7 @@ data
 .DS_Store
 .chroma
 *flow_modules*
-
+logs
 # VS Code
 .vscode/
 *predictions*

@@ -9,7 +9,6 @@ output_interface: # Connector between the Flow's output and the caller
 
 subflows_config:
   demonstration_flow:
-    _target_: flow_modules.aiflows.ChatWithDemonstrationsFlowModule.DemonstrationsAtomicFlow.instantiate_from_default_config
     data: 
       - query_data:
           query: "What is the capital of Turkey?"
@@ -31,7 +30,6 @@ subflows_config:
         - response
 
   chat_flow:
-    _target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
     name: "SimpleQA_Flow"
     # ~~~ Input interface specification ~~~
     input_interface_non_initialized:

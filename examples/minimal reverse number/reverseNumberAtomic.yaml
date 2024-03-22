@@ -1,7 +1,0 @@
-name: "ReverseNumber"
-description: "A flow that takes in a number and reverses it."
-
-_target_: reverse_number_atomic.ReverseNumberAtomicFlow.instantiate_from_default_config
-
-input_interface: number
-output_interface: reversed_number

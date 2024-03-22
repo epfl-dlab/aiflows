@@ -4,7 +4,6 @@ max_rounds: 30
 ### Subflows specification
 subflows_config:
   Controller:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
     commands:
       wiki_search:
         description: "Performs a search on Wikipedia."
@@ -24,12 +23,13 @@ subflows_config:
 
 
   wiki_search:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
     name: "WikiSearchAtomicFlow"
     description: "A flow that searches Wikipedia for information."
   ddg_search:
-    _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
-    name: "DuckDuckGoSearchAtomicFlow"
-    description: "A flow that queries the search engine DuckDuckGo."
+    user_id: "local"
+    name: "DuckDuckGo"
+    description: "Query the search engine DuckDuckGo."
+    flow_endpoint: DuckDuckGo
+    flow_class_name: flow_modules.aiflows.LCToolFlowModule.LCToolFlow
     backend:
       _target_: langchain.tools.DuckDuckGoSearchRun

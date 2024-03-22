@@ -6,7 +6,6 @@ _target_: ReActWithHumanFeedback.ReActWithHumanFeedback.instantiate_from_default
 ### Subflows specification
 subflows_config:
   Controller:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
     max_rounds: 1
     backend:
       api_infos: ???
@@ -39,15 +38,22 @@ subflows_config:
 
 
   wiki_search:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+    name: "WikipediaSearch"
   ddg_search:
-    _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
+    flow_class_name: flow_modules.aiflows.LCToolFlowModule.LCToolFlow
+    name: "DuckDuckGo"
+    description: "Query the search engine DuckDuckGo."
+    flow_endpoint: DuckDuckGo
+    user_id: "local"
     backend:
       _target_: langchain.tools.DuckDuckGoSearchRun
 
   HumanFeedback:
+    flow_class_name: flow_modules.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow
+    flow_endpoint: HumanFeedback
     name: HumanFeedbackFlow
-    _target_: flow_modules.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+    description: "A flow that requests feedback from a human."
+    user_id: "local"
     request_multi_line_input_flag: False
     query_message_prompt_template:
       template: |2-

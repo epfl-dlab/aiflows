@@ -25,17 +25,15 @@ logging.set_verbosity_debug()
 
 
 dependencies = [
-    {"url": "aiflows/AutoGPTFlowModule", "revision": "coflows"},
-    {"url": "aiflows/LCToolFlowModule", "revision": "coflows"},
+    {"url": "aiflows/AutoGPTFlowModule", "revision": "main"},
+    {"url": "aiflows/LCToolFlowModule", "revision": "main"},
 ]
 
 from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 if __name__ == "__main__":
     
-    #1. ~~~~~ Set up a colink server ~~~~
-    FLOW_MODULES_PATH = "./"
-    
+    #1. ~~~~~ Set up a colink server ~~~~    
     cl = start_colink_server()
 
 
@@ -72,7 +70,7 @@ if __name__ == "__main__":
     )
     
     #4. ~~~~~Start A Worker Thread~~~~~
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl)
 
     #5. ~~~~~Mount the flow and get its proxy~~~~~~
     proxy_flow= serve_utils.get_flow_instance(

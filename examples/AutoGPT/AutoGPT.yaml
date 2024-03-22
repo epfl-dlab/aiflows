@@ -6,7 +6,6 @@ name: "AutoGPT"
 subflows_config:
   #ControllerFlow Configuration
   Controller:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
     commands:
       wiki_search:
         description: "Performs a search on Wikipedia."
@@ -41,10 +40,9 @@ subflows_config:
     description: "A flow that requests feedback from a human."
 
   wiki_search:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
+    name: "WikipediaSearch"
   
   ddg_search:
-    _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
     user_id: "local"
     name: "DuckDuckGo"
     description: "Query the search engine DuckDuckGo."

@@ -25,16 +25,14 @@ logging.set_verbosity_debug()
 
 
 dependencies = [
-    {"url": "aiflows/VisionFlowModule", "revision": "coflows"}
+    {"url": "aiflows/VisionFlowModule", "revision": "main"}
 ]
 
 from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
 if __name__ == "__main__":
     
-    #1. ~~~~~ Set up a colink server ~~~~
-    FLOW_MODULES_PATH = "./"
-    
+    #1. ~~~~~ Set up a colink server ~~~~    
     cl = start_colink_server()
 
 
@@ -60,24 +58,21 @@ if __name__ == "__main__":
     #3. ~~~~ Serve The Flow ~~~~
     serve_utils.recursive_serve_flow(
         cl = cl,
-        flow_type="VisionQA",
-        default_config=cfg,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch"
+        flow_class_name="flow_modules.aiflows.VisionFlowModule.VisionAtomicFlow",
+        flow_endpoint="VisionQA",
     )
     
     #4. ~~~~~Start A Worker Thread~~~~~
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl)
 
+    
     #5. ~~~~~Mount the flow and get its proxy~~~~~~
-    proxy_flow = serve_utils.recursive_mount(
+    proxy_flow= serve_utils.get_flow_instance(
         cl=cl,
-        client_id="local",
-        flow_type="VisionQA",
-        config_overrides=None,
-        initial_state=None,
-        dispatch_point_override=None,
-    )   
+        flow_endpoint="VisionQA",
+        user_id="local",
+        config_overrides = cfg
+    ) 
     
     #6. ~~~ Get the data ~~~
     url_image = {
@@ -103,14 +98,7 @@ if __name__ == "__main__":
     #         "data": {"video": video}}  # This can be a list of samples
 
    
-    
-    #option1: use the FlowMessage class
-    input_message = FlowMessage(
-        data=data,
-    )
-
-    #option2: use the proxy_flow
-    #input_message = proxy_flow.package_input_message(data = data)
+    input_message = proxy_flow.package_input_message(data = data)
     
     #7. ~~~ Run inference ~~~
     future = proxy_flow.get_reply_future(input_message)

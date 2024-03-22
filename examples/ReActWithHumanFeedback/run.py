@@ -25,9 +25,9 @@ logging.set_verbosity_debug()
 
 
 dependencies = [
-    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "coflows"},
-    {"url": "aiflows/HumanStandardInputFlowModule", "revision": "coflows"},
-    {"url": "aiflows/LCToolFlowModule", "revision": "coflows"},
+    {"url": "aiflows/ControllerExecutorFlowModule", "revision": "main"},
+    {"url": "aiflows/HumanStandardInputFlowModule", "revision": "main"},
+    {"url": "aiflows/LCToolFlowModule", "revision": "main"},
 ]
 
 from aiflows import flow_verse
@@ -62,24 +62,20 @@ if __name__ == "__main__":
     #3. ~~~~ Serve The Flow ~~~~
     serve_utils.recursive_serve_flow(
         cl = cl,
-        flow_type="ReActWithHumanFeedback",
-        default_config=cfg,
-        default_state=None,
-        default_dispatch_point="coflows_dispatch"
+        flow_class_name="ReActWithHumanFeedback.ReActWithHumanFeedback",
+        flow_endpoint="ReActWithHumanFeedback",
     )
     
     #4. ~~~~~Start A Worker Thread~~~~~
-    run_dispatch_worker_thread(cl, dispatch_point="coflows_dispatch", flow_modules_base_path=FLOW_MODULES_PATH)
+    run_dispatch_worker_thread(cl)
 
     #5. ~~~~~Mount the flow and get its proxy~~~~~~
-    proxy_flow = serve_utils.recursive_mount(
+    proxy_flow= serve_utils.get_flow_instance(
         cl=cl,
-        client_id="local",
-        flow_type="ReActWithHumanFeedback",
-        config_overrides=None,
-        initial_state=None,
-        dispatch_point_override=None,
-    )   
+        flow_endpoint="ReActWithHumanFeedback",
+        user_id="local",
+        config_overrides = cfg
+    ) 
     
     #6. ~~~ Get the data ~~~
     # data = {"id": 0, "goal": "Answer the following question: What is the population of Canada?"}  # Uses wikipedia
@@ -89,13 +85,7 @@ if __name__ == "__main__":
         "goal": "Answer the following question: What is the profession and date of birth of Michael Jordan?",
     }
    
-    #option1: use the FlowMessage class
-    input_message = FlowMessage(
-        data=data,
-    )
-
-    #option2: use the proxy_flow
-    #input_message = proxy_flow.package_input_message(data = data)
+    input_message = proxy_flow.package_input_message(data = data)
     
     #7. ~~~ Run inference ~~~
     future = proxy_flow.get_reply_future(input_message)

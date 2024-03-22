@@ -24,7 +24,7 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
             keys_to_select = ["human_feedback"],
         )
             
-        self.next_flow_to_call = {
+        self.next_state = {
             None: "Controller",
             "Controller": "Executor",
             "Executor": "HumanFeedback",
@@ -45,7 +45,6 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
         
         self.subflows["HumanFeedback"].get_reply(
             message,
-            self.get_instance_id(),
         )
              
     def register_data_to_state(self, input_message):
@@ -55,16 +54,16 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
         # either programmatically or using the _state_update_dict and 
         # input and ouput interface methods
         
-        last_called = self.flow_state["last_called"]
+        last_state = self.flow_state["last_state"]
         
-        if last_called is None:            
+        if last_state is None:            
             self.flow_state["input_message"] = input_message
             self.flow_state["goal"] = input_message.data["goal"]
         
-        elif last_called == "Executor":
+        elif last_state == "Executor":
             self.flow_state["observation"] = input_message.data
         
-        elif last_called == "Controller":
+        elif last_state == "Controller":
             self._state_update_dict(
                 {
                     "command": input_message.data["command"],
@@ -85,7 +84,7 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
                 self.flow_state["early_exit_flag"] = True
                 
             
-        elif last_called == "HumanFeedback":
+        elif last_state == "HumanFeedback":
             self._state_update_dict(
                 self.human_feedback_ouput_interface(input_message).data
             )
@@ -107,18 +106,18 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
         
         self.register_data_to_state(input_message)
         
-        flow_to_call = self.get_next_flow_to_call()
+        current_state = self.get_next_state()
 
         if self.flow_state.get("early_exit_flag",False):
             self.generate_reply()
             
-        elif flow_to_call == "Controller":
+        elif current_state == "Controller":
             self.call_controller()
         
-        elif flow_to_call == "Executor":
+        elif current_state == "Executor":
             self.call_executor()
         
-        elif flow_to_call == "HumanFeedback":
+        elif current_state == "HumanFeedback":
             self.call_human_feedback()
             self.flow_state["current_round"] += 1
             
@@ -126,6 +125,9 @@ class ReActWithHumanFeedback(ControllerExecutorFlow):
             self._on_reach_max_round()
             self.generate_reply()
             
-        self.flow_state["last_called"] = self.get_next_flow_to_call()
+        if self.flow_state.get("early_exit_flag",False) or current_state is None:
+            self.flow_state["last_state"] = None
+        else:
+            self.flow_state["last_state"] = current_state
         
     
