@@ -21,7 +21,7 @@
 </p>
 
 > 📢
-> Major update: In v1.0.0 we introduces the Flows engine which enables concurrent execution and peer-to-peer collaboration. Additionally, we redesign the developer experience such that you can build Flows leveraging these features as easily as possible.
+> Major update: In v1.0 we introduce the Flows engine, which enables concurrent execution and peer-to-peer distributed collaboration. Additionally, we redesigned the developer experience so that you can build Flows leveraging these features in the simplest way possible.
 > 
 > We are still polishing some aspects of the developer experience, so share your feedback on [Discord](https://discord.gg/yFZkpD2HAh)! 
 
@@ -29,9 +29,9 @@
 🤖🌊 **aiFlows** embodies the [*Flows*](https://arxiv.org/abs/2308.01285) abstraction and greatly simplifies the design and implementation of complex (work)Flows involving humans, AI systems, and tools. In collaboration with [CoLink](https://github.com/CoLearn-Dev/colink-server-dev), it enables:
 
 - 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
-- 🤝 Reusability: Flows shared on the FlowVerse, can be downloaded and tailor fitted to your needs
+- 🤝 Reusability: Flows shared on the FlowVerse can be downloaded and tailor-fitted to your needs
 - 🕸 Remote Peer-to-Peer Collaboration: Flows can readily engage in a peer-to-peer collaboration with other remote Flows that could run anywhere
-- 🔀 Concurrency: Flows can readily implement concurrent execution (e.g., a Flow being invoked by multiple Flows or a Flow invoking multiple Flows, concurrently) –– without *any* additional complexity
+- 🔀 Concurrency: Flows can readily implement concurrent execution (e.g., a Flow being invoked by multiple Flows or a Flow invoking multiple Flows concurrently) –– without *any* additional complexity
 
 ## Quick Install
 The library is compatible with Python 3.10+.
@@ -43,7 +43,7 @@ pip install aiflows
 <details>
   <summary>Other installation options</summary>
 
-### Install bleeding-edge version
+### Install the bleeding-edge version
 
 ```shell
 git clone git@github.com:epfl-dlab/aiflows.git
@@ -55,7 +55,7 @@ pip install -e .
 ## Flows in a Nutshell
 
 The framework is centered around *Flows* and *messages*.
-Flows are independent, self-contained, goal-driven computational building block that can complete semantically meaningful unit of work.
+Flows are independent, self-contained, goal-driven computational building blocks that can complete semantically meaningful units of work.
 To exchange information, Flows communicate via a standardized message-based interface. Messages can be of any type the recipient Flow can process.
 <p align="center">
       <img src="assets/fig1_rounded_corners.png" alt="image" width="1000" height="auto">
@@ -81,17 +81,17 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 - The ability to readily reproduce, reuse, or build on top of Flows shared on the FlowVerse and systematically study them across different settings (the infrastructure in the <a href="https://github.com/epfl-dlab/cc_flows">cc_flows</a> repository could be a useful starting point in future studies)
 - The ability to readily make your work accessible to practitioners and other researchers and access their feedback.
 
-#### Additionally, as practitioner, you will benefit from the:
+#### Additionally, as a practitioner, you will benefit from:
 - The ability to readily reuse or build on top of Flows shared on the FlowVerse
 - The ability to readily give access to your Flows to others
 - Direct access to any advancements in the field.
 
-To develop the next-generation AI tools will need a principled abstraction that support concurrent execution and peer-to-peer remote collaboration. At the same time to maximally benefit from them, developers and researchers will need to have complete control over their workflows -- aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
+To develop the next-generation AI tools, we will need a principled abstraction that supports concurrent execution and peer-to-peer remote collaboration. At the same time, to maximize their benefits, developers and researchers will need to have complete control over their workflows. aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
 # [Getting Started](./tutorials)
 
 Most of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). 
-The advantage of the Flows abstraction is that even the most complex Flows or Flows that rely on concurrent computation, can be developed through composing only a few basic primitives.
+The advantage of the Flows abstraction is that even the most complex Flows or Flows that rely on concurrent computation can be developed by composing only a few basic primitives.
 In the tutorials, we introduce you to this fundamental toolkit through instructive examples. 
 
 <p align="center">
@@ -117,12 +117,12 @@ In a nutshell, this is just the beginning, and we have a long way to go. Stay tu
 
 ## Citation
 
-If you this work useful, please cite:
+If you found this work useful, please cite it as:
 
 ```
 @misc{josifoski2023flows,
       title={Flows: Building Blocks of Reasoning and Collaborating AI},
-      author={Martin Josifoski and Lars Klein and Maxime Peyrard and Yifei Li and Saibo Geng and Julian Paul Schnitzler and Yuxing Yao and Jiheng Wei and Debjit Paul and Robert West},
+      author={Martin Josifoski and Lars Klein and Maxime Peyrard and Baldwin Nicolas and Yifei Li and Saibo Geng and Julian Paul Schnitzler and Yuxing Yao and Jiheng Wei and Debjit Paul and Robert West},
       year={2023},
       eprint={2308.01285},
       archivePrefix={arXiv},
