@@ -1,0 +1,8 @@
+colink_address: http://127.0.0.1:2021
+colink_jwt: # YOUR JWT HERE
+
+flow_endpoint: User # Endpoint at which flows can send messages to human
+dispatch_point: human_dispatch
+
+# Run the UI with:
+# streamlit run chatflows-ui.py
