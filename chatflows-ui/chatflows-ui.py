@@ -16,6 +16,7 @@ from aiflows.utils.constants import (
 from aiflows.utils.general_helpers import (
     recursive_dictionary_update,
 )
+from aiflows.workers import run_get_instance_worker_thread
 
 import colink as CL
 from colink import CoLink
@@ -146,10 +147,12 @@ def setup():
     thread = threading.Thread(target=pop.run, args=(cl, True, None, True), daemon=True)
     thread.start()
     print("Dispatch worker started in attached thread.")
+    run_get_instance_worker_thread(cl)
+    print("get_instance worker started in attached thread.")
 
 
 def handle_msg(msg):
-    chat_id = msg.src_flow_id
+    chat_id = f"{msg.user_id}:{msg.src_flow_id}"
     print(f"Received msg in chat {chat_id}.")
 
     if chat_id not in st.session_state["chats"]:
@@ -157,7 +160,7 @@ def handle_msg(msg):
         st.session_state["chats"][chat_id]["chat_label"] = msg.src_flow
         st.session_state["chats"][chat_id]["messages"] = []
 
-    msg_content = msg.data["api_output"]
+    msg_content = msg.data["query"]
     st.session_state["chats"][chat_id]["messages"].append(
         {"role": "assistant", "content": msg_content}
     )
