@@ -2,6 +2,7 @@ from IPython.core.magic import register_cell_magic
 from omegaconf import OmegaConf
 import os
 
+
 @register_cell_magic
 def compile_and_writefile(line, cell):
     # Compile the code in the cell
