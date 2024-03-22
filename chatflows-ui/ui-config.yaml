@@ -1,7 +1,7 @@
-colink_address: http://127.0.0.1:2021
+colink_address: https://amld.colink-server.colearn.cloud
 colink_jwt: # YOUR JWT HERE
 
-flow_endpoint: User # Endpoint at which flows can send messages to human
+flow_endpoint: User # Endpoint at which flows can send messages that will get displayed on the UI
 dispatch_point: human_dispatch
 
 # Run the UI with:

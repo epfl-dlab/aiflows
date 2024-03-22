@@ -215,8 +215,14 @@ def run_dispatch_worker_thread(
     :type dispatch_point: str
     :param flow_modules_base_path: path to directory that contains the flow_modules directory
     :type flow_modules_base_path: str
+    :param api_infos: Api Info that the worker should inject into flows when loading them from colink storage.
+     Api Info remains local on the worker and doesn't get stored in colink storage.
+    :type api_infos: List[ApiInfo]
     """
     # sys.path.append(flow_modules_base_path)
+
+    # NOTE worker will inject api_info when loading flows from colink storage
+    # this is so that we avoid storing API keys in colink storage (privacy reasons)
     global worker_api_infos
     worker_api_infos = api_infos
     pop = ProtocolOperator(__name__)
@@ -235,6 +241,7 @@ def run_dispatch_worker_threads(
     num_workers,
     dispatch_point=DEFAULT_DISPATCH_POINT,
     flow_modules_base_path=FLOW_MODULES_BASE_PATH,
+    api_infos: List[ApiInfo] = None,
 ):
     """Runs multiple dispatch workers in separate threads.
 
@@ -246,9 +253,14 @@ def run_dispatch_worker_threads(
     :type dispatch_point: str
     :param flow_modules_base_path: path to directory that contains the flow_modules directory
     :type flow_modules_base_path: str
+    :param api_infos: Api Info that the worker should inject into flows when loading them from colink storage.
+     Api Info remains local on the worker and doesn't get stored in colink storage.
+    :type api_infos: List[ApiInfo]
     """
     for i in range(num_workers):
-        run_dispatch_worker_thread(cl, dispatch_point, flow_modules_base_path)
+        run_dispatch_worker_thread(
+            cl, dispatch_point, flow_modules_base_path, api_infos
+        )
 
 
 # python dispatch-worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)

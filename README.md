@@ -30,8 +30,8 @@
 
 - 🧩 Modularity: Flows can be stacked like LEGO blocks into arbitrarily nested structures with the complexity hidden behind a message-based interface
 - 🤝 Reusability: Flows shared on the FlowVerse, can be downloaded and tailor fitted to your needs
-- 🕸 Remote Peer-to-Peer Collaboration: Flows can readily engage in a peer-to-peer collaboration with other remote Flows that can run anywhere
-- 🔀 Concurrency: Flows can readilly be called 
+- 🕸 Remote Peer-to-Peer Collaboration: Flows can readily engage in a peer-to-peer collaboration with other remote Flows that could run anywhere
+- 🔀 Concurrency: Flows can readily implement concurrent execution (e.g., a Flow being invoked by multiple Flows or a Flow invoking multiple Flows, concurrently) –– without *any* additional complexity
 
 ## Quick Install
 The library is compatible with Python 3.10+.

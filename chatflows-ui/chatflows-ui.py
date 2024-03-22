@@ -152,6 +152,7 @@ def setup():
 
 
 def handle_msg(msg):
+    print("RECV MSG", msg)
     chat_id = f"{msg.user_id}:{msg.src_flow_id}"
     print(f"Received msg in chat {chat_id}.")
 
@@ -160,7 +161,8 @@ def handle_msg(msg):
         st.session_state["chats"][chat_id]["chat_label"] = msg.src_flow
         st.session_state["chats"][chat_id]["messages"] = []
 
-    msg_content = msg.data["query"]
+    # TODO apply transform specified in HumanUIFlow.yaml
+    msg_content = msg.data["api_output"]
     st.session_state["chats"][chat_id]["messages"].append(
         {"role": "assistant", "content": msg_content}
     )
@@ -197,7 +199,10 @@ def display_current_chat():
     chat_label = st.session_state["chats"][current_chat_id]["chat_label"]
 
     st.title(f"💬 {chat_label}")
-    st.caption(current_chat_id)
+    src_user_id = current_chat_id.split(":")[0]
+    src_flow_id = current_chat_id.split(":")[1]
+    st.caption(f"user_id: {src_user_id}")
+    st.caption(f"flow_id: {src_flow_id}")
     for msg in messages:
         st.chat_message(msg["role"]).write(msg["content"])
 
