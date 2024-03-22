@@ -1,0 +1,18 @@
+name: ReverseNumberTwice
+description: A sequential Flow that reverses a number twice.
+_target_: ReverseNumberFlowModule.ReverseNumberSequentialFlowNonBlocking.ReverseNumberSequentialFlowNonBlocking.instantiate_from_default_config
+input_interface: number
+output_interface: output_number
+subflows_config:
+  first_reverse_flow:
+    _target_: aiflows.base_flows.AtomicFlow.instantiate_from_default_config
+    user_id: local
+    flow_endpoint: reverse_number
+    name: A proxy Flow that calls reverse number to reverse number AGAIN.
+    description: A proxy Flow that calls reverse number to reverse number.
+  second_reverse_flow:
+    _target_: aiflows.base_flows.AtomicFlow.instantiate_from_default_config
+    user_id: local
+    flow_endpoint: reverse_number
+    name: Proxy Second Reverse
+    description: A proxy Flow that calls reverse number to reverse number AGAIN.

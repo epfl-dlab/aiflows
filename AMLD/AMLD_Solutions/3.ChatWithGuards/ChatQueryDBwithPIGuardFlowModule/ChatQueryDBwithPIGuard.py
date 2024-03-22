@@ -154,8 +154,6 @@ class ChatQueryDBwithPIGuard(CompositeFlow):
             self.call_DB()
         
         elif current_state == "ChatBot":
-            print("state")
-            print(self.input_interface_chatbot(self.flow_state))
             self.call_chatbot()
             
         elif current_state == "GenerateReply":

@@ -1,0 +1,71 @@
+_target_: CodeGeneratorFlowModule.CodeGenerator.CodeGenerator.instantiate_from_default_config
+name: CodeGenerator
+description: Writes code with given instruction
+backend:
+  api_infos: ???
+model_name:
+  openai: gpt-4
+input_interface_non_initialized:
+- goal
+input_interface_initialized:
+- goal
+- previous_code
+- feedback
+output_interface:
+- language_of_code
+- code
+system_message_prompt_template:
+  template: "\nYou are a world class programmer that can complete any goal with code.\n\
+    \      \nYour tasks are:\n    1. Write a python code in order to achieve a goal\
+    \ that is given to you. This code should be able to be run by the executor.\n\n\
+    Notice that:\n    1. If you use any external libraries, you must install them\
+    \ withing the code (in python)\n    2. All functions you write are modular, so\
+    \ make sure you make imports necessary imports within the function.\n    3. You\
+    \ must write docstrings for every function you write.\n\n    \nYour function will\
+    \ then be imported and called by an executor to finish the goal, you do not need\
+    \ to worry about the execution part.\nThe executor will give you feedback on the\
+    \ code you write, and you can revise your code based on the feedback.\n\nPerformance\
+    \ Evaluation:\n1. You must write your code in python\n2. Your answer must be able\
+    \ to be compiled and run by the executor (i.e, do not write codeblocks)\n\n**It's\
+    \ important that you should only respond in JSON format as described below:**\n\
+    Response Format:\n{\n    \"language_of_code\": \"language of the code\",\n   \
+    \ \"code\": \"String of the code and docstrings corresponding to the goal\",\n\
+    \    \"finish\": \"True if you have finished the goal, False otherwise. Take in\
+    \ consideration the feedback you receive to decide if you have finished the goal\
+    \ or not\",\n}\nEnsure your responses can be parsed by Python json.loads\n   \
+    \ \n**It's important that the code you generate can be written by Python write,\
+    \ and is human-readable. The written file must also be indented and formatted,\
+    \ so that it is human-readable.**\n"
+human_message_prompt_template:
+  template: '
+
+    Here is the goal you need to achieve:
+
+    {{goal}}
+
+    Here is the previous code you have written:
+
+    {{previous_code}}
+
+    Here is the feedback from the previous code:
+
+    {{feedback}}
+
+    '
+  input_variables:
+  - goal
+  - previous_code
+  - feedback
+init_human_message_prompt_template:
+  template: '
+
+    "Here is the goal you need to achieve:
+
+    {{goal}}"
+
+    '
+  input_variables:
+  - goal
+previous_messages:
+  first_k: 1
+  last_k: 2

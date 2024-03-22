@@ -1,0 +1,38 @@
+name: ChatCodeInterpreter
+description: A code which generate code with the help of a interpreter
+_target_: ChatCodeInterpreterFlowModule.ChatCodeInterpreter.ChatCodeInterpreter.instantiate_from_default_config
+input_interface: goal
+output_interface:
+- code
+- interpreter_output
+subflows_config:
+  Coder:
+    _target_: aiflows.base_flows.AtomicFlow.instantiate_from_default_config
+    user_id: local
+    flow_endpoint: CodeGenerator
+    name: Proxy of Coder
+    description: A proxy flow of the Coder flow.
+    backend:
+      api_infos: ???
+      model_name:
+        openai: gpt-4
+    init_human_message_prompt_template:
+      template: '
+
+        Here is the goal you need to achieve:
+
+        {{goal}}"
+
+        Feedback:
+
+        Do not finish this goal yet. You will receive feedback on the code you write.
+
+        '
+      input_variables:
+      - goal
+  Interpreter:
+    _target_: aiflows.base_flows.AtomicFlow.instantiate_from_default_config
+    user_id: local
+    flow_endpoint: InterpreterAtomicFlow
+    name: Proxy of Interpreter Flow
+    description: A proxy flow of the Interpreter Flow.
