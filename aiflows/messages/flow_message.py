@@ -32,6 +32,7 @@ class FlowMessage(Message):
         self.dst_flow = dst_flow
         self.input_message_id = self.message_id if input_message_id is None else input_message_id
         self.is_reply = is_reply
+        self.user_id = user_id
         
     def to_string(self):
         src_flow = self.src_flow
