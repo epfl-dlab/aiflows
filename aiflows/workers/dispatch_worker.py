@@ -215,6 +215,9 @@ def run_dispatch_worker_thread(
     :type dispatch_point: str
     :param flow_modules_base_path: path to directory that contains the flow_modules directory
     :type flow_modules_base_path: str
+    :param api_infos: Api Info that the worker should inject into flows when loading them from colink storage.
+     Api Info remains local on the worker and doesn't get stored in colink storage.
+    :type api_infos: List[ApiInfo]
     """
     # sys.path.append(flow_modules_base_path)
 
@@ -250,6 +253,9 @@ def run_dispatch_worker_threads(
     :type dispatch_point: str
     :param flow_modules_base_path: path to directory that contains the flow_modules directory
     :type flow_modules_base_path: str
+    :param api_infos: Api Info that the worker should inject into flows when loading them from colink storage.
+     Api Info remains local on the worker and doesn't get stored in colink storage.
+    :type api_infos: List[ApiInfo]
     """
     for i in range(num_workers):
         run_dispatch_worker_thread(
