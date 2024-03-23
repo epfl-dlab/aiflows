@@ -1,0 +1,15 @@
+name: Human2HumanInteractiveFlow
+description: Flow that enables chatting between a ChatAtomicFlow and a user providing
+  the input.
+_target_: HumantoHumanFlowModule.HumanToHuman.HumanToHuman.instantiate_from_default_config
+subflows_config:
+  Assistant:
+    name: User1
+    description: A flow that represents the first user.
+    flow_endpoint: User
+    user_id: local
+  User:
+    name: User2
+    description: A flow that represents the second user.
+    flow_endpoint: User
+    user_id: ???
