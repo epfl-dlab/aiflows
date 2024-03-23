@@ -224,7 +224,8 @@ def run_dispatch_worker_thread(
     # NOTE worker will inject api_info when loading flows from colink storage
     # this is so that we avoid storing API keys in colink storage (privacy reasons)
     global worker_api_infos
-    worker_api_infos = api_infos
+    if api_infos is not None:
+        worker_api_infos = api_infos
     pop = ProtocolOperator(__name__)
 
     proto_role = f"{dispatch_point}:local"
