@@ -152,7 +152,7 @@ def setup():
 
 
 def handle_msg(msg):
-    print("RECV MSG", msg)
+    print(msg)
     chat_id = f"{msg.user_id}:{msg.src_flow_id}"
     print(f"Received msg in chat {chat_id}.")
 
