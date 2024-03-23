@@ -9,19 +9,25 @@ from typing import List, Dict, Any, Union, Optional
 
 from omegaconf import OmegaConf
 from ..utils import logging
-from aiflows.history import FlowHistory
 from aiflows.messages import (
     Message,
-    InputMessage,
+    FlowMessage,
     UpdateMessage_Generic,
     UpdateMessage_NamespaceReset,
     UpdateMessage_FullReset,
-    OutputMessage,
 )
-from aiflows.utils.general_helpers import recursive_dictionary_update, nested_keys_search, process_config_leafs
+from aiflows.utils.general_helpers import (
+    recursive_dictionary_update,
+    nested_keys_search,
+    process_config_leafs,
+    quick_load,
+)
 from aiflows.utils.rich_utils import print_config_tree
 from aiflows.flow_cache import FlowCache, CachingKey, CachingValue, CACHING_PARAMETERS
-from ..utils.general_helpers import try_except_decorator
+from aiflows.utils.general_helpers import try_except_decorator
+from aiflows.utils.coflows_utils import push_to_flow, FlowFuture, dispatch_response
+import colink as CL
+import hydra
 
 log = logging.get_logger(__name__)
 
@@ -41,13 +47,26 @@ class Flow(ABC):
 
     flow_config: Dict[str, Any]
     flow_state: Dict[str, Any]
-    history: FlowHistory
+    cl: CL.CoLink
+    local_proxy_invocations: Dict[str, Any] = {}
 
     # Parameters that are given default values if not provided by the user
     __default_flow_config = {
         "private_keys": [],  # keys that will not be logged if they appear in a message
-        "keys_to_ignore_for_hash_flow_config": ["name", "description", "api_keys", "api_information", "private_keys"],
-        "keys_to_ignore_for_hash_flow_state": ["name", "description", "api_keys", "api_information", "private_keys"],
+        "keys_to_ignore_for_hash_flow_config": [
+            "name",
+            "description",
+            "api_keys",
+            "api_information",
+            "private_keys",
+        ],
+        "keys_to_ignore_for_hash_flow_state": [
+            "name",
+            "description",
+            "api_keys",
+            "api_information",
+            "private_keys",
+        ],
         "keys_to_ignore_for_hash_input_data": [],
         "clear_flow_namespace_on_run_end": True,  # whether to clear the flow namespace after each run
         "enable_cache": False,  # whether to enable cache for this flow
@@ -56,12 +75,18 @@ class Flow(ABC):
     def __init__(
         self,
         flow_config: Dict[str, Any],
+        cl: CL.CoLink = None,
     ):
         """
         __init__ should not be called directly be a user. Instead, use the classmethod `instantiate_from_config` or `instantiate_from_default_config`
         """
         self.flow_config = flow_config
         self.cache = FlowCache()
+
+        self.cl = cl
+
+        self.created_proxy_flow_entries = False
+
         self._validate_flow_config(flow_config)
 
         self.set_up_flow_state()
@@ -83,8 +108,7 @@ class Flow(ABC):
 
     @classmethod
     def instantiate_from_default_config(cls, **overrides: Optional[Dict[str, Any]]):
-        """
-        This method is called by the FlowLauncher to build the flow.
+        """Instantiates the flow from the default config, with the given overrides applied.
 
         :param overrides: The parameters to override in the default config
         :type overrides: Dict[str, Any], optional
@@ -105,8 +129,11 @@ class Flow(ABC):
         :type flow_config: Dict[str, Any]
         :raises ValueError: If the flow config does not contain all the required keys
         """
+
         if not hasattr(cls, "REQUIRED_KEYS_CONFIG"):
-            raise ValueError("REQUIRED_KEYS_CONFIG should be defined for each Flow class.")
+            raise ValueError(
+                "REQUIRED_KEYS_CONFIG should be defined for each Flow class."
+            )
 
         for key in cls.REQUIRED_KEYS_CONFIG:
             if key not in flow_config:
@@ -139,19 +166,27 @@ class Flow(ABC):
 
         path_to_config = os.path.join(path_to_flow_directory, f"{class_name}.yaml")
         if os.path.exists(path_to_config):
-            default_config = OmegaConf.to_container(OmegaConf.load(path_to_config), resolve=True)
+            default_config = OmegaConf.to_container(
+                OmegaConf.load(path_to_config), resolve=True
+            )
 
             cls_parent_module = ".".join(cls.__module__.split(".")[:-1])
 
             process_config_leafs(
-                default_config, lambda k, v: (cls_parent_module + v if k == "_target_" and v.startswith(".") else v)
+                default_config,
+                lambda k, v: (
+                    cls_parent_module + v
+                    if k == "_target_" and v.startswith(".")
+                    else v
+                ),
             )
 
             config = recursive_dictionary_update(parent_default_config, default_config)
         elif hasattr(cls, f"_{cls.__name__}__default_flow_config"):
             # no yaml but __default_flow_config exists in class declaration
             config = recursive_dictionary_update(
-                parent_default_config, copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config"))
+                parent_default_config,
+                copy.deepcopy(getattr(cls, f"_{cls.__name__}__default_flow_config")),
             )
         else:
             config = parent_default_config
@@ -171,7 +206,10 @@ class Flow(ABC):
         :return: The instantiated flow
         :rtype: aiflows.flow.Flow
         """
-        kwargs = {"flow_config": copy.deepcopy(config)}
+        flow_config = copy.deepcopy(config)
+
+        kwargs = {"flow_config": flow_config}
+
         return cls(**kwargs)
 
     @classmethod
@@ -188,15 +226,27 @@ class Flow(ABC):
     def set_up_flow_state(self):
         """Sets up the flow state. This method is called when the flow is instantiated, and when the flow is reset."""
         self.flow_state = {}
-        self.history = FlowHistory()
 
-    def reset(self, full_reset: bool, recursive: bool, src_flow: Optional[Union["Flow", str]] = "Launcher"):
+    def get_flow_state(self):
+        """Returns the flow state.
+
+        :return: The flow state
+        :rtype: Dict[str, Any]
         """
-        Reset the flow state and history. If recursive is True, reset all subflows as well.
+        return self.flow_state
+
+    def reset(
+        self,
+        full_reset: bool,
+        recursive: bool,
+        src_flow: Optional[Union["Flow", str]] = "Launcher",
+    ):
+        """
+        Reset the flow state. If recursive is True, reset all subflows as well.
 
         :param full_reset:  If True, remove all data in flow_state. If False, keep the data in flow_state.
-        :param recursive:
-        :param src_flow:
+        :param recursive: If True, reset all subflows as well.
+        :param src_flow: The flow that initiated the reset
         :return:
         """
 
@@ -209,13 +259,17 @@ class Flow(ABC):
 
         if full_reset:
             message = UpdateMessage_FullReset(
-                created_by=src_flow, updated_flow=self.flow_config["name"], keys_deleted_from_namespace=[]
+                created_by=src_flow,
+                updated_flow=self.flow_config["name"],
+                keys_deleted_from_namespace=[],
             )
             self._log_message(message)
             self.set_up_flow_state()  # resets the flow state
         else:
             message = UpdateMessage_NamespaceReset(
-                created_by=src_flow, updated_flow=self.flow_config["name"], keys_deleted_from_namespace=[]
+                created_by=src_flow,
+                updated_flow=self.flow_config["name"],
+                keys_deleted_from_namespace=[],
             )
             self._log_message(message)
 
@@ -239,7 +293,7 @@ class Flow(ABC):
         :type update_data: Union[Dict[str, Any], Message]
         """
         if isinstance(update_data, Message):
-            update_data = update_data.data["output_data"]
+            update_data = update_data.data
 
         if len(update_data) == 0:
             raise ValueError(
@@ -266,15 +320,41 @@ class Flow(ABC):
 
     def __getstate__(self):
         """Used by the caching mechanism such that the flow can be returned to the same state using the cache"""
+        flow_config = copy.deepcopy(self.flow_config)
+        flow_state = copy.deepcopy(self.flow_state)
+
         return {
-            "flow_config": self.flow_config,
-            "flow_state": self.flow_state,
+            "flow_config": flow_config,
+            "flow_state": flow_state,
         }
 
-    def __setstate__(self, state):
+    def __setstate__(self, state, safe_mode=False):
+        """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
+
+        self.__setflowstate__(state, safe_mode=safe_mode)
+        self.__setflowconfig__(state)
+
+    def __setflowstate__(self, state, safe_mode=False):
+        """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
+
+        if not safe_mode:
+            self.flow_state = state["flow_state"]
+
+        else:
+            self.set_up_flow_state()
+            self.flow_state = {**self.flow_state, **state["flow_state"]}
+
+    def __setflowconfig__(self, state):
         """Used by the caching mechanism to skip computation that has already been done and stored in the cache"""
         self.flow_config = state["flow_config"]
-        self.flow_state = state["flow_state"]
+
+        # hacky for the moment, but possibly overwrite enamble cache para
+        if (
+            self.flow_config["enable_cache"]
+            and CACHING_PARAMETERS.do_caching
+            and not self.SUPPORTS_CACHING
+        ):
+            self.flow_config["enable_cache"] = False
 
     def __repr__(self):
         """Generates the string that will be used by the hashing function"""
@@ -286,28 +366,32 @@ class Flow(ABC):
             if k not in self.flow_config["keys_to_ignore_for_hash_flow_config"]
         }
         state_hashing_params = {
-            k: v for k, v in self.flow_state.items() if k not in self.flow_config["keys_to_ignore_for_hash_flow_state"]
+            k: v
+            for k, v in self.flow_state.items()
+            if k not in self.flow_config["keys_to_ignore_for_hash_flow_state"]
         }
-        hash_dict = {"flow_config": config_hashing_params, "flow_state": state_hashing_params}
+        hash_dict = {
+            "flow_config": config_hashing_params,
+            "flow_state": state_hashing_params,
+        }
         return repr(hash_dict)
-
-    # def get_hash_string(self):
-    #     raise NotImplementedError()
 
     def get_interface_description(self):
         """Returns the input and output interface description of the flow."""
-        return {"input": self.flow_config["input_interface"], "output": self.flow_config["output_interface"]}
+        return {
+            "input": self.flow_config.get("input_interface", None),
+            "output": self.flow_config.get("output_interface", None),
+        }
 
     def _log_message(self, message: Message):
         """Logs the given message to the history of the flow.
 
         :param message: The message to log
         :type message: Message
-        :return: The message that was logged
-        :rtype: Message
         """
         log.debug(message.to_string())
-        return self.history.add_message(message)
+        # TODO: Think about how we want to log messages
+        pass
 
     def _fetch_state_attributes_by_keys(self, keys: Union[List[str], None]):
         """Returns the values of the given keys in the flow state.
@@ -332,72 +416,90 @@ class Flow(ABC):
             if found:
                 data[key] = value
             else:
-                raise KeyError(f"Key {key} not found in the flow state or the class namespace.")
+                raise KeyError(
+                    f"Key {key} not found in the flow state or the class namespace."
+                )
         return data
 
-    def _package_input_message(self, payload: Dict[str, Any], dst_flow: "Flow"):
-        """Packages the given payload into an InputMessage.
+    def package_input_message(
+        self,
+        data: Dict[str, Any],
+        dst_flow: str = "unknown",
+        reply_data: Dict[str, Any] = {"mode": "no_reply"},
+    ):
+        """Packages the given payload into an FlowMessage.
 
-        :param payload: The payload to package
-        :type payload: Dict[str, Any]
+        :param data: The data dictionary to package
+        :type data: Dict[str, Any]
         :param dst_flow: The destination flow
-        :type dst_flow: Flow
+        :type dst_flow: str
+        :type reply_data: information about for the flow who processes the message on how and who to reply to (for distributed calls)
         :return: The packaged input message
-        :rtype: InputMessage
+        :rtype: FlowMessage
         """
-        private_keys = dst_flow.flow_config["private_keys"]
+
+        private_keys = self.flow_config["private_keys"]
 
         src_flow = self.flow_config["name"]
-        if isinstance(dst_flow, Flow):
-            dst_flow = dst_flow.flow_config["name"]
 
-        assert (
-            len(set(["src_flow", "dst_flow"]).intersection(set(payload.keys()))) == 0
-        ), "The keys 'src_flow' and 'dst_flow' are special keys and cannot be used in the data dictionary"
-
+        if self.cl is not None:
+            user_id = self.cl.get_user_id()
+        else:
+            user_id = None
         # ~~~ Create the message ~~~
-        msg = InputMessage(
-            data_dict=copy.deepcopy(payload),
+        msg = FlowMessage(
+            data=copy.deepcopy(data),
             private_keys=private_keys,
             src_flow=src_flow,
+            src_flow_id=self.get_instance_id(),
             dst_flow=dst_flow,
+            reply_data=reply_data,
             created_by=self.name,
+            user_id=user_id,
         )
         return msg
 
-    def _package_output_message(
-        self, input_message: InputMessage, response: Dict[str, Any], raw_response: Dict[str, Any]
+    def package_output_message(
+        self, input_message: FlowMessage, response: Union[Dict[str, Any], FlowMessage]
     ):
-        """Packages the given response into an OutputMessage.
+        """Packages the given response into an FlowMessage.
 
         :param input_message: The input message that was used to generate the response
-        :type input_message: InputMessage
+        :type input_message: FlowMessage
         :param response: The response to package
         :type response: Dict[str, Any]
-        :param raw_response: The raw response to package
-        :type raw_response: Dict[str, Any]
         :return: The packaged output message
-        :rtype: OutputMessage
+        :rtype: FlowMessage
         """
-        output_data = copy.deepcopy(response)
 
-        return OutputMessage(
+        if isinstance(response, FlowMessage):
+            output_data = copy.deepcopy(response.data)
+
+        else:
+            output_data = copy.deepcopy(response)
+
+        if self.cl is not None:
+            user_id = self.cl.get_user_id()
+        else:
+            user_id = None
+
+        return FlowMessage(
             created_by=self.flow_config["name"],
             src_flow=self.flow_config["name"],
+            src_flow_id=self.get_instance_id(),
             dst_flow=input_message.src_flow,
-            output_data=output_data,
-            raw_response=raw_response,
+            data=output_data,
+            reply_data=input_message.reply_data,
             input_message_id=input_message.message_id,
-            history=self.history,
+            is_reply=True,
+            user_id=user_id,
         )
 
-    def run(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, input_message: FlowMessage) -> None:
         """Runs the flow on the given input data. (Not implemented in the base class)
 
-        :param input_data: The input data to run the flow on
-        :type input_data: Dict[str, Any]
-        :return: The response of the flow
-        :rtype: Dict[str, Any]
+        :param input_message: The input message to run the flow on
+        :type input_message: FlowMessage
         """
         raise NotImplementedError
 
@@ -418,8 +520,12 @@ class Flow(ABC):
 
         # ~~~ get the hash string ~~~
         keys_to_ignore_for_hash = self.flow_config["keys_to_ignore_for_hash_input_data"]
-        input_data_to_hash = {k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash}
-        cache_key_hash = CachingKey(self, input_data_to_hash, keys_to_ignore_for_hash).hash_string()
+        input_data_to_hash = {
+            k: v for k, v in input_data.items() if k not in keys_to_ignore_for_hash
+        }
+        cache_key_hash = CachingKey(
+            self, input_data_to_hash, keys_to_ignore_for_hash
+        ).hash_string()
         # ~~~ get from cache ~~~
         response = None
         cached_value: CachingValue = self.cache.get(cache_key_hash)
@@ -451,10 +557,14 @@ class Flow(ABC):
 
             # Retrieve the messages created during the execution
             num_created_messages = len(self.history) - history_len_pre_execution
-            new_history_messages = self.history.get_last_n_messages(num_created_messages)
+            new_history_messages = self.history.get_last_n_messages(
+                num_created_messages
+            )
 
             value_to_cache = CachingValue(
-                output_results=response, full_state=self.__getstate__(), history_messages_created=new_history_messages
+                output_results=response,
+                full_state=self.__getstate__(),
+                history_messages_created=new_history_messages,
             )
 
             self.cache.set(cache_key_hash, value_to_cache)
@@ -462,34 +572,141 @@ class Flow(ABC):
 
         return response
 
+    def _run_method(self, input_message: Dict[str, Any]) -> Dict[str, Any]:
+        """Runs the flow in local mode.
+
+        :param input_message: The input message to run the flow on
+        :type input_meassage: FlowMessage
+        """
+        # TODO: REMAKE THIS WORK AGAIN (LATER)
+        # if self.flow_config["enable_cache"] and CACHING_PARAMETERS.do_caching:
+        #     log.debug("call from cache")
+        #     response = self.__get_from_cache(input_message.data)
+
+        # else:
+        self.run(input_message)
+
     @try_except_decorator
-    def __call__(self, input_message: InputMessage):
+    def __call__(self, input_message: FlowMessage):
         """Calls the flow on the given input message.
 
         :param input_message: The input message to run the flow on
-        :type input_message: InputMessage
-        :return: The output message of the flow
-        :rtype: OutputMessage
+        :type input_message: FlowMessage
         """
+
         # ~~~ check and log input ~~~
         self._log_message(input_message)
 
         # ~~~ Execute the logic of the flow ~~~
-        if not self.flow_config["enable_cache"] or not CACHING_PARAMETERS.do_caching:
-            response = self.run(input_message.data)
-        else:
-            response = self.__get_from_cache(input_message.data)
 
-        # ~~~ Package output message ~~~
-        output_message = self._package_output_message(
-            input_message=input_message,
-            response=response,
-            raw_response=None,
+        self._run_method(input_message)
+
+        self._post_call_hook()
+
+    def set_colink(self, cl, recursive=True):
+        """Sets the colink object for the flow and all its subflows.
+
+        :param cl: The colink object to set
+        :type cl: CL.CoLink
+        :param recursive: Whether to set the colink for all subflows as well
+        :type recursive: bool
+        """
+        self.cl = cl
+        if recursive and hasattr(self, "subflows"):
+            for _, flow in self.subflows.items():
+                flow.set_colink(cl)
+
+    @try_except_decorator
+    def send_message(self, message: FlowMessage):
+        """Sends the given message to a flow (specified in message.reply_data).
+        If the message is a reply, it sends the message back to the flow that sent the original message.
+
+        :param message: The message to send
+        :type message: FlowMessage
+        """
+
+        self._log_message(message)
+
+        if message.is_reply:
+            dispatch_response(self.cl, message, message.reply_data)
+
+        else:
+            push_to_flow(
+                self.cl, self.flow_config["user_id"], self.get_instance_id(), message
+            )
+
+        self._post_call_hook()
+
+    @try_except_decorator
+    def get_reply(self, message):
+        """Sends the given message to a flow (specified in message.reply_data)
+        and expect it to reply in the input queue specified in parent_instance_id.
+
+        :param message: The message to send
+        :type message: FlowMessage
+        """
+
+        self._log_message(message)
+
+        reply_data = {
+            "mode": "push",
+            "user_id": self.cl.get_user_id(),
+            "flow_id": message.src_flow_id,
+        }
+
+        message = FlowMessage(
+            data=message.data,
+            src_flow=self.flow_config["name"],
+            src_flow_id=message.src_flow_id,
+            dst_flow=self.get_instance_id(),
+            reply_data=reply_data,
+            private_keys=message.private_keys,
+            created_by=self.flow_config["name"],
+            input_message_id=message.message_id,
+            user_id=self.cl.get_user_id(),
+        )
+
+        message_path = push_to_flow(
+            self.cl, self.flow_config["user_id"], self.get_instance_id(), message
         )
 
         self._post_call_hook()
 
-        return output_message
+    @try_except_decorator
+    def get_reply_future(self, input_message):
+        """Sends the given message to a flow (specified in message.reply_data) and returns a future that will contain the reply.
+
+        :param input_message: The message to send
+        :type input_message: FlowMessage
+        :return: The future that will contain the reply
+        :rtype: FlowFuture
+        """
+        self._log_message(input_message)
+
+        reply_data = {
+            "mode": "storage",
+            "user_id": self.cl.get_user_id(),
+        }
+
+        message = FlowMessage(
+            data=input_message.data,
+            src_flow=self.flow_config["name"],
+            src_flow_id=input_message.src_flow_id,
+            dst_flow=self.get_instance_id(),
+            reply_data=reply_data,
+            private_keys=input_message.private_keys,
+            created_by=self.flow_config["name"],
+            input_message_id=input_message.message_id,
+            user_id=self.cl.get_user_id(),
+        )
+
+        message_path = push_to_flow(
+            self.cl, self.flow_config["user_id"], self.get_instance_id(), message
+        )
+
+        self._post_call_hook()
+
+        return FlowFuture(self.cl, message_path)
 
     def _post_call_hook(self):
         """Removes all attributes from the namespace that are not in self.KEYS_TO_IGNORE_WHEN_RESETTING_NAMESPACE"""
@@ -521,3 +738,6 @@ class Flow(ABC):
     @classmethod
     def type(cls):
         raise NotImplementedError
+
+    def get_instance_id(self):
+        return self.flow_config["flow_id"]

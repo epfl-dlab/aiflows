@@ -26,6 +26,8 @@ share/python-wheels/
 *.egg
 MANIFEST
 FlowVerse
+examples/Remote_and_Proxy_Flows/colink-server
+
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -164,7 +166,7 @@ data
 .DS_Store
 .chroma
 *flow_modules*
-
+logs
 # VS Code
 .vscode/
 *predictions*

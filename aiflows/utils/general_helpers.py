@@ -10,6 +10,7 @@ import jsonlines
 import gzip
 import importlib
 from omegaconf import OmegaConf
+from aiflows.backends.api_info import ApiInfo
 
 # from litellm.utils import function_to_dict
 from aiflows.utils import logging
@@ -463,6 +464,29 @@ def find_replace_in_dict(cfg, key_to_find, new_value,current_path=""):
         elif isinstance(item, list):
             cfg[key] = [find_replace_in_dict(x, key_to_find, new_value, new_path) for x in item]
     return cfg
+
+def quick_load_api_keys(cfg, api_information: List[ApiInfo], key="api_infos"):
+    """ Recursively loads the api_information in a dictionary in any field where the key is the parameter key
+    
+    :param cfg: The dictionary to update
+    :type cfg: Dict[str, Any]
+    :param api_information: The api information to set
+    :type api_information: List[ApiInfo]
+    :param key: The key to use, defaults to 'api_infos'
+    :type key: str, optional
+    """
+    api_info_cfg = [
+        {
+            "_target_": "aiflows.backends.api_info.ApiInfo",
+            "backend_used": api_info.backend_used,
+            "api_key": api_info.api_key,
+            "api_base": api_info.api_base
+        }
+    for api_info in api_information
+    ]
+    quick_load(cfg, api_info_cfg, key)
+        
+    
 
 def quick_load(cfg, item, key="api_infos"):
     """Recursively loads the config item in a dictionary with key.

@@ -1,55 +1,46 @@
-input_interface: # Connector between the "input data" and the Flow
-  _target_: aiflows.interfaces.KeyInterface
-  additional_transformations:
-    - _target_: aiflows.data_transformations.KeyMatchInput # Pass the input parameters specified by the flow
 
-output_interface: # Connector between the Flow's output and the caller
-  _target_: aiflows.interfaces.KeyInterface
-  keys_to_rename:
-    api_output: answer # Rename the api_output to answer
 
-flow: # Overrides the ChatAtomicFlow config
-  _target_: flow_modules.aiflows.VisionFlowModule.VisionAtomicFlow.instantiate_from_default_config
-  name: "VisionQA_Flow"
-  description: "A flow that answers questions on images."
+_target_: flow_modules.aiflows.VisionFlowModule.VisionAtomicFlow.instantiate_from_default_config
+name: "VisionQA_Flow"
+description: "A flow that answers questions on images."
 
-  # ~~~ Input interface specification ~~~
-  input_interface_non_initialized:
-    - "question"
-    - "data"
+# ~~~ Input interface specification ~~~
+input_interface_non_initialized:
+  - "question"
+  - "data"
 
-  # ~~~ backend model parameters ~~
-  backend:
-    _target_: aiflows.backends.llm_lite.LiteLLMBackend
-    api_infos: ???
-    model_name:
-      openai: "gpt-4-vision-preview"
-      azure: "azure/gpt-4-vision-preview"
+# ~~~ backend model parameters ~~
+backend:
+  _target_: aiflows.backends.llm_lite.LiteLLMBackend
+  api_infos: ???
+  model_name:
+    openai: "gpt-4-vision-preview"
+    azure: "azure/gpt-4-vision-preview"
 
-    # ~~~ generation_parameters ~~
-    n: 1
-    max_tokens: 3000
-    temperature: 0.3
+  # ~~~ generation_parameters ~~
+  n: 1
+  max_tokens: 3000
+  temperature: 0.3
 
-    top_p: 0.2
-    frequency_penalty: 0
-    presence_penalty: 0
-    stream: False
+  top_p: 0.2
+  frequency_penalty: 0
+  presence_penalty: 0
+  stream: False
 
-  n_api_retries: 6
-  wait_time_between_retries: 20
+n_api_retries: 6
+wait_time_between_retries: 20
 
-  # ~~~ Prompt specification ~~~
-  system_message_prompt_template:
-    _target_: aiflows.prompt_template.JinjaPrompt
-    template: |2-
-      You are a helpful chatbot that truthfully answers questions.
-    input_variables: []
-    partial_variables: {}
+# ~~~ Prompt specification ~~~
+system_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    You are a helpful chatbot that truthfully answers questions.
+  input_variables: []
+  partial_variables: {}
 
-  init_human_message_prompt_template:
-    _target_: aiflows.prompt_template.JinjaPrompt
-    template: |2-
-      Answer the following question: {{question}}
-    input_variables: ["question"]
-    partial_variables: {}
+init_human_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    Answer the following question: {{question}}
+  input_variables: ["question"]
+  partial_variables: {}

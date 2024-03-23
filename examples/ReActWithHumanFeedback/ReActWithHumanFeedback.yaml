@@ -1,9 +1,12 @@
 max_rounds: 30
+name: "ReActWithHumanFeedback"
+description: "A flow that interacts with a user and a backend, and asks for feedback."
+_target_: ReActWithHumanFeedback.ReActWithHumanFeedback.instantiate_from_default_config
 
 ### Subflows specification
 subflows_config:
   Controller:
-    _target_: flow_modules.aiflows.ControllerExecutorFlowModule.ControllerAtomicFlow.instantiate_from_default_config
+    max_rounds: 1
     backend:
       api_infos: ???
     commands:
@@ -33,18 +36,24 @@ subflows_config:
       first_k: 2 # keep the system prompt and the original goal
       last_k: 1 # keep only the last message
 
-  Executor:
-    _target_: aiflows.base_flows.BranchingFlow.instantiate_from_default_config
-    subflows_config:
-      wiki_search:
-        _target_: flow_modules.aiflows.ControllerExecutorFlowModule.WikiSearchAtomicFlow.instantiate_from_default_config
-      ddg_search:
-        _target_: flow_modules.aiflows.LCToolFlowModule.LCToolFlow.instantiate_from_default_config
-        backend:
-          _target_: langchain.tools.DuckDuckGoSearchRun
+
+  wiki_search:
+    name: "WikipediaSearch"
+  ddg_search:
+    flow_class_name: flow_modules.aiflows.LCToolFlowModule.LCToolFlow
+    name: "DuckDuckGo"
+    description: "Query the search engine DuckDuckGo."
+    flow_endpoint: DuckDuckGo
+    user_id: "local"
+    backend:
+      _target_: langchain.tools.DuckDuckGoSearchRun
 
   HumanFeedback:
-    _target_: flow_modules.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow.instantiate_from_default_config
+    flow_class_name: flow_modules.aiflows.HumanStandardInputFlowModule.HumanStandardInputFlow
+    flow_endpoint: HumanFeedback
+    name: HumanFeedbackFlow
+    description: "A flow that requests feedback from a human."
+    user_id: "local"
     request_multi_line_input_flag: False
     query_message_prompt_template:
       template: |2-
@@ -73,36 +82,4 @@ subflows_config:
       - "command_args"
       - "observation"
 
-topology: # The first two are the same as in the ControllerExecutorFlow
-  - goal: "Select the next action and prepare the input for the executor."
-    input_interface:
-      _target_: aiflows.interfaces.KeyInterface
-      additional_transformations:
-        - _target_: aiflows.data_transformations.KeyMatchInput
-    flow: Controller
-    output_interface:
-      _target_: ControllerExecutorFlow.detect_finish_or_continue
-    reset: false
 
-  - goal: "Execute the action specified by the Controller."
-    input_interface:
-      _target_: aiflows.interfaces.KeyInterface
-      keys_to_rename:
-        command: branch
-        command_args: branch_input_data
-      keys_to_select: ["branch", "branch_input_data"]
-    flow: Executor
-    output_interface:
-      _target_: aiflows.interfaces.KeyInterface
-      keys_to_rename:
-        branch_output_data: observation
-      keys_to_select: ["observation"]
-    reset: false
-
-  - goal: "Ask the user for feedback."
-    input_interface:
-      _target_: aiflows.interfaces.KeyInterface
-    flow: HumanFeedback
-    output_interface:
-      _target_: ReActWithHumanFeedback.detect_finish_in_human_input
-    reset: false

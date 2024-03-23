@@ -1,0 +1,41 @@
+
+_target_: flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow.instantiate_from_default_config
+
+name: "SimpleQA_Flow"
+description: "A flow that answers questions."
+
+# ~~~ Input interface specification ~~~
+input_interface_non_initialized:
+  - "question"
+
+# ~~~ backend model parameters ~~
+backend:
+  _target_: aiflows.backends.llm_lite.LiteLLMBackend
+  api_infos: ???
+  model_name:
+    openai: "gpt-3.5-turbo"
+    azure: "azure/gpt-4"
+
+  # ~~~ generation_parameters ~~
+  n: 1
+  max_tokens: 3000
+  temperature: 0.3
+
+  top_p: 0.2
+  frequency_penalty: 0
+  presence_penalty: 0
+
+# ~~~ Prompt specification ~~~
+system_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    You are a helpful chatbot that truthfully answers questions.
+  input_variables: []
+  partial_variables: {}
+
+init_human_message_prompt_template:
+  _target_: aiflows.prompt_template.JinjaPrompt
+  template: |2-
+    Answer the following question: {{question}}
+  input_variables: ["question"]
+  partial_variables: {}

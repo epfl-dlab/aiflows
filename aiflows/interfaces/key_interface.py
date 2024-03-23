@@ -1,6 +1,7 @@
 import copy
 from abc import ABC
-from typing import Dict, Any, List
+from typing import Dict, Any, List,Union
+from aiflows.messages import FlowMessage
 
 import hydra
 
@@ -28,16 +29,20 @@ class KeyInterface(ABC):
     def _set_up_transformations(transformations: List):
         """Static method that instantiates a list of transformations with the hydra framework.
 
-        :param transformations: A list of transformations to instantiate (defined by a hydra configuration)
+        :param transformations: A list of transformations to instantiate
         :type transformations: List
         :return: A list of instantiated transformations
         :rtype: List
         """
         transforms = []
         if len(transformations) > 0:
-            for config in transformations:
-                transforms.append(hydra.utils.instantiate(config, _convert_="partial"))
-
+            for transf in transformations:
+                #Not very pretty but this would fail if the transformation is not a hydra config and if
+                #we except than I'm assuming it's a callable (function or class..)
+                try:
+                    transforms.append(hydra.utils.instantiate(transf, _convert_="partial"))
+                except:
+                    transforms.append(transf)
         return transforms
 
     def __init__(
@@ -66,7 +71,7 @@ class KeyInterface(ABC):
         if keys_to_delete:
             self.transformations.append(KeyDelete(keys_to_delete))
 
-    def __call__(self, goal, src_flow, dst_flow, data_dict: Dict[str, Any], **kwargs) -> Dict[str, Any]:
+    def __call__(self, data: Union[FlowMessage, Dict[str,Any]], **kwargs) -> Union[FlowMessage, Dict[str,Any]]:
         r"""Applies the all transformations to the given data dictionary.
 
         :param goal: The goal of the flow
@@ -75,20 +80,29 @@ class KeyInterface(ABC):
         :type src_flow: str
         :param dst_flow: The destination flow
         :type dst_flow: str
-        :param data_dict: The data dictionary to apply the transformations to
-        :type data_dict: Dict[str, Any]
+        :param data: The data dictionary or message to apply the transformations to
+        :type data: Union[FlowMessage, Dict[str,Any]]
         :param \**kwargs: Arbitrary keyword arguments (arguments that are passed to the transformations)
-        :return: The transformed data dictionary
-        :rtype: Dict[str, Any]
+        :return: The transformed data dictionary or message
+        :rtype:  Union[FlowMessage, Dict[str,Any]
         """
+        
+        if isinstance(data, FlowMessage):
+            data_dict = data.data
+        else:
+            data_dict = data
+        
         data_dict = copy.deepcopy(data_dict)
-        kwargs["goal"] = goal
-        kwargs["src_flow"] = src_flow
-        kwargs["dst_flow"] = dst_flow
         # print(f"src_flow: {src_flow.name}, dst_flow: {dst_flow.name}")
         for transformation in self.transformations:
             # print(f"before transformation: {transformation}, data_dict: {data_dict}")
             data_dict = transformation(data_dict=data_dict, **kwargs)
             # print(f"after transformation: {transformation}, data_dict: {data_dict}")
 
+        if isinstance(data, FlowMessage):
+            data.data = data_dict
+            return data
+        
         return data_dict
+        
+

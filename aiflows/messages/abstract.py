@@ -5,7 +5,7 @@ from typing import List, Any, Dict
 import colorama
 
 from aiflows.utils.general_helpers import create_unique_id, get_current_datetime_ns
-
+from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
 colorama.init()
 
 
@@ -84,3 +84,34 @@ class Message:
         """Returns a string representation of the message that can be logged to the console"""
         d = self.__sanitized__dict__()
         return json.dumps(d, indent=4, default=str)
+    
+    def serialize(self):
+        """ Returns the serialized message
+        
+        :return: The serialized message
+        :rtype: bytes
+        """
+        return coflows_serialize(self.to_dict())
+
+    @classmethod
+    def deserialize(cls, encoded_data: bytes):
+        """ Deserializes the encoded data into a message
+        
+        :param encoded_data: The encoded message 
+        :type encoded_data: bytes
+        :return: The deserialized message
+        :rtype: Message
+        """
+        d = coflows_deserialize(encoded_data)
+            
+        message_id = d.pop("message_id")
+        created_at = d.pop("created_at")
+        message_type = d.pop("message_type")
+    
+        msg = cls(**d)
+        msg.message_id = message_id
+        msg.created_at = created_at
+        assert msg.message_type == message_type,"Message type mismatch"
+        return msg
+
+        

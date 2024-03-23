@@ -1,0 +1,6 @@
+name: PromptInjectionDetectorFlow
+description: Detects prompt injections
+_target_: PromptInjectionFlowModule.PromptInjectionDetectorFlow.PromptInjectionDetectorFlow.instantiate_from_default_config
+threshold: 0.5
+input_interface: prompt
+output_interface: is_valid

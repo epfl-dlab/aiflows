@@ -9,3 +9,4 @@ from .regex_extractor_first import RegexFirstOccurrenceExtractor
 from .json import Json2Obj, Obj2Json
 from .unnesting_dict import UnNesting
 from .print_previous_messages import PrintPreviousMessages
+from .abstract import DataTransformation
