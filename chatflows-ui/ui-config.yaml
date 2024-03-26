@@ -1,5 +1,5 @@
 colink_address: https://amld.colink-server.colearn.cloud
-colink_jwt: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcml2aWxlZ2UiOiJ1c2VyIiwidXNlcl9pZCI6IjAyNWUxZjY5NDBlZDdjMTcwYTZiMWY5YTlmNWY4Y2ZiZmE3NzhhM2QxM2U4OGE0ODRjNzE5OTY4MzEyNTIwYzFiYiIsImV4cCI6MTcxMzg2NDg0OX0.2zy5SuJlr5Go4dHmuCcOL9n0uJ4OVOf0pfUlIakjHY4 # YOUR JWT
+colink_jwt: # YOUR JWT
 
 flow_endpoint: User # Endpoint at which flows can send messages that will get displayed on the UI
 dispatch_point: human_dispatch
