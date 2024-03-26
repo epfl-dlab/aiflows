@@ -88,7 +88,7 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 
 To develop the next-generation AI tools, we will need a principled abstraction that supports concurrent execution and peer-to-peer remote collaboration. At the same time, to maximize their benefits, developers and researchers will need to have complete control over their workflows. aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
-# [Getting Started](./AMLD)
+# [Getting Started](./Tutorials)
 
 Most of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). 
 The advantage of the Flows abstraction is that even the most complex Flows or Flows that rely on concurrent computation can be developed by composing only a few basic primitives.
