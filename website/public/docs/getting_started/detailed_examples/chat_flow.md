@@ -12,16 +12,36 @@ In this section, we'll explore some o `ChatAtomicFlow`'s methods, specifically t
 Just like every flow, `ChatAtomicFlow` is called via the `run` method:
 
 ```python
-def run(self,input_data: Dict[str, Any]):
+def run(self,input_message: FlowMessage):
         """ This method runs the flow. It processes the input, calls the backend and updates the state of the flow.
+        
+        :param input_message: The input data of the flow.
+        :type input_message: aiflows.messages.FlowMessage
+        """
+        input_data = input_message.data
+        
+        response = self.query_llm(input_data=input_data)
+       
+        
+        reply_message = self.package_output_message(
+            input_message,
+            response = {"api_output": response}
+        )
+        
+        self.send_message(reply_message)
+
+
+def query_llm(self,input_data: Dict[str, Any]):
+        """ This method queries the LLM. It processes the input, calls the backend and returns the response.
         
         :param input_data: The input data of the flow.
         :type input_data: Dict[str, Any]
-        :return: The LLM's api output.
-        :rtype: Dict[str, Any]
+        :return: The response of the LLM to the input.
+        :rtype: Union[str, List[str]]
         """
         
-        # ~~~ Process input ~~~
+        
+         # ~~~ Process input ~~~
         self._process_input(input_data)
 
         # ~~~ Call ~~~
@@ -34,10 +54,11 @@ def run(self,input_data: Dict[str, Any]):
                 content=answer
             )
         response = response if len(response) > 1 or len(response) == 0 else response[0]
-        return {"api_output": response}
+        return response
+
 ```
 
-As you can see in the code snippet here above, `run` processes the input data of the flow via the `_process_input` method. Let's take a closer look at what it does:
+As you can see in the code snippet here above, `query_llm` processes the input data of the flow via the `_process_input` method. Let's take a closer look at what it does:
 
 
 ```python
