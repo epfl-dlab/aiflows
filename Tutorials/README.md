@@ -13,7 +13,7 @@ Get ready for an engaging journey where you'll build practical skills and gain a
 Let's dive in and explore the following tutorials !
 
 ## 0. Prerequesites
-- Go through [setting_up_aiFlows.md](./setting_up_aiFlows.md)
+- Go through [setting_up_aiFlows.md](./setting_up_aiflows.md)
 - Go through [setup.ipynb](./setup/setup.ipynb)
 
 #### By the Prerequesites's End, I Will Have...
