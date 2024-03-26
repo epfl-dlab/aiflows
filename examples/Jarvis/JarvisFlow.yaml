@@ -1,0 +1,182 @@
+name: JarvisFlow
+description: Jarvis, an agent with structured llms and tools able to process user requests, write and execute code, with external memory mechanisms.
+
+_target_: flow_modules.aiflows.JarvisFlowModule.JarvisFlow.instantiate_from_default_config
+
+memory_files: ???
+
+subflows_config:
+  MemoryReading:
+    _target_: flow_modules.aiflows.MemoryReadingFlowModule.MemoryReadingAtomicFlow.instantiate_from_default_config
+    output_interface:
+      - "plan"
+      - "logs"
+
+  Planner:
+    _target_: flow_modules.aiflows.JarvisFlowModule.Planner_JarvisFlow.instantiate_from_default_config
+    subflows_config:
+      Controller:
+        backend:
+          api_infos: ???
+          model_name:
+            openai: gpt-4
+            azure: azure/gpt-4
+      Executor:
+        subflows_config:
+          write_plan:
+            subflows_config:
+              PlanGenerator:
+                backend:
+                  api_infos: ???
+                  model_name:
+                    openai: gpt-4
+                    azure: azure/gpt-4
+
+  CtrlExMem:
+    _target_: flow_modules.aiflows.JarvisFlowModule.CtrlExMem_JarvisFlow.instantiate_from_default_config
+    subflows_config:
+      Controller:
+        backend:
+          api_infos: ???
+          model_name:
+            openai: gpt-4
+            azure: azure/gpt-4
+      Executor:
+        subflows_config:
+          Coder:
+            memory_files: ???
+            subflows_config:
+              Planner:
+                subflows_config:
+                  Controller:
+                    backend:
+                      api_infos: ???
+                      model_name:
+                        openai: gpt-4
+                        azure: azure/gpt-4
+                  Executor:
+                    subflows_config:
+                      write_plan:
+                        subflows_config:
+                          PlanGenerator:
+                            backend:
+                              api_infos: ???
+                              model_name:
+                                openai: gpt-4
+                                azure: azure/gpt-4
+              CtrlExMem:
+                subflows_config:
+                  Controller:
+                    backend:
+                      api_infos: ???
+                      model_name:
+                        openai: gpt-4
+                        azure: azure/gpt-4
+                  Executor:
+                    subflows_config:
+                      extend_library:
+                        memory_files: ???
+                        subflows_config:
+                          Planner:
+                            subflows_config:
+                              Controller:
+                                backend:
+                                  api_infos: ???
+                                  model_name:
+                                    openai: gpt-4
+                                    azure: azure/gpt-4
+                              Executor:
+                                subflows_config:
+                                  write_plan:
+                                    subflows_config:
+                                      PlanGenerator:
+                                        backend:
+                                          api_infos: ???
+                                          model_name:
+                                            openai: gpt-4
+                                            azure: azure/gpt-4
+                          CtrlExMem:
+                            subflows_config:
+                              Controller:
+                                backend:
+                                  api_infos: ???
+                                  model_name:
+                                    openai: gpt-4
+                                    azure: azure/gpt-4
+                              Executor:
+                                subflows_config:
+                                  write_code:
+                                    subflows_config:
+                                      Controller:
+                                        backend:
+                                          api_infos: ???
+                                          model_name:
+                                            openai: gpt-4
+                                            azure: azure/gpt-4
+                                      Executor:
+                                        subflows_config:
+                                          write_code:
+                                            memory_files: ???
+                                            subflows_config:
+                                              CodeGenerator:
+                                                backend:
+                                                  api_infos: ???
+                                                  model_name:
+                                                    openai: gpt-4
+                                                    azure: azure/gpt-4
+                                          test:
+                                            memory_files: ???
+                                  re_plan:
+                                    subflows_config:
+                                      Controller:
+                                        backend:
+                                          api_infos: ???
+                                          model_name:
+                                            openai: gpt-4
+                                            azure: azure/gpt-4
+                                      Executor:
+                                        subflows_config:
+                                          write_plan:
+                                            subflows_config:
+                                              PlanGenerator:
+                                                backend:
+                                                  api_infos: ???
+                                                  model_name:
+                                                    openai: gpt-4
+                                                    azure: azure/gpt-4
+                      re_plan:
+                        subflows_config:
+                          Controller:
+                            backend:
+                              api_infos: ???
+                              model_name:
+                                openai: gpt-4
+                                azure: azure/gpt-4
+                          Executor:
+                            subflows_config:
+                              write_plan:
+                                subflows_config:
+                                  PlanGenerator:
+                                    backend:
+                                      api_infos: ???
+                                      model_name:
+                                        openai: gpt-4
+                                        azure: azure/gpt-4
+          re_plan:
+            subflows_config:
+              Controller:
+                backend:
+                  api_infos: ???
+                  model_name:
+                    openai: gpt-4
+                    azure: azure/gpt-4
+              Executor:
+                subflows_config:
+                  write_plan:
+                    subflows_config:
+                      PlanGenerator:
+                        backend:
+                          api_infos: ???
+                          model_name:
+                            openai: gpt-4
+                            azure: azure/gpt-4
