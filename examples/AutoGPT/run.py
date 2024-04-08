@@ -11,7 +11,7 @@ from aiflows.utils.general_helpers import read_yaml_file, quick_load_api_keys
 from aiflows import logging
 from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
 
-from aiflows.utils import serve_utils
+from aiflows.utils import serving
 from aiflows.workers import run_dispatch_worker_thread
 from aiflows.messages import FlowMessage
 from aiflows.interfaces import KeyInterface
@@ -57,13 +57,13 @@ if __name__ == "__main__":
 
     
     #3. ~~~~ Serve The Flow ~~~~
-    serve_utils.recursive_serve_flow(
+    serving.recursive_serve_flow(
         cl = cl,
         flow_class_name="flow_modules.aiflows.AutoGPTFlowModule.AutoGPTFlow",
         flow_endpoint="AutoGPTFlow",
     )
     
-    serve_utils.serve_flow(
+    serving.serve_flow(
         cl=cl,
         flow_class_name="flow_modules.aiflows.LCToolFlowModule.LCToolFlow",
         flow_endpoint="DuckDuckGo",
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     run_dispatch_worker_thread(cl)
 
     #5. ~~~~~Mount the flow and get its proxy~~~~~~
-    proxy_flow= serve_utils.get_flow_instance(
+    proxy_flow= serving.get_flow_instance(
         cl=cl,
         flow_endpoint="AutoGPTFlow",
         user_id="local",
@@ -108,4 +108,4 @@ if __name__ == "__main__":
     
     
     #9. ~~~~~Optional: Unserve Flow~~~~~~
-    # serve_utils.delete_served_flow(cl, "FlowModule")
+    # serving.delete_served_flow(cl, "FlowModule")

@@ -8,7 +8,7 @@ import threading
 
 from aiflows.messages import FlowMessage
 from aiflows.utils.io_utils import coflows_deserialize, coflows_serialize
-from aiflows.utils import serve_utils
+from aiflows.utils import serving
 from aiflows.utils.general_helpers import read_yaml_file
 from aiflows.utils.constants import (
     COFLOWS_PATH,
@@ -57,7 +57,7 @@ def create_flow(
 def setup_human_flow(cl, flow_endpoint):
     print("Preparing Human Flow and State...")
     cfg = read_yaml_file("HumanUIFlow.yaml")
-    proxy = serve_utils.get_flow_instance(
+    proxy = serving.get_flow_instance(
         cl=cl, flow_endpoint=flow_endpoint, config_overrides=cfg
     )
     flow_id = proxy.get_instance_id()
@@ -130,7 +130,7 @@ def setup():
         )
         st.stop()
 
-    serve_utils.serve_flow(
+    serving.serve_flow(
         cl=cl,
         flow_class_name="aiflows.base_flows.AtomicFlow",
         flow_endpoint=flow_endpoint,

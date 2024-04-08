@@ -91,7 +91,7 @@ from aiflows.utils.general_helpers import read_yaml_file, quick_load_api_keys
 from aiflows import logging
 from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
 
-from aiflows.utils import serve_utils
+from aiflows.utils import serving
 from aiflows.workers import run_dispatch_worker_thread
 from aiflows.messages import FlowMessage
 from aiflows.interfaces import KeyInterface
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     quick_load_api_keys(cfg, api_information, key="api_infos")
 
     #3. ~~~~ Serve The Flow ~~~~
-    serve_utils.serve_flow(
+    serving.serve_flow(
         cl = cl,
         flow_class_name="flow_modules.yeeef.UsefulChatBots.EconomicExpertBot",
         flow_endpoint="EconomicExpertBot",
@@ -136,7 +136,7 @@ if __name__ == "__main__":
     run_dispatch_worker_thread(cl)
 
     #5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~
-    proxy_flow= serve_utils.get_flow_instance(
+    proxy_flow= serving.get_flow_instance(
         cl=cl,
         flow_endpoint="EconomicExpertBot",
         user_id="local",

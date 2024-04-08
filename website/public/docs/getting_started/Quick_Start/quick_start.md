@@ -107,7 +107,7 @@ Starg a colink server, serve the Flow and get an instance:
 ```python
 cl = start_colink_server()
 #3. ~~~~ Serve The Flow ~~~~
-serve_utils.serve_flow(
+serving.serve_flow(
     cl = cl,
     flow_class_name="flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow",
     flow_endpoint="ChatAtomicFlow",
@@ -117,7 +117,7 @@ serve_utils.serve_flow(
 run_dispatch_worker_thread(cl)
 
 #5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~
-proxy_flow= serve_utils.get_flow_instance(
+proxy_flow= serving.get_flow_instance(
     cl=cl,
     flow_endpoint="ChatAtomicFlow",
     user_id="local",

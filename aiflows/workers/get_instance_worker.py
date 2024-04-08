@@ -7,7 +7,7 @@ from typing import List
 import colink as CL
 from colink import CoLink, ProtocolOperator
 
-from aiflows.utils import serve_utils
+from aiflows.utils import serving
 from aiflows.utils.constants import (
     GET_INSTANCE_CALLS_TRANSFER_PATH,
     FLOW_MODULES_BASE_PATH,
@@ -119,7 +119,7 @@ def get_instances_receiver_handler(
     get_instance_results = {}
     for flow_key, flow_endpoint, config_overrides in get_instance_calls:
         try:
-            flow_id = serve_utils._get_local_flow_instance(
+            flow_id = serving._get_local_flow_instance(
                 cl=cl,
                 client_id=participants[0].user_id,
                 flow_endpoint=flow_endpoint,
@@ -132,7 +132,7 @@ def get_instances_receiver_handler(
                 "successful": True,
                 "message": "Fetched local flow instance.",
             }
-        except serve_utils.FlowInstanceException as e:
+        except serving.FlowInstanceException as e:
             get_instance_results[flow_key] = {
                 "flow_id": "",
                 "successful": False,
@@ -169,7 +169,7 @@ def run_get_instance_worker_thread(
 # python get_instance_worker.py --addr http://127.0.0.1:2021 --jwt $(sed -n "1,1p" ./jwts.txt)
 if __name__ == "__main__":
     args = parse_args()
-    cl = serve_utils.start_colink_component("get_instances worker", args)
+    cl = serving.start_colink_component("get_instances worker", args)
 
     sys.path.append(args["flow_modules_base_path"])
     pop = ProtocolOperator(__name__)

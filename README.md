@@ -88,16 +88,32 @@ AI is set to revolutionize the way we work. Our mission is to support AI researc
 
 To develop the next-generation AI tools, we will need a principled abstraction that supports concurrent execution and peer-to-peer remote collaboration. At the same time, to maximize their benefits, developers and researchers will need to have complete control over their workflows. aiFlows strives to empower you to make each Flow your own! See the [contribute](#contribute) section for more information.
 
-# [Getting Started](./Tutorials)
+## [Getting Started]
 
-Most of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). 
-The advantage of the Flows abstraction is that even the most complex Flows or Flows that rely on concurrent computation can be developed by composing only a few basic primitives.
-In the tutorials, we introduce you to this fundamental toolkit through instructive examples. 
+### [Quick start (🕓 5 min)](./website/public/docs/getting_started/Quick_Start/quick_start.md)
+
+Here, you'll see how you can run inference with your first question-answering Flow, and you can trivially change between vastly different question-answering Flows thanks to the modular abstraction and FlowVerse!
+
+### [Tutorial (🕓 30 min)](./Tutorials/)
+
+In this tutorial, we introduce you to the library's features through a walkthrough of how to build useful Flows of gradually increasing complexity.
+
+### [Developer's Guide (🕓 10 min)](./website/public/docs/getting_started/developer_guide/developper_guide_landing_page.md)
+
+We are constantly optimizing our Flow development workflow (pun intended:). In this short guide, we share our best tips so that you don't have to learn the hard way.
+
+### [Detailed Examples](./website/public/docs/getting_started/detailed_examples/detailed_example_landing_page.md)
+
+Many of the recently proposed prompting and collaboration strategies involving tools, humans, and AI models are, in essence, specific Flows (see the figure below). In the links above, you'll find a detailed walkthrough of how to build some representative workflows.
 
 <p align="center">
       <img src="assets/previous_flows_rounded.png" alt="image" width="1000" height="auto">
       <p align="justify">
 <p>
+
+### [More Examples](./examples/)
+
+Check out the examples folder for more examples of how to build and use aiFlows.
 
 ## Contribute
 

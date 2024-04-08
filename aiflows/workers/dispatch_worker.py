@@ -17,7 +17,7 @@ from aiflows.utils.general_helpers import (
 from aiflows.utils.coflows_utils import (
     dispatch_response,
 )
-from aiflows.utils.serve_utils import (
+from aiflows.utils.serving import (
     start_colink_component,
     _get_local_flow_instance_metadata,
 )
