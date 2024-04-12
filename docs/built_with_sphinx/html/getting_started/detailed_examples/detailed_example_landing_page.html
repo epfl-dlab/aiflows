@@ -30,7 +30,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -92,13 +92,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -153,18 +152,6 @@
 </ul>
 </section>
 </section>
-<section id="autogptflow">
-<h2><a class="reference internal" href="autogpt.html"><span class="std std-doc">3. AutoGPTFlow</span></a><a class="headerlink" href="#autogptflow" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#autogptflow'">¶</a></h2>
-<p>Note: This guide is also useful if you’re interested in ReAct since the two share lots of similarities</p>
-<section id="id2">
-<h3>By the Guide’s End, I Will Have…<a class="headerlink" href="#id2" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#id2'">¶</a></h3>
-<ul class="simple">
-<li><p>Understood the purpose of <code class="docutils literal notranslate"><span class="pre">AutoGPTFlow</span></code></p></li>
-<li><p>Explored the functionalities of <code class="docutils literal notranslate"><span class="pre">AutoGPT</span></code>’s subflows</p></li>
-<li><p>Identified the documentation resource for <code class="docutils literal notranslate"><span class="pre">AutoGPTFlow</span></code> and its subflows</p></li>
-</ul>
-</section>
-</section>
 </section>
 </div></div><aside class="hidden text-sm xl:block" id="right-sidebar">
 <div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
@@ -175,10 +162,6 @@
 </li>
 <li><a :data-current="activeSection === '#visionatomicflow'" class="reference internal" href="#visionatomicflow"><span class="xref myst">2. VisionAtomicFlow</span></a><ul>
 <li><a :data-current="activeSection === '#id1'" class="reference internal" href="#id1">By the Guide’s End, I Will Have…</a></li>
-</ul>
-</li>
-<li><a :data-current="activeSection === '#autogptflow'" class="reference internal" href="#autogptflow"><span class="xref myst">3. AutoGPTFlow</span></a><ul>
-<li><a :data-current="activeSection === '#id2'" class="reference internal" href="#id2">By the Guide’s End, I Will Have…</a></li>
 </ul>
 </li>
 </ul>

@@ -32,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -94,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -144,10 +143,7 @@
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.abstract">aiflows.base_flows.abstract module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.atomic">aiflows.base_flows.atomic module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.branching">aiflows.base_flows.branching module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.circular">aiflows.base_flows.circular module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.composite">aiflows.base_flows.composite module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.sequential">aiflows.base_flows.sequential module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows">Module contents</a></li>
 </ul>
 </li>
@@ -182,24 +178,11 @@
 <li class="toctree-l4"><a class="reference internal" href="aiflows.flow_cache.html#module-aiflows.flow_cache">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers.abstract">aiflows.flow_launchers.abstract module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers.flow_API_launcher">aiflows.flow_launchers.flow_API_launcher module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers">Module contents</a></li>
-</ul>
-</li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.flow_verse.html#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.flow_verse.html#module-aiflows.flow_verse.loading">aiflows.flow_verse.loading module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.flow_verse.html#module-aiflows.flow_verse.utils">aiflows.flow_verse.utils module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.flow_verse.html#module-aiflows.flow_verse">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#module-aiflows.history.flow_history">aiflows.history.flow_history module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#module-aiflows.history">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a><ul>
@@ -224,11 +207,22 @@
 </li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.coflows_utils">aiflows.utils.coflows_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.colink_utils">aiflows.utils.colink_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.constants">aiflows.utils.constants module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.general_helpers">aiflows.utils.general_helpers module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.io_utils">aiflows.utils.io_utils module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.logging">aiflows.utils.logging module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.rich_utils">aiflows.utils.rich_utils module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.serving">aiflows.utils.serving module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.workers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers.dispatch_worker">aiflows.workers.dispatch_worker module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers.get_instance_worker">aiflows.workers.get_instance_worker module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers">Module contents</a></li>
 </ul>
 </li>
 </ul>

@@ -32,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -94,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -138,7 +137,7 @@
 <span id="aiflows-base-flows-abstract-module"></span><h2>aiflows.base_flows.abstract module<a class="headerlink" href="#module-aiflows.base_flows.abstract" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.base_flows.abstract'">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.abstract.</span></span><span class="sig-name descname"><span class="pre">Flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow'">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.abstract.</span></span><span class="sig-name descname"><span class="pre">Flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow'">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
 <p>Abstract class inherited by all Flows.</p>
 <dl class="field-list simple">
@@ -153,6 +152,10 @@
 <dl class="py attribute">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING">
 <span class="sig-name descname"><span class="pre">SUPPORTS_CACHING</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.cl">
+<span class="sig-name descname"><span class="pre">cl</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">CoLink</span></em><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.cl" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.cl'">¶</a></dt>
 <dd></dd></dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.flow_config">
@@ -180,13 +183,34 @@ The default implementation construct the default config by recursively merging t
 </dl>
 </dd></dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.get_flow_state">
+<span class="sig-name descname"><span class="pre">get_flow_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.get_flow_state" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.get_flow_state'">¶</a></dt>
+<dd><p>Returns the flow state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The flow state</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.get_instance_id">
+<span class="sig-name descname"><span class="pre">get_instance_id</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.get_instance_id" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.get_instance_id'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.get_interface_description">
 <span class="sig-name descname"><span class="pre">get_interface_description</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.get_interface_description" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.get_interface_description'">¶</a></dt>
 <dd><p>Returns the input and output interface description of the flow.</p>
 </dd></dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.history">
-<span class="sig-name descname"><span class="pre">history</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory" title="aiflows.history.flow_history.FlowHistory"><span class="pre">FlowHistory</span></a></em><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.history" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.history'">¶</a></dt>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.get_reply">
+<span class="sig-name descname"><span class="pre">get_reply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.get_reply" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.get_reply'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.get_reply_future">
+<span class="sig-name descname"><span class="pre">get_reply_future</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.get_reply_future" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.get_reply_future'">¶</a></dt>
 <dd></dd></dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.instantiate_from_config">
@@ -207,7 +231,7 @@ The default implementation construct the default config by recursively merging t
 <dl class="py method">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.instantiate_from_default_config">
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instantiate_from_default_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.instantiate_from_default_config" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.instantiate_from_default_config'">¶</a></dt>
-<dd><p>This method is called by the FlowLauncher to build the flow.</p>
+<dd><p>Instantiates the flow from the default config, with the given overrides applied.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>overrides</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em><em>, </em><em>optional</em>) – The parameters to override in the default config</p>
@@ -233,6 +257,10 @@ The default implementation construct the default config by recursively merging t
 </dd>
 </dl>
 </dd></dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.local_proxy_invocations">
+<span class="sig-name descname"><span class="pre">local_proxy_invocations</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.local_proxy_invocations" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.local_proxy_invocations'">¶</a></dt>
+<dd></dd></dl>
 <dl class="py property">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.name" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.name'">¶</a></dt>
@@ -247,15 +275,53 @@ The default implementation construct the default config by recursively merging t
 </dl>
 </dd></dl>
 <dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.package_input_message">
+<span class="sig-name descname"><span class="pre">package_input_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'mode':</span> <span class="pre">'no_reply'}</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.package_input_message" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.package_input_message'">¶</a></dt>
+<dd><p>Packages the given payload into an FlowMessage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The data dictionary to package</p></li>
+<li><p><strong>dst_flow</strong> (<em>str</em>) – The destination flow</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The packaged input message</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage">FlowMessage</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.package_output_message">
+<span class="sig-name descname"><span class="pre">package_output_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><span class="pre">FlowMessage</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><span class="pre">FlowMessage</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.package_output_message" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.package_output_message'">¶</a></dt>
+<dd><p>Packages the given response into an FlowMessage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_message</strong> (<a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><em>FlowMessage</em></a>) – The input message that was used to generate the response</p></li>
+<li><p><strong>response</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The response to package</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The packaged output message</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage">FlowMessage</a></p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py method">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aiflows.base_flows.abstract.Flow" title="aiflows.base_flows.abstract.Flow"><span class="pre">Flow</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Launcher'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.reset" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.reset'">¶</a></dt>
-<dd><p>Reset the flow state and history. If recursive is True, reset all subflows as well.</p>
+<dd><p>Reset the flow state. If recursive is True, reset all subflows as well.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>full_reset</strong> – If True, remove all data in flow_state. If False, keep the data in flow_state.</p></li>
-<li><p><strong>recursive</strong> – </p></li>
-<li><p><strong>src_flow</strong> – </p></li>
+<li><p><strong>recursive</strong> – If True, reset all subflows as well.</p></li>
+<li><p><strong>src_flow</strong> – The flow that initiated the reset</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -265,17 +331,28 @@ The default implementation construct the default config by recursively merging t
 </dd></dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.run" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.run'">¶</a></dt>
+<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_message</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><span class="pre">FlowMessage</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.run" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.run'">¶</a></dt>
 <dd><p>Runs the flow on the given input data. (Not implemented in the base class)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>input_data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The input data to run the flow on</p>
+<dd class="field-odd"><p><strong>input_message</strong> (<a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><em>FlowMessage</em></a>) – The input message to run the flow on</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The response of the flow</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
+</dl>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.send_message">
+<span class="sig-name descname"><span class="pre">send_message</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kw</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.send_message" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.send_message'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.base_flows.abstract.Flow.set_colink">
+<span class="sig-name descname"><span class="pre">set_colink</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">recursive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.abstract.Flow.set_colink" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.abstract.Flow.set_colink'">¶</a></dt>
+<dd><p>Sets the colink object for the flow and all its subflows.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CL.CoLink</em>) – The colink object to set</p></li>
+<li><p><strong>recursive</strong> (<em>bool</em>) – Whether to set the colink for all subflows as well</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -308,140 +385,6 @@ It is an encapsulation of a single functionality that takes an input message and
 <em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.atomic.AtomicFlow.type" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.atomic.AtomicFlow.type'">¶</a></dt>
 <dd><p>Returns the type of the flow.</p>
 </dd></dl>
-</dd></dl>
-</section>
-<section id="module-aiflows.base_flows.branching">
-<span id="aiflows-base-flows-branching-module"></span><h2>aiflows.base_flows.branching module<a class="headerlink" href="#module-aiflows.base_flows.branching" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.base_flows.branching'">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="aiflows.base_flows.branching.BranchingFlow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.branching.</span></span><span class="sig-name descname"><span class="pre">BranchingFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.branching.BranchingFlow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.branching.BranchingFlow'">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow" title="aiflows.base_flows.composite.CompositeFlow"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeFlow</span></code></a></p>
-<p>This class implements a branching flow. A branching flow is a composite flow that has multiple subflows. The subflow to be executed is determined by the value of the “branch” key in the input data dictionary passed to the flow.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>**kwargs</strong> – The keyword arguments passed to the CompositeFlow constructor</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.branching.BranchingFlow.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#aiflows.base_flows.branching.BranchingFlow.run" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.branching.BranchingFlow.run'">¶</a></dt>
-<dd><p>Runs the branching flow. The subflow to be executed is determined by the value of the “branch” key in the input data dictionary passed to the flow.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>input_data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The input data dictionary</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The output data dictionary</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.branching.BranchingFlow.type">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.branching.BranchingFlow.type" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.branching.BranchingFlow.type'">¶</a></dt>
-<dd><p>Returns the type of the flow as a string.</p>
-</dd></dl>
-</dd></dl>
-</section>
-<section id="module-aiflows.base_flows.circular">
-<span id="aiflows-base-flows-circular-module"></span><h2>aiflows.base_flows.circular module<a class="headerlink" href="#module-aiflows.base_flows.circular" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.base_flows.circular'">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.circular.</span></span><span class="sig-name descname"><span class="pre">CircularFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subflows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aiflows.base_flows.abstract.Flow" title="aiflows.base_flows.abstract.Flow"><span class="pre">Flow</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow'">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow" title="aiflows.base_flows.composite.CompositeFlow"><code class="xref py py-class docutils literal notranslate"><span class="pre">CompositeFlow</span></code></a></p>
-<p>This class represents a circular flow. It is a composite flow that runs its subflows in a circular fashion.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>flow_config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The flow configuration dictionary. It must usually should contain the following keys:
-- ‘max_rounds’ (int): The maximum number of rounds to run the circular flow
-- ‘early_exit_key’ (str): The key in the flow state that indicates the end of the interaction
-- ‘topology’ (list[Dict[str, Any]]): The topology of the circular flow (the dictionary describes the topology of one node, see TopologyNode for details)
-- The keys required by CompositeFlow (subflows_config)</p></li>
-<li><p><strong>subflows</strong> (<em>List</em><em>[</em><em>aiflows.base_flows.Flow</em><em>]</em>) – A list of subflows. This is necessary when instantiating the flow programmatically.</p></li>
-<li><p><strong>max_rounds</strong> (<em>int</em>) – The maximum number of rounds to run the circular flow</p></li>
-</ul>
-</dd>
-<dt class="field-even">Topology<span class="colon">:</span></dt>
-<dd class="field-even"><p>The topology of the circular flow</p>
-</dd>
-</dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG">
-<span class="sig-name descname"><span class="pre">REQUIRED_KEYS_CONFIG</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['max_rounds',</span> <span class="pre">'early_exit_key',</span> <span class="pre">'topology']</span></em><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG'">¶</a></dt>
-<dd></dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_msg_payload_builder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">builder_fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder'">¶</a></dt>
-<dd><p>This decorator registers a function as an input message payload builder.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>builder_fn</strong> (<em>Callable</em>) – The function to register</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The wrapped function</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Callable</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_msg_payload_processor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">processor_fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor'">¶</a></dt>
-<dd><p>This decorator registers a function as an output message payload processor.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>processor_fn</strong> (<em>Callable</em>) – The function to register</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The wrapped function</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Callable</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow.run">
-<span class="sig-name descname"><span class="pre">run</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow.run" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow.run'">¶</a></dt>
-<dd><p>Runs the circular flow. It runs its subflows in a circular fashion (following the topology).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>input_data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The input data dictionary</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The output data dictionary</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.CircularFlow.type">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.circular.CircularFlow.type" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.CircularFlow.type'">¶</a></dt>
-<dd><p>Returns the type of the flow as a string.</p>
-</dd></dl>
-</dd></dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="aiflows.base_flows.circular.TopologyNode">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.circular.</span></span><span class="sig-name descname"><span class="pre">TopologyNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">goal</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_interface</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#aiflows.base_flows.abstract.Flow" title="aiflows.base_flows.abstract.Flow"><span class="pre">Flow</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_interface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="aiflows.data_transformations.html#aiflows.data_transformations.abstract.DataTransformation" title="aiflows.data_transformations.abstract.DataTransformation"><span class="pre">DataTransformation</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.circular.TopologyNode" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.circular.TopologyNode'">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This class represents a node in the topology of a flows.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>goal</strong> (<em>str</em>) – The goal of the node</p></li>
-<li><p><strong>input_interface</strong> (<em>aiflows.interfaces.InputInterface</em>) – The input interface of the node’s flow</p></li>
-<li><p><strong>flow</strong> (<em>aiflows.base_flows.Flow</em>) – The flow of the node</p></li>
-<li><p><strong>output_interface</strong> (<em>List</em><em>[</em><em>aiflows.data_transformations.DataTransformation</em><em>]</em>) – The output interface of the node’s flow</p></li>
-<li><p><strong>reset</strong> (<em>bool</em>) – Whether to reset the node’s flow</p></li>
-</ul>
-</dd>
-</dl>
 </dd></dl>
 </section>
 <section id="module-aiflows.base_flows.composite">
@@ -491,32 +434,6 @@ This is necessary when instantiating the flow from a config file.
 </dd></dl>
 </dd></dl>
 </section>
-<section id="module-aiflows.base_flows.sequential">
-<span id="aiflows-base-flows-sequential-module"></span><h2>aiflows.base_flows.sequential module<a class="headerlink" href="#module-aiflows.base_flows.sequential" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.base_flows.sequential'">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="aiflows.base_flows.sequential.SequentialFlow">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.base_flows.sequential.</span></span><span class="sig-name descname"><span class="pre">SequentialFlow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow_config</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subflows</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#aiflows.base_flows.abstract.Flow" title="aiflows.base_flows.abstract.Flow"><span class="pre">Flow</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.sequential.SequentialFlow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.sequential.SequentialFlow'">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#aiflows.base_flows.circular.CircularFlow" title="aiflows.base_flows.circular.CircularFlow"><code class="xref py py-class docutils literal notranslate"><span class="pre">CircularFlow</span></code></a></p>
-<p>This class implements a sequential flow. It is a flow that consists of multiple sub-flows that are executed sequentially.
-It is a child class of CircularFlow. The only difference between a SequentialFlow and a CircularFlow is that the SequentialFlow has a max_rounds of 1.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>flow_config</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The configuration of the flow. It must usually contain the following keys:
-- “subflows_config” (Dict[str,Any]): A dictionary of subflows configurations.The keys are the names of the subflows and the values are the configurations of the subflows.
-This is necessary when instantiating the flow from a config file.
-- The parameters required by the constructor of the parent class Flow</p></li>
-<li><p><strong>subflows</strong> (<em>List</em><em>[</em><a class="reference internal" href="#aiflows.base_flows.abstract.Flow" title="aiflows.base_flows.abstract.Flow"><em>Flow</em></a><em>]</em>) – A list of subflows. This is necessary when instantiating the flow programmatically.</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.base_flows.sequential.SequentialFlow.type">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">type</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.base_flows.sequential.SequentialFlow.type" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.base_flows.sequential.SequentialFlow.type'">¶</a></dt>
-<dd><p>Returns the type of the flow.</p>
-</dd></dl>
-</dd></dl>
-</section>
 <section id="module-aiflows.base_flows">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-aiflows.base_flows" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.base_flows'">¶</a></h2>
 <p>Contains basic flow classes that can be used to build more complex flows.</p>
@@ -532,17 +449,26 @@ CompositeFlow is a flow that contains subflows and defines how they are executed
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow'" class="reference internal" href="#aiflows.base_flows.abstract.Flow"><code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.REQUIRED_KEYS_CONFIG'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">Flow.REQUIRED_KEYS_CONFIG</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING"><code class="docutils literal notranslate"><span class="pre">Flow.SUPPORTS_CACHING</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.cl'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.cl"><code class="docutils literal notranslate"><span class="pre">Flow.cl</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.flow_config'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.flow_config"><code class="docutils literal notranslate"><span class="pre">Flow.flow_config</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.flow_state'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.flow_state</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_config'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_config"><code class="docutils literal notranslate"><span class="pre">Flow.get_config()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_flow_state'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.get_flow_state()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_instance_id'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_instance_id"><code class="docutils literal notranslate"><span class="pre">Flow.get_instance_id()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_interface_description'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_interface_description"><code class="docutils literal notranslate"><span class="pre">Flow.get_interface_description()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.history'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.history"><code class="docutils literal notranslate"><span class="pre">Flow.history</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_reply'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_reply"><code class="docutils literal notranslate"><span class="pre">Flow.get_reply()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.get_reply_future'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.get_reply_future"><code class="docutils literal notranslate"><span class="pre">Flow.get_reply_future()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.instantiate_from_config'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.instantiate_from_config"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_from_config()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.instantiate_from_default_config'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.instantiate_from_default_config"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_from_default_config()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.instantiate_with_overrides'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.instantiate_with_overrides"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_with_overrides()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.local_proxy_invocations'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.local_proxy_invocations"><code class="docutils literal notranslate"><span class="pre">Flow.local_proxy_invocations</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.name'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.name"><code class="docutils literal notranslate"><span class="pre">Flow.name</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.package_input_message'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.package_input_message"><code class="docutils literal notranslate"><span class="pre">Flow.package_input_message()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.package_output_message'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.package_output_message"><code class="docutils literal notranslate"><span class="pre">Flow.package_output_message()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.reset'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.reset"><code class="docutils literal notranslate"><span class="pre">Flow.reset()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.run'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.run"><code class="docutils literal notranslate"><span class="pre">Flow.run()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.send_message'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.send_message"><code class="docutils literal notranslate"><span class="pre">Flow.send_message()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.set_colink'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.set_colink"><code class="docutils literal notranslate"><span class="pre">Flow.set_colink()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.set_up_flow_state'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.set_up_flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.set_up_flow_state()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.abstract.Flow.type'" class="reference internal" href="#aiflows.base_flows.abstract.Flow.type"><code class="docutils literal notranslate"><span class="pre">Flow.type()</span></code></a></li>
 </ul>
@@ -556,39 +482,12 @@ CompositeFlow is a flow that contains subflows and defines how they are executed
 </li>
 </ul>
 </li>
-<li><a :data-current="activeSection === '#module-aiflows.base_flows.branching'" class="reference internal" href="#module-aiflows.base_flows.branching">aiflows.base_flows.branching module</a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.branching.BranchingFlow'" class="reference internal" href="#aiflows.base_flows.branching.BranchingFlow"><code class="docutils literal notranslate"><span class="pre">BranchingFlow</span></code></a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.branching.BranchingFlow.run'" class="reference internal" href="#aiflows.base_flows.branching.BranchingFlow.run"><code class="docutils literal notranslate"><span class="pre">BranchingFlow.run()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.branching.BranchingFlow.type'" class="reference internal" href="#aiflows.base_flows.branching.BranchingFlow.type"><code class="docutils literal notranslate"><span class="pre">BranchingFlow.type()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a :data-current="activeSection === '#module-aiflows.base_flows.circular'" class="reference internal" href="#module-aiflows.base_flows.circular">aiflows.base_flows.circular module</a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow"><code class="docutils literal notranslate"><span class="pre">CircularFlow</span></code></a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">CircularFlow.REQUIRED_KEYS_CONFIG</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder"><code class="docutils literal notranslate"><span class="pre">CircularFlow.input_msg_payload_builder()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor"><code class="docutils literal notranslate"><span class="pre">CircularFlow.output_msg_payload_processor()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow.run'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow.run"><code class="docutils literal notranslate"><span class="pre">CircularFlow.run()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.CircularFlow.type'" class="reference internal" href="#aiflows.base_flows.circular.CircularFlow.type"><code class="docutils literal notranslate"><span class="pre">CircularFlow.type()</span></code></a></li>
-</ul>
-</li>
-<li><a :data-current="activeSection === '#aiflows.base_flows.circular.TopologyNode'" class="reference internal" href="#aiflows.base_flows.circular.TopologyNode"><code class="docutils literal notranslate"><span class="pre">TopologyNode</span></code></a></li>
-</ul>
-</li>
 <li><a :data-current="activeSection === '#module-aiflows.base_flows.composite'" class="reference internal" href="#module-aiflows.base_flows.composite">aiflows.base_flows.composite module</a><ul>
 <li><a :data-current="activeSection === '#aiflows.base_flows.composite.CompositeFlow'" class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow"><code class="docutils literal notranslate"><span class="pre">CompositeFlow</span></code></a><ul>
 <li><a :data-current="activeSection === '#aiflows.base_flows.composite.CompositeFlow.REQUIRED_KEYS_CONFIG'" class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.REQUIRED_KEYS_CONFIG</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.composite.CompositeFlow.instantiate_from_config'" class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow.instantiate_from_config"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.instantiate_from_config()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.composite.CompositeFlow.subflows'" class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow.subflows"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.subflows</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.base_flows.composite.CompositeFlow.type'" class="reference internal" href="#aiflows.base_flows.composite.CompositeFlow.type"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.type()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a :data-current="activeSection === '#module-aiflows.base_flows.sequential'" class="reference internal" href="#module-aiflows.base_flows.sequential">aiflows.base_flows.sequential module</a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.sequential.SequentialFlow'" class="reference internal" href="#aiflows.base_flows.sequential.SequentialFlow"><code class="docutils literal notranslate"><span class="pre">SequentialFlow</span></code></a><ul>
-<li><a :data-current="activeSection === '#aiflows.base_flows.sequential.SequentialFlow.type'" class="reference internal" href="#aiflows.base_flows.sequential.SequentialFlow.type"><code class="docutils literal notranslate"><span class="pre">SequentialFlow.type()</span></code></a></li>
 </ul>
 </li>
 </ul>

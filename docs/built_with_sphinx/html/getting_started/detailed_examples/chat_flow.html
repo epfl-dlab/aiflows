@@ -30,7 +30,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -92,13 +92,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -135,16 +134,36 @@
 <h2>Methods<a class="headerlink" href="#methods" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#methods'">¶</a></h2>
 <p>In this section, we’ll explore some o <code class="docutils literal notranslate"><span class="pre">ChatAtomicFlow</span></code>’s methods, specifically those invoked when it is called.</p>
 <p>Just like every flow, <code class="docutils literal notranslate"><span class="pre">ChatAtomicFlow</span></code> is called via the <code class="docutils literal notranslate"><span class="pre">run</span></code> method:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_message</span><span class="p">:</span> <span class="n">FlowMessage</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">""" This method runs the flow. It processes the input, calls the backend and updates the state of the flow.</span>
+<span class="sd">        </span>
+<span class="sd">        :param input_message: The input data of the flow.</span>
+<span class="sd">        :type input_message: aiflows.messages.FlowMessage</span>
+<span class="sd">        """</span>
+        <span class="n">input_data</span> <span class="o">=</span> <span class="n">input_message</span><span class="o">.</span><span class="n">data</span>
+        
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_llm</span><span class="p">(</span><span class="n">input_data</span><span class="o">=</span><span class="n">input_data</span><span class="p">)</span>
+       
+        
+        <span class="n">reply_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">package_output_message</span><span class="p">(</span>
+            <span class="n">input_message</span><span class="p">,</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"api_output"</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">reply_message</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">query_llm</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">input_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+<span class="w">        </span><span class="sd">""" This method queries the LLM. It processes the input, calls the backend and returns the response.</span>
 <span class="sd">        </span>
 <span class="sd">        :param input_data: The input data of the flow.</span>
 <span class="sd">        :type input_data: Dict[str, Any]</span>
-<span class="sd">        :return: The LLM's api output.</span>
-<span class="sd">        :rtype: Dict[str, Any]</span>
+<span class="sd">        :return: The response of the LLM to the input.</span>
+<span class="sd">        :rtype: Union[str, List[str]]</span>
 <span class="sd">        """</span>
         
-        <span class="c1"># ~~~ Process input ~~~</span>
+        
+         <span class="c1"># ~~~ Process input ~~~</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_process_input</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span>
 
         <span class="c1"># ~~~ Call ~~~</span>
@@ -157,10 +176,11 @@
                 <span class="n">content</span><span class="o">=</span><span class="n">answer</span>
             <span class="p">)</span>
         <span class="n">response</span> <span class="o">=</span> <span class="n">response</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">response</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">response</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"api_output"</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">response</span>
+
 </pre></div>
 </div>
-<p>As you can see in the code snippet here above, <code class="docutils literal notranslate"><span class="pre">run</span></code> processes the input data of the flow via the <code class="docutils literal notranslate"><span class="pre">_process_input</span></code> method. Let’s take a closer look at what it does:</p>
+<p>As you can see in the code snippet here above, <code class="docutils literal notranslate"><span class="pre">query_llm</span></code> processes the input data of the flow via the <code class="docutils literal notranslate"><span class="pre">_process_input</span></code> method. Let’s take a closer look at what it does:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">_process_input</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
 <span class="w">        </span><span class="sd">""" This method processes the input of the flow. It adds the human message to the flow's state. If the conversation is not initialized, it also initializes it</span>
 <span class="sd">        (adding the system message and potentially the demonstrations).</span>

@@ -16,29 +16,23 @@ If you examine the [`VisionAtomicFlow` class](https://huggingface.co/aiflows/Vis
 
 Here is the run method of VisionAtomicFlow:
 ```python
-def run(self,input_data: Dict[str, Any]):
+def run(self,input_message: FlowMessage):
         """ This method runs the flow. It processes the input, calls the backend and updates the state of the flow.
         
-        :param input_data: The input data of the flow.
-        :type input_data: Dict[str, Any]
-        :return: The LLM's api output.
-        :rtype: Dict[str, Any]
+        :param input_message: The input data of the flow.
+        :type input_message: aiflows.messages.FlowMessage
         """
+        input_data = input_message.data
         
-        # ~~~ Process input ~~~
-        self._process_input(input_data)
-
-        # ~~~ Call ~~~
-        response = self._call()
+        response = self.query_llm(input_data=input_data)
+       
         
-        #loop is in case there was more than one answer (n>1 in generation parameters)
-        for answer in response:
-            self._state_update_add_chat_message(
-                role=self.flow_config["assistant_name"],
-                content=answer
-            )
-        response = response if len(response) > 1 or len(response) == 0 else response[0]
-        return {"api_output": response}
+        reply_message = self.package_output_message(
+            input_message,
+            response = {"api_output": response}
+        )
+        
+        self.send_message(reply_message)
 ```
 
 In the provided code snippet, observe that the `run` method handles the input data of the flow through the `_process_input` method. Let's delve into a closer examination of its functionality:
@@ -74,7 +68,7 @@ def _process_input(self, input_data: Dict[str, Any]):
 When calling `_process_input(input_data)` in `VisionAtomicFlow`, the flow generates its user message prompt similarly to `ChatAtomicFlow` (refer to [ChatAtomicFlow's detailed example](./chat_flow.md)). However, due to a slight modification in the `get_user_message` method compared to `ChatAtomicFlow`, it also includes one or multiple images or videos in the input.
 
 ```python
- @staticmethod
+    @staticmethod
     def get_user_message(prompt_template, input_data: Dict[str, Any]):
         """ This method constructs the user message to be passed to the API.
         

@@ -12,13 +12,12 @@ Subpackages
    aiflows.data_transformations
    aiflows.datasets
    aiflows.flow_cache
-   aiflows.flow_launchers
    aiflows.flow_verse
-   aiflows.history
    aiflows.interfaces
    aiflows.messages
    aiflows.prompt_template
    aiflows.utils
+   aiflows.workers
 
 Module contents
 ---------------

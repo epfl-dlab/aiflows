@@ -30,7 +30,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -92,13 +92,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -213,36 +212,50 @@ We can now just import it:</p>
 </div>
 <p>The following overwrites the field with your personal API information:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># recursively find the 'api_infos' entry and put the API information in the config</span>
-<span class="n">quick_load</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">api_information</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"api_infos"</span><span class="p">)</span>
+<span class="n">api_information</span> <span class="o">=</span> <span class="p">[</span><span class="n">ApiInfo</span><span class="p">(</span><span class="n">backend_used</span><span class="o">=</span><span class="s2">"openai"</span><span class="p">,</span>
+                              <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">))]</span>
+
+<span class="n">quick_load_api_keys</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">api_information</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"api_infos"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This is equivalent to the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span><span class="p">[</span><span class="s2">"flow"</span><span class="p">][</span><span class="s2">"backend"</span><span class="p">][</span><span class="s2">"api_infos"</span><span class="p">]</span> <span class="o">=</span> <span class="n">api_information</span>
+<p>Starg a colink server, serve the Flow and get an instance:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cl</span> <span class="o">=</span> <span class="n">start_colink_server</span><span class="p">()</span>
+<span class="c1">#3. ~~~~ Serve The Flow ~~~~</span>
+<span class="n">serving</span><span class="o">.</span><span class="n">serve_flow</span><span class="p">(</span>
+    <span class="n">cl</span> <span class="o">=</span> <span class="n">cl</span><span class="p">,</span>
+    <span class="n">flow_class_name</span><span class="o">=</span><span class="s2">"flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow"</span><span class="p">,</span>
+    <span class="n">flow_endpoint</span><span class="o">=</span><span class="s2">"ChatAtomicFlow"</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1">#4. ~~~~~Start A Worker Thread~~~~~</span>
+<span class="n">run_dispatch_worker_thread</span><span class="p">(</span><span class="n">cl</span><span class="p">)</span>
+
+<span class="c1">#5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~</span>
+<span class="n">proxy_flow</span><span class="o">=</span> <span class="n">serving</span><span class="o">.</span><span class="n">get_flow_instance</span><span class="p">(</span>
+    <span class="n">cl</span><span class="o">=</span><span class="n">cl</span><span class="p">,</span>
+    <span class="n">flow_endpoint</span><span class="o">=</span><span class="s2">"ChatAtomicFlow"</span><span class="p">,</span>
+    <span class="n">user_id</span><span class="o">=</span><span class="s2">"local"</span><span class="p">,</span>
+    <span class="n">config_overrides</span> <span class="o">=</span> <span class="n">cfg</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>However, with <code class="docutils literal notranslate"><span class="pre">quick_load</span></code>, we are able to quickly set all entries of api_infos, this is useful when we need to configure more than just one config entries.</p>
-<p>Instantiate your Flow:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ~~~ Instantiate the Flow ~~~</span>
-<span class="n">flow</span> <span class="o">=</span> <span class="n">ChatAtomicFlow</span><span class="o">.</span><span class="n">instantiate_from_default_config</span><span class="p">(</span><span class="o">**</span><span class="n">cfg</span><span class="p">[</span><span class="s2">"flow"</span><span class="p">])</span>
-<span class="n">flow_with_interfaces</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"flow"</span><span class="p">:</span> <span class="n">flow</span><span class="p">,</span>
-    <span class="s2">"input_interface"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-    <span class="s2">"output_interface"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Note that <code class="docutils literal notranslate"><span class="pre">input_interface</span></code> and <code class="docutils literal notranslate"><span class="pre">output_interface</span></code> are here to control the data that comes in and out of the flow. In this case, we don’t need specific data manipulation, so we will leave to <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
-<p>Load some data and run your flow with the <code class="docutils literal notranslate"><span class="pre">FlowLauncher</span></code>:</p>
+<p>Run your Flow:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ~~~ Get the data ~~~</span>
 <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"id"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"question"</span><span class="p">:</span> <span class="s2">"What is the capital of France?"</span><span class="p">}</span>
 
-<span class="c1"># ~~~ Run the Flow ~~~</span>
-<span class="n">_</span><span class="p">,</span> <span class="n">outputs</span>  <span class="o">=</span> <span class="n">FlowLauncher</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-        <span class="n">flow_with_interfaces</span><span class="o">=</span> <span class="n">flow_with_interfaces</span> <span class="p">,</span><span class="n">data</span><span class="o">=</span><span class="n">data</span>
-    <span class="p">)</span>
-    <span class="c1"># ~~~ Print the output ~~~</span>
-<span class="n">flow_output_data</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">flow_output_data</span><span class="p">)</span>
+<span class="n">input_message</span> <span class="o">=</span> <span class="n">proxy_flow</span><span class="o">.</span><span class="n">package_input_message</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span>
+<span class="p">)</span>
+<span class="c1">#7. ~~~ Run inference ~~~</span>
+<span class="n">future</span> <span class="o">=</span> <span class="n">proxy_flow</span><span class="o">.</span><span class="n">get_reply_future</span><span class="p">(</span><span class="n">input_message</span><span class="p">)</span>
+
+<span class="c1">#uncomment this line if you would like to get the full message back</span>
+<span class="c1">#reply_message = future.get_message()</span>
+<span class="n">reply_data</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+
+<span class="c1"># ~~~ Print the output ~~~</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"~~~~~~Reply~~~~~~"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">reply_data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Congratulations! You’ve successfully run your first question-answering Flow!</p>

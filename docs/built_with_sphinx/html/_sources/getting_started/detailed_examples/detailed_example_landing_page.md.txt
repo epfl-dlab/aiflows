@@ -28,15 +28,3 @@ Let's dive in and explore the following guides !
 * Recognized the similarities between `VisionAtomicFlow` and `ChatAtomicFlow`
 
 * Identified the documentation resource for `VisionAtomicFlow`
-
-## [3. AutoGPTFlow](./autogpt.md)
-
-Note: This guide is also useful if you're interested in ReAct since the two share lots of similarities
-
-#### By the Guide's End, I Will Have...
-
-* Understood the purpose of `AutoGPTFlow`
-
-* Explored the functionalities of `AutoGPT`'s subflows
-
-* Identified the documentation resource for `AutoGPTFlow` and its subflows

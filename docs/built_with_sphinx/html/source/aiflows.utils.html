@@ -16,6 +16,7 @@
 <link href="../_static/flows_logo_round.png" rel="icon"/>
 <link href="../search.html" rel="search" title="Search"/>
 <link href="../genindex.html" rel="index" title="Index"/>
+<link href="aiflows.workers.html" rel="next" title="aiflows.workers package"/>
 <link href="aiflows.prompt_template.html" rel="prev" title="aiflows.prompt_template package"/>
 <script>
     <!-- Prevent Flash of wrong theme -->
@@ -31,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -93,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -132,6 +132,146 @@
 <h1>aiflows.utils package<a class="headerlink" href="#aiflows-utils-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#submodules'">¶</a></h2>
+</section>
+<section id="module-aiflows.utils.coflows_utils">
+<span id="aiflows-utils-coflows-utils-module"></span><h2>aiflows.utils.coflows_utils module<a class="headerlink" href="#module-aiflows.utils.coflows_utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.coflows_utils'">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.utils.coflows_utils.</span></span><span class="sig-name descname"><span class="pre">FlowFuture</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture'">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A future object that represents a response from a flow. One can use this object to read the response from the flow.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture.get_data">
+<span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture.get_data" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture.get_data'">¶</a></dt>
+<dd><p>Blocking read of the future returns a dictionary of the data.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture.get_message">
+<span class="sig-name descname"><span class="pre">get_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture.get_message" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture.get_message'">¶</a></dt>
+<dd><p>Blocking read of the future returns a message.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture.set_output_interface">
+<span class="sig-name descname"><span class="pre">set_output_interface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ouput_interface</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture.set_output_interface" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture.set_output_interface'">¶</a></dt>
+<dd><p>Set the output interface for the future.</p>
+</dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture.try_get_data">
+<span class="sig-name descname"><span class="pre">try_get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture.try_get_data" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture.try_get_data'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.FlowFuture.try_get_message">
+<span class="sig-name descname"><span class="pre">try_get_message</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.FlowFuture.try_get_message" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.FlowFuture.try_get_message'">¶</a></dt>
+<dd><p>Non-blocking read, returns None if there is no response yet.</p>
+</dd></dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.dispatch_response">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.coflows_utils.</span></span><span class="sig-name descname"><span class="pre">dispatch_response</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_message</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.dispatch_response" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.dispatch_response'">¶</a></dt>
+<dd><p>Dispatches a response message to the appropriate flow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CL.Colink</em>) – The colink object</p></li>
+<li><p><strong>output_message</strong> (<a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><em>FlowMessage</em></a>) – The output message</p></li>
+<li><p><strong>reply_data</strong> – The meta data describing how to reply</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.coflows_utils.push_to_flow">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.coflows_utils.</span></span><span class="sig-name descname"><span class="pre">push_to_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl:</span> <span class="pre">&lt;module</span> <span class="pre">'colink.colink'</span> <span class="pre">from</span> <span class="pre">'/Users/nicolasbaldwin/opt/miniconda3/envs/mockenv/lib/python3.11/site-packages/colink/colink.py'&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_user_id:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_flow_id:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message:</span> <span class="pre">~aiflows.messages.flow_message.FlowMessage</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.coflows_utils.push_to_flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.coflows_utils.push_to_flow'">¶</a></dt>
+<dd><p>Pushes a message to a flow via colink</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CL.colink</em>) – The colink object</p></li>
+<li><p><strong>target_user_id</strong> (<em>str</em>) – The user id of the flow we’re pushing to</p></li>
+<li><p><strong>target_flow_id</strong> (<em>str</em>) – The flow id of the flow we’re pushing to</p></li>
+<li><p><strong>message</strong> (<a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage" title="aiflows.messages.flow_message.FlowMessage"><em>FlowMessage</em></a>) – The message to push</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils.colink_utils">
+<span id="aiflows-utils-colink-utils-module"></span><h2>aiflows.utils.colink_utils module<a class="headerlink" href="#module-aiflows.utils.colink_utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.colink_utils'">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.delete_entries_on_path">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">delete_entries_on_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.colink_utils.delete_entries_on_path" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.delete_entries_on_path'">¶</a></dt>
+<dd><p>Deletes all entries on the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to delete</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.print_flow_instances">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">print_flow_instances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.colink_utils.print_flow_instances" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.print_flow_instances'">¶</a></dt>
+<dd><p>Prints the flow instances of the given colink object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>print_values</strong> (<em>bool</em>) – whether to print the values of the keys (default is False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.print_served_flows">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">print_served_flows</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.colink_utils.print_served_flows" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.print_served_flows'">¶</a></dt>
+<dd><p>Prints the served flows of the given colink object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>print_values</strong> (<em>bool</em>) – whether to print the values of the keys (default is False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.recursive_print_keys">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">recursive_print_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_values</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.colink_utils.recursive_print_keys" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.recursive_print_keys'">¶</a></dt>
+<dd><p>Recursively prints the keys in the given path.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>path</strong> (<em>str</em>) – path to print</p></li>
+<li><p><strong>print_values</strong> (<em>bool</em>) – whether to print the values of the keys (default is False)</p></li>
+<li><p><strong>indent</strong> (<em>int</em>) – indentation level</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.start_colink_server">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">start_colink_server</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">CoLink</span></span></span><a class="headerlink" href="#aiflows.utils.colink_utils.start_colink_server" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.start_colink_server'">¶</a></dt>
+<dd><p>Starts a colink server and returns a colink object with a generated user.</p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.colink_utils.start_colink_server_with_users">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.colink_utils.</span></span><span class="sig-name descname"><span class="pre">start_colink_server_with_users</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_users</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">CoLink</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#aiflows.utils.colink_utils.start_colink_server_with_users" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.colink_utils.start_colink_server_with_users'">¶</a></dt>
+<dd><p>Starts a colink server and returns a list of colink objects with generated users.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>num_users</strong> (<em>int</em>) – number of users to create</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>list of colink objects (one for each user)</p>
+</dd>
+</dl>
+</dd></dl>
+</section>
+<section id="module-aiflows.utils.constants">
+<span id="aiflows-utils-constants-module"></span><h2>aiflows.utils.constants module<a class="headerlink" href="#module-aiflows.utils.constants" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.constants'">¶</a></h2>
 </section>
 <section id="module-aiflows.utils.general_helpers">
 <span id="aiflows-utils-general-helpers-module"></span><h2>aiflows.utils.general_helpers module<a class="headerlink" href="#module-aiflows.utils.general_helpers" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.general_helpers'">¶</a></h2>
@@ -397,6 +537,20 @@ returns: cfg = {</p>
 </div></blockquote>
 </dd></dl>
 <dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.general_helpers.quick_load_api_keys">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">quick_load_api_keys</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">api_information</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo" title="aiflows.backends.api_info.ApiInfo"><span class="pre">ApiInfo</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'api_infos'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.quick_load_api_keys" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.quick_load_api_keys'">¶</a></dt>
+<dd><p>Recursively loads the api_information in a dictionary in any field where the key is the parameter key</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The dictionary to update</p></li>
+<li><p><strong>api_information</strong> (<em>List</em><em>[</em><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo" title="aiflows.backends.api_info.ApiInfo"><em>ApiInfo</em></a><em>]</em>) – The api information to set</p></li>
+<li><p><strong>key</strong> (<em>str</em><em>, </em><em>optional</em>) – The key to use, defaults to ‘api_infos’</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
 <dt class="sig sig-object py" id="aiflows.utils.general_helpers.read_gzipped_jsonlines">
 <span class="sig-prename descclassname"><span class="pre">aiflows.utils.general_helpers.</span></span><span class="sig-name descname"><span class="pre">read_gzipped_jsonlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path_to_file</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.general_helpers.read_gzipped_jsonlines" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.general_helpers.read_gzipped_jsonlines'">¶</a></dt>
 <dd><p>Reads a gzipped jsonlines file and returns a list of dictionaries.</p>
@@ -564,6 +718,32 @@ returns: cfg = {</p>
 </section>
 <section id="module-aiflows.utils.io_utils">
 <span id="aiflows-utils-io-utils-module"></span><h2>aiflows.utils.io_utils module<a class="headerlink" href="#module-aiflows.utils.io_utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.io_utils'">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.io_utils.coflows_deserialize">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">coflows_deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoded_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_pickle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">Any</span></span></span><a class="headerlink" href="#aiflows.utils.io_utils.coflows_deserialize" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.io_utils.coflows_deserialize'">¶</a></dt>
+<dd><p>Deserializes the given data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>encoded_data</strong> (<em>bytes</em>) – data to deserialize</p></li>
+<li><p><strong>use_pickle</strong> (<em>bool</em>) – whether to use pickle for deserialization (default is False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.io_utils.coflows_serialize">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">coflows_serialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_pickle</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">bytes</span></span></span><a class="headerlink" href="#aiflows.utils.io_utils.coflows_serialize" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.io_utils.coflows_serialize'">¶</a></dt>
+<dd><p>Serializes the given data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>Any</em>) – data to serialize</p></li>
+<li><p><strong>use_pickle</strong> (<em>bool</em>) – whether to use pickle for serialization (default is False)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py function">
 <dt class="sig sig-object py" id="aiflows.utils.io_utils.load_pickle">
 <span class="sig-prename descclassname"><span class="pre">aiflows.utils.io_utils.</span></span><span class="sig-name descname"><span class="pre">load_pickle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pickle_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.io_utils.load_pickle" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.io_utils.load_pickle'">¶</a></dt>
@@ -835,6 +1015,169 @@ another type of cache that includes the caller frame information in the hashing 
 </dl>
 </dd></dl>
 </section>
+<section id="module-aiflows.utils.serving">
+<span id="aiflows-utils-serving-module"></span><h2>aiflows.utils.serving module<a class="headerlink" href="#module-aiflows.utils.serving" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils.serving'">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="aiflows.utils.serving.FlowInstanceException">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">FlowInstanceException</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">message</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.FlowInstanceException" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.FlowInstanceException'">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.delete_all_flow_endpoints">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">delete_all_flow_endpoints</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.delete_all_flow_endpoints" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.delete_all_flow_endpoints'">¶</a></dt>
+<dd><p>Deletes all flow endpoints. This includes deleting all flow instances.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.delete_flow_endpoint">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">delete_flow_endpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.delete_flow_endpoint" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.delete_flow_endpoint'">¶</a></dt>
+<dd><p>Deletes all colink entries at given flow_endpoint. This includes deleting all instances of this flow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – endpoint of the flow</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.delete_flow_instance">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">delete_flow_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.delete_flow_instance" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.delete_flow_instance'">¶</a></dt>
+<dd><p>Deletes all colink entries associated with flow instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>flow_id</strong> (<em>str</em>) – id of the flow instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dict with metadata about specified local flow instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Dict[str, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.get_flow_instance">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">get_flow_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'local'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispatch_point_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.atomic.AtomicFlow" title="aiflows.base_flows.atomic.AtomicFlow"><span class="pre">AtomicFlow</span></a></span></span><a class="headerlink" href="#aiflows.utils.serving.get_flow_instance" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.get_flow_instance'">¶</a></dt>
+<dd><p>Returns an atomic flow wrapper around an instance of the specified flow.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – </p></li>
+<li><p><strong>user_id</strong> (<em>str</em>) – </p></li>
+<li><p><strong>config_overrides</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – </p></li>
+<li><p><strong>initial_state</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – </p></li>
+<li><p><strong>dispatch_point_override</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – overrides dispatch point for this instance (only relevant for locally served flows)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>atomic flow wrapper around flow instance</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>aiflows.base_flows.AtomicFlow</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.is_flow_served">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">is_flow_served</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#aiflows.utils.serving.is_flow_served" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.is_flow_served'">¶</a></dt>
+<dd><p>Returns True if the flow is being served at the given endpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – endpoint of the flow</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the flow is being served at the given endpoint</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.mount">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">mount</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config_overrides</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispatch_point_override</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.atomic.AtomicFlow" title="aiflows.base_flows.atomic.AtomicFlow"><span class="pre">AtomicFlow</span></a></span></span><a class="headerlink" href="#aiflows.utils.serving.mount" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.mount'">¶</a></dt>
+<dd><p>Mounts a new instance at the specified flow endpoint by creating necessary entries in CoLink storage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>client_id</strong> (<em>str</em>) – id of colink user making the request (also known as user_id)</p></li>
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – endpoint of the flow</p></li>
+<li><p><strong>config_overrides</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – dictionary with config overrides for the flow instance</p></li>
+<li><p><strong>initial_state</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – initial state of the flow instance</p></li>
+<li><p><strong>dispatch_point_override</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – overrides dispatch point for this instance</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>proxy flow object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>aiflows.base_flows.AtomicFlow</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.recursive_delete_flow_instance">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">recursive_delete_flow_instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.recursive_delete_flow_instance" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.recursive_delete_flow_instance'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.recursive_serve_flow">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">recursive_serve_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispatch_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'coflows_dispatch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_dispatch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleton</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#aiflows.utils.serving.recursive_serve_flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.recursive_serve_flow'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.serve_flow">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">serve_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_class_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dispatch_point</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'coflows_dispatch'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel_dispatch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">singleton</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#aiflows.utils.serving.serve_flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.serve_flow'">¶</a></dt>
+<dd><p>Serves the flow specified by flow_class_name at endpoint specified by flow_endpoint.
+After serving, users can get an instance of the served flow via the get_flow_instance operation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>flow_class_name</strong> (<em>str</em>) – name of the flow class (e.g. “aiflows.base_flows.AtomicFlow” or “flow_modules.my_flow.MyFlow”)</p></li>
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – endpoint of the flow (the name under which the flow will be served). Users will use this endpoint to get instances of the flow.</p></li>
+<li><p><strong>dispatch_point</strong> (<em>str</em>) – dispatch point for the flow</p></li>
+<li><p><strong>parallel_dispatch</strong> (<em>bool</em>) – whether to use parallel dispatch for the flow. If True, multiple calls to the same flow instance can be done simultaneously (the flow is stateless).</p></li>
+<li><p><strong>singleton</strong> – whether to serve the flow as a singleton. If True, only one instance of the flow can be mounted. Users will all get the same instance.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>True if the flow was successfully served; False if the flow is already served or an error occurred.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.start_colink_component">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">start_colink_component</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">component_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.start_colink_component" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.start_colink_component'">¶</a></dt>
+<dd></dd></dl>
+<dl class="py function">
+<dt class="sig sig-object py" id="aiflows.utils.serving.unserve_flow">
+<span class="sig-prename descclassname"><span class="pre">aiflows.utils.serving.</span></span><span class="sig-name descname"><span class="pre">unserve_flow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cl</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">CoLink</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flow_endpoint</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.utils.serving.unserve_flow" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.utils.serving.unserve_flow'">¶</a></dt>
+<dd><p>unserves flow - users will no longer be able to get instances from this flow_endpoint. all live instances created on this flow_endpoint remain alive.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cl</strong> (<em>CoLink</em>) – colink object</p></li>
+<li><p><strong>flow_endpoint</strong> (<em>str</em>) – endpoint of the flow</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+</section>
 <section id="module-aiflows.utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-aiflows.utils" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.utils'">¶</a></h2>
 </section>
@@ -843,6 +1186,29 @@ another type of cache that includes the caller frame information in the hashing 
 <div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
 <li><a :data-current="activeSection === '#submodules'" class="reference internal" href="#submodules">Submodules</a></li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.coflows_utils'" class="reference internal" href="#module-aiflows.utils.coflows_utils">aiflows.utils.coflows_utils module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture"><code class="docutils literal notranslate"><span class="pre">FlowFuture</span></code></a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture.get_data'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture.get_data"><code class="docutils literal notranslate"><span class="pre">FlowFuture.get_data()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture.get_message'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture.get_message"><code class="docutils literal notranslate"><span class="pre">FlowFuture.get_message()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture.set_output_interface'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture.set_output_interface"><code class="docutils literal notranslate"><span class="pre">FlowFuture.set_output_interface()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture.try_get_data'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture.try_get_data"><code class="docutils literal notranslate"><span class="pre">FlowFuture.try_get_data()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.FlowFuture.try_get_message'" class="reference internal" href="#aiflows.utils.coflows_utils.FlowFuture.try_get_message"><code class="docutils literal notranslate"><span class="pre">FlowFuture.try_get_message()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.dispatch_response'" class="reference internal" href="#aiflows.utils.coflows_utils.dispatch_response"><code class="docutils literal notranslate"><span class="pre">dispatch_response()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.coflows_utils.push_to_flow'" class="reference internal" href="#aiflows.utils.coflows_utils.push_to_flow"><code class="docutils literal notranslate"><span class="pre">push_to_flow()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.colink_utils'" class="reference internal" href="#module-aiflows.utils.colink_utils">aiflows.utils.colink_utils module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.delete_entries_on_path'" class="reference internal" href="#aiflows.utils.colink_utils.delete_entries_on_path"><code class="docutils literal notranslate"><span class="pre">delete_entries_on_path()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.print_flow_instances'" class="reference internal" href="#aiflows.utils.colink_utils.print_flow_instances"><code class="docutils literal notranslate"><span class="pre">print_flow_instances()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.print_served_flows'" class="reference internal" href="#aiflows.utils.colink_utils.print_served_flows"><code class="docutils literal notranslate"><span class="pre">print_served_flows()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.recursive_print_keys'" class="reference internal" href="#aiflows.utils.colink_utils.recursive_print_keys"><code class="docutils literal notranslate"><span class="pre">recursive_print_keys()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.start_colink_server'" class="reference internal" href="#aiflows.utils.colink_utils.start_colink_server"><code class="docutils literal notranslate"><span class="pre">start_colink_server()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.colink_utils.start_colink_server_with_users'" class="reference internal" href="#aiflows.utils.colink_utils.start_colink_server_with_users"><code class="docutils literal notranslate"><span class="pre">start_colink_server_with_users()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.constants'" class="reference internal" href="#module-aiflows.utils.constants">aiflows.utils.constants module</a></li>
 <li><a :data-current="activeSection === '#module-aiflows.utils.general_helpers'" class="reference internal" href="#module-aiflows.utils.general_helpers">aiflows.utils.general_helpers module</a><ul>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.create_unique_id'" class="reference internal" href="#aiflows.utils.general_helpers.create_unique_id"><code class="docutils literal notranslate"><span class="pre">create_unique_id()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.encode_from_buffer'" class="reference internal" href="#aiflows.utils.general_helpers.encode_from_buffer"><code class="docutils literal notranslate"><span class="pre">encode_from_buffer()</span></code></a></li>
@@ -858,6 +1224,7 @@ another type of cache that includes the caller frame information in the hashing 
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.nested_keys_update'" class="reference internal" href="#aiflows.utils.general_helpers.nested_keys_update"><code class="docutils literal notranslate"><span class="pre">nested_keys_update()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.process_config_leafs'" class="reference internal" href="#aiflows.utils.general_helpers.process_config_leafs"><code class="docutils literal notranslate"><span class="pre">process_config_leafs()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.quick_load'" class="reference internal" href="#aiflows.utils.general_helpers.quick_load"><code class="docutils literal notranslate"><span class="pre">quick_load()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.general_helpers.quick_load_api_keys'" class="reference internal" href="#aiflows.utils.general_helpers.quick_load_api_keys"><code class="docutils literal notranslate"><span class="pre">quick_load_api_keys()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_gzipped_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_gzipped_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_gzipped_jsonlines()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_jsonlines'" class="reference internal" href="#aiflows.utils.general_helpers.read_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_jsonlines()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.general_helpers.read_outputs'" class="reference internal" href="#aiflows.utils.general_helpers.read_outputs"><code class="docutils literal notranslate"><span class="pre">read_outputs()</span></code></a></li>
@@ -872,6 +1239,8 @@ another type of cache that includes the caller frame information in the hashing 
 </ul>
 </li>
 <li><a :data-current="activeSection === '#module-aiflows.utils.io_utils'" class="reference internal" href="#module-aiflows.utils.io_utils">aiflows.utils.io_utils module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.io_utils.coflows_deserialize'" class="reference internal" href="#aiflows.utils.io_utils.coflows_deserialize"><code class="docutils literal notranslate"><span class="pre">coflows_deserialize()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.io_utils.coflows_serialize'" class="reference internal" href="#aiflows.utils.io_utils.coflows_serialize"><code class="docutils literal notranslate"><span class="pre">coflows_serialize()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.io_utils.load_pickle'" class="reference internal" href="#aiflows.utils.io_utils.load_pickle"><code class="docutils literal notranslate"><span class="pre">load_pickle()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.utils.io_utils.recursive_json_serialize'" class="reference internal" href="#aiflows.utils.io_utils.recursive_json_serialize"><code class="docutils literal notranslate"><span class="pre">recursive_json_serialize()</span></code></a></li>
 </ul>
@@ -902,6 +1271,21 @@ another type of cache that includes the caller frame information in the hashing 
 </li>
 <li><a :data-current="activeSection === '#module-aiflows.utils.rich_utils'" class="reference internal" href="#module-aiflows.utils.rich_utils">aiflows.utils.rich_utils module</a><ul>
 <li><a :data-current="activeSection === '#aiflows.utils.rich_utils.print_config_tree'" class="reference internal" href="#aiflows.utils.rich_utils.print_config_tree"><code class="docutils literal notranslate"><span class="pre">print_config_tree()</span></code></a></li>
+</ul>
+</li>
+<li><a :data-current="activeSection === '#module-aiflows.utils.serving'" class="reference internal" href="#module-aiflows.utils.serving">aiflows.utils.serving module</a><ul>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.FlowInstanceException'" class="reference internal" href="#aiflows.utils.serving.FlowInstanceException"><code class="docutils literal notranslate"><span class="pre">FlowInstanceException</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.delete_all_flow_endpoints'" class="reference internal" href="#aiflows.utils.serving.delete_all_flow_endpoints"><code class="docutils literal notranslate"><span class="pre">delete_all_flow_endpoints()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.delete_flow_endpoint'" class="reference internal" href="#aiflows.utils.serving.delete_flow_endpoint"><code class="docutils literal notranslate"><span class="pre">delete_flow_endpoint()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.delete_flow_instance'" class="reference internal" href="#aiflows.utils.serving.delete_flow_instance"><code class="docutils literal notranslate"><span class="pre">delete_flow_instance()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.get_flow_instance'" class="reference internal" href="#aiflows.utils.serving.get_flow_instance"><code class="docutils literal notranslate"><span class="pre">get_flow_instance()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.is_flow_served'" class="reference internal" href="#aiflows.utils.serving.is_flow_served"><code class="docutils literal notranslate"><span class="pre">is_flow_served()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.mount'" class="reference internal" href="#aiflows.utils.serving.mount"><code class="docutils literal notranslate"><span class="pre">mount()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.recursive_delete_flow_instance'" class="reference internal" href="#aiflows.utils.serving.recursive_delete_flow_instance"><code class="docutils literal notranslate"><span class="pre">recursive_delete_flow_instance()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.recursive_serve_flow'" class="reference internal" href="#aiflows.utils.serving.recursive_serve_flow"><code class="docutils literal notranslate"><span class="pre">recursive_serve_flow()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.serve_flow'" class="reference internal" href="#aiflows.utils.serving.serve_flow"><code class="docutils literal notranslate"><span class="pre">serve_flow()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.start_colink_component'" class="reference internal" href="#aiflows.utils.serving.start_colink_component"><code class="docutils literal notranslate"><span class="pre">start_colink_component()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.utils.serving.unserve_flow'" class="reference internal" href="#aiflows.utils.serving.unserve_flow"><code class="docutils literal notranslate"><span class="pre">unserve_flow()</span></code></a></li>
 </ul>
 </li>
 <li><a :data-current="activeSection === '#module-aiflows.utils'" class="reference internal" href="#module-aiflows.utils">Module contents</a></li>

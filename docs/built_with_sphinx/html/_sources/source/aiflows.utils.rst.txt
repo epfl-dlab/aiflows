@@ -4,6 +4,30 @@ aiflows.utils package
 Submodules
 ----------
 
+aiflows.utils.coflows\_utils module
+-----------------------------------
+
+.. automodule:: aiflows.utils.coflows_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiflows.utils.colink\_utils module
+----------------------------------
+
+.. automodule:: aiflows.utils.colink_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiflows.utils.constants module
+------------------------------
+
+.. automodule:: aiflows.utils.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 aiflows.utils.general\_helpers module
 -------------------------------------
 
@@ -32,6 +56,14 @@ aiflows.utils.rich\_utils module
 --------------------------------
 
 .. automodule:: aiflows.utils.rich_utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+aiflows.utils.serving module
+----------------------------
+
+.. automodule:: aiflows.utils.serving
    :members:
    :undoc-members:
    :show-inheritance:

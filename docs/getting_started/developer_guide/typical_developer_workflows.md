@@ -78,42 +78,92 @@ Note that a flow module should ideally be a self-contained python module. Theref
 So far so good, we have created our own flow. Let's now try to test it:
 
 ```python
+
+"""A simple script to run a Flow that can be used for development and debugging."""
+import os
+
+import hydra
+
+import aiflows
+from aiflows.backends.api_info import ApiInfo
+from aiflows.utils.general_helpers import read_yaml_file, quick_load_api_keys
+
+from aiflows import logging
+from aiflows.flow_cache import CACHING_PARAMETERS, clear_cache
+
+from aiflows.utils import serving
+from aiflows.workers import run_dispatch_worker_thread
+from aiflows.messages import FlowMessage
+from aiflows.interfaces import KeyInterface
+from aiflows.utils.colink_utils import start_colink_server
+from aiflows.workers import run_dispatch_worker_thread
+
+
+# logging.set_verbosity_debug()
+
 dependencies = [
     {"url": "yeeef/UsefulChatBots", "revision": "PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"},
 ]
+
 from aiflows import flow_verse
 flow_verse.sync_dependencies(dependencies)
-
-import os
-
-from flow_modules.yeeef.UsefulChatBots.EconomicExpertBot import EconomicExpertBot
-from aiflows.flow_launchers import FlowLauncher
-
-
 if __name__ == "__main__":
-    # ~~~ Set the API information ~~~
+    
+    #1. ~~~~~ Set up a colink server ~~~~    
+    cl = start_colink_server()
+
+
+    #2. ~~~~~Load flow config~~~~~~
+    root_dir = "."
+    cfg_path = os.path.join(root_dir, "demo.yaml")
+    cfg = read_yaml_file(cfg_path)
+    
+    #2.1 ~~~ Set the API information ~~~
     # OpenAI backend
+    api_information = [ApiInfo(backend_used="openai",
+                              api_key = os.getenv("OPENAI_API_KEY"))]
 
-    api_information = [ApiInfo(backend_used="openai", api_key=os.getenv("OPENAI_API_KEY"))]
+    quick_load_api_keys(cfg, api_information, key="api_infos")
 
-    overrides = { "backend": {"api_infos": : api_information}}
+    #3. ~~~~ Serve The Flow ~~~~
+    serving.serve_flow(
+        cl = cl,
+        flow_class_name="flow_modules.yeeef.UsefulChatBots.EconomicExpertBot",
+        flow_endpoint="EconomicExpertBot",
+    )
+    
+    #4. ~~~~~Start A Worker Thread~~~~~
+    run_dispatch_worker_thread(cl)
 
-    bot = EconomicExpertBot.instantiate_from_default_config(**overrides)
-    # the data points in inputs must satisfy the requirements of input_keys
+    #5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~
+    proxy_flow= serving.get_flow_instance(
+        cl=cl,
+        flow_endpoint="EconomicExpertBot",
+        user_id="local",
+        config_overrides = cfg
+    )
+    
+    #6. ~~~ Get the data ~~~
     data = [
         {
             "id": 0, "query": "What is CPI? What is the current CPI in the US?",
         },
     ]
-    print(f"inputs: {data}")
-
-    # init a minimal flow_launcher without specifying the output_keys, then
-    # the full output_keys will be given
-    outputs = FlowLauncher.launch(
-        flow_with_interfaces={"flow": data},
-        data=inputs,
+    
+    #option1: use the FlowMessage class
+    input_message = proxy_flow.package_input_message(
+        data=data
     )
-    print(outputs)
+    #7. ~~~ Run inference ~~~
+    future = proxy_flow.get_reply_future(input_message)
+    
+    #uncomment this line if you would like to get the full message back
+    #reply_message = future.get_message()
+    reply_data = future.get_data()
+    
+    # ~~~ Print the output ~~~
+    print("~~~~~~Reply~~~~~~")
+    print(reply_data)
 ```
 
 As we are developing locally, the remote revision does not exist yet, so we point the revision to the local path we just created: `PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots`. Note that when we sync a local revision, instead of copying the files locally, we make a symbolic soft link. So you could just modify the code under `flow_modules` and the changes will be automatically propagated to the `PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots`.
@@ -124,9 +174,6 @@ Then let’s execute the code and test our new flow:
 
 ```
 (aiflows) ➜  dev-tutorial python ask_economic_expert_bot.py
-inputs: [{'id': 0, 'query': 'What is CPI? What is the current CPI in the US?'}]
-[2023-07-05 17:05:35,530][aiflows.base_flows.abstract][WARNING] - The raw response was not logged.
-[{'id': 0, 'inference_outputs': [OutputMessage(message_id='d95683d6-9507-4a90-b290-6a43e609c904', created_at='2023-07-05 09:05:35.530972000', created_by='EconomicExpertBot', message_type='OutputMessage', data={'output_keys': ['response'], 'output_data': {'response': 'CPI, or the Consumer Price Index, is a measure that examines the weighted average of prices of a basket of consumer goods and services, such as transportation, food, and medical care. It is calculated by taking price changes for each item in the predetermined basket of goods and averaging them. Changes in the CPI are used to assess price changes associated with the cost of living.'}, 'missing_output_keys': []}, private_keys=['api_keys'])], 'error': None}]
 ```
 
 Looks good! Now let’s publish it to the huggingface!

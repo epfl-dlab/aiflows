@@ -32,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -94,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -162,6 +161,22 @@
 <dt class="sig sig-object py" id="aiflows.messages.abstract.Message.data">
 <span class="sig-name descname"><span class="pre">data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#aiflows.messages.abstract.Message.data" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.data'">¶</a></dt>
 <dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.messages.abstract.Message.deserialize">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">deserialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">encoded_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bytes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.abstract.Message.deserialize" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.deserialize'">¶</a></dt>
+<dd><p>Deserializes the encoded data into a message</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>encoded_data</strong> (<em>bytes</em>) – The encoded message</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The deserialized message</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#aiflows.messages.abstract.Message" title="aiflows.messages.abstract.Message">Message</a></p>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="aiflows.messages.abstract.Message.message_id">
 <span class="sig-name descname"><span class="pre">message_id</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">str</span></em><a class="headerlink" href="#aiflows.messages.abstract.Message.message_id" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.message_id'">¶</a></dt>
@@ -174,6 +189,19 @@
 <dt class="sig sig-object py" id="aiflows.messages.abstract.Message.private_keys">
 <span class="sig-name descname"><span class="pre">private_keys</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#aiflows.messages.abstract.Message.private_keys" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.private_keys'">¶</a></dt>
 <dd></dd></dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="aiflows.messages.abstract.Message.serialize">
+<span class="sig-name descname"><span class="pre">serialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.abstract.Message.serialize" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.serialize'">¶</a></dt>
+<dd><p>Returns the serialized message</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The serialized message</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>bytes</p>
+</dd>
+</dl>
+</dd></dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="aiflows.messages.abstract.Message.to_dict">
 <span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.abstract.Message.to_dict" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.abstract.Message.to_dict'">¶</a></dt>
@@ -189,101 +217,13 @@
 <section id="module-aiflows.messages.flow_message">
 <span id="aiflows-messages-flow-message-module"></span><h2>aiflows.messages.flow_message module<a class="headerlink" href="#module-aiflows.messages.flow_message" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#module-aiflows.messages.flow_message'">¶</a></h2>
 <dl class="py class">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.InputMessage">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.messages.flow_message.</span></span><span class="sig-name descname"><span class="pre">InputMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.InputMessage" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.InputMessage'">¶</a></dt>
+<dt class="sig sig-object py" id="aiflows.messages.flow_message.FlowMessage">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.messages.flow_message.</span></span><span class="sig-name descname"><span class="pre">FlowMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_flow_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'unknown'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reply_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">{'mode':</span> <span class="pre">'no_reply'}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_message_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_reply</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">user_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.FlowMessage" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.FlowMessage'">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#aiflows.messages.abstract.Message" title="aiflows.messages.abstract.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">Message</span></code></a></p>
-<p>This class represents an input message that is passed from one flow to another.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The data content of the message</p></li>
-<li><p><strong>src_flow</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>dst_flow</strong> (<em>str</em>) – The name of the flow that should receive the message</p></li>
-<li><p><strong>created_by</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>private_keys</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A list of private keys that should not be serialized or logged</p></li>
-</ul>
-</dd>
-</dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.InputMessage.build">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">build</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">src_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">private_keys</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">→</span> <span class="sig-return-typehint"><a class="reference internal" href="#aiflows.messages.flow_message.InputMessage" title="aiflows.messages.flow_message.InputMessage"><span class="pre">InputMessage</span></a></span></span><a class="headerlink" href="#aiflows.messages.flow_message.InputMessage.build" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.InputMessage.build'">¶</a></dt>
-<dd><p>Static method that builds an InputMessage object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data_dict</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The data content of the message</p></li>
-<li><p><strong>src_flow</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>dst_flow</strong> (<em>str</em>) – The name of the flow that should receive the message</p></li>
-<li><p><strong>created_by</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>private_keys</strong> (<em>List</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – A list of private keys that should not be serialized or logged</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The built InputMessage object</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#aiflows.messages.flow_message.InputMessage" title="aiflows.messages.flow_message.InputMessage">InputMessage</a></p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.InputMessage.to_string">
-<span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.InputMessage.to_string" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.InputMessage.to_string'">¶</a></dt>
-<dd><p>Returns a string representation of the message.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string representation of the message.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
-</dd>
-</dl>
-</dd></dl>
-</dd></dl>
-<dl class="py class">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.OutputMessage">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">aiflows.messages.flow_message.</span></span><span class="sig-name descname"><span class="pre">OutputMessage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">src_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dst_flow</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw_response</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_message_id</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">history</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory" title="aiflows.history.flow_history.FlowHistory"><span class="pre">FlowHistory</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">created_by</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.OutputMessage" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.OutputMessage'">¶</a></dt>
-<dd><p>Bases: <a class="reference internal" href="#aiflows.messages.abstract.Message" title="aiflows.messages.abstract.Message"><code class="xref py py-class docutils literal notranslate"><span class="pre">Message</span></code></a></p>
-<p>This class represents an output message that is passed from one flow to another.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>src_flow</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>dst_flow</strong> (<em>str</em>) – The name of the flow that should receive the message</p></li>
-<li><p><strong>output_data</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The data content of the message</p></li>
-<li><p><strong>raw_response</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Any</em><em>]</em>) – The raw response of the message</p></li>
-<li><p><strong>input_message_id</strong> (<em>str</em>) – The unique identification of the input message</p></li>
-<li><p><strong>history</strong> (<a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory" title="aiflows.history.flow_history.FlowHistory"><em>FlowHistory</em></a>) – The history of the flow</p></li>
-<li><p><strong>created_by</strong> (<em>str</em>) – The name of the flow that created the message</p></li>
-<li><p><strong>**kwargs</strong> – arguments that are passed to the Message constructor</p></li>
-</ul>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.OutputMessage.get_output_data">
-<span class="sig-name descname"><span class="pre">get_output_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.OutputMessage.get_output_data" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.OutputMessage.get_output_data'">¶</a></dt>
-<dd><p>Returns the output data of the message.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The output data of the message.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>Dict[str, Any]</p>
-</dd>
-</dl>
-</dd></dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="aiflows.messages.flow_message.OutputMessage.to_string">
-<span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.OutputMessage.to_string" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.OutputMessage.to_string'">¶</a></dt>
-<dd><p>Returns a string representation of the message.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The string representation of the message.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>str</p>
-</dd>
-</dl>
+<dt class="sig sig-object py" id="aiflows.messages.flow_message.FlowMessage.to_string">
+<span class="sig-name descname"><span class="pre">to_string</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#aiflows.messages.flow_message.FlowMessage.to_string" title="Permalink to this definition" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#aiflows.messages.flow_message.FlowMessage.to_string'">¶</a></dt>
+<dd><p>Returns a formatted string representation of the message that will be logged to the console</p>
 </dd></dl>
 </dd></dl>
 <dl class="py class">
@@ -399,9 +339,11 @@
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.created_at'" class="reference internal" href="#aiflows.messages.abstract.Message.created_at"><code class="docutils literal notranslate"><span class="pre">Message.created_at</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.created_by'" class="reference internal" href="#aiflows.messages.abstract.Message.created_by"><code class="docutils literal notranslate"><span class="pre">Message.created_by</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.data'" class="reference internal" href="#aiflows.messages.abstract.Message.data"><code class="docutils literal notranslate"><span class="pre">Message.data</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.deserialize'" class="reference internal" href="#aiflows.messages.abstract.Message.deserialize"><code class="docutils literal notranslate"><span class="pre">Message.deserialize()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.message_id'" class="reference internal" href="#aiflows.messages.abstract.Message.message_id"><code class="docutils literal notranslate"><span class="pre">Message.message_id</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.message_type'" class="reference internal" href="#aiflows.messages.abstract.Message.message_type"><code class="docutils literal notranslate"><span class="pre">Message.message_type</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.private_keys'" class="reference internal" href="#aiflows.messages.abstract.Message.private_keys"><code class="docutils literal notranslate"><span class="pre">Message.private_keys</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.serialize'" class="reference internal" href="#aiflows.messages.abstract.Message.serialize"><code class="docutils literal notranslate"><span class="pre">Message.serialize()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.to_dict'" class="reference internal" href="#aiflows.messages.abstract.Message.to_dict"><code class="docutils literal notranslate"><span class="pre">Message.to_dict()</span></code></a></li>
 <li><a :data-current="activeSection === '#aiflows.messages.abstract.Message.to_string'" class="reference internal" href="#aiflows.messages.abstract.Message.to_string"><code class="docutils literal notranslate"><span class="pre">Message.to_string()</span></code></a></li>
 </ul>
@@ -409,14 +351,8 @@
 </ul>
 </li>
 <li><a :data-current="activeSection === '#module-aiflows.messages.flow_message'" class="reference internal" href="#module-aiflows.messages.flow_message">aiflows.messages.flow_message module</a><ul>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.InputMessage'" class="reference internal" href="#aiflows.messages.flow_message.InputMessage"><code class="docutils literal notranslate"><span class="pre">InputMessage</span></code></a><ul>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.InputMessage.build'" class="reference internal" href="#aiflows.messages.flow_message.InputMessage.build"><code class="docutils literal notranslate"><span class="pre">InputMessage.build()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.InputMessage.to_string'" class="reference internal" href="#aiflows.messages.flow_message.InputMessage.to_string"><code class="docutils literal notranslate"><span class="pre">InputMessage.to_string()</span></code></a></li>
-</ul>
-</li>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.OutputMessage'" class="reference internal" href="#aiflows.messages.flow_message.OutputMessage"><code class="docutils literal notranslate"><span class="pre">OutputMessage</span></code></a><ul>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.OutputMessage.get_output_data'" class="reference internal" href="#aiflows.messages.flow_message.OutputMessage.get_output_data"><code class="docutils literal notranslate"><span class="pre">OutputMessage.get_output_data()</span></code></a></li>
-<li><a :data-current="activeSection === '#aiflows.messages.flow_message.OutputMessage.to_string'" class="reference internal" href="#aiflows.messages.flow_message.OutputMessage.to_string"><code class="docutils literal notranslate"><span class="pre">OutputMessage.to_string()</span></code></a></li>
+<li><a :data-current="activeSection === '#aiflows.messages.flow_message.FlowMessage'" class="reference internal" href="#aiflows.messages.flow_message.FlowMessage"><code class="docutils literal notranslate"><span class="pre">FlowMessage</span></code></a><ul>
+<li><a :data-current="activeSection === '#aiflows.messages.flow_message.FlowMessage.to_string'" class="reference internal" href="#aiflows.messages.flow_message.FlowMessage.to_string"><code class="docutils literal notranslate"><span class="pre">FlowMessage.to_string()</span></code></a></li>
 </ul>
 </li>
 <li><a :data-current="activeSection === '#aiflows.messages.flow_message.UpdateMessage_ChatMessage'" class="reference internal" href="#aiflows.messages.flow_message.UpdateMessage_ChatMessage"><code class="docutils literal notranslate"><span class="pre">UpdateMessage_ChatMessage</span></code></a><ul>

@@ -30,7 +30,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -92,13 +92,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../source/aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -157,7 +156,7 @@ create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644
 create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644</span><span class="w"> </span>__init__.py
 </pre></div>
 </div>
-<p>Next, we could either develop from scratch as in <a class="reference internal" href="../Tutorial/atomic_flow.html"><span class="std std-doc">Tutorial for AtomicFlow</span></a> or we could leverage an existing flow module and build upon it. In this tutorial, we’ll develop our chatbot based on <a class="reference external" href="https://huggingface.co/aiflows/ChatFlowModule">aiflows/ChatFlowModule</a> thanks to the modularity of Flows:</p>
+<p>Next, we could either develop from scratch as in <a class="reference internal" href="#../Tutorial/atomic_flow.md"><span class="xref myst">Tutorial for AtomicFlow</span></a> or we could leverage an existing flow module and build upon it. In this tutorial, we’ll develop our chatbot based on <a class="reference external" href="https://huggingface.co/aiflows/ChatFlowModule">aiflows/ChatFlowModule</a> thanks to the modularity of Flows:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
    <span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="s2">"aiflows/ChatFlowModule"</span><span class="p">,</span> <span class="s2">"revision"</span><span class="p">:</span> <span class="s2">"main"</span><span class="p">},</span>
 <span class="p">]</span>
@@ -195,51 +194,98 @@ create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644
 <section id="testing-your-own-flow-module">
 <h3>Testing Your Own Flow Module<a class="headerlink" href="#testing-your-own-flow-module" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#testing-your-own-flow-module'">¶</a></h3>
 <p>So far so good, we have created our own flow. Let’s now try to test it:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="s2">"yeeef/UsefulChatBots"</span><span class="p">,</span> <span class="s2">"revision"</span><span class="p">:</span> <span class="s2">"PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"</span><span class="p">},</span>
-<span class="p">]</span>
-<span class="kn">from</span> <span class="nn">aiflows</span> <span class="kn">import</span> <span class="n">flow_verse</span>
-<span class="n">flow_verse</span><span class="o">.</span><span class="n">sync_dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
-
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+<span class="sd">"""A simple script to run a Flow that can be used for development and debugging."""</span>
 <span class="kn">import</span> <span class="nn">os</span>
 
-<span class="kn">from</span> <span class="nn">flow_modules.yeeef.UsefulChatBots.EconomicExpertBot</span> <span class="kn">import</span> <span class="n">EconomicExpertBot</span>
-<span class="kn">from</span> <span class="nn">aiflows.flow_launchers</span> <span class="kn">import</span> <span class="n">FlowLauncher</span>
+<span class="kn">import</span> <span class="nn">hydra</span>
+
+<span class="kn">import</span> <span class="nn">aiflows</span>
+<span class="kn">from</span> <span class="nn">aiflows.backends.api_info</span> <span class="kn">import</span> <span class="n">ApiInfo</span>
+<span class="kn">from</span> <span class="nn">aiflows.utils.general_helpers</span> <span class="kn">import</span> <span class="n">read_yaml_file</span><span class="p">,</span> <span class="n">quick_load_api_keys</span>
+
+<span class="kn">from</span> <span class="nn">aiflows</span> <span class="kn">import</span> <span class="n">logging</span>
+<span class="kn">from</span> <span class="nn">aiflows.flow_cache</span> <span class="kn">import</span> <span class="n">CACHING_PARAMETERS</span><span class="p">,</span> <span class="n">clear_cache</span>
+
+<span class="kn">from</span> <span class="nn">aiflows.utils</span> <span class="kn">import</span> <span class="n">serving</span>
+<span class="kn">from</span> <span class="nn">aiflows.workers</span> <span class="kn">import</span> <span class="n">run_dispatch_worker_thread</span>
+<span class="kn">from</span> <span class="nn">aiflows.messages</span> <span class="kn">import</span> <span class="n">FlowMessage</span>
+<span class="kn">from</span> <span class="nn">aiflows.interfaces</span> <span class="kn">import</span> <span class="n">KeyInterface</span>
+<span class="kn">from</span> <span class="nn">aiflows.utils.colink_utils</span> <span class="kn">import</span> <span class="n">start_colink_server</span>
+<span class="kn">from</span> <span class="nn">aiflows.workers</span> <span class="kn">import</span> <span class="n">run_dispatch_worker_thread</span>
 
 
+<span class="c1"># logging.set_verbosity_debug()</span>
+
+<span class="n">dependencies</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">{</span><span class="s2">"url"</span><span class="p">:</span> <span class="s2">"yeeef/UsefulChatBots"</span><span class="p">,</span> <span class="s2">"revision"</span><span class="p">:</span> <span class="s2">"PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots"</span><span class="p">},</span>
+<span class="p">]</span>
+
+<span class="kn">from</span> <span class="nn">aiflows</span> <span class="kn">import</span> <span class="n">flow_verse</span>
+<span class="n">flow_verse</span><span class="o">.</span><span class="n">sync_dependencies</span><span class="p">(</span><span class="n">dependencies</span><span class="p">)</span>
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">"__main__"</span><span class="p">:</span>
-    <span class="c1"># ~~~ Set the API information ~~~</span>
+    
+    <span class="c1">#1. ~~~~~ Set up a colink server ~~~~    </span>
+    <span class="n">cl</span> <span class="o">=</span> <span class="n">start_colink_server</span><span class="p">()</span>
+
+
+    <span class="c1">#2. ~~~~~Load flow config~~~~~~</span>
+    <span class="n">root_dir</span> <span class="o">=</span> <span class="s2">"."</span>
+    <span class="n">cfg_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="s2">"demo.yaml"</span><span class="p">)</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">read_yaml_file</span><span class="p">(</span><span class="n">cfg_path</span><span class="p">)</span>
+    
+    <span class="c1">#2.1 ~~~ Set the API information ~~~</span>
     <span class="c1"># OpenAI backend</span>
+    <span class="n">api_information</span> <span class="o">=</span> <span class="p">[</span><span class="n">ApiInfo</span><span class="p">(</span><span class="n">backend_used</span><span class="o">=</span><span class="s2">"openai"</span><span class="p">,</span>
+                              <span class="n">api_key</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">))]</span>
 
-    <span class="n">api_information</span> <span class="o">=</span> <span class="p">[</span><span class="n">ApiInfo</span><span class="p">(</span><span class="n">backend_used</span><span class="o">=</span><span class="s2">"openai"</span><span class="p">,</span> <span class="n">api_key</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">"OPENAI_API_KEY"</span><span class="p">))]</span>
+    <span class="n">quick_load_api_keys</span><span class="p">(</span><span class="n">cfg</span><span class="p">,</span> <span class="n">api_information</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s2">"api_infos"</span><span class="p">)</span>
 
-    <span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span> <span class="s2">"backend"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"api_infos"</span><span class="p">:</span> <span class="p">:</span> <span class="n">api_information</span><span class="p">}}</span>
+    <span class="c1">#3. ~~~~ Serve The Flow ~~~~</span>
+    <span class="n">serving</span><span class="o">.</span><span class="n">serve_flow</span><span class="p">(</span>
+        <span class="n">cl</span> <span class="o">=</span> <span class="n">cl</span><span class="p">,</span>
+        <span class="n">flow_class_name</span><span class="o">=</span><span class="s2">"flow_modules.yeeef.UsefulChatBots.EconomicExpertBot"</span><span class="p">,</span>
+        <span class="n">flow_endpoint</span><span class="o">=</span><span class="s2">"EconomicExpertBot"</span><span class="p">,</span>
+    <span class="p">)</span>
+    
+    <span class="c1">#4. ~~~~~Start A Worker Thread~~~~~</span>
+    <span class="n">run_dispatch_worker_thread</span><span class="p">(</span><span class="n">cl</span><span class="p">)</span>
 
-    <span class="n">bot</span> <span class="o">=</span> <span class="n">EconomicExpertBot</span><span class="o">.</span><span class="n">instantiate_from_default_config</span><span class="p">(</span><span class="o">**</span><span class="n">overrides</span><span class="p">)</span>
-    <span class="c1"># the data points in inputs must satisfy the requirements of input_keys</span>
+    <span class="c1">#5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~</span>
+    <span class="n">proxy_flow</span><span class="o">=</span> <span class="n">serving</span><span class="o">.</span><span class="n">get_flow_instance</span><span class="p">(</span>
+        <span class="n">cl</span><span class="o">=</span><span class="n">cl</span><span class="p">,</span>
+        <span class="n">flow_endpoint</span><span class="o">=</span><span class="s2">"EconomicExpertBot"</span><span class="p">,</span>
+        <span class="n">user_id</span><span class="o">=</span><span class="s2">"local"</span><span class="p">,</span>
+        <span class="n">config_overrides</span> <span class="o">=</span> <span class="n">cfg</span>
+    <span class="p">)</span>
+    
+    <span class="c1">#6. ~~~ Get the data ~~~</span>
     <span class="n">data</span> <span class="o">=</span> <span class="p">[</span>
         <span class="p">{</span>
             <span class="s2">"id"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">"query"</span><span class="p">:</span> <span class="s2">"What is CPI? What is the current CPI in the US?"</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">]</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"inputs: </span><span class="si">{</span><span class="n">data</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-
-    <span class="c1"># init a minimal flow_launcher without specifying the output_keys, then</span>
-    <span class="c1"># the full output_keys will be given</span>
-    <span class="n">outputs</span> <span class="o">=</span> <span class="n">FlowLauncher</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span>
-        <span class="n">flow_with_interfaces</span><span class="o">=</span><span class="p">{</span><span class="s2">"flow"</span><span class="p">:</span> <span class="n">data</span><span class="p">},</span>
-        <span class="n">data</span><span class="o">=</span><span class="n">inputs</span><span class="p">,</span>
+    
+    <span class="c1">#option1: use the FlowMessage class</span>
+    <span class="n">input_message</span> <span class="o">=</span> <span class="n">proxy_flow</span><span class="o">.</span><span class="n">package_input_message</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">=</span><span class="n">data</span>
     <span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">outputs</span><span class="p">)</span>
+    <span class="c1">#7. ~~~ Run inference ~~~</span>
+    <span class="n">future</span> <span class="o">=</span> <span class="n">proxy_flow</span><span class="o">.</span><span class="n">get_reply_future</span><span class="p">(</span><span class="n">input_message</span><span class="p">)</span>
+    
+    <span class="c1">#uncomment this line if you would like to get the full message back</span>
+    <span class="c1">#reply_message = future.get_message()</span>
+    <span class="n">reply_data</span> <span class="o">=</span> <span class="n">future</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span>
+    
+    <span class="c1"># ~~~ Print the output ~~~</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">"~~~~~~Reply~~~~~~"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">reply_data</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As we are developing locally, the remote revision does not exist yet, so we point the revision to the local path we just created: <code class="docutils literal notranslate"><span class="pre">PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots</span></code>. Note that when we sync a local revision, instead of copying the files locally, we make a symbolic soft link. So you could just modify the code under <code class="docutils literal notranslate"><span class="pre">flow_modules</span></code> and the changes will be automatically propagated to the <code class="docutils literal notranslate"><span class="pre">PATH_TO_LOCAL_DEV_DIRECTORY/dev_UsefulChatBots</span></code>.</p>
 <p>We also specify the namespace of our flow module: <code class="docutils literal notranslate"><span class="pre">yeeef/UsefulChatBots</span></code>. yeeef is my HuggingFace username, and you should replace it with your own Hugging Face username. Note that this <code class="docutils literal notranslate"><span class="pre">url</span></code> could be arbitrary as it does not exist online yet, but we highly recommend that the namespace of the flow module be consistent with your HuggingFace username, such that publishing it later will be seamless.</p>
 <p>Then let’s execute the code and test our new flow:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(aiflows) ➜  dev-tutorial python ask_economic_expert_bot.py
-inputs: [{'id': 0, 'query': 'What is CPI? What is the current CPI in the US?'}]
-[2023-07-05 17:05:35,530][aiflows.base_flows.abstract][WARNING] - The raw response was not logged.
-[{'id': 0, 'inference_outputs': [OutputMessage(message_id='d95683d6-9507-4a90-b290-6a43e609c904', created_at='2023-07-05 09:05:35.530972000', created_by='EconomicExpertBot', message_type='OutputMessage', data={'output_keys': ['response'], 'output_data': {'response': 'CPI, or the Consumer Price Index, is a measure that examines the weighted average of prices of a basket of consumer goods and services, such as transportation, food, and medical care. It is calculated by taking price changes for each item in the predetermined basket of goods and averaging them. Changes in the CPI are used to assess price changes associated with the cost of living.'}, 'missing_output_keys': []}, private_keys=['api_keys'])], 'error': None}]
 </pre></div>
 </div>
 <p>Looks good! Now let’s publish it to the huggingface!</p>

@@ -97,38 +97,51 @@ flow:  # Overrides the ChatAtomicFlow config
 The following overwrites the field with your personal API information:
 ```python
 # recursively find the 'api_infos' entry and put the API information in the config
-quick_load(cfg, api_information, key="api_infos")
-```
-This is equivalent to the following:
-```python
-cfg["flow"]["backend"]["api_infos"] = api_information
-```
-However, with `quick_load`, we are able to quickly set all entries of api_infos, this is useful when we need to configure more than just one config entries.
+api_information = [ApiInfo(backend_used="openai",
+                              api_key = os.getenv("OPENAI_API_KEY"))]
 
-Instantiate your Flow:
-```python
-# ~~~ Instantiate the Flow ~~~
-flow = ChatAtomicFlow.instantiate_from_default_config(**cfg["flow"])
-flow_with_interfaces = {
-    "flow": flow,
-    "input_interface": None,
-    "output_interface": None,
-}
+quick_load_api_keys(cfg, api_information, key="api_infos")
 ```
-Note that `input_interface` and `output_interface` are here to control the data that comes in and out of the flow. In this case, we don't need specific data manipulation, so we will leave to `None`.
 
-Load some data and run your flow with the `FlowLauncher`:
+Starg a colink server, serve the Flow and get an instance:
+```python
+cl = start_colink_server()
+#3. ~~~~ Serve The Flow ~~~~
+serving.serve_flow(
+    cl = cl,
+    flow_class_name="flow_modules.aiflows.ChatFlowModule.ChatAtomicFlow",
+    flow_endpoint="ChatAtomicFlow",
+)
+
+#4. ~~~~~Start A Worker Thread~~~~~
+run_dispatch_worker_thread(cl)
+
+#5. ~~~~~Mount the flow and get an instance of it via a proxy~~~~~~
+proxy_flow= serving.get_flow_instance(
+    cl=cl,
+    flow_endpoint="ChatAtomicFlow",
+    user_id="local",
+    config_overrides = cfg
+)
+```
+Run your Flow:
 ```python
 # ~~~ Get the data ~~~
 data = {"id": 0, "question": "What is the capital of France?"}
 
-# ~~~ Run the Flow ~~~
-_, outputs  = FlowLauncher.launch(
-        flow_with_interfaces= flow_with_interfaces ,data=data
-    )
-    # ~~~ Print the output ~~~
-flow_output_data = outputs[0]
-print(flow_output_data)
+input_message = proxy_flow.package_input_message(
+        data=data
+)
+#7. ~~~ Run inference ~~~
+future = proxy_flow.get_reply_future(input_message)
+
+#uncomment this line if you would like to get the full message back
+#reply_message = future.get_message()
+reply_data = future.get_data()
+
+# ~~~ Print the output ~~~
+print("~~~~~~Reply~~~~~~")
+print(reply_data)
 ```
 Congratulations! You've successfully run your first question-answering Flow!
 ___

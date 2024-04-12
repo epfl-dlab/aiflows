@@ -32,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -94,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../source/aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../source/aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -134,7 +133,7 @@
 <p>Here, you’ll see how you can run inference with your first question-answering Flow, and you can trivially change between vastly different question-answering Flows thanks to the modular abstraction and FlowVerse!</p>
 </section>
 <section id="tutorial-20-min">
-<h2><a class="reference internal" href="Tutorial/tutorial_landing_page.html"><span class="std std-doc">Tutorial (🕓 20 min)</span></a><a class="headerlink" href="#tutorial-20-min" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#tutorial-20-min'">¶</a></h2>
+<h2><a class="reference external" href="https://github.com/epfl-dlab/aiflows/tree/main/Tutorials">Tutorial (🕓 20 min)</a><a class="headerlink" href="#tutorial-20-min" title="Permalink to this heading" x-intersect.margin.0%.0%.-70%.0%="activeSection = '#tutorial-20-min'">¶</a></h2>
 <p>In this tutorial, we introduce you to the library’s features through a walkthrough of how to build useful Flows of gradually increasing complexity. Starting from a vanilla QA Flow, we’ll first extend it to a ReAct Flow, then ReAct with human feedback, and finish the tutorial with a version of AutoGPT!</p>
 </section>
 <section id="developer-s-guide-10-min">
@@ -152,7 +151,7 @@
 <div class="sticky top-16 -mt-10 max-h-[calc(var(100vh)-5rem)] overflow-y-auto pt-6 space-y-2"><p class="font-medium">On this page</p>
 <ul>
 <li><a :data-current="activeSection === '#quick-start-5-min'" class="reference internal" href="#quick-start-5-min"><span class="xref myst">Quick start (🕓 5 min)</span></a></li>
-<li><a :data-current="activeSection === '#tutorial-20-min'" class="reference internal" href="#tutorial-20-min"><span class="xref myst">Tutorial (🕓 20 min)</span></a></li>
+<li><a :data-current="activeSection === '#tutorial-20-min'" class="reference internal" href="#tutorial-20-min">Tutorial (🕓 20 min)</a></li>
 <li><a :data-current="activeSection === '#developer-s-guide-10-min'" class="reference internal" href="#developer-s-guide-10-min"><span class="xref myst">Developer’s Guide (🕓 10 min)</span></a></li>
 <li><a :data-current="activeSection === '#detailed-examples'" class="reference internal" href="#detailed-examples"><span class="xref myst">Detailed Examples</span></a></li>
 </ul>

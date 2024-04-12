@@ -32,7 +32,7 @@
     </script>
 </head>
 <body :class="{ 'overflow-hidden': showSidebar }" class="min-h-screen font-sans antialiased bg-background text-foreground" x-data="{ showSidebar: false }">
-<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
+<div @click.self="showSidebar = false" class="fixed inset-0 z-50 overflow-hidden bg-background/80 backdrop-blur-sm md:hidden" x-cloak="" x-show="showSidebar"></div><div class="relative flex flex-col min-h-screen" id="page"><a class="absolute top-0 left-0 z-[100] block bg-background p-4 text-xl transition -translate-x-full opacity-0 focus:translate-x-0 focus:opacity-100" href="#content">
       Skip to content
     </a><header class="sticky top-0 z-40 w-full border-b shadow-sm border-border supports-backdrop-blur:bg-background/60 bg-background/95 backdrop-blur"><div class="container flex items-center h-14">
 <div class="hidden mr-4 md:flex">
@@ -94,13 +94,12 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.data_transformations.html">aiflows.data_transformations package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.datasets.html">aiflows.datasets package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_cache.html">aiflows.flow_cache package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html">aiflows.messages package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.prompt_template.html">aiflows.prompt_template package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a></li>
 </ul>
 </li>
 </ul>
@@ -142,6 +141,7 @@
 <li class="toctree-l4"><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo.api_key"><code class="docutils literal notranslate"><span class="pre">ApiInfo.api_key</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo.api_version"><code class="docutils literal notranslate"><span class="pre">ApiInfo.api_version</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo.backend_used"><code class="docutils literal notranslate"><span class="pre">ApiInfo.backend_used</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.backends.html#aiflows.backends.api_info.ApiInfo.validate"><code class="docutils literal notranslate"><span class="pre">ApiInfo.validate()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -165,17 +165,26 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow"><code class="docutils literal notranslate"><span class="pre">Flow</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">Flow.REQUIRED_KEYS_CONFIG</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.SUPPORTS_CACHING"><code class="docutils literal notranslate"><span class="pre">Flow.SUPPORTS_CACHING</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.cl"><code class="docutils literal notranslate"><span class="pre">Flow.cl</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.flow_config"><code class="docutils literal notranslate"><span class="pre">Flow.flow_config</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.flow_state</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_config"><code class="docutils literal notranslate"><span class="pre">Flow.get_config()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.get_flow_state()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_instance_id"><code class="docutils literal notranslate"><span class="pre">Flow.get_instance_id()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_interface_description"><code class="docutils literal notranslate"><span class="pre">Flow.get_interface_description()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.history"><code class="docutils literal notranslate"><span class="pre">Flow.history</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_reply"><code class="docutils literal notranslate"><span class="pre">Flow.get_reply()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.get_reply_future"><code class="docutils literal notranslate"><span class="pre">Flow.get_reply_future()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.instantiate_from_config"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_from_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.instantiate_from_default_config"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_from_default_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.instantiate_with_overrides"><code class="docutils literal notranslate"><span class="pre">Flow.instantiate_with_overrides()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.local_proxy_invocations"><code class="docutils literal notranslate"><span class="pre">Flow.local_proxy_invocations</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.name"><code class="docutils literal notranslate"><span class="pre">Flow.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.package_input_message"><code class="docutils literal notranslate"><span class="pre">Flow.package_input_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.package_output_message"><code class="docutils literal notranslate"><span class="pre">Flow.package_output_message()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.reset"><code class="docutils literal notranslate"><span class="pre">Flow.reset()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.run"><code class="docutils literal notranslate"><span class="pre">Flow.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.send_message"><code class="docutils literal notranslate"><span class="pre">Flow.send_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.set_colink"><code class="docutils literal notranslate"><span class="pre">Flow.set_colink()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.set_up_flow_state"><code class="docutils literal notranslate"><span class="pre">Flow.set_up_flow_state()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.abstract.Flow.type"><code class="docutils literal notranslate"><span class="pre">Flow.type()</span></code></a></li>
 </ul>
@@ -189,39 +198,12 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.branching">aiflows.base_flows.branching module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.branching.BranchingFlow"><code class="docutils literal notranslate"><span class="pre">BranchingFlow</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.branching.BranchingFlow.run"><code class="docutils literal notranslate"><span class="pre">BranchingFlow.run()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.branching.BranchingFlow.type"><code class="docutils literal notranslate"><span class="pre">BranchingFlow.type()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.circular">aiflows.base_flows.circular module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow"><code class="docutils literal notranslate"><span class="pre">CircularFlow</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">CircularFlow.REQUIRED_KEYS_CONFIG</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow.input_msg_payload_builder"><code class="docutils literal notranslate"><span class="pre">CircularFlow.input_msg_payload_builder()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow.output_msg_payload_processor"><code class="docutils literal notranslate"><span class="pre">CircularFlow.output_msg_payload_processor()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow.run"><code class="docutils literal notranslate"><span class="pre">CircularFlow.run()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.CircularFlow.type"><code class="docutils literal notranslate"><span class="pre">CircularFlow.type()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.circular.TopologyNode"><code class="docutils literal notranslate"><span class="pre">TopologyNode</span></code></a></li>
-</ul>
-</li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.composite">aiflows.base_flows.composite module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.composite.CompositeFlow"><code class="docutils literal notranslate"><span class="pre">CompositeFlow</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.composite.CompositeFlow.REQUIRED_KEYS_CONFIG"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.REQUIRED_KEYS_CONFIG</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.composite.CompositeFlow.instantiate_from_config"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.instantiate_from_config()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.composite.CompositeFlow.subflows"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.subflows</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.composite.CompositeFlow.type"><code class="docutils literal notranslate"><span class="pre">CompositeFlow.type()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.base_flows.html#module-aiflows.base_flows.sequential">aiflows.base_flows.sequential module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.sequential.SequentialFlow"><code class="docutils literal notranslate"><span class="pre">SequentialFlow</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.base_flows.html#aiflows.base_flows.sequential.SequentialFlow.type"><code class="docutils literal notranslate"><span class="pre">SequentialFlow.type()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -338,34 +320,6 @@
 <li class="toctree-l2"><a class="reference internal" href="aiflows.flow_cache.html#module-aiflows.flow_cache">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="aiflows.flow_launchers.html">aiflows.flow_launchers package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.flow_launchers.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers.abstract">aiflows.flow_launchers.abstract module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.BaseLauncher"><code class="docutils literal notranslate"><span class="pre">BaseLauncher</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.BaseLauncher.predict"><code class="docutils literal notranslate"><span class="pre">BaseLauncher.predict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.BaseLauncher.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">BaseLauncher.predict_dataloader()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.BaseLauncher.write_batch_output"><code class="docutils literal notranslate"><span class="pre">BaseLauncher.write_batch_output()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.MultiThreadedAPILauncher"><code class="docutils literal notranslate"><span class="pre">MultiThreadedAPILauncher</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.abstract.MultiThreadedAPILauncher.predict_dataloader"><code class="docutils literal notranslate"><span class="pre">MultiThreadedAPILauncher.predict_dataloader()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers.flow_API_launcher">aiflows.flow_launchers.flow_API_launcher module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.flow_API_launcher.FlowLauncher"><code class="docutils literal notranslate"><span class="pre">FlowLauncher</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.flow_API_launcher.FlowLauncher.launch"><code class="docutils literal notranslate"><span class="pre">FlowLauncher.launch()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.flow_API_launcher.FlowLauncher.predict"><code class="docutils literal notranslate"><span class="pre">FlowLauncher.predict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.flow_API_launcher.FlowLauncher.predict_batch"><code class="docutils literal notranslate"><span class="pre">FlowLauncher.predict_batch()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.flow_launchers.html#aiflows.flow_launchers.flow_API_launcher.FlowLauncher.predict_sample"><code class="docutils literal notranslate"><span class="pre">FlowLauncher.predict_sample()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.flow_launchers.html#module-aiflows.flow_launchers">Module contents</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="aiflows.flow_verse.html">aiflows.flow_verse package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.flow_verse.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.flow_verse.html#module-aiflows.flow_verse.loading">aiflows.flow_verse.loading module</a><ul>
@@ -416,21 +370,6 @@
 <li class="toctree-l2"><a class="reference internal" href="aiflows.flow_verse.html#module-aiflows.flow_verse">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="aiflows.history.html">aiflows.history package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.history.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.history.html#module-aiflows.history.flow_history">aiflows.history.flow_history module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory"><code class="docutils literal notranslate"><span class="pre">FlowHistory</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory.add_message"><code class="docutils literal notranslate"><span class="pre">FlowHistory.add_message()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory.get_last_n_messages"><code class="docutils literal notranslate"><span class="pre">FlowHistory.get_last_n_messages()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory.to_list"><code class="docutils literal notranslate"><span class="pre">FlowHistory.to_list()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.history.html#aiflows.history.flow_history.FlowHistory.to_string"><code class="docutils literal notranslate"><span class="pre">FlowHistory.to_string()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="aiflows.history.html#module-aiflows.history">Module contents</a></li>
-</ul>
-</li>
 <li class="toctree-l1"><a class="reference internal" href="aiflows.interfaces.html">aiflows.interfaces package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.interfaces.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.interfaces.html#module-aiflows.interfaces.abstract">aiflows.interfaces.abstract module</a><ul>
@@ -451,9 +390,11 @@
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.created_at"><code class="docutils literal notranslate"><span class="pre">Message.created_at</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.created_by"><code class="docutils literal notranslate"><span class="pre">Message.created_by</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.data"><code class="docutils literal notranslate"><span class="pre">Message.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.deserialize"><code class="docutils literal notranslate"><span class="pre">Message.deserialize()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.message_id"><code class="docutils literal notranslate"><span class="pre">Message.message_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.message_type"><code class="docutils literal notranslate"><span class="pre">Message.message_type</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.private_keys"><code class="docutils literal notranslate"><span class="pre">Message.private_keys</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.serialize"><code class="docutils literal notranslate"><span class="pre">Message.serialize()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.to_dict"><code class="docutils literal notranslate"><span class="pre">Message.to_dict()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.abstract.Message.to_string"><code class="docutils literal notranslate"><span class="pre">Message.to_string()</span></code></a></li>
 </ul>
@@ -461,14 +402,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.messages.html#module-aiflows.messages.flow_message">aiflows.messages.flow_message module</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.InputMessage"><code class="docutils literal notranslate"><span class="pre">InputMessage</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.InputMessage.build"><code class="docutils literal notranslate"><span class="pre">InputMessage.build()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.InputMessage.to_string"><code class="docutils literal notranslate"><span class="pre">InputMessage.to_string()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.OutputMessage"><code class="docutils literal notranslate"><span class="pre">OutputMessage</span></code></a><ul>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.OutputMessage.get_output_data"><code class="docutils literal notranslate"><span class="pre">OutputMessage.get_output_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.OutputMessage.to_string"><code class="docutils literal notranslate"><span class="pre">OutputMessage.to_string()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage"><code class="docutils literal notranslate"><span class="pre">FlowMessage</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.FlowMessage.to_string"><code class="docutils literal notranslate"><span class="pre">FlowMessage.to_string()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.messages.html#aiflows.messages.flow_message.UpdateMessage_ChatMessage"><code class="docutils literal notranslate"><span class="pre">UpdateMessage_ChatMessage</span></code></a><ul>
@@ -507,6 +442,29 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="aiflows.utils.html">aiflows.utils package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.coflows_utils">aiflows.utils.coflows_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture"><code class="docutils literal notranslate"><span class="pre">FlowFuture</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture.get_data"><code class="docutils literal notranslate"><span class="pre">FlowFuture.get_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture.get_message"><code class="docutils literal notranslate"><span class="pre">FlowFuture.get_message()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture.set_output_interface"><code class="docutils literal notranslate"><span class="pre">FlowFuture.set_output_interface()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture.try_get_data"><code class="docutils literal notranslate"><span class="pre">FlowFuture.try_get_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.FlowFuture.try_get_message"><code class="docutils literal notranslate"><span class="pre">FlowFuture.try_get_message()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.dispatch_response"><code class="docutils literal notranslate"><span class="pre">dispatch_response()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.coflows_utils.push_to_flow"><code class="docutils literal notranslate"><span class="pre">push_to_flow()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.colink_utils">aiflows.utils.colink_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.delete_entries_on_path"><code class="docutils literal notranslate"><span class="pre">delete_entries_on_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.print_flow_instances"><code class="docutils literal notranslate"><span class="pre">print_flow_instances()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.print_served_flows"><code class="docutils literal notranslate"><span class="pre">print_served_flows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.recursive_print_keys"><code class="docutils literal notranslate"><span class="pre">recursive_print_keys()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.start_colink_server"><code class="docutils literal notranslate"><span class="pre">start_colink_server()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.colink_utils.start_colink_server_with_users"><code class="docutils literal notranslate"><span class="pre">start_colink_server_with_users()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.constants">aiflows.utils.constants module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.general_helpers">aiflows.utils.general_helpers module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.create_unique_id"><code class="docutils literal notranslate"><span class="pre">create_unique_id()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.encode_from_buffer"><code class="docutils literal notranslate"><span class="pre">encode_from_buffer()</span></code></a></li>
@@ -522,6 +480,7 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.nested_keys_update"><code class="docutils literal notranslate"><span class="pre">nested_keys_update()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.process_config_leafs"><code class="docutils literal notranslate"><span class="pre">process_config_leafs()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.quick_load"><code class="docutils literal notranslate"><span class="pre">quick_load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.quick_load_api_keys"><code class="docutils literal notranslate"><span class="pre">quick_load_api_keys()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.read_gzipped_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_gzipped_jsonlines()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.read_jsonlines"><code class="docutils literal notranslate"><span class="pre">read_jsonlines()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.general_helpers.read_outputs"><code class="docutils literal notranslate"><span class="pre">read_outputs()</span></code></a></li>
@@ -536,6 +495,8 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.io_utils">aiflows.utils.io_utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.io_utils.coflows_deserialize"><code class="docutils literal notranslate"><span class="pre">coflows_deserialize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.io_utils.coflows_serialize"><code class="docutils literal notranslate"><span class="pre">coflows_serialize()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.io_utils.load_pickle"><code class="docutils literal notranslate"><span class="pre">load_pickle()</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.io_utils.recursive_json_serialize"><code class="docutils literal notranslate"><span class="pre">recursive_json_serialize()</span></code></a></li>
 </ul>
@@ -568,7 +529,42 @@
 <li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.rich_utils.print_config_tree"><code class="docutils literal notranslate"><span class="pre">print_config_tree()</span></code></a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils.serving">aiflows.utils.serving module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.FlowInstanceException"><code class="docutils literal notranslate"><span class="pre">FlowInstanceException</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.delete_all_flow_endpoints"><code class="docutils literal notranslate"><span class="pre">delete_all_flow_endpoints()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.delete_flow_endpoint"><code class="docutils literal notranslate"><span class="pre">delete_flow_endpoint()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.delete_flow_instance"><code class="docutils literal notranslate"><span class="pre">delete_flow_instance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.get_flow_instance"><code class="docutils literal notranslate"><span class="pre">get_flow_instance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.is_flow_served"><code class="docutils literal notranslate"><span class="pre">is_flow_served()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.mount"><code class="docutils literal notranslate"><span class="pre">mount()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.recursive_delete_flow_instance"><code class="docutils literal notranslate"><span class="pre">recursive_delete_flow_instance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.recursive_serve_flow"><code class="docutils literal notranslate"><span class="pre">recursive_serve_flow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.serve_flow"><code class="docutils literal notranslate"><span class="pre">serve_flow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.start_colink_component"><code class="docutils literal notranslate"><span class="pre">start_colink_component()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.utils.html#aiflows.utils.serving.unserve_flow"><code class="docutils literal notranslate"><span class="pre">unserve_flow()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="aiflows.utils.html#module-aiflows.utils">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="aiflows.workers.html">aiflows.workers package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.workers.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers.dispatch_worker">aiflows.workers.dispatch_worker module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.dispatch_worker.create_flow"><code class="docutils literal notranslate"><span class="pre">create_flow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.dispatch_worker.dispatch_task_handler"><code class="docutils literal notranslate"><span class="pre">dispatch_task_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.dispatch_worker.parse_args"><code class="docutils literal notranslate"><span class="pre">parse_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.dispatch_worker.run_dispatch_worker_thread"><code class="docutils literal notranslate"><span class="pre">run_dispatch_worker_thread()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.dispatch_worker.run_dispatch_worker_threads"><code class="docutils literal notranslate"><span class="pre">run_dispatch_worker_threads()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers.get_instance_worker">aiflows.workers.get_instance_worker module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.get_instance_worker.get_instances_initiator_handler"><code class="docutils literal notranslate"><span class="pre">get_instances_initiator_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.get_instance_worker.get_instances_receiver_handler"><code class="docutils literal notranslate"><span class="pre">get_instances_receiver_handler()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.get_instance_worker.parse_args"><code class="docutils literal notranslate"><span class="pre">parse_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="aiflows.workers.html#aiflows.workers.get_instance_worker.run_get_instance_worker_thread"><code class="docutils literal notranslate"><span class="pre">run_get_instance_worker_thread()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="aiflows.workers.html#module-aiflows.workers">Module contents</a></li>
 </ul>
 </li>
 </ul>
