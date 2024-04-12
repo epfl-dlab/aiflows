@@ -21,7 +21,7 @@
 </p>
 
 > 📢
-> Major update: In v1.1.0 we introduce the Flows engine, which enables concurrent execution and peer-to-peer distributed collaboration. Additionally, we redesigned the developer experience so that you can build Flows leveraging these features in the simplest way possible.
+> Major update: We’re excited to announce the release of version 1.1.0 of our project! This release introduces significant enhancements to aiFlows, highlighted by the introduction of the Flows engine. This engine empowers concurrent execution and peer-to-peer distributed collaboration, revolutionizing the way you interact with your projects.
 > 
 > We are still polishing some aspects of the developer experience, so share your feedback on [Discord](https://discord.gg/yFZkpD2HAh)! 
 
