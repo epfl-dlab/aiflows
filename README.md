@@ -20,6 +20,10 @@
     </a>
 </p>
 
+
+>🆕🌟 **FunSearch Added**:
+> Exciting news! We're thrilled to announce the integration of FunSearch into the FlowVerse! 🎉 You can find it [here](https://huggingface.co/aiflows/FunSearchFlowModule) on the FlowVerse. Also, check out the [demo notebook showcasing FunSearch in action](./examples/FunSearch/FunSearch.ipynb)!
+
 > 📢
 > Major update: We’re excited to announce the release of version 1.1.0 of our project! This release introduces significant enhancements to aiFlows, highlighted by the introduction of the Flows engine. This engine empowers concurrent execution and peer-to-peer distributed collaboration, revolutionizing the way you interact with your projects.
 > 
