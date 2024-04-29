@@ -490,7 +490,7 @@ class Flow(ABC):
             dst_flow=input_message.src_flow,
             data=output_data,
             reply_data=input_message.reply_data,
-            input_message_id=input_message.message_id,
+            input_message_id=input_message.input_message_id,
             is_reply=True,
             user_id=user_id,
         )
@@ -662,7 +662,7 @@ class Flow(ABC):
             reply_data=reply_data,
             private_keys=message.private_keys,
             created_by=self.flow_config["name"],
-            input_message_id=message.message_id,
+            input_message_id=message.input_message_id,
             user_id=self.cl.get_user_id(),
         )
 
@@ -696,7 +696,7 @@ class Flow(ABC):
             reply_data=reply_data,
             private_keys=input_message.private_keys,
             created_by=self.flow_config["name"],
-            input_message_id=input_message.message_id,
+            input_message_id=input_message.input_message_id,
             user_id=self.cl.get_user_id(),
         )
 
